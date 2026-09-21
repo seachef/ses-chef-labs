@@ -15,7 +15,6 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -30,6 +29,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .wallet-section { display: flex; align-items: center; gap: 10px; }
         .add-wallet-btn {
             background: rgba(255,255,255,0.1);
             border: 1px solid #00d9ff;
@@ -47,11 +47,10 @@
             color: #fff;
             padding: 8px 12px;
             border-radius: 6px;
-            margin-left: 10px;
-            width: 200px;
+            width: 250px;
         }
+        .wallet-input::placeholder { color: #64748b; }
 
-        /* Stats Row */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -70,7 +69,6 @@
         .positive { color: #00ff88; }
         .negative { color: #ff4757; }
 
-        /* Section Titles */
         .section-title {
             font-size: 1.3rem;
             margin-bottom: 15px;
@@ -79,60 +77,99 @@
             gap: 10px;
         }
 
-        /* Researched Coins Queue */
-        .researched-queue {
+        /* Top 4 Picks */
+        .top-picks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .pick-card {
             background: rgba(0, 217, 255, 0.05);
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 30px;
-        }
-        .coin-queue-list {
             display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 10px;
+            flex-direction: column;
         }
-        .queue-item {
-            min-width: 280px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 15px;
-            border-left: 3px solid #00ff88;
-        }
-        .queue-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .pick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .pick-symbol { font-weight: bold; font-size: 1.3rem; color: #00d9ff; }
+        .pick-price { color: #8892b0; font-size: 0.9rem; }
+        .pick-reason { color: #cbd5e1; font-size: 0.85rem; margin-bottom: 15px; flex-grow: 1; }
+        .pick-score { 
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
             margin-bottom: 10px;
         }
-        .queue-symbol {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #00d9ff;
-        }
-        .queue-price {
-            color: #8892b0;
-            font-size: 0.9rem;
-        }
-        .queue-reason {
-            color: #cbd5e1;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-        .queue-btn {
+        .buy-btn {
             background: linear-gradient(135deg, #00d9ff, #00ff88);
             color: #0f172a;
             border: none;
-            padding: 8px;
+            padding: 10px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            width: 100%;
             text-align: center;
             text-decoration: none;
             display: block;
         }
+        .buy-btn:hover { opacity: 0.9; }
+
+        /* More Researched Coins */
+        .more-researched {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .more-coin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+        .more-coin-item:hover { background: rgba(255,255,255,0.03); }
+        .more-coin-item:last-child { border-bottom: none; }
+        .more-coin-left { display: flex; align-items: center; gap: 12px; }
+        .more-coin-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(0, 217, 255, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.7rem; color: #00d9ff;
+        }
+        .more-coin-name { font-weight: 600; }
+        .more-coin-reason { color: #8892b0; font-size: 0.8rem; }
+        .more-coin-right { display: flex; align-items: center; gap: 15px; }
+        .more-coin-price { font-weight: 600; }
+        .more-coin-score { 
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .more-coin-btn {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            color: #00d9ff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .more-coin-btn:hover { background: rgba(0, 217, 255, 0.2); }
 
         /* Holdings */
         .holdings-section {
@@ -157,10 +194,38 @@
             font-weight: bold; font-size: 0.8rem;
         }
 
-        /* AI Agents */
+        /* Watched Wallets */
+        .watched-wallets {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .watched-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .watched-item:last-child { border-bottom: none; }
+        .watched-addr { font-family: monospace; font-size: 0.85rem; color: #00d9ff; }
+        .watched-label { color: #8892b0; font-size: 0.85rem; }
+        .remove-btn {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: #ff4757;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .remove-btn:hover { background: rgba(255, 71, 87, 0.2); }
+
+        /* AI Agents - Expandable */
         .agents-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
         }
         .agent-card {
@@ -168,28 +233,60 @@
             padding: 15px;
             border-radius: 10px;
             border-left: 4px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.3s;
         }
+        .agent-card:hover { background: rgba(255,255,255,0.08); }
+        .agent-card.expanded { border-left-color: #00d9ff; }
+        .agent-header { display: flex; justify-content: space-between; align-items: center; }
         .agent-name { font-weight: 600; margin-bottom: 5px; }
         .agent-status { color: #00ff88; font-size: 0.85rem; }
+        .agent-expand { color: #8892b0; font-size: 0.8rem; transition: transform 0.3s; }
+        .agent-card.expanded .agent-expand { transform: rotate(180deg); }
+        .agent-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 0;
+        }
+        .agent-card.expanded .agent-details {
+            max-height: 500px;
+            margin-top: 15px;
+        }
+        .agent-detail-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        .agent-detail-item:last-child { border-bottom: none; }
+        .agent-detail-label { color: #8892b0; font-size: 0.75rem; margin-bottom: 2px; }
+        .agent-detail-value { color: #fff; font-weight: 500; }
 
         .empty-state {
             text-align: center;
             padding: 40px;
             color: #8892b0;
         }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; }
+            .wallet-section { width: 100%; }
+            .wallet-input { flex: 1; width: auto; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🌊 Sea Chef Labs</h1>
-            <div>
-                <input type="text" class="wallet-input" id="walletAddress" placeholder="Enter wallet address">
-                <button class="add-wallet-btn" onclick="addWallet()">Add Wallet</button>
+            <h1>Sea Chef Labs</h1>
+            <div class="wallet-section">
+                <input type="text" class="wallet-input" id="walletAddress" placeholder="Enter wallet address to watch">
+                <button class="add-wallet-btn" onclick="addWallet()">+ Watch Wallet</button>
             </div>
         </header>
 
-        <!-- Top Stats Windows -->
+        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">Total Portfolio Value</div>
@@ -208,42 +305,169 @@
             </div>
         </div>
 
-        <!-- RESEARCHED COINS QUEUE -->
-        <div class="section-title">🎯 Researched Coins to Buy</div>
-        <div class="researched-queue">
-            <div class="coin-queue-list">
-                <div class="queue-item">
-                    <div class="queue-header">
-                        <span class="queue-symbol">PEPE</span>
-                        <span class="queue-price">$0.000012</span>
-                    </div>
-                    <div class="queue-reason">Whale accumulation detected. AI sentiment: 92/100</div>
-                    <a href="https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933" target="_blank" class="queue-btn">Buy on Uniswap</a>
+        <!-- TOP 4 AI PICKS -->
+        <div class="section-title">🎯 AI Top Picks - Researched & Ready</div>
+        <div class="top-picks-grid">
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">PEPE</span>
+                    <span class="pick-price">$0.000012</span>
                 </div>
-                <div class="queue-item">
-                    <div class="queue-header">
-                        <span class="queue-symbol">WIF</span>
-                        <span class="queue-price">$2.45</span>
-                    </div>
-                    <div class="queue-reason">Breaking out. TG bot volume spike</div>
-                    <a href="https://jup.ag/swap/SOL-So11111111111111111111111111111111111111112" target="_blank" class="queue-btn">Buy on Jupiter</a>
+                <div class="pick-score">AI Score: 92/100</div>
+                <div class="pick-reason">Whale accumulation detected. 3 large wallets buying in last 24h. TG bot volume spike +45%.</div>
+                <a href="https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933" target="_blank" class="buy-btn">Buy on Uniswap</a>
+            </div>
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">WIF</span>
+                    <span class="pick-price">$2.45</span>
                 </div>
-                <div class="queue-item">
-                    <div class="queue-header">
-                        <span class="queue-symbol">RNDR</span>
-                        <span class="queue-price">$7.80</span>
-                    </div>
-                    <div class="queue-reason">AI narrative trending. Strong support</div>
-                    <a href="https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24" target="_blank" class="queue-btn">Buy on Uniswap</a>
+                <div class="pick-score">AI Score: 88/100</div>
+                <div class="pick-reason">Breaking out of consolidation. Jupiter aggregator volume up 120%. Strong Solana momentum.</div>
+                <a href="https://jup.ag/swap/SOL-So11111111111111111111111111111111111111112" target="_blank" class="buy-btn">Buy on Jupiter</a>
+            </div>
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">RNDR</span>
+                    <span class="pick-price">$7.80</span>
                 </div>
-                <div class="queue-item">
-                    <div class="queue-header">
-                        <span class="queue-symbol">ARB</span>
-                        <span class="queue-price">$1.25</span>
-                    </div>
-                    <div class="queue-reason">Layer 2 momentum. Whale buys increasing</div>
-                    <a href="https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548" target="_blank" class="queue-btn">Buy on Uniswap</a>
+                <div class="pick-score">AI Score: 85/100</div>
+                <div class="pick-reason">AI narrative trending. GPU compute demand rising. Strong support at $7.20 holding firm.</div>
+                <a href="https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24" target="_blank" class="buy-btn">Buy on Uniswap</a>
+            </div>
+            <div class="pick-card">
+                <div class="pick-header">
+                    <span class="pick-symbol">ARB</span>
+                    <span class="pick-price">$1.25</span>
                 </div>
+                <div class="pick-score">AI Score: 81/100</div>
+                <div class="pick-reason">Layer 2 momentum building. Whale buys increasing 3x this week. TVL hitting new highs.</div>
+                <a href="https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548" target="_blank" class="buy-btn">Buy on Uniswap</a>
+            </div>
+        </div>
+
+        <!-- MORE RESEARCHED COINS -->
+        <div class="section-title">🔬 More Researched Coins</div>
+        <div class="more-researched">
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">HYPE</div>
+                    <div>
+                        <div class="more-coin-name">Hyperliquid</div>
+                        <div class="more-coin-reason">Perp DEX leader. $432B monthly volume. New chain launch imminent.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$42.18</span>
+                    <span class="more-coin-score">79/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">MON</div>
+                    <div>
+                        <div class="more-coin-name">Monad</div>
+                        <div class="more-coin-reason">10k TPS EVM L1. $494M raised. Testnet live, mainnet soon.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$3.45</span>
+                    <span class="more-coin-score">76/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">ONDO</div>
+                    <div>
+                        <div class="more-coin-name">Ondo Finance</div>
+                        <div class="more-coin-reason">RWA leader. Institutional adoption growing. TVL up 340% this quarter.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$1.23</span>
+                    <span class="more-coin-score">74/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">VIRTUAL</div>
+                    <div>
+                        <div class="more-coin-name">Virtuals Protocol</div>
+                        <div class="more-coin-reason">AI agent token leader. 24.5% pump in 24h. Strong community momentum.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$2.34</span>
+                    <span class="more-coin-score">72/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">TAO</div>
+                    <div>
+                        <div class="more-coin-name">Bittensor</div>
+                        <div class="more-coin-reason">Decentralized AI network. Subnet activity surging. AI narrative strong.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$512.33</span>
+                    <span class="more-coin-score">69/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">SUI</div>
+                    <div>
+                        <div class="more-coin-name">Sui</div>
+                        <div class="more-coin-reason">Move-based L1. 15.2% 24h gain. DeFi TVL breaking records.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$4.67</span>
+                    <span class="more-coin-score">67/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">BERA</div>
+                    <div>
+                        <div class="more-coin-name">Berachain</div>
+                        <div class="more-coin-reason">Proof of Liquidity consensus. Unique tokenomics. Early stage opportunity.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$5.67</span>
+                    <span class="more-coin-score">65/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+            <div class="more-coin-item">
+                <div class="more-coin-left">
+                    <div class="more-coin-icon">FET</div>
+                    <div>
+                        <div class="more-coin-name">Fetch.ai</div>
+                        <div class="more-coin-reason">AI + DeFi convergence. Autonomous agents gaining traction. 11.2% 24h.</div>
+                    </div>
+                </div>
+                <div class="more-coin-right">
+                    <span class="more-coin-price">$1.23</span>
+                    <span class="more-coin-score">63/100</span>
+                    <a href="https://app.uniswap.org" target="_blank" class="more-coin-btn">Buy</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- WATCHED WALLETS -->
+        <div class="section-title">👁️ Watched Wallets</div>
+        <div class="watched-wallets" id="watchedWallets">
+            <div class="empty-state" id="walletEmptyState">
+                <p>Add wallet addresses above to watch their activity and holdings</p>
             </div>
         </div>
 
@@ -255,41 +479,149 @@
             </div>
         </div>
 
-        <!-- AI Agents -->
+        <!-- AI AGENTS - EXPANDABLE -->
         <div class="section-title">🤖 Whale AI Agents & TG Bots</div>
         <div class="agents-grid">
-            <div class="agent-card">
-                <div class="agent-name">Whale Alert Bot</div>
-                <div class="agent-status">● Active - Tracking $1M+ moves</div>
+            <div class="agent-card" onclick="toggleAgent(this)">
+                <div class="agent-header">
+                    <div>
+                        <div class="agent-name">Whale Alert Bot</div>
+                        <div class="agent-status">● Active - Tracking $1M+ moves</div>
+                    </div>
+                    <div class="agent-expand">▼</div>
+                </div>
+                <div class="agent-details">
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Last 24h Alerts</div>
+                        <div class="agent-detail-value">47 whale movements detected</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Largest Move</div>
+                        <div class="agent-detail-value">$12.4M PEPE transferred to Binance</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Accumulation Pattern</div>
+                        <div class="agent-detail-value">3 wallets accumulating WIF over 48h</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Chains Monitored</div>
+                        <div class="agent-detail-value">ETH, SOL, ARB, BASE, BSC</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Success Rate</div>
+                        <div class="agent-detail-value">78% of tracked whales profitable this month</div>
+                    </div>
+                </div>
             </div>
-            <div class="agent-card">
-                <div class="agent-name">AI Market Analyzer</div>
-                <div class="agent-status">● Active - Scanning 50+ pairs</div>
+            <div class="agent-card" onclick="toggleAgent(this)">
+                <div class="agent-header">
+                    <div>
+                        <div class="agent-name">AI Market Analyzer</div>
+                        <div class="agent-status">● Active - Scanning 50+ pairs</div>
+                    </div>
+                    <div class="agent-expand">▼</div>
+                </div>
+                <div class="agent-details">
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Current Analysis</div>
+                        <div class="agent-detail-value">Scanning momentum, volume, sentiment across 50+ pairs</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Top Signal</div>
+                        <div class="agent-detail-value">PEPE - Strong buy signal (92/100 confidence)</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Data Sources</div>
+                        <div class="agent-detail-value">61 DEX + CEX sources, 26 chains</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Update Frequency</div>
+                        <div class="agent-detail-value">Every 30 seconds</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Model Accuracy</div>
+                        <div class="agent-detail-value">84% prediction accuracy (30-day backtest)</div>
+                    </div>
+                </div>
             </div>
-            <div class="agent-card">
-                <div class="agent-name">Sniper Bot Tracker</div>
-                <div class="agent-status">● Active - 3 new tokens detected</div>
+            <div class="agent-card" onclick="toggleAgent(this)">
+                <div class="agent-header">
+                    <div>
+                        <div class="agent-name">Sniper Bot Tracker</div>
+                        <div class="agent-status">● Active - 3 new tokens detected</div>
+                    </div>
+                    <div class="agent-expand">▼</div>
+                </div>
+                <div class="agent-details">
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">New Detections (24h)</div>
+                        <div class="agent-detail-value">3 tokens with sniper activity</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Token #1</div>
+                        <div class="agent-detail-value">Unknown meme - 12 snipers in first block</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Token #2</div>
+                        <div class="agent-detail-value">AI agent token - 8 snipers, liquidity locked</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Token #3</div>
+                        <div class="agent-detail-value">DePIN project - 5 snipers, team doxxed</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Risk Assessment</div>
+                        <div class="agent-detail-value">Token #2 looks safest - liquidity locked 6 months</div>
+                    </div>
+                </div>
             </div>
-            <div class="agent-card">
-                <div class="agent-name">TG Signal Groups</div>
-                <div class="agent-status">● Active - 12 groups connected</div>
+            <div class="agent-card" onclick="toggleAgent(this)">
+                <div class="agent-header">
+                    <div>
+                        <div class="agent-name">TG Signal Groups</div>
+                        <div class="agent-status">● Active - 12 groups connected</div>
+                    </div>
+                    <div class="agent-expand">▼</div>
+                </div>
+                <div class="agent-details">
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Active Groups</div>
+                        <div class="agent-detail-value">12 Telegram signal groups monitored</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Consensus Signal</div>
+                        <div class="agent-detail-value">8/12 groups calling PEPE accumulation</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Top Mentioned</div>
+                        <div class="agent-detail-value">PEPE (8 groups), WIF (6 groups), RNDR (5 groups)</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Bot Speed</div>
+                        <div class="agent-detail-value">4-8ms execution via Banana Gun / Maestro</div>
+                    </div>
+                    <div class="agent-detail-item">
+                        <div class="agent-detail-label">Signal Accuracy</div>
+                        <div class="agent-detail-value">72% of group signals profitable within 24h</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Simulated wallet data
         let walletData = null;
+        let watchedWallets = [];
 
         function addWallet() {
             const address = document.getElementById('walletAddress').value.trim();
-            
-            if (!address) {
-                alert('Please enter a wallet address');
-                return;
-            }
+            if (!address) { alert('Please enter a wallet address'); return; }
 
-            // Simulate fetching wallet data (in real app, this would call an API)
+            // Add to watched wallets
+            watchedWallets.push({ address: address, label: 'Wallet ' + (watchedWallets.length + 1) });
+            displayWatchedWallets();
+
+            // Simulate wallet data
             walletData = {
                 address: address,
                 totalValue: 17284.73,
@@ -305,54 +637,56 @@
             };
 
             displayHoldings();
-            
-            // Update total portfolio value
             document.getElementById('totalValue').textContent = '$' + walletData.totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             const changeClass = walletData.change24h >= 0 ? 'positive' : 'negative';
             const sign = walletData.change24h >= 0 ? '+' : '';
-            document.getElementById('portfolioChange').innerHTML = 
-                `<span class="${changeClass}">${sign}${walletData.change24h.toFixed(2)}% (+$${walletData.changeValue.toLocaleString()})</span>`;
+            document.getElementById('portfolioChange').innerHTML = '<span class="' + changeClass + '">' + sign + walletData.change24h.toFixed(2) + '% (+$' + walletData.changeValue.toLocaleString() + ')</span>';
+            
+            document.getElementById('walletAddress').value = '';
+        }
+
+        function displayWatchedWallets() {
+            const section = document.getElementById('watchedWallets');
+            if (watchedWallets.length === 0) {
+                section.innerHTML = '<div class="empty-state"><p>Add wallet addresses above to watch their activity and holdings</p></div>';
+                return;
+            }
+            let html = '';
+            watchedWallets.forEach((w, i) => {
+                const short = w.address.substring(0, 8) + '...' + w.address.substring(w.address.length - 6);
+                html += '<div class="watched-item"><div><div class="watched-label">' + w.label + '</div><div class="watched-addr">' + short + '</div></div><button class="remove-btn" onclick="removeWallet(' + i + ')">Remove</button></div>';
+            });
+            section.innerHTML = html;
+        }
+
+        function removeWallet(index) {
+            watchedWallets.splice(index, 1);
+            displayWatchedWallets();
         }
 
         function displayHoldings() {
             const section = document.getElementById('holdingsSection');
-            
             if (!walletData) {
                 section.innerHTML = '<div class="empty-state"><p>Add your wallet address above to see your holdings and P/L</p></div>';
                 return;
             }
-
             let html = '';
             walletData.tokens.forEach(token => {
                 const changeClass = token.change >= 0 ? 'positive' : 'negative';
                 const sign = token.change >= 0 ? '+' : '';
-                
-                html += `
-                    <div class="holding-item">
-                        <div class="holding-info">
-                            <div class="token-icon">${token.symbol}</div>
-                            <div>
-                                <div style="font-weight:600">${token.name}</div>
-                                <div style="color:#8892b0; font-size:0.9rem">${token.amount} ${token.symbol}</div>
-                            </div>
-                        </div>
-                        <div style="text-align:right">
-                            <div style="font-weight:600">$${token.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                            <div class="${changeClass}">${sign}${token.change}%</div>
-                        </div>
-                    </div>
-                `;
+                html += '<div class="holding-item"><div class="holding-info"><div class="token-icon">' + token.symbol + '</div><div><div style="font-weight:600">' + token.name + '</div><div style="color:#8892b0; font-size:0.9rem">' + token.amount + ' ' + token.symbol + '</div></div></div><div style="text-align:right"><div style="font-weight:600">$' + token.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="' + changeClass + '">' + sign + token.change + '%</div></div></div>';
             });
-
             section.innerHTML = html;
         }
 
-        // Simulate live price ticking
+        function toggleAgent(card) {
+            card.classList.toggle('expanded');
+        }
+
         setInterval(() => {
             if (walletData) {
                 walletData.totalValue += (Math.random() - 0.5) * 50;
-                document.getElementById('totalValue').textContent = 
-                    '$' + walletData.totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('totalValue').textContent = '$' + walletData.totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
         }, 3000);
     </script>
