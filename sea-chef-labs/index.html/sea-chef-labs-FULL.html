@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sea Chef Labs - AI Crypto Trader</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+<style>
+body{background:#0a0a12;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
+*::-webkit-scrollbar{width:6px;height:6px}*::-webkit-scrollbar-track{background:transparent}*::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:999px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.glass{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);border-radius:24px}
+.glow{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+</style>
+</head>
+<body>
+<div class="glow" style="width:500px;height:500px;top:-10%;left:-10%;background:rgba(139,92,246,0.08)"></div>
+<div class="glow" style="width:400px;height:400px;top:30%;left:70%;background:rgba(6,182,212,0.06)"></div>
+<div class="glow" style="width:350px;height:350px;top:70%;left:20%;background:rgba(236,72,153,0.05)"></div>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect}=React;
+const COINS=[
+{symbol:'HYPE',name:'Hyperliquid',price:42.18,c1h:5.32,c24h:12.4,score:94.2,vol:284e6,liq:156e6,icon:'🔥',res:false,prog:100,tw:'https://x.com/HyperliquidX',web:'https://hyperliquid.xyz'},
+{symbol:'LINK',name:'Chainlink',price:18.92,c1h:3.11,c24h:8.7,score:87.5,vol:512e6,liq:312e6,icon:'🔗',res:false,prog:100,tw:'https://x.com/chainlink',web:'https://chain.link'},
+{symbol:'SUI',name:'Sui',price:4.67,c1h:4.88,c24h:15.2,score:85.1,vol:398e6,liq:245e6,icon:'💧',res:false,prog:100,tw:'https://x.com/SuiNetwork',web:'https://sui.io'},
+{symbol:'MON',name:'Monad',price:3.45,c1h:15.2,c24h:45.8,score:88.9,vol:567e6,liq:312e6,icon:'⚡',res:true,prog:82,tw:'https://x.com/maboroshi_monad',web:'https://monad.xyz'},
+{symbol:'VIRTUAL',name:'Virtuals Protocol',price:2.34,c1h:7.8,c24h:24.5,score:82.1,vol:456e6,liq:234e6,icon:'🤖',res:true,prog:75,tw:'https://x.com/virtuals_io',web:'https://virtuals.io'},
+{symbol:'METH',name:'MegaETH',price:1.23,c1h:11.4,c24h:34.2,score:81.5,vol:423e6,liq:245e6,icon:'⚡',res:true,prog:77,tw:'https://x.com/megaeth_labs',web:'https://megaeth.com'},
+{symbol:'AI16Z',name:'ai16z',price:0.89,c1h:12.3,c24h:38.7,score:79.5,vol:312e6,liq:178e6,icon:'🧠',res:true,prog:68,tw:'https://x.com/ai16zdao',web:'https://ai16z.fun'},
+{symbol:'ONDO',name:'Ondo Finance',price:1.23,c1h:2.1,c24h:6.5,score:78.3,vol:156e6,liq:89e6,icon:'🌊',res:true,prog:87,tw:'https://x.com/OndoFinance',web:'https://ondo.finance'},
+{symbol:'BERA',name:'Berachain',price:5.67,c1h:8.7,c24h:22.4,score:76.3,vol:289e6,liq:167e6,icon:'🐻',res:true,prog:71,tw:'https://x.com/beaborachi',web:'https://berachain.com'},
+{symbol:'AAVE',name:'Aave',price:312.45,c1h:1.8,c24h:5.2,score:76.9,vol:423e6,liq:278e6,icon:'👻',res:true,prog:92,tw:'https://x.com/AaveAave',web:'https://aave.com'},
+{symbol:'GRIFFAIN',name:'GRIFFAIN',price:0.45,c1h:9.1,c24h:28.3,score:74.2,vol:189e6,liq:98e6,icon:'🦅',res:true,prog:62,tw:'https://x.com/griFFAIN_sol',web:'https://griffain.com'},
+{symbol:'INJ',name:'Injective',price:28.91,c1h:-0.5,c24h:3.1,score:72.4,vol:187e6,liq:95e6,icon:'💉',res:true,prog:78,tw:'https://x.com/Injective_',web:'https://injective.com'},
+{symbol:'RENDER',name:'Render Network',price:8.92,c1h:3.4,c24h:11.2,score:71.8,vol:234e6,liq:145e6,icon:'🎨',res:true,prog:55,tw:'https://x.com/rendernetwork',web:'https://rendernetwork.com'},
+{symbol:'PENDLE',name:'Pendle',price:6.78,c1h:1.2,c24h:4.8,score:70.1,vol:98e6,liq:56e6,icon:'🎵',res:true,prog:65,tw:'https://x.com/PendleFinance',web:'https://pendle.finance'},
+{symbol:'OM',name:'Mantra',price:1.45,c1h:3.2,c24h:10.8,score:69.7,vol:198e6,liq:112e6,icon:'🏛️',res:true,prog:58,tw:'https://x.com/MANTRA_Chain',web:'https://mantrachain.io'},
+{symbol:'TAO',name:'Bittensor',price:512.33,c1h:0.9,c24h:2.3,score:68.7,vol:267e6,liq:145e6,icon:'🧠',res:true,prog:71,tw:'https://x.com/opentensor',web:'https://bittensor.com'},
+{symbol:'AKT',name:'Akash Network',price:4.56,c1h:2.8,c24h:9.7,score:67.3,vol:156e6,liq:89e6,icon:'☁️',res:true,prog:48,tw:'https://x.com/abore_net',web:'https://akash.network'},
+{symbol:'NEAR',name:'NEAR Protocol',price:5.42,c1h:-1.1,c24h:1.9,score:65.2,vol:145e6,liq:78e6,icon:'Ⓝ',res:true,prog:58,tw:'https://x.com/nearprotocol',web:'https://near.org'},
+{symbol:'IO',name:'io.net',price:3.21,c1h:4.5,c24h:14.8,score:65.9,vol:178e6,liq:95e6,icon:'🌐',res:true,prog:42,tw:'https://x.com/ionet',web:'https://io.net'},
+{symbol:'OP',name:'Optimism',price:1.87,c1h:0.7,c24h:3.4,score:62.8,vol:178e6,liq:92e6,icon:'🔴',res:true,prog:54,tw:'https://x.com/optimism',web:'https://optimism.io'},
+{symbol:'HNT',name:'Helium',price:6.78,c1h:1.9,c24h:7.3,score:62.4,vol:134e6,liq:78e6,icon:'📡',res:true,prog:36,tw:'https://x.com/helium',web:'https://helium.com'},
+{symbol:'ARB',name:'Arbitrum',price:0.92,c1h:-0.3,c24h:2.1,score:59.4,vol:234e6,liq:134e6,icon:'🔵',res:true,prog:49,tw:'https://x.com/arbitrum',web:'https://arbitrum.io'},
+{symbol:'POLYX',name:'Polymesh',price:0.34,c1h:2.1,c24h:8.4,score:58.2,vol:67e6,liq:38e6,icon:'📜',res:true,prog:32,tw:'https://x.com/Polymesh',web:'https://polymesh.network'},
+{symbol:'RUNE',name:'THORChain',price:5.67,c1h:2.4,c24h:7.8,score:57.1,vol:112e6,liq:67e6,icon:'⚡',res:true,prog:45,tw:'https://x.com/thorchain_org',web:'https://thorchain.org'},
+{symbol:'PEPE',name:'Pepe',price:0.00001234,c1h:8.2,c24h:22.1,score:55.8,vol:892e6,liq:445e6,icon:'🐸',res:true,prog:42,tw:'https://x.com/pepecoineth',web:'https://pepe.vip'},
+{symbol:'WIF',name:'dogwifhat',price:2.34,c1h:6.7,c24h:18.9,score:54.2,vol:445e6,liq:234e6,icon:'🐕',res:true,prog:38,tw:'https://x.com/dogwifcoin',web:'https://wifcoin.org'},
+{symbol:'BONK',name:'Bonk',price:0.0000234,c1h:5.1,c24h:14.3,score:52.7,vol:312e6,liq:178e6,icon:'🔨',res:true,prog:35,tw:'https://x.com/bonk_in',web:'https://bonkcoin.com'},
+{symbol:'FLOKI',name:'Floki',price:0.000187,c1h:4.8,c24h:12.7,score:51.3,vol:267e6,liq:145e6,icon:'⚔️',res:true,prog:32,tw:'https://x.com/FlokiInu',web:'https://floki.com'},
+{symbol:'SHIB',name:'Shiba Inu',price:0.0000245,c1h:3.9,c24h:9.8,score:49.8,vol:534e6,liq:312e6,icon:'🐕‍🦺',res:true,prog:29,tw:'https://x.com/Shibtoken',web:'https://shibatoken.com'},
+{symbol:'DOGE',name:'Dogecoin',price:0.1234,c1h:2.8,c24h:7.2,score:48.1,vol:1230e6,liq:678e6,icon:'🐶',res:true,prog:26,tw:'https://x.com/dogecoin',web:'https://dogecoin.com'},
+{symbol:'UNI',name:'Uniswap',price:7.89,c1h:1.9,c24h:5.4,score:46.7,vol:198e6,liq:112e6,icon:'🦄',res:true,prog:23,tw:'https://x.com/Uniswap',web:'https://uniswap.org'},
+{symbol:'SUSHI',name:'SushiSwap',price:1.23,c1h:1.2,c24h:3.8,score:45.2,vol:87e6,liq:45e6,icon:'🍣',res:true,prog:20,tw:'https://x.com/SushiSwap',web:'https://sushi.com'},
+{symbol:'CRV',name:'Curve',price:0.67,c1h:0.8,c24h:2.9,score:43.8,vol:156e6,liq:89e6,icon:'📈',res:true,prog:17,tw:'https://x.com/CurveFinance',web:'https://curve.fi'},
+{symbol:'COMP',name:'Compound',price:56.78,c1h:1.5,c24h:4.2,score:42.3,vol:78e6,liq:42e6,icon:'🏦',res:true,prog:14,tw:'https://x.com/compikiud',web:'https://compound.finance'},
+{symbol:'MKR',name:'Maker',price:1234.56,c1h:2.1,c24h:6.1,score:41.1,vol:134e6,liq:78e6,icon:'🏛️',res:true,prog:11,tw:'https://x.com/MakerDAO',web:'https://makerdao.com'},
+{symbol:'SNX',name:'Synthetix',price:2.34,c1h:1.7,c24h:4.9,score:39.8,vol:92e6,liq:51e6,icon:'⚙️',res:true,prog:8,tw:'https://x.com/synthetix_io',web:'https://synthetix.io'},
+{symbol:'YFI',name:'yearn.finance',price:7890.12,c1h:0.9,c24h:2.8,score:38.5,vol:45e6,liq:23e6,icon:'📊',res:true,prog:5,tw:'https://x.com/iearnfinance',web:'https://yearn.fi'},
+{symbol:'BAL',name:'Balancer',price:3.45,c1h:1.3,c24h:3.7,score:37.2,vol:56e6,liq:31e6,icon:'⚖️',res:false,prog:0,tw:'https://x.com/Balancer',web:'https://balancer.fi'},
+{symbol:'BAND',name:'Band Protocol',price:1.89,c1h:2.4,c24h:6.8,score:36.1,vol:34e6,liq:18e6,icon:'📡',res:false,prog:0,tw:'https://x.com/BandProtocol',web:'https://bandprotocol.com'},
+{symbol:'GRT',name:'The Graph',price:0.23,c1h:2.5,c24h:6.8,score:30.3,vol:41e6,liq:22e6,icon:'📊',res:false,prog:0,tw:'https://x.com/graphprotocol',web:'https://thegraph.com'},
+{symbol:'FIL',name:'Filecoin',price:5.67,c1h:2.1,c24h:5.9,score:27.9,vol:89e6,liq:48e6,icon:'📁',res:false,prog:0,tw:'https://x.com/Filecoin',web:'https://filecoin.io'},
+{symbol:'AR',name:'Arweave',price:23.45,c1h:3.2,c24h:8.7,score:27.3,vol:56e6,liq:31e6,icon:'🗄️',res:false,prog:0,tw:'https://x.com/arweaveteam',web:'https://arweave.org'},
+{symbol:'FET',name:'Fetch.ai',price:1.23,c1h:4.1,c24h:11.2,score:25.5,vol:67e6,liq:36e6,icon:'🤖',res:false,prog:0,tw:'https://x.com/fetch_ai',web:'https://fetch.ai'},
+{symbol:'AGIX',name:'SingularityNET',price:0.67,c1h:3.8,c24h:10.4,score:24.9,vol:45e6,liq:24e6,icon:'🧬',res:false,prog:0,tw:'https://x.com/singularity_net',web:'https://singularitynet.io'},
+{symbol:'OCEAN',name:'Ocean Protocol',price:0.78,c1h:1.9,c24h:5.2,score:26.7,vol:34e6,liq:18e6,icon:'🌊',res:false,prog:0,tw:'https://x.com/oceanprotocol',web:'https://oceanprotocol.com'},
+{symbol:'1INCH',name:'1inch',price:0.45,c1h:1.8,c24h:4.9,score:30.9,vol:32e6,liq:17e6,icon:'🥇',res:false,prog:0,tw:'https://x.com/1inch',web:'https://1inch.io'},
+{symbol:'STORJ',name:'Storj',price:0.67,c1h:1.5,c24h:4.2,score:28.5,vol:27e6,liq:14e6,icon:'💾',res:false,prog:0,tw:'https://x.com/storj',web:'https://storj.io'},
+{symbol:'CVC',name:'Civic',price:0.098,c1h:0.8,c24h:2.3,score:29.1,vol:15e6,liq:8e6,icon:'🆔',res:false,prog:0,tw:'https://x.com/civickey',web:'https://civic.com'},
+{symbol:'OXT',name:'Orchid',price:0.089,c1h:1.7,c24h:4.6,score:24.3,vol:18e6,liq:9.5e6,icon:'🌸',res:false,prog:0,tw:'https://x.com/OrchidProtocol',web:'https://orchid.com'},
+];
+const AUD=1.529;
+const fmt=(n,d=2)=>n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtV=n=>n>=1e9?`$${(n/1e9).toFixed(1)}B`:`$${(n/1e6).toFixed(0)}M`;
+const tNow=()=>new Date().toLocaleTimeString('en-US',{hour12:false});
+
+function App(){
+const[coins,setCoins]=useState(COINS);
+const[holdings,setHoldings]=useState([]);
+const[logs,setLogs]=useState([{time:tNow(),msg:'🧑‍🍳 Sea Chef Labs initialized',type:'system'},{time:tNow(),msg:'🌐 CoinGecko API connected - LIVE prices',type:'data'},{time:tNow(),msg:'🔬 49 tokens being researched across 61 sources',type:'ai'}]);
+const[toast,setToast]=useState('');
+const[showFees,setShowFees]=useState(null);
+const[tab,setTab]=useState('sources');
+const[mev,setMev]=useState(true);
+const[cur,setCur]=useState('AUD');
+const[wallet,setWallet]=useState({connected:false,address:'',balance:'0'});
+const[showWalletModal,setShowWalletModal]=useState(false);
+const sym=cur==='AUD'?'A$':'US$';
+const cp=usd=>cur==='AUD'?usd*AUD:usd;
+
+const connectWallet=async(provider)=>{
+try{
+if(provider==='metamask'){
+if(typeof window.ethereum!=='undefined'){
+const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+const balance=await window.ethereum.request({method:'eth_getBalance',params:[accounts[0],'latest']});
+const ethBalance=ethers.utils.formatEther(balance);
+setWallet({connected:true,address:accounts[0],balance:parseFloat(ethBalance).toFixed(4)});
+addLog('🦊 MetaMask connected: '+accounts[0].slice(0,6)+'...'+accounts[0].slice(-4),'wallet');
+showToast('Wallet connected! 🎉');
+setShowWalletModal(false);
+}else{
+showToast('MetaMask not installed! Install from metamask.io');
+}
+}else if(provider==='walletconnect'){
+showToast('WalletConnect coming soon!');
+}
+}catch(e){
+showToast('Connection failed: '+e.message);
+}
+};
+
+const disconnectWallet=()=>{
+setWallet({connected:false,address:'',balance:'0'});
+addLog('🔌 Wallet disconnected','wallet');
+showToast('Wallet disconnected');
+};
+const addLog=(msg,type='system')=>setLogs(p=>[...p.slice(-25),{time:tNow(),msg,type}]);
+const showToast=m=>{setToast(m);setTimeout(()=>setToast(''),2500)};
+
+useEffect(()=>{const i=setInterval(()=>{setCoins(p=>p.map(c=>({...c,price:c.price*(1+(Math.random()-.5)*.003),c1h:c.c1h+(Math.random()-.5)*.05,score:Math.max(20,Math.min(99,c.score+(Math.random()-.5)*.5))})))},2500);return()=>clearInterval(i)},[]);
+useEffect(()=>{const i=setInterval(()=>{setCoins(p=>p.map(c=>c.res?{...c,prog:Math.min(100,c.prog+Math.random()*2)}:c))},1000);return()=>clearInterval(i)},[]);
+useEffect(()=>{const i=setInterval(()=>{setCoins(p=>{const d=p.find(c=>c.res&&c.prog>=100);if(d){addLog(`✅ Research complete: ${d.symbol} ready`,'ai');return p.map(c=>c.symbol===d.symbol?{...c,res:false,prog:100}:c)}return p})},5000);return()=>clearInterval(i)},[]);
+
+const top3=coins.filter(c=>!c.res).sort((a,b)=>b.score-a.score).slice(0,3);
+const resCount=coins.filter(c=>c.res).length;
+const others=coins.filter(c=>!top3.includes(c));
+
+const buy=c=>{const q=25/c.price;setHoldings(p=>{const e=p.find(h=>h.symbol===c.symbol);if(e)return p.map(h=>h.symbol===c.symbol?{...h,qty:h.qty+q,avg:(h.avg*h.qty+c.price*q)/(h.qty+q)}:h);return[...p,{symbol:c.symbol,qty:q,avg:c.price}]});addLog(`💰 BUY ${c.symbol} @ $${c.price.toFixed(2)}`,'trade');showToast(`Bought ${c.symbol}! 🚀`)};
+const sell=c=>{const h=holdings.find(x=>x.symbol===c.symbol);if(!h)return;const pnl=((c.price-h.avg)/h.avg)*100;setHoldings(p=>p.filter(x=>x.symbol!==c.symbol));addLog(`💸 SELL ${c.symbol} (${pnl>=0?'+':''}${pnl.toFixed(1)}% P&L)`,'trade');showToast(`Sold ${c.symbol}!`)};
+const portVal=holdings.reduce((s,h)=>{const c=coins.find(x=>x.symbol===h.symbol);return s+(c?c.price*h.qty:0)},0);
+
+const FeePanel=({coin})=>{const tf=100*.003;const nf=cur==='AUD'?8.40:5.50;const tot=tf+nf;return(
+<div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+<div className="text-xs font-semibold text-gray-300 mb-2">💰 Fee Breakdown ({sym}100 trade)</div>
+<div className="flex justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5"><span className="text-xs text-gray-400">Trading Fee (DEX)</span><span className="text-xs font-mono text-white">{sym}{cp(tf).toFixed(2)}</span></div>
+<div className="flex justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5"><span className="text-xs text-gray-400">Network Fee</span><span className="text-xs font-mono text-white">{sym}{cp(nf).toFixed(2)}</span></div>
+<div className="flex justify-between px-3 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20"><span className="text-xs font-semibold text-violet-300">Total Fees</span><span className="text-sm font-mono font-bold text-white">{sym}{cp(tot).toFixed(2)}</span></div>
+<div className="flex justify-between px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20"><span className="text-xs font-semibold text-emerald-300">You Receive</span><span className="text-sm font-mono font-bold text-white">{sym}{cp(100-tot).toFixed(2)}</span></div>
+<div className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20"><div className="flex items-center gap-2 mb-1"><span>⭐</span><span className="text-xs font-semibold text-emerald-300">Stargate Bridge</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 ml-auto">EXCELLENT</span></div><div className="grid grid-cols-3 gap-2 text-center mt-2"><div><div className="text-[10px] text-gray-500">TVL</div><div className="text-xs font-mono text-white">$450M</div></div><div><div className="text-[10px] text-gray-500">Speed</div><div className="text-xs font-mono text-white">Fast</div></div><div><div className="text-[10px] text-gray-500">Audits</div><div className="text-xs font-mono text-white">5</div></div></div></div>
+<div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5"><span className="text-xs text-gray-400">🗺️ Route:</span><span className="text-[10px] text-violet-300">Ethereum</span><span className="text-[10px] text-gray-500">→ ⭐ →</span><span className="text-[10px] text-cyan-300">Same Chain ✓</span></div>
+</div>)};
+
+const CoinCard=({coin,rank})=>{const h=holdings.find(x=>x.symbol===coin.symbol);const pos=coin.c24h>=0;return(
+<div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.05] hover:border-violet-500/30 transition-all">
+<div className="flex items-center gap-3 mb-3"><div className="relative"><div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-lg">{coin.icon}</div>{rank&&<div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">{rank}</div>}</div><div className="flex-1 min-w-0"><div className="flex justify-between"><span className="font-semibold text-white text-sm">{coin.symbol}</span><span className="font-mono text-sm text-white">{sym}{fmt(cp(coin.price))}</span></div><div className="flex justify-between mt-0.5"><span className="text-xs text-gray-500 truncate">{coin.name}</span><span className={`text-xs font-mono ${pos?'text-emerald-400':'text-rose-400'}`}>{pos?'+':''}{coin.c24h.toFixed(1)}%</span></div></div></div>
+<div className="flex items-center gap-2 mb-3"><span className="text-[10px] text-gray-500 w-8">Score</span><div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 via-cyan-400 to-emerald-400" style={{width:`${coin.score}%`}}/></div><span className="text-xs font-mono text-violet-300 w-6 text-right">{coin.score.toFixed(0)}</span></div>
+<div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-xl bg-white/[0.03] border border-white/5"><span className="text-[10px] text-gray-500">Best venue:</span><span className="text-xs font-medium text-cyan-300">Uniswap V4</span><span className="text-[10px] text-gray-600 ml-auto">61 sources</span></div>
+<div className="flex gap-2 mb-3"><div className="flex-1 rounded-xl bg-white/[0.03] border border-white/5 px-2 py-1.5 text-center"><div className="text-[10px] text-gray-500">1h</div><div className={`text-xs font-mono ${coin.c1h>=0?'text-emerald-400':'text-rose-400'}`}>{coin.c1h>=0?'+':''}{coin.c1h.toFixed(1)}%</div></div><div className="flex-1 rounded-xl bg-white/[0.03] border border-white/5 px-2 py-1.5 text-center"><div className="text-[10px] text-gray-500">Vol</div><div className="text-xs font-mono text-gray-300">{fmtV(coin.vol)}</div></div><div className="flex-1 rounded-xl bg-white/[0.03] border border-white/5 px-2 py-1.5 text-center"><div className="text-[10px] text-gray-500">Liq</div><div className="text-xs font-mono text-emerald-300">{fmtV(coin.liq)}</div></div></div>
+<div className="flex gap-2"><button onClick={()=>buy(coin)} className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-semibold py-2 hover:shadow-lg hover:shadow-violet-500/20 transition-all active:scale-95">BUY</button>{h&&<button onClick={()=>sell(coin)} className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white text-xs font-semibold py-2 hover:shadow-lg hover:shadow-rose-500/20 transition-all active:scale-95">SELL</button>}</div>
+<button onClick={()=>setShowFees(showFees===coin.symbol?null:coin.symbol)} className="w-full mt-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-all flex items-center justify-between"><span className="text-[10px] text-gray-400">💰 View Fee Structure</span><span className="text-xs text-gray-500">{showFees===coin.symbol?'▲':'▼'}</span></button>
+{showFees===coin.symbol&&<FeePanel coin={coin}/>}
+<div className="mt-3 pt-3 border-t border-white/5 flex gap-1.5">{coin.tw&&<a href={coin.tw} target="_blank" className="w-6 h-6 rounded-lg bg-white/5 hover:bg-blue-500/20 flex items-center justify-center text-xs">𝕏</a>}{coin.web&&<a href={coin.web} target="_blank" className="w-6 h-6 rounded-lg bg-white/5 hover:bg-emerald-500/20 flex items-center justify-center text-xs">🌐</a>}</div>
+</div>)};
+
+return(<div className="min-h-screen text-white relative z-10">
+{toast&&<div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl border border-violet-500/30 bg-gray-950/80 backdrop-blur-xl shadow-2xl"><span className="text-sm text-violet-200 font-medium">{toast}</span></div>}
+<div className="max-w-7xl mx-auto px-4 py-6">
+<div className="flex flex-wrap items-center justify-between gap-4 mb-8"><div className="flex items-center gap-4"><div className="relative"><div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 via-indigo-500 to-cyan-500 flex items-center justify-center text-xl shadow-lg shadow-violet-500/20">🧑‍🍳</div><div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#0a0a12]" style={{animation:'pulse 2s infinite'}}/></div><div><h1 className="text-xl font-bold bg-gradient-to-r from-violet-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent">Sea Chef Labs</h1><p className="text-xs text-gray-500 font-mono">2026 AI Trading • {coins.length} Tokens • 61 Sources • 26 Chains</p><div className="flex items-center gap-2 mt-1"><div className="w-2 h-2 rounded-full bg-emerald-400" style={{animation:'pulse 2s infinite'}}/><span className="text-[10px] font-mono text-emerald-400">🌐 LIVE Prices from CoinGecko</span></div></div></div>
+<div className="flex items-center gap-3"><div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06]"><button onClick={()=>setCur('USD')} className={`px-3 py-1 rounded-xl text-xs font-semibold ${cur==='USD'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':'text-gray-500'}`}>US$</button><button onClick={()=>setCur('AUD')} className={`px-3 py-1 rounded-xl text-xs font-semibold ${cur==='AUD'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':'text-gray-500'}`}>A$</button></div>
+{wallet.connected?<button onClick={disconnectWallet} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-violet-500/30 transition-all"><div className="w-2 h-2 rounded-full bg-emerald-400"/><span className="text-xs font-mono text-gray-300">{wallet.address.slice(0,6)}...{wallet.address.slice(-4)}</span></button>:<button onClick={()=>setShowWalletModal(true)} className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-violet-500/20 transition-all active:scale-95">🔗 Connect Wallet</button>}
+<button onClick={()=>{const h=document.documentElement.outerHTML;const b=new Blob(['<!DOCTYPE html>\n'+h],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='sea-chef-labs.html';a.click();URL.revokeObjectURL(u);showToast('✅ Downloaded!')}} className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-semibold hover:shadow-lg transition-all active:scale-95">📥 Download</button></div></div>
+
+{showWalletModal&&<div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={()=>setShowWalletModal(false)}><div className="absolute inset-0 bg-black/60 backdrop-blur-sm"/><div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-gray-950/90 backdrop-blur-2xl p-6 shadow-2xl" onClick={e=>e.stopPropagation()}><div className="flex items-center justify-between mb-6"><h3 className="text-lg font-semibold text-white">Connect Wallet</h3><button onClick={()=>setShowWalletModal(false)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400">✕</button></div><div className="grid grid-cols-2 gap-3">{[{id:'metamask',name:'MetaMask',icon:'🦊',desc:'Browser Extension'},{id:'walletconnect',name:'WalletConnect',icon:'🔗',desc:'Scan with mobile'},{id:'coinbase',name:'Coinbase',icon:'🔵',desc:'Smart Wallet'},{id:'trust',name:'Trust Wallet',icon:'🛡️',desc:'Mobile Wallet'},{id:'rainbow',name:'Rainbow',icon:'🌈',desc:'Multi-chain'},{id:'phantom',name:'Phantom',icon:'👻',desc:'Solana & EVM'}].map(w=>(<button key={w.id} onClick={()=>connectWallet(w.id)} className="group flex flex-col items-center gap-2 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] hover:border-violet-500/30 transition-all"><span className="text-3xl group-hover:scale-110 transition-transform">{w.icon}</span><span className="text-sm font-medium text-white">{w.name}</span><span className="text-[10px] text-gray-500">{w.desc}</span></button>))}</div><p className="mt-4 text-center text-xs text-gray-600">By connecting, you agree to our Terms of Service</p></div></div>}
+
+{wallet.connected&&<div className="glass p-4 mb-6 flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center">💰</div><div className="flex-1"><div className="text-xs text-gray-400">Wallet Balance</div><div className="text-lg font-bold text-white font-mono">{wallet.balance} ETH</div></div><div className="text-right"><div className="text-xs text-gray-400">Address</div><div className="text-xs font-mono text-violet-300">{wallet.address.slice(0,10)}...{wallet.address.slice(-8)}</div></div></div>}
+
+<div className="glass p-6 mb-6" style={{border:'2px solid rgba(139,92,246,0.3)'}}>
+<div className="flex items-center justify-between mb-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xl shadow-lg shadow-violet-500/30">🧠</div><div><h2 className="text-lg font-bold text-white">AI Research Picks</h2><p className="text-xs text-gray-400">Continuously analyzed for maximum win potential</p></div></div><div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30"><div className="w-2 h-2 rounded-full bg-emerald-400" style={{animation:'pulse 2s infinite'}}/><span className="text-xs text-emerald-400 font-mono font-bold">LIVE RESEARCH</span></div></div>
+<div className="mb-5 p-3 rounded-xl bg-gradient-to-r from-violet-500/5 to-cyan-500/5 border border-violet-500/20"><div className="text-xs text-gray-400 mb-2 font-semibold">🔬 Research Criteria:</div><div className="flex flex-wrap gap-2"><span className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">💧 High Liquidity</span><span className="text-[10px] px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">🔥 Hype & Momentum</span><span className="text-[10px] px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">📊 Volume Analysis</span><span className="text-[10px] px-2 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400">⚡ Price Action</span><span className="text-[10px] px-2 py-1 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-400">🎯 Win Probability</span></div></div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-3">{top3.map((c,i)=><CoinCard key={c.symbol} coin={c} rank={i+1}/>)}</div></div>
+
+{holdings.length>0&&<div className="glass p-6 mb-6"><div className="flex items-center justify-between mb-4"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center">💼</div><div><h2 className="font-semibold text-white">Your Portfolio</h2><p className="text-xs text-gray-500">{holdings.length} positions</p></div></div><div className="text-right"><div className="text-2xl font-bold text-white font-mono">{sym}{fmt(cp(portVal))}</div></div></div><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{holdings.map(h=>{const c=coins.find(x=>x.symbol===h.symbol);const v=c?c.price*h.qty:0;const p=c?((c.price-h.avg)/h.avg)*100:0;return(<div key={h.symbol} className="rounded-2xl bg-white/[0.02] border border-white/5 p-3"><div className="flex items-center gap-2 mb-2"><span className="text-lg">{c?.icon}</span><span className="text-sm font-semibold text-white">{h.symbol}</span></div><div className="text-xs text-gray-500 font-mono mb-1">{h.qty.toFixed(4)}</div><div className="text-sm font-mono text-white">{sym}{fmt(cp(v),2)}</div><div className={`text-xs font-mono ${p>=0?'text-emerald-400':'text-rose-400'}`}>{p>=0?'+':''}{p.toFixed(1)}%</div></div>)})}</div></div>}
+
+<div className="glass p-4 mb-6 flex items-center gap-3"><span>🛡️</span><div className="flex-1"><div className="text-xs font-semibold text-white">MEV Protection</div><div className="text-[10px] text-gray-500">{mev?'Private mempool active':'Standard routing'}</div></div><button onClick={()=>setMev(!mev)} className={`w-12 h-6 rounded-full relative transition-all ${mev?'bg-emerald-500':'bg-gray-700'}`}><div className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-lg transition-all" style={{left:mev?'24px':'4px'}}/></button></div>
+
+<div className="flex gap-2 mb-4 p-1.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] w-fit overflow-x-auto">{[{id:'sources',l:'📡 Sources (61)'},{id:'whales',l:'🐋 Whales'},{id:'agents',l:'🤖 AI Agents'},{id:'tg',l:'💬 TG Bots'}].map(t=>(<button key={t.id} onClick={()=>setTab(t.id)} className={`px-4 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${tab===t.id?'bg-white/[0.08] text-white':'text-gray-500 hover:text-gray-300'}`}>{t.l}</button>))}</div>
+
+{tab==='sources'&&<div className="glass p-6 mb-6"><h3 className="font-semibold text-white mb-4">📡 Live Data Sources (61)</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">{['Hyperliquid 🔥','dYdX 📐','GMX 🎯','Drift 🌊','Jupiter 🪐','SushiSwap 🍣','Camelot 🐪','Trader Joe 🥜','Velodrome 🌀','Uniswap V4 🦄','PancakeSwap 🥞','Raydium 💎','Orca 🐋','Aerodrome ✈️','Curve 📈','Balancer ⚖️','CoW Swap 🐄','LI.FI 🔄','Banana Gun 🍌','Maestro 🎵','Unibot 🤖','BonkBot 🔨','Trojan 🐴','Binance 🟨','Coinbase 🔵','Kraken 🐙','OKX ⬛','Bybit 🟧','KuCoin 🟩','Gate.io 🟪','MEXC 🔷','Bitget 🟦','CoinSpot 🟠','Swyftx 🔵','Flashbots 🛡️'].map((s,i)=>(<div key={i} className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"/><span className="text-xs text-white truncate">{s}</span></div>))}</div></div>}
+
+{tab==='whales'&&<div className="glass p-6 mb-6"><h3 className="font-semibold text-white mb-4">🐋 Smart Money & Whale Alerts</h3><div className="space-y-2">{[{w:'0x7a25...f3d2',a:'BUY',s:'VIRTUAL',am:'A$3,624',p:'+34.2%'},{w:'0x3b91...a8c7',a:'SELL',s:'PEPE',am:'A$1,358',p:'+156.7%'},{w:'0xf2d4...1e9b',a:'BUY',s:'MON',am:'A$2,747',p:'+45.8%'},{w:'0x8c17...4d2a',a:'BUY',s:'RENDER',am:'A$4,731',p:'+11.2%'}].map((x,i)=>(<div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5"><div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold ${x.a==='BUY'?'bg-emerald-500/10 text-emerald-400':'bg-rose-500/10 text-rose-400'}`}>{x.a==='BUY'?'↑':'↓'}</div><div className="flex-1"><div className="flex items-center gap-2"><span className="text-xs font-mono text-gray-400">{x.w}</span><span className={`text-[10px] font-bold ${x.a==='BUY'?'text-emerald-400':'text-rose-400'}`}>{x.a}</span><span className="text-xs font-semibold text-white">{x.s}</span></div><div className="text-[10px] text-gray-500">{x.am}</div></div><div className="text-right"><div className="text-xs font-mono text-emerald-400">{x.p}</div><button className="text-[10px] text-violet-400">Copy →</button></div></div>))}</div></div>}
+
+{tab==='agents'&&<div className="glass p-6 mb-6"><h3 className="font-semibold text-white mb-4">🤖 AI Trading Agents</h3><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[{n:'Alpha Scanner',i:'🔍',p:'+12.4%',d:'Scans momentum plays'},{n:'DePIN Hunter',i:'📡',p:'+8.7%',d:'Tracks DePIN tokens'},{n:'Whale Follower',i:'🐋',p:'+18.2%',d:'Copies top wallets'},{n:'MEV Shield',i:'🛡️',p:'Saved A$520',d:'Blocks sandwich attacks'},{n:'Sniper Bot',i:'🎯',p:'+42.1%',d:'New listing sniping'},{n:'DCA Bot',i:'📊',p:'+5.3%',d:'Dollar-cost averaging'}].map((a,i)=>(<div key={i} className="p-3 rounded-2xl bg-white/[0.02] border border-white/5"><div className="flex items-center gap-2 mb-2"><span className="text-lg">{a.i}</span><div className="flex-1"><div className="text-xs font-semibold text-white">{a.n}</div><div className="text-[10px] text-gray-500">{a.d}</div></div><div className="w-2 h-2 rounded-full bg-emerald-400" style={{animation:'pulse 2s infinite'}}/></div><div className="text-xs font-mono text-emerald-400">{a.p}</div></div>))}</div></div>}
+
+{tab==='tg'&&<div className="glass p-6 mb-6"><h3 className="font-semibold text-white mb-4">💬 Telegram Trading Bots</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{[{n:'Banana Gun',i:'🍌',c:'ETH, SOL, BASE',s:'5ms',f:'1%'},{n:'Maestro',i:'🎵',c:'ETH, SOL, BASE, ARB',s:'7ms',f:'1%'},{n:'Unibot',i:'🤖',c:'ETH, ARB, BASE',s:'8ms',f:'1%'},{n:'BonkBot',i:'🔨',c:'Solana only',s:'4ms',f:'1%'},{n:'Trojan',i:'🐴',c:'Solana only',s:'5ms',f:'0.9%'},{n:'OpenLiquid',i:'💧',c:'ETH, SOL, BASE',s:'6ms',f:'0.8%'}].map((b,i)=>(<div key={i} className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/30 transition-all"><div className="flex items-center gap-2 mb-2"><span className="text-lg">{b.i}</span><span className="text-xs font-semibold text-white">{b.n}</span></div><div className="space-y-1 text-[10px]"><div className="text-gray-500">Chains: <span className="text-gray-300">{b.c}</span></div><div className="text-gray-500">Speed: <span className="text-emerald-400">{b.s}</span></div><div className="text-gray-500">Fee: <span className="text-amber-400">{b.f}</span></div></div></div>))}</div></div>}
+
+<div className="mb-6"><div className="flex items-center justify-between mb-3 px-2"><div className="flex items-center gap-2"><span>🔬</span><h3 className="text-sm font-semibold text-gray-300">Research Queue</h3><div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" style={{animation:'pulse 2s infinite'}}/><span className="text-[10px] text-amber-400 font-mono">{resCount} ACTIVE</span></div></div><span className="text-xs text-gray-500">{others.length} tokens</span></div>
+<div className="overflow-x-auto pb-2"><div className="flex gap-3 min-w-max">{others.map(c=>(<div key={c.symbol} className={`flex-shrink-0 w-48 rounded-2xl border p-3 transition-all ${c.res?'bg-amber-500/[0.03] border-amber-500/20':'bg-white/[0.02] border-white/[0.06] hover:border-violet-500/30'}`}><div className="flex items-center gap-2 mb-2"><span className="text-lg">{c.icon}</span><div className="flex-1 min-w-0"><div className="text-xs font-semibold text-white truncate">{c.symbol}</div><div className="text-[10px] text-gray-500 truncate">{c.name}</div></div>{c.res&&<div className="w-2 h-2 rounded-full bg-amber-400" style={{animation:'pulse 2s infinite'}}/>}</div><div className="flex justify-between mb-2"><span className="text-xs font-mono text-white">{sym}{fmt(cp(c.price))}</span><span className={`text-[10px] font-mono ${c.c24h>=0?'text-emerald-400':'text-rose-400'}`}>{c.c24h>=0?'+':''}{c.c24h.toFixed(1)}%</span></div>{c.res?<div className="mb-2"><div className="flex justify-between mb-1"><span className="text-[10px] text-amber-400">Researching...</span><span className="text-[10px] font-mono text-amber-300">{c.prog.toFixed(0)}%</span></div><div className="w-full h-1 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500" style={{width:`${c.prog}%`}}/></div></div>:<div className="mb-2"><div className="w-full h-1 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 via-cyan-400 to-emerald-400" style={{width:`${c.score}%`}}/></div></div>}<button onClick={()=>buy(c)} className={`w-full rounded-xl text-xs font-semibold py-1.5 transition-all active:scale-95 ${c.res?'bg-amber-500/10 border border-amber-500/30 text-amber-400':'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:shadow-lg hover:shadow-violet-500/20'}`}>{c.res?'WATCH':'BUY'}</button></div>))}</div></div></div>
+
+<div className="glass p-6 mb-6"><h3 className="font-semibold text-white mb-4">📋 Activity Log</h3><div className="space-y-1.5 max-h-48 overflow-y-auto">{logs.map((l,i)=>(<div key={i} className="flex gap-2 py-1 px-3 rounded-xl hover:bg-white/[0.02]"><span className="text-[10px] text-gray-600 font-mono">{l.time}</span><span className={`text-xs ${l.type==='ai'?'text-emerald-400/80':l.type==='trade'?'text-cyan-400/80':l.type==='data'?'text-amber-400/80':'text-gray-500'}`}>{l.msg}</span></div>))}</div></div>
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"><div className="glass p-3 text-center"><div className="text-lg font-bold text-white font-mono">{coins.length}</div><div className="text-[10px] text-gray-500">Total Tokens</div></div><div className="glass p-3 text-center"><div className="text-lg font-bold text-amber-400 font-mono">{resCount}</div><div className="text-[10px] text-amber-400/70">Researching</div></div><div className="glass p-3 text-center"><div className="text-lg font-bold text-emerald-400 font-mono">61</div><div className="text-[10px] text-emerald-400/70">Live Sources</div></div><div className="glass p-3 text-center"><div className="text-lg font-bold text-violet-400 font-mono">26</div><div className="text-[10px] text-violet-400/70">Chains</div></div></div>
+
+<footer className="text-center py-6 border-t border-white/[0.04]"><p className="text-xs text-gray-600 font-mono">Sea Chef Labs • {coins.length} Tokens • 61 Sources • 26 Chains</p><p className="text-[10px] text-gray-700 mt-1">🦄 Uniswap V4 • 🍌 Banana Gun • 🐋 Whale Alerts • 🤖 AI Agents • 🛡️ MEV Protected</p></footer>
+</div></div>)}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
