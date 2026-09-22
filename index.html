@@ -10,7 +10,7 @@ body{background:#0f172a;color:#fff;padding:20px}
 .container{max-width:1400px;margin:0 auto}
 header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 h1{color:#00ff88;font-size:1.8rem}
-.btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px}
+.btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px;text-decoration:none;display:inline-block}
 .btn-phantom{background:#ab9ff2}
 .btn-connected{background:#00ff88}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px}
@@ -48,20 +48,28 @@ h1{color:#00ff88;font-size:1.8rem}
 .agent-head{display:flex;justify-content:space-between;margin-bottom:10px}
 .agent-details{color:#cbd5e1;font-size:14px;line-height:1.6;display:none}
 .agent-card.open .agent-details{display:block}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
-.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:400px;text-align:center}
-.qr-code{background:#fff;padding:20px;border-radius:8px;margin:20px 0;display:inline-block}
+.mobile-wallet-box{background:#1e293b;padding:20px;border-radius:12px;border:1px solid #334155;margin-bottom:30px;text-align:center;display:none}
+.mobile-wallet-box h3{color:#00ff88;margin-bottom:15px}
+.mobile-btn{display:inline-block;padding:12px 24px;border-radius:8px;font-weight:bold;text-decoration:none;margin:5px;font-size:16px}
+.mobile-rabby{background:#00d9ff;color:#0f172a}
+.mobile-phantom{background:#ab9ff2;color:#fff}
 </style>
 </head>
 <body>
 <div class="container">
 <header>
 <h1>Sea Chef Labs</h1>
-<div>
-<button class="btn" id="rabbyBtn" onclick="connectWallet('rabby')">Connect Rabby</button>
-<button class="btn btn-phantom" id="phantomBtn" onclick="connectWallet('phantom')">Connect Phantom</button>
+<div id="desktopBtns">
+<button class="btn" id="rabbyBtn" onclick="connectRabbyDesktop()">Connect Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantomDesktop()">Connect Phantom</button>
 </div>
 </header>
+<div class="mobile-wallet-box" id="mobileBox">
+<h3>📱 Open in Wallet Browser to Connect</h3>
+<p style="color:#94a3b8;margin-bottom:15px">Tap a button below to open this dashboard inside your wallet app</p>
+<a id="rabbyDeepLink" href="#" class="mobile-btn mobile-rabby">Open in Rabby</a>
+<a id="phantomDeepLink" href="#" class="mobile-btn mobile-phantom">Open in Phantom</a>
+</div>
 <div class="stats-grid">
 <div class="card"><h3>Total Portfolio</h3><h2>$0.00</h2><div class="green" id="walletStatus">Connect wallet</div></div>
 <div class="card"><h3>24h P/L</h3><h2 class="green">$0.00</h2></div>
@@ -79,43 +87,23 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div></div>
 </div>
 </div>
-<div id="walletModal" class="modal">
-<div class="modal-content">
-<h2 id="modalTitle">Connect Wallet</h2>
-<div id="modalBody"></div>
-<button class="btn" onclick="closeModal()" style="margin-top:20px">Close</button>
-</div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/modal@2.6.2/dist/index.umd.min.js"></script>
 <script>
+const siteUrl=window.location.href;
 function isMobile(){return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)}
-function connectWallet(type){
-if(isMobile()){
-showMobileConnect(type);
-}else{
-if(type==='rabby'){connectRabbyDesktop()}else{connectPhantomDesktop()}
+function isWalletBrowser(){return typeof window.ethereum!=='undefined'||typeof window.solana!=='undefined'}
+if(isMobile()&&!isWalletBrowser()){
+document.getElementById('mobileBox').style.display='block';
+document.getElementById('desktopBtns').style.display='none';
+document.getElementById('phantomDeepLink').href='phantom://browse/'+encodeURIComponent(siteUrl);
+document.getElementById('rabbyDeepLink').href='rabby://dapp/'+encodeURIComponent(siteUrl);
 }
+if(isMobile()&&isWalletBrowser()){
+document.getElementById('desktopBtns').style.display='block';
+if(typeof window.ethereum!=='undefined'){connectRabbyDesktop()}
+if(typeof window.solana!=='undefined'){connectPhantomDesktop()}
 }
-function showMobileConnect(type){
-const modal=document.getElementById('walletModal');
-const body=document.getElementById('modalBody');
-document.getElementById('modalTitle').innerText='Connect '+type.charAt(0).toUpperCase()+type.slice(1);
-if(type==='rabby'){
-body.innerHTML='<p style="margin-bottom:15px">Scan QR code with Rabby app or tap to open:</p><div class="qr-code" id="rabbyQR">Loading...</div><br><a href="rabby://wc?uri='+encodeURIComponent('wc:example@1?bridge=https://bridge.walletconnect.org&key=example')+'" class="btn" style="display:inline-block;margin-top:10px">Open Rabby App</a>';
-generateQR('rabbyQR','wc:example@1?bridge=https://bridge.walletconnect.org&key=example');
-}else{
-body.innerHTML='<p style="margin-bottom:15px">Scan QR code with Phantom app or tap to open:</p><div class="qr-code" id="phantomQR">Loading...</div><br><a href="phantom://wc?uri='+encodeURIComponent('wc:example@1?bridge=https://bridge.walletconnect.org&key=example')+'" class="btn btn-phantom" style="display:inline-block;margin-top:10px">Open Phantom App</a>';
-generateQR('phantomQR','wc:example@1?bridge=https://bridge.walletconnect.org&key=example');
-}
-modal.style.display='flex';
-}
-function generateQR(elementId,data){
-document.getElementById(elementId).innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(data)+'" alt="QR Code" style="width:200px;height:200px">';
-}
-function closeModal(){document.getElementById('walletModal').style.display='none'}
 async function connectRabbyDesktop(){
-if(!window.ethereum){alert('Rabby not detected! Install Rabby extension.');return}
+if(!window.ethereum){alert('Rabby not detected!');return}
 try{
 const a=await window.ethereum.request({method:'eth_requestAccounts'});
 document.getElementById('rabbyBtn').innerText='Rabby ✓';
@@ -124,7 +112,7 @@ document.getElementById('walletStatus').innerText=a[0].substring(0,6)+'...'+a[0]
 }catch(e){alert('Failed: '+e.message)}
 }
 async function connectPhantomDesktop(){
-if(!window.solana){alert('Phantom not detected! Install Phantom extension.');return}
+if(!window.solana){alert('Phantom not detected!');return}
 try{
 const r=await window.solana.connect();
 const p=r.publicKey.toString();
