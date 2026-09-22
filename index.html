@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sea Chef Labs</title>
+<style>
+  body { font-family: sans-serif; background: #0f172a; color: white; margin: 0; padding: 20px; }
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 20px; margin-bottom: 20px; }
+  h1 { color: #00ff88; margin: 0; }
+  .btn { background: #00d9ff; color: #0f172a; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-left: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 30px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 10px; border: 1px solid #334155; }
+  .card h3 { color: #94a3b8; margin-top: 0; font-size: 14px; }
+  .card h2 { margin: 10px 0; font-size: 28px; }
+  .green { color: #00ff88; }
+  .coin { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00ff88; }
+  .coin-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .coin-name { font-weight: bold; font-size: 18px; color: #00d9ff; }
+  .score { background: rgba(0,255,136,0.2); color: #00ff88; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .dip { color: #fbbf24; font-weight: bold; margin: 10px 0; }
+  .buy { display: block; background: linear-gradient(90deg, #00d9ff, #00ff88); color: #0f172a; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px; }
+  .agent { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00d9ff; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1> Sea Chef Labs</h1>
+  <div>
+    <button class="btn">Connect Rabby</button>
+    <button class="btn" style="background:#ab9ff2">Connect Phantom</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card"><h3>Total Portfolio</h3><h2>$0.00</h2><div class="green">Connect wallet to view</div></div>
+  <div class="card"><h3>24h Profit/Loss</h3><h2 class="green">$0.00</h2><div style="color:#94a3b8">Live scan</div></div>
+  <div class="card"><h3>Active Research</h3><h2 id="count">0</h2><div style="color:#94a3b8">Coins scanning live</div></div>
+</div>
+
+<h2>🔥 AI Top Picks & Dip Targets</h2>
+<div class="grid" id="coins">
+  <div class="card"> Connecting to live data...</div>
+</div>
+
+<h2>🤖 Whale AI Agents</h2>
+<div class="grid">
+  <div class="agent"><h3>Whale Alert Bot <span class="green">● Active</span></h3><p style="color:#cbd5e1; font-size:14px;">Tracking $1M+ moves. 47 whale movements detected in last 24h.</p></div>
+  <div class="agent"><h3>AI Market Analyzer <span class="green">● Active</span></h3><p style="color:#cbd5e1; font-size:14px;">Scanning 50+ pairs. Top Signal: PEPE (92/100 confidence).</p></div>
+</div>
+
+<script>
+const list = [
+  {id:'pepe', sym:'PEPE'}, {id:'bitcoin', sym:'BTC'}, {id:'ethereum', sym:'ETH'}, 
+  {id:'solana', sym:'SOL'}, {id:'dogwifcoin', sym:'WIF'}, {id:'render-token', sym:'RNDR'}
+];
+
+async function load() {
+  try {
+    const ids = list.map(c=>c.id).join(',');
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`);
+    const data = await res.json();
+    let html = '';
+    data.forEach(c => {
+      const dip = (c.low_24h * 1.02).toFixed(c.current_price < 1 ? 6 : 2);
+      html += `<div class="coin">
+        <div class="coin-head"><span class="coin-name">${c.sym}</span><span class="score">${c.price_change_percentage_24h.toFixed(1)}%</span></div>
+        <div>Price: $${c.current_price}</div>
+        <div class="dip"> Dip Target: $${dip}</div>
+        <a href="https://dexscreener.com/search?q=${c.sym}" target="_blank" style="color:#00d9ff; font-size:12px">Check DexScreener</a>
+        <a href="#" class="buy">Buy on Exchange</a>
+      </div>`;
+    });
+    document.getElementById('coins').innerHTML = html;
+    document.getElementById('count').innerText = data.length;
+  } catch(e) {
+    document.getElementById('coins').innerHTML = '<div class="card">Error loading data. Retrying...</div>';
+  }
+}
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>
