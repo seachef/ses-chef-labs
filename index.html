@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sea Chef Labs</title>
+<style>
+body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+h1 { color: #00ff88; }
+.card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 20px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.coin { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00ff88; }
+.btn { background: #00d9ff; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>🌊 Sea Chef Labs</h1>
+<div class="grid">
+  <div class="card"><h3>Portfolio</h3><h2>$0.00</h2><button class="btn">Connect Wallet</button></div>
+  <div class="card"><h3>24h P/L</h3><h2>$0.00</h2></div>
+</div>
+<h2>🔥 AI Top Picks</h2>
+<div class="grid" id="coins">
+  <div class="card">Loading live data...</div>
+</div>
+<script>
+const coins = [
+  {id:'pepe', sym:'PEPE'}, {id:'bitcoin', sym:'BTC'}, {id:'ethereum', sym:'ETH'}, 
+  {id:'solana', sym:'SOL'}, {id:'dogwifcoin', sym:'WIF'}, {id:'render-token', sym:'RNDR'}
+];
+async function load() {
+  try {
+    const ids = coins.map(c=>c.id).join(',');
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`);
+    const data = await res.json();
+    let html = '';
+    data.forEach(c => {
+      const dip = (c.low_24h * 1.02).toFixed(c.current_price < 1 ? 6 : 2);
+      html += `<div class="coin">
+        <h3>${c.sym} <span style="color:#00ff88">${c.price_change_percentage_24h.toFixed(1)}%</span></h3>
+        <p>Price: $${c.current_price}</p>
+        <p style="color:#fbbf24; font-weight:bold;">🎯 Dip Target: $${dip}</p>
+        <a href="https://dexscreener.com/search?q=${c.sym}" target="_blank" style="color:#00d9ff">Check DexScreener</a>
+      </div>`;
+    });
+    document.getElementById('coins').innerHTML = html;
+  } catch(e) {
+    document.getElementById('coins').innerHTML = '<div class="card">Error loading data.</div>';
+  }
+}
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
