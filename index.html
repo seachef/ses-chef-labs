@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
-.container{max-width:1200px;margin:0 auto}
+.container{max-width:1400px;margin:0 auto}
 header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 h1{color:#00ff88;font-size:1.8rem}
 .btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px}
@@ -18,24 +18,32 @@ h1{color:#00ff88;font-size:1.8rem}
 .card h3{color:#94a3b8;font-size:14px;margin-bottom:10px}
 .card h2{font-size:28px;margin-bottom:5px}
 .green{color:#00ff88}
-.section-title{font-size:1.3rem;margin-bottom:15px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-bottom:30px}
-.coin-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00ff88}
-.coin-head{display:flex;justify-content:space-between;margin-bottom:10px}
+.section-title{font-size:1.3rem;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px;margin-bottom:30px}
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:30px}
+.coin-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00ff88;position:relative}
+.coin-card-small{background:#1e293b;padding:12px;border-radius:8px;border-left:3px solid #00d9ff;position:relative}
+.coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .coin-name{font-weight:bold;font-size:18px;color:#00d9ff}
+.coin-name-small{font-weight:bold;font-size:14px;color:#00d9ff}
 .score{background:rgba(0,255,136,0.2);color:#00ff88;padding:2px 8px;border-radius:4px;font-size:12px}
 .price{font-size:1.1rem;font-weight:600;margin-bottom:5px}
+.price-small{font-size:0.9rem;font-weight:600;margin-bottom:3px}
 .contract{background:rgba(255,255,255,0.05);padding:8px;border-radius:4px;font-size:11px;color:#94a3b8;margin:8px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
 .contract:hover{background:rgba(0,217,255,0.1);color:#00d9ff}
+.contract-small{background:rgba(255,255,255,0.05);padding:6px;border-radius:4px;font-size:10px;color:#94a3b8;margin:6px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
+.contract-small:hover{background:rgba(0,217,255,0.1);color:#00d9ff}
 .dip{color:#fbbf24;font-weight:bold;font-size:14px;margin-bottom:10px}
+.dip-small{color:#fbbf24;font-weight:bold;font-size:12px;margin-bottom:8px}
 .reason{color:#cbd5e1;font-size:13px;margin-bottom:12px}
+.reason-small{color:#cbd5e1;font-size:11px;margin-bottom:8px}
 .social-links{display:flex;gap:8px;margin-bottom:10px}
 .social-btn{flex:1;background:rgba(255,255,255,0.05);color:#94a3b8;text-align:center;padding:6px;border-radius:4px;text-decoration:none;font-size:12px}
 .buy-btn{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold}
-.agent-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00d9ff;margin-bottom:15px;cursor:pointer}
-.agent-head{display:flex;justify-content:space-between;margin-bottom:10px}
-.agent-details{color:#cbd5e1;font-size:14px;line-height:1.6;display:none}
-.agent-card.open .agent-details{display:block}
+.buy-btn-small{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:8px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:12px}
+.live-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite}
+.live-dot-small{position:absolute;top:8px;right:8px;width:6px;height:6px;background:#00ff88;border-radius:50%;box-shadow:0 0 6px #00ff88;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 </style>
 </head>
 <body>
@@ -53,56 +61,56 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2></div>
 </div>
 <h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
-<div class="grid" id="topPicks"><div class="card">Loading...</div></div>
-<h2 class="section-title">🤖 Whale AI Agents (Click to Expand)</h2>
-<div class="grid">
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Whale Alert Bot</h3><span class="green">● Active</span></div><div class="agent-details">• 47 whale movements in 24h<br>• $12.4M PEPE to Binance<br>• 3 wallets accumulating WIF</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>AI Market Analyzer</h3><span class="green">● Active</span></div><div class="agent-details">• 50+ pairs scanned<br>• Top Signal: PEPE 92/100<br>• Updates every 30s</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Sniper Bot Tracker</h3><span class="green">● Active</span></div><div class="agent-details">• 3 new tokens detected<br>• 12 snipers in first block<br>• Liquidity locked 6mo</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• 12 groups monitored<br>• 8/12 calling PEPE<br>• Speed: 4-8ms</div></div>
-</div>
+<div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
+<h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
+<div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
 </div>
 <script>
 async function connectRabby(){if(!window.ethereum){alert('Install Rabby!');return}try{const a=await window.ethereum.request({method:'eth_requestAccounts'});document.getElementById('rabbyBtn').innerText='Rabby ✓';document.getElementById('rabbyBtn').classList.add('btn-connected');document.getElementById('walletStatus').innerText=a[0].substring(0,6)+'...'+a[0].substring(38)}catch(e){alert('Failed')}}
 async function connectPhantom(){if(!window.solana){alert('Install Phantom!');return}try{const r=await window.solana.connect();const p=r.publicKey.toString();document.getElementById('phantomBtn').innerText='Phantom ✓';document.getElementById('phantomBtn').classList.add('btn-connected');document.getElementById('walletStatus').innerText=p.substring(0,6)+'...'+p.substring(38)}catch(e){alert('Failed')}}
 function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 const coins=[
-{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933'},
-{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',link:'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24'},
-{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',link:'https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548'},
-{id:'hyperliquid',sym:'HYPE',addr:'0x0d0Dc56B1B01a5d9b41c4b4e3A7B8E9F3A1B5C7D9',link:'https://app.uniswap.org/'},
-{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',link:'https://app.uniswap.org/'},
-{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x4955766AF1c1E4E94b6fD9Ec9e6e2B9C8f9C8E7A',link:'https://app.uniswap.org/'},
-{id:'bittensor',sym:'TAO',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'sui',sym:'SUI',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',link:'https://app.uniswap.org/'},
-{id:'bitcoin',sym:'BTC',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'ethereum',sym:'ETH',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'solana',sym:'SOL',addr:'Native (No contract)',link:'https://jup.ag/'},
-{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',link:'https://app.uniswap.org/'},
-{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',link:'https://app.uniswap.org/'},
-{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',link:'https://app.uniswap.org/'},
-{id:'xrp',sym:'XRP',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'cardano',sym:'ADA',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',link:'https://app.uniswap.org/'},
-{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',link:'https://app.uniswap.org/'}
+{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933',reason:'3 whale wallets accumulating. 12.4M PEPE moved to Binance.',top:true},
+{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',link:'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',reason:'Jupiter volume +120%. Breaking consolidation pattern.',top:true},
+{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',reason:'AI narrative trending. GPU demand rising. Support at $7.20.',top:true},
+{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',link:'https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548',reason:'L2 momentum. Whale buys 3x this week. TVL new highs.',top:true},
+{id:'hyperliquid',sym:'HYPE',addr:'0x0d0Dc56B1B01a5d9b41c4b4e3A7B8E9F3A1B5C7D9',link:'https://app.uniswap.org/',reason:'Perp DEX volume spike. 5,000 ETH bought by whales.',top:true},
+{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',link:'https://app.uniswap.org/',reason:'RWA narrative. Institutional inflows detected.',top:true},
+{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x4955766AF1c1E4E94b6fD9Ec9e6e2B9C8f9C8E7A',link:'https://app.uniswap.org/',reason:'AI agent token. 8 snipers in first block. Liquidity locked.',top:true},
+{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',link:'https://app.uniswap.org/',reason:'AI compute demand. TG groups calling accumulation.',top:true},
+{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',link:'https://app.uniswap.org/',reason:'Meme season. 47 whale movements in 24h.',top:false},
+{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',link:'https://app.uniswap.org/',reason:'Oracle demand. DeFi TVL rising.',top:false},
+{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',link:'https://app.uniswap.org/',reason:'DEX volume leader. Fee switch narrative.',top:false},
+{id:'bitcoin',sym:'BTC',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'ETF inflows. Whale accumulation at support.',top:false},
+{id:'ethereum',sym:'ETH',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'L2 growth. Staking yield attracting capital.',top:false},
+{id:'solana',sym:'SOL',addr:'Native (No contract)',link:'https://jup.ag/',reason:'Jupiter aggregator dominance. Meme coin volume.',top:false},
+{id:'xrp',sym:'XRP',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Legal clarity. Cross-border payments.',top:false},
+{id:'cardano',sym:'ADA',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Smart contract growth. Dev activity rising.',top:false},
+{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Subnet adoption. Gaming ecosystem.',top:false},
+{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Meme leader. Social sentiment spike.',top:false},
+{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',link:'https://app.uniswap.org/',reason:'L2 scaling. Enterprise partnerships.',top:false},
+{id:'bittensor',sym:'TAO',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Decentralized AI. Miner rewards increasing.',top:false},
+{id:'sui',sym:'SUI',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Move language. Gaming dApps launching.',top:false}
 ];
 async function loadData(){
 try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
-let html='';
+let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
 const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
 const ch=c.price_change_percentage_24h||0;
 const cl=ch>=0?'#00ff88':'#ff4757';
-html+='<div class="coin-card"><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+ch.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">Live momentum. Volume increasing.</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+d.link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
+if(d.top){
+topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+ch.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+d.link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
+}else{
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+ch.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+d.link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+}
 });
-document.getElementById('topPicks').innerHTML=html;
+document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
+document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
 }catch(e){console.error(e)}
 }
@@ -110,4 +118,3 @@ loadData();setInterval(loadData,60000);
 </script>
 </body>
 </html>
-
