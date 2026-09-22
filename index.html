@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sea Chef Labs - Pro Dashboard</title>
+<title>Sea Chef Labs</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
 body { background: #0f172a; color: #fff; padding: 20px; min-height: 100vh; }
@@ -12,6 +12,7 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 h1 { color: #00ff88; font-size: 1.8rem; }
 .btn { background: #00d9ff; color: #0f172a; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 10px; }
 .btn-phantom { background: #ab9ff2; }
+.btn-connected { background: #00ff88; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
 .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
 .card h3 { color: #94a3b8; font-size: 14px; margin-bottom: 10px; }
@@ -28,11 +29,7 @@ h1 { color: #00ff88; font-size: 1.8rem; }
 .reason { color: #cbd5e1; font-size: 13px; margin-bottom: 15px; min-height: 40px; }
 .social-links { display: flex; gap: 8px; margin-bottom: 10px; }
 .social-btn { flex: 1; background: rgba(255,255,255,0.05); color: #94a3b8; text-align: center; padding: 6px; border-radius: 4px; text-decoration: none; font-size: 12px; }
-.social-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .buy-btn { display: block; background: linear-gradient(90deg, #00d9ff, #00ff88); color: #0f172a; text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; }
-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; margin-bottom: 30px; }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-th { color: #94a3b8; font-size: 14px; }
 .agent-card { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00d9ff; margin-bottom: 15px; cursor: pointer; }
 .agent-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
 .agent-details { color: #cbd5e1; font-size: 14px; line-height: 1.6; display: none; }
@@ -42,14 +39,14 @@ th { color: #94a3b8; font-size: 14px; }
 <body>
 <div class="container">
 <header>
-<h1>🌊 Sea Chef Labs</h1>
+<h1>Sea Chef Labs</h1>
 <div>
-<button class="btn" onclick="alert('Connect Rabby')">Connect Rabby</button>
-<button class="btn btn-phantom" onclick="alert('Connect Phantom')">Connect Phantom</button>
+<button class="btn" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
 </div>
 </header>
 <div class="stats-grid">
-<div class="card"><h3>Total Portfolio Value</h3><h2>$0.00</h2><div class="green">Connect wallet to view</div></div>
+<div class="card"><h3>Total Portfolio Value</h3><h2 id="totalValue">$0.00</h2><div class="green" id="walletStatus">Connect wallet to view</div></div>
 <div class="card"><h3>24h Profit/Loss</h3><h2 class="green">$0.00</h2><div style="color:#94a3b8">Across all chains</div></div>
 <div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2><div style="color:#94a3b8">Coins scanning live</div></div>
 </div>
@@ -57,11 +54,6 @@ th { color: #94a3b8; font-size: 14px; }
 <div class="grid" id="topPicks"><div class="card">Loading live data...</div></div>
 <h2 class="section-title">🔬 More Researched Coins (Queue)</h2>
 <div class="grid" id="queuePicks"><div class="card">Loading queue...</div></div>
-<h2 class="section-title">🪙 Your Wallet Holdings</h2>
-<table>
-<thead><tr><th>Token</th><th>Balance</th><th>Price</th><th>Value</th><th>P/L</th></tr></thead>
-<tbody><tr><td colspan="5" style="text-align:center; color:#94a3b8;">Connect wallet to see holdings</td></tr></tbody>
-</table>
 <h2 class="section-title">🤖 Whale AI Agents & TG Bots (Click to Expand)</h2>
 <div class="grid">
 <div class="agent-card" onclick="this.classList.toggle('open')">
@@ -83,6 +75,43 @@ th { color: #94a3b8; font-size: 14px; }
 </div>
 </div>
 <script>
+let rabbyAccount = null;
+let phantomAccount = null;
+
+async function connectRabby() {
+  if (typeof window.ethereum === 'undefined') {
+    alert('Rabby or MetaMask not detected! Please install a wallet extension.');
+    return;
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    rabbyAccount = accounts[0];
+    document.getElementById('rabbyBtn').innerText = 'Rabby Connected ✓';
+    document.getElementById('rabbyBtn').classList.add('btn-connected');
+    document.getElementById('walletStatus').innerText = 'Connected: ' + rabbyAccount.substring(0, 6) + '...' + rabbyAccount.substring(38);
+    alert('Rabby connected successfully! Address: ' + rabbyAccount);
+  } catch (error) {
+    alert('Failed to connect Rabby: ' + error.message);
+  }
+}
+
+async function connectPhantom() {
+  if (typeof window.solana === 'undefined') {
+    alert('Phantom not detected! Please install Phantom wallet extension.');
+    return;
+  }
+  try {
+    const resp = await window.solana.connect();
+    phantomAccount = resp.publicKey.toString();
+    document.getElementById('phantomBtn').innerText = 'Phantom Connected ✓';
+    document.getElementById('phantomBtn').classList.add('btn-connected');
+    document.getElementById('walletStatus').innerText = 'Connected: ' + phantomAccount.substring(0, 6) + '...' + phantomAccount.substring(38);
+    alert('Phantom connected successfully! Address: ' + phantomAccount);
+  } catch (error) {
+    alert('Failed to connect Phantom: ' + error.message);
+  }
+}
+
 const topCoins = [
 {id:'pepe', sym:'PEPE', link:'https://app.uniswap.org/'},
 {id:'dogwifcoin', sym:'WIF', link:'https://jup.ag/'},
