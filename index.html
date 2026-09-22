@@ -48,6 +48,9 @@ h1{color:#00ff88;font-size:1.8rem}
 .agent-head{display:flex;justify-content:space-between;margin-bottom:10px}
 .agent-details{color:#cbd5e1;font-size:14px;line-height:1.6;display:none}
 .agent-card.open .agent-details{display:block}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
+.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:400px;text-align:center}
+.qr-code{background:#fff;padding:20px;border-radius:8px;margin:20px 0;display:inline-block}
 </style>
 </head>
 <body>
@@ -55,8 +58,8 @@ h1{color:#00ff88;font-size:1.8rem}
 <header>
 <h1>Sea Chef Labs</h1>
 <div>
-<button class="btn" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
-<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<button class="btn" id="rabbyBtn" onclick="connectWallet('rabby')">Connect Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectWallet('phantom')">Connect Phantom</button>
 </div>
 </header>
 <div class="stats-grid">
@@ -76,9 +79,60 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div></div>
 </div>
 </div>
+<div id="walletModal" class="modal">
+<div class="modal-content">
+<h2 id="modalTitle">Connect Wallet</h2>
+<div id="modalBody"></div>
+<button class="btn" onclick="closeModal()" style="margin-top:20px">Close</button>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/modal@2.6.2/dist/index.umd.min.js"></script>
 <script>
-async function connectRabby(){if(!window.ethereum){alert('Install Rabby!');return}try{const a=await window.ethereum.request({method:'eth_requestAccounts'});document.getElementById('rabbyBtn').innerText='Rabby ✓';document.getElementById('rabbyBtn').classList.add('btn-connected');document.getElementById('walletStatus').innerText=a[0].substring(0,6)+'...'+a[0].substring(38)}catch(e){alert('Failed')}}
-async function connectPhantom(){if(!window.solana){alert('Install Phantom!');return}try{const r=await window.solana.connect();const p=r.publicKey.toString();document.getElementById('phantomBtn').innerText='Phantom ✓';document.getElementById('phantomBtn').classList.add('btn-connected');document.getElementById('walletStatus').innerText=p.substring(0,6)+'...'+p.substring(38)}catch(e){alert('Failed')}}
+function isMobile(){return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)}
+function connectWallet(type){
+if(isMobile()){
+showMobileConnect(type);
+}else{
+if(type==='rabby'){connectRabbyDesktop()}else{connectPhantomDesktop()}
+}
+}
+function showMobileConnect(type){
+const modal=document.getElementById('walletModal');
+const body=document.getElementById('modalBody');
+document.getElementById('modalTitle').innerText='Connect '+type.charAt(0).toUpperCase()+type.slice(1);
+if(type==='rabby'){
+body.innerHTML='<p style="margin-bottom:15px">Scan QR code with Rabby app or tap to open:</p><div class="qr-code" id="rabbyQR">Loading...</div><br><a href="rabby://wc?uri='+encodeURIComponent('wc:example@1?bridge=https://bridge.walletconnect.org&key=example')+'" class="btn" style="display:inline-block;margin-top:10px">Open Rabby App</a>';
+generateQR('rabbyQR','wc:example@1?bridge=https://bridge.walletconnect.org&key=example');
+}else{
+body.innerHTML='<p style="margin-bottom:15px">Scan QR code with Phantom app or tap to open:</p><div class="qr-code" id="phantomQR">Loading...</div><br><a href="phantom://wc?uri='+encodeURIComponent('wc:example@1?bridge=https://bridge.walletconnect.org&key=example')+'" class="btn btn-phantom" style="display:inline-block;margin-top:10px">Open Phantom App</a>';
+generateQR('phantomQR','wc:example@1?bridge=https://bridge.walletconnect.org&key=example');
+}
+modal.style.display='flex';
+}
+function generateQR(elementId,data){
+document.getElementById(elementId).innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(data)+'" alt="QR Code" style="width:200px;height:200px">';
+}
+function closeModal(){document.getElementById('walletModal').style.display='none'}
+async function connectRabbyDesktop(){
+if(!window.ethereum){alert('Rabby not detected! Install Rabby extension.');return}
+try{
+const a=await window.ethereum.request({method:'eth_requestAccounts'});
+document.getElementById('rabbyBtn').innerText='Rabby ✓';
+document.getElementById('rabbyBtn').classList.add('btn-connected');
+document.getElementById('walletStatus').innerText=a[0].substring(0,6)+'...'+a[0].substring(38);
+}catch(e){alert('Failed: '+e.message)}
+}
+async function connectPhantomDesktop(){
+if(!window.solana){alert('Phantom not detected! Install Phantom extension.');return}
+try{
+const r=await window.solana.connect();
+const p=r.publicKey.toString();
+document.getElementById('phantomBtn').innerText='Phantom ✓';
+document.getElementById('phantomBtn').classList.add('btn-connected');
+document.getElementById('walletStatus').innerText=p.substring(0,6)+'...'+p.substring(38);
+}catch(e){alert('Failed: '+e.message)}
+}
 function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 const coins=[
 {id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933',reason:'3 whale wallets accumulating. 12.4M PEPE moved to Binance.',top:true},
