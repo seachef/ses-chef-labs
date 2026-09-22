@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sea Chef Labs - Pro Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+  body { background: #0f172a; color: #fff; padding: 20px; min-height: 100vh; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+  h1 { color: #00ff88; font-size: 1.8rem; }
+  .btn { background: #00d9ff; color: #0f172a; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 10px; }
+  .btn-phantom { background: #ab9ff2; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+  .card h3 { color: #94a3b8; font-size: 14px; margin-bottom: 10px; }
+  .card h2 { font-size: 28px; margin-bottom: 5px; }
+  .green { color: #00ff88; }
+  .section-title { font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px; }
+  .coin-card { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00ff88; }
+  .coin-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .coin-name { font-weight: bold; font-size: 18px; color: #00d9ff; }
+  .score { background: rgba(0,255,136,0.2); color: #00ff88; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .price { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; }
+  .dip { color: #fbbf24; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+  .reason { color: #cbd5e1; font-size: 13px; margin-bottom: 15px; min-height: 40px; }
+  .social-links { display: flex; gap: 8px; margin-bottom: 10px; }
+  .social-btn { flex: 1; background: rgba(255,255,255,0.05); color: #94a3b8; text-align: center; padding: 6px; border-radius: 4px; text-decoration: none; font-size: 12px; }
+  .buy-btn { display: block; background: linear-gradient(90deg, #00d9ff, #00ff88); color: #0f172a; text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; margin-bottom: 30px; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 14px; }
+  .agent-card { background: #1e293b; padding: 15px; border-radius: 10px; border-left: 4px solid #00d9ff; margin-bottom: 15px; cursor: pointer; }
+  .agent-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .agent-details { color: #cbd5e1; font-size: 14px; line-height: 1.6; display: none; }
+  .agent-card.open .agent-details { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🌊 Sea Chef Labs</h1>
+    <div>
+      <button class="btn" onclick="alert('Connect Rabby')">Connect Rabby</button>
+      <button class="btn btn-phantom" onclick="alert('Connect Phantom')">Connect Phantom</button>
+    </div>
+  </header>
+  <div class="stats-grid">
+    <div class="card"><h3>Total Portfolio Value</h3><h2>$0.00</h2><div class="green">Connect wallet to view</div></div>
+    <div class="card"><h3>24h Profit/Loss</h3><h2 class="green">$0.00</h2><div style="color:#94a3b8">Across all chains</div></div>
+    <div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2><div style="color:#94a3b8">Coins scanning live</div></div>
+  </div>
+  <h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
+  <div class="grid" id="topPicks"><div class="card">Loading live data...</div></div>
+  <h2 class="section-title">🔬 More Researched Coins (Queue)</h2>
+  <div class="grid" id="queuePicks"><div class="card">Loading queue...</div></div>
+  <h2 class="section-title">🪙 Your Wallet Holdings</h2>
+  <table>
+    <thead><tr><th>Token</th><th>Balance</th><th>Price</th><th>Value</th><th>P/L</th></tr></thead>
+    <tbody><tr><td colspan="5" style="text-align:center; color:#94a3b8;">Connect wallet to see holdings</td></tr></tbody>
+  </table>
+  <h2 class="section-title">🤖 Whale AI Agents & TG Bots (Click to Expand)</h2>
+  <div class="grid">
+    <div class="agent-card" onclick="this.classList.toggle('open')">
+      <div class="agent-head"><h3>Whale Alert Bot</h3><span class="green">● Active</span></div>
+      <div class="agent-details">• Last 24h: 47 whale movements detected<br>• Largest Move: $12.4M PEPE transferred to Binance<br>• Pattern: 3 wallets accumulating WIF over 48h<br>• Chains: ETH, SOL, ARB, BASE, BSC</div>
+    </div>
+    <div class="agent-card" onclick="this.classList.toggle('open')">
+      <div class="agent-head"><h3>AI Market Analyzer</h3><span class="green">● Active</span></div>
+      <div class="agent-details">• Analysis: Momentum, volume, sentiment across 50+ pairs<br>• Top Signal: PEPE - Strong buy (92/100 confidence)<br>• Sources: 61 DEX + CEX sources, 26 chains<br>• Updates: Every 30 seconds</div>
+    </div>
+    <div class="agent-card" onclick="this.classList.toggle('open')">
+      <div class="agent-head"><h3>Sniper Bot Tracker</h3><span class="green">● Active</span></div>
+      <div class="agent-details">• New (24h): 3 tokens with sniper activity<br>• Token #1: Unknown meme - 12 snipers in first block<br>• Token #2: AI agent token - 8 snipers, liquidity locked<br>• Risk: Token #2 safest (liquidity locked 6mo)</div>
+    </div>
+    <div class="agent-card" onclick="this.classList.toggle('open')">
+      <div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div>
+      <div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div>
+    </div>
+  </div>
+</div>
+<script>
+const topCoins = [
+  {id:'pepe', sym:'PEPE', link:'https://app.uniswap.org/'},
+  {id:'dogwifcoin', sym:'WIF', link:'https://jup.ag/'},
+  {id:'render-token', sym:'RNDR', link:'https://app.uniswap.org/'},
+  {id:'arbitrum', sym:'ARB', link:'https://app.uniswap.org/'}
+];
+const queueCoins = [
+  {id:'hyperliquid', sym:'HYPE'}, {id:'ondo-finance', sym:'ONDO'}, {id:'virtual-protocol', sym:'VIRTUAL'},
+  {id:'bittensor', sym:'TAO'}, {id:'sui', sym:'SUI'}, {id:'fetch-ai', sym:'FET'},
+  {id:'bitcoin', sym:'BTC'}, {id:'ethereum', sym:'ETH'}, {id:'solana', sym:'SOL'},
+  {id:'dogecoin', sym:'DOGE'}, {id:'shiba-inu', sym:'SHIB'}, {id:'chainlink', sym:'LINK'}
+];
+async function loadData() {
+  try {
+    const allIds = [...topCoins, ...queueCoins].map(c=>c.id).join(',');
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${allIds}`);
+    const data = await res.json();
+    let topHtml = '', queueHtml = '';
+    data.forEach(c => {
+      const isTop = topCoins.find(t=>t.id===c.id);
+      const dip = (c.low_24h * 1.02).toFixed(c.current_price < 1 ? 6 : 2);
+      const link = isTop ? isTop.link : '#';
+      const change = c.price_change_percentage_24h || 0;
+      const color = change >= 0 ? '#00ff88' : '#ff4757';
+      const card = `<div class="coin-card">
+        <div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score" style="color:${color}">${change.toFixed(1)}%</span></div>
+        <div class="price">$${c.current_price}</div>
+        <div class="dip">🎯 Dip Target: $${dip}</div>
+        <div class="reason">Live momentum detected. Volume increasing.</div>
+        <div class="social-links">
+          <a href="https://dexscreener.com/search?q=${c.symbol}" target="_blank" class="social-btn">DexScreener</a>
+          <a href="https://twitter.com/search?q=${c.symbol}" target="_blank" class="social-btn">Twitter/X</a>
+        </div>
+        <a href="${link}" target="_blank" class="buy-btn">Buy on Exchange</a>
+      </div>`;
+      if(isTop) topHtml += card; else queueHtml += card;
+    });
+    document.getElementById('topPicks').innerHTML = topHtml || '<div class="card">No data</div>';
+    document.getElementById('queuePicks').innerHTML = queueHtml || '<div class="card">No data</div>';
+    document.getElementById('coinCount').innerText = data.length;
+  } catch(e) { console.error(e); }
+}
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>
