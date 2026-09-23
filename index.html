@@ -130,12 +130,7 @@ h1{color:#00ff88;font-size:1.8rem}
 
 <script>
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
-
-const chains = [
-  { name: 'Ethereum', rpc: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`, native: 'ETH', nativePriceKey: 'ETH' },
-  { name: 'Arbitrum', rpc: 'https://arb1.arbitrum.io/rpc', native: 'ETH', nativePriceKey: 'ETH' },
-  { name: 'Polygon', rpc: 'https://polygon-rpc.com', native: 'MATIC', nativePriceKey: 'MATIC' }
-];
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
 let connectedAddress = null;
 let connectedChain = null;
@@ -187,10 +182,9 @@ if(!connectedAddress && !watchOnlyAddress) return;
 
 let totalPortfolio = 0;
 let tableHtml = '';
-let processedAddresses = new Set(); // DEDUPLICATION CHECK
+let processedAddresses = new Set();
 
 async function processWallet(addr, chainType, type) {
-  // If we already scanned this exact address, skip it to prevent double counting!
   if(processedAddresses.has(addr.toLowerCase())) {
     return; 
   }
@@ -200,45 +194,51 @@ async function processWallet(addr, chainType, type) {
   let allHoldings = [];
 
   if(chainType === 'evm') {
-    for(let chain of chains) {
-      try {
-        const nativeRes = await fetch(chain.rpc, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
-        });
-        const nativeData = await nativeRes.json();
-        const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
-        
-        if(nativeBal > 0.0001) {
-          const val = nativeBal * (priceMap[chain.nativePriceKey] || 0);
-          walletTotal += val;
-          allHoldings.push(`${chain.name} ${chain.native}: ${nativeBal.toFixed(4)}`);
-        }
+    try {
+      // Get Native ETH Balance
+      const ethRes = await fetch(ALCHEMY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
+      });
+      const ethData = await ethRes.json();
+      const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
+      if(ethBal > 0.0001) {
+        const val = ethBal * (priceMap['ETH'] || 0);
+        walletTotal += val;
+        allHoldings.push(`ETH: ${ethBal.toFixed(4)}`);
+      }
 
-        const tokensToCheck = [
-          { sym: 'USDC', addr: chain.name === 'Ethereum' ? '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' : (chain.name === 'Arbitrum' ? '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8' : '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'), dec: 6 },
-          { sym: 'USDT', addr: chain.name === 'Ethereum' ? '0xdAC17F958D2ee523a2206206994597C13D831ec7' : (chain.name === 'Arbitrum' ? '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9' : '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'), dec: 6 },
-          { sym: 'ARB', addr: '0x912CE59144191C1204E64559FE8253a0e49E6548', dec: 18 }
-        ];
+      // Get ALL ERC20 Token Balances using Alchemy's special method
+      const tokenRes = await fetch(ALCHEMY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getTokenBalances', params: [addr, 'erc20'] })
+      });
+      const tokenData = await tokenRes.json();
 
-        for(let t of tokensToCheck) {
-          const data = "0x70a08231000000000000000000000000" + addr.substring(2);
-          const tokenRes = await fetch(chain.rpc, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: t.addr, data: data }, 'latest'] })
-          });
-          const tokenData = await tokenRes.json();
-          if(tokenData.result && tokenData.result !== '0x' && tokenData.result !== '0x0') {
-            const bal = parseInt(tokenData.result, 16) / Math.pow(10, t.dec);
+      if(tokenData.result && tokenData.result.tokenBalances) {
+        for(let token of tokenData.result.tokenBalances) {
+          if(token.tokenBalance === '0x0' || token.tokenBalance === '0') continue;
+
+          const addrLower = token.contractAddress.toLowerCase();
+          const coin = coins.find(c => c.addr && c.addr.toLowerCase() === addrLower);
+
+          if(coin) {
+            const decimals = coin.dec || 18;
+            const bal = parseInt(token.tokenBalance, 16) / Math.pow(10, decimals);
             if(bal > 0) {
-              const price = priceMap[t.sym] || 0;
+              const price = priceMap[coin.sym] || 0;
               const val = bal * price;
               walletTotal += val;
-              allHoldings.push(`${chain.name} ${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})}`);
+              allHoldings.push(`${coin.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})}`);
             }
           }
         }
-      } catch(e) { console.error(`${chain.name} Error:`, e); }
+      }
+    } catch(e) {
+      console.error('Alchemy Error:', e);
+      allHoldings.push('API Error');
     }
   } else {
     allHoldings.push('Solana scanning...');
@@ -271,6 +271,8 @@ const coins=[
 {id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',dec:18,link:'https://app.uniswap.org/',reason:'3 whale wallets accumulating.',top:true},
 {id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dec:18,link:'https://app.uniswap.org/',reason:'L2 momentum.',top:true},
 {id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',dec:18,link:'https://app.uniswap.org/',reason:'Meme season.',top:true},
+{id:'tether',sym:'USDT',addr:'0xdAC17F958D2ee523a2206206994597C13D831ec7',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
+{id:'usd-coin',sym:'USDC',addr:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
 {id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag/',reason:'Jupiter volume +120%.',top:true},
 {id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/',reason:'AI narrative trending.',top:true},
 {id:'ethereum',sym:'ETH',addr:'Native',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
