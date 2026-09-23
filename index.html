@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sea Chef Labs</title>
-<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
@@ -16,15 +14,15 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn-phantom{background:#ab9ff2}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:30px}
 .card{background:#1e293b;padding:20px;border-radius:12px;border:1px solid #334155}
 .card h3{color:#94a3b8;font-size:14px;margin-bottom:10px}
-.card h2{font-size:28px;margin-bottom:5px}
+.card h2{font-size:24px;margin-bottom:5px}
 .green{color:#00ff88}
 .red{color:#ff4757}
 .section-title{font-size:1.3rem;margin-bottom:15px;display:flex;align-items:center;gap:10px}
-.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px;margin-bottom:30px}
-.queue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:30px}
+.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-bottom:30px}
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:30px}
 .coin-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00ff88;position:relative}
 .coin-card-small{background:#1e293b;padding:12px;border-radius:8px;border-left:3px solid #00d9ff;position:relative}
 .coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -73,20 +71,40 @@ h1{color:#00ff88;font-size:1.8rem}
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
+
 <div class="stats-grid">
-<div class="card"><h3>Total Portfolio Value</h3><h2 id="totalValue">$0.00</h2><div class="green" id="walletStatus">Connect wallet or add watch address</div></div>
-<div class="card"><h3>24h Profit/Loss</h3><h2 id="pnl24h" class="green">$0.00</h2><div style="color:#94a3b8">Across all holdings</div></div>
-<div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2><div style="color:#94a3b8">Coins scanning live</div></div>
+<div class="card">
+<h3>Connected Wallet Value</h3>
+<h2 id="connectedValue">$0.00</h2>
+<div class="green" id="walletStatus">Connect Rabby or Phantom</div>
 </div>
+<div class="card" style="border: 1px solid #fbbf24;">
+<h3>Watch-Only Portfolio Value</h3>
+<h2 id="watchValue" style="color:#fbbf24">$0.00</h2>
+<div style="color:#94a3b8" id="watchStatus">No watch address added</div>
+</div>
+<div class="card">
+<h3>24h Profit/Loss</h3>
+<h2 id="pnl24h" class="green">$0.00</h2>
+<div style="color:#94a3b8">Estimated based on price</div>
+</div>
+<div class="card">
+<h3>Active Research</h3>
+<h2 id="coinCount">0</h2>
+<div style="color:#94a3b8">Coins scanning live</div>
+</div>
+</div>
+
 <div id="holdingsSection" style="display:none;margin-bottom:30px">
 <h2 class="section-title">💼 Wallet Holdings</h2>
 <div class="card" style="padding:0;overflow:hidden">
 <table class="holdings-table">
-<thead><tr><th>Token</th><th>Balance</th><th>Price</th><th>Value</th><th>24h Change</th></tr></thead>
+<thead><tr><th>Token</th><th>Balance</th><th>Price</th><th>Value</th></tr></thead>
 <tbody id="holdingsBody"></tbody>
 </table>
 </div>
 </div>
+
 <h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
@@ -99,11 +117,12 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div></div>
 </div>
 </div>
+
 <div id="watchModal" class="modal">
 <div class="modal-content">
 <h2>Add Watch-Only Wallet</h2>
 <div class="input-group">
-<label>Wallet Address (Ethereum or Solana)</label>
+<label>Wallet Address (Ethereum 0x... or Solana)</label>
 <input type="text" id="watchAddress" placeholder="0x... or Solana address">
 </div>
 <button class="btn" onclick="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button>
@@ -114,7 +133,9 @@ h1{color:#00ff88;font-size:1.8rem}
 let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
-let walletBalances = [];
+let watchChain = null;
+let ethPrice = 0;
+let solPrice = 0;
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -125,7 +146,7 @@ connectedChain = 'ethereum';
 document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
 document.getElementById('rabbyBtn').classList.add('btn-connected');
 document.getElementById('walletStatus').innerText = 'Connected: ' + connectedAddress.substring(0,6) + '...' + connectedAddress.substring(38);
-fetchWalletBalances();
+fetchBalances();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -138,7 +159,7 @@ connectedChain = 'solana';
 document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
 document.getElementById('walletStatus').innerText = 'Connected: ' + connectedAddress.substring(0,6) + '...' + connectedAddress.substring(38);
-fetchWalletBalances();
+fetchBalances();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -149,89 +170,76 @@ async function addWatchOnlyWallet(){
 const address = document.getElementById('watchAddress').value.trim();
 if(!address){alert('Please enter a wallet address');return;}
 if(address.startsWith('0x') && address.length === 42){
-watchOnlyAddress = address; connectedChain = 'ethereum';
+watchOnlyAddress = address; watchChain = 'ethereum';
 }else if(address.length >= 32 && address.length <= 44){
-watchOnlyAddress = address; connectedChain = 'solana';
+watchOnlyAddress = address; watchChain = 'solana';
 }else{alert('Invalid address format');return;}
-connectedAddress = watchOnlyAddress;
 closeWatchOnlyModal();
-document.getElementById('walletStatus').innerText = 'Watching: ' + connectedAddress.substring(0,6) + '...' + connectedAddress.substring(38);
-fetchWalletBalances();
+document.getElementById('watchStatus').innerText = 'Watching: ' + watchOnlyAddress.substring(0,6) + '...' + watchOnlyAddress.substring(38);
+fetchBalances();
 }
 
-async function fetchWalletBalances(){
-if(!connectedAddress || !connectedChain)return;
-try{
-walletBalances = [];
-if(connectedChain === 'ethereum'){
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const ethBalance = await provider.getBalance(connectedAddress);
-const ethPrice = await getTokenPrice('ethereum');
-const ethValue = parseFloat(ethers.utils.formatEther(ethBalance)) * ethPrice;
-walletBalances.push({symbol:'ETH',balance:parseFloat(ethers.utils.formatEther(ethBalance)),price:ethPrice,value:ethValue,change:0});
-const tokens = [
-{address:'0xdAC17F958D2ee523a2206206994597C13D831ec7',symbol:'USDT',decimals:6,coingeckoId:'tether'},
-{address:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',symbol:'USDC',decimals:6,coingeckoId:'usd-coin'},
-{address:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',symbol:'PEPE',decimals:18,coingeckoId:'pepe'},
-{address:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',symbol:'SHIB',decimals:18,coingeckoId:'shiba-inu'}
-];
-for(let token of tokens){
-try{
-const contract = new ethers.Contract(token.address,['function balanceOf(address) view returns (uint256)'],provider);
-const balance = await contract.balanceOf(connectedAddress);
-const formattedBalance = parseFloat(ethers.utils.formatUnits(balance,token.decimals));
-if(formattedBalance > 0){
-const price = await getTokenPrice(token.coingeckoId);
-const value = formattedBalance * price;
-walletBalances.push({symbol:token.symbol,balance:formattedBalance,price:price,value:value,change:0});
-}
-}catch(e){console.log('Error fetching '+token.symbol)}
-}
-}else if(connectedChain === 'solana'){
-const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
-const pubKey = new solanaWeb3.PublicKey(connectedAddress);
-const solBalance = await connection.getBalance(pubKey);
-const solPrice = await getTokenPrice('solana');
-const solValue = (solBalance / solanaWeb3.LAMPORTS_PER_SOL) * solPrice;
-walletBalances.push({symbol:'SOL',balance:solBalance/solanaWeb3.LAMPORTS_PER_SOL,price:solPrice,value:solValue,change:0});
-}
-updateHoldingsDisplay();
-calculatePortfolioValue();
-}catch(e){console.error('Error fetching balances:',e)}
-}
-
-async function getTokenPrice(coingeckoId){
-try{
-const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+coingeckoId+'&vs_currencies=usd');
+async function getEthBalance(address) {
+const rpc = "https://ethereum-rpc.publicnode.com";
+const res = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", method: "eth_getBalance", params: [address, "latest"], id: 1 }) });
 const data = await res.json();
-return data[coingeckoId].usd;
-}catch(e){return 0}
+return parseInt(data.result, 16) / 1e18;
 }
 
-function updateHoldingsDisplay(){
-const tbody = document.getElementById('holdingsBody');
-if(walletBalances.length === 0){
-tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8">No holdings found</td></tr>';
-document.getElementById('holdingsSection').style.display = 'none';
-return;
+async function getSolBalance(address) {
+const rpc = "https://api.mainnet-beta.solana.com";
+const res = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", method: "getBalance", params: [address], id: 1 }) });
+const data = await res.json();
+return data.result.value / 1e9;
 }
-let html = '';
-walletBalances.forEach(h=>{
-const changeClass = h.change >= 0 ? 'green' : 'red';
-const changeSign = h.change >= 0 ? '+' : '';
-html += '<tr><td><strong>'+h.symbol+'</strong></td><td>'+h.balance.toFixed(6)+'</td><td>$'+h.price.toFixed(4)+'</td><td>$'+h.value.toFixed(2)+'</td><td class="'+changeClass+'">'+changeSign+h.change.toFixed(2)+'%</td></tr>';
-});
-tbody.innerHTML = html;
+
+async function fetchBalances(){
+try{
+if(ethPrice === 0) ethPrice = await getTokenPrice('ethereum');
+if(solPrice === 0) solPrice = await getTokenPrice('solana');
+
+let connectedVal = 0;
+let watchVal = 0;
+let holdingsHtml = '';
+
+if(connectedAddress && connectedChain === 'ethereum'){
+const bal = await getEthBalance(connectedAddress);
+const val = bal * ethPrice;
+connectedVal += val;
+holdingsHtml += `<tr><td><strong>ETH</strong></td><td>${bal.toFixed(4)}</td><td>$${ethPrice.toFixed(2)}</td><td>$${val.toFixed(2)}</td></tr>`;
+} else if(connectedAddress && connectedChain === 'solana'){
+const bal = await getSolBalance(connectedAddress);
+const val = bal * solPrice;
+connectedVal += val;
+holdingsHtml += `<tr><td><strong>SOL</strong></td><td>${bal.toFixed(4)}</td><td>$${solPrice.toFixed(2)}</td><td>$${val.toFixed(2)}</td></tr>`;
+}
+
+if(watchOnlyAddress && watchChain === 'ethereum'){
+const bal = await getEthBalance(watchOnlyAddress);
+const val = bal * ethPrice;
+watchVal += val;
+} else if(watchOnlyAddress && watchChain === 'solana'){
+const bal = await getSolBalance(watchOnlyAddress);
+const val = bal * solPrice;
+watchVal += val;
+}
+
+document.getElementById('connectedValue').innerText = '$' + connectedVal.toFixed(2);
+document.getElementById('watchValue').innerText = '$' + watchVal.toFixed(2);
+
+if(holdingsHtml !== ''){
+document.getElementById('holdingsBody').innerHTML = holdingsHtml;
 document.getElementById('holdingsSection').style.display = 'block';
 }
+}catch(e){console.error('Balance fetch error:',e)}
+}
 
-function calculatePortfolioValue(){
-let total = walletBalances.reduce((sum,h)=>sum + h.value,0);
-document.getElementById('totalValue').innerText = '$' + total.toFixed(2);
-let pnl = walletBalances.reduce((sum,h)=>sum + (h.value * (h.change / 100)),0);
-const pnlElement = document.getElementById('pnl24h');
-pnlElement.innerText = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
-pnlElement.className = pnl >= 0 ? 'green' : 'red';
+async function getTokenPrice(id){
+try{
+const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+id+'&vs_currencies=usd');
+const data = await res.json();
+return data[id].usd;
+}catch(e){return 0}
 }
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
@@ -275,7 +283,7 @@ const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
 topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
@@ -286,7 +294,7 @@ document.getElementById('coinCount').innerText=data.length;
 
 loadData();
 setInterval(loadData,60000);
-setInterval(fetchWalletBalances,30000);
+setInterval(fetchBalances,30000);
 </script>
 </body>
 </html>
