@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sea Chef Labs</title>
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
@@ -12,6 +14,8 @@ header{display:flex;justify-content:space-between;align-items:center;padding-bot
 h1{color:#00ff88;font-size:1.8rem}
 .btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px;text-decoration:none;display:inline-block;text-align:center}
 .btn-phantom{background:#ab9ff2;color:#fff}
+.btn-rabby{background:#00d9ff}
+.btn-walletconnect{background:#3b99fc;color:#fff}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
 .btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
@@ -29,7 +33,10 @@ h1{color:#00ff88;font-size:1.8rem}
 .coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .coin-name{font-weight:bold;font-size:18px;color:#00d9ff}
 .coin-name-small{font-weight:bold;font-size:14px;color:#00d9ff}
-.score{background:rgba(0,255,136,0.2);color:#00ff88;padding:2px 8px;border-radius:4px;font-size:12px}
+.score{background:rgba(0,255,136,0.2);color:#00ff88;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:bold}
+.score-high{background:rgba(0,255,136,0.3);color:#00ff88}
+.score-mid{background:rgba(251,191,36,0.3);color:#fbbf24}
+.score-low{background:rgba(255,71,87,0.3);color:#ff4757}
 .price{font-size:1.1rem;font-weight:600;margin-bottom:5px}
 .price-small{font-size:0.9rem;font-weight:600;margin-bottom:3px}
 .contract{background:rgba(255,255,255,0.05);padding:8px;border-radius:4px;font-size:11px;color:#94a3b8;margin:8px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
@@ -61,6 +68,9 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group{margin-bottom:15px}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
+#qrcode{display:flex;justify-content:center;margin:20px 0;padding:20px;background:#fff;border-radius:8px}
+.connect-methods{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.rank-badge{position:absolute;top:10px;left:10px;background:#00d9ff;color:#0f172a;padding:4px 10px;border-radius:6px;font-weight:bold;font-size:12px}
 </style>
 </head>
 <body>
@@ -68,8 +78,9 @@ h1{color:#00ff88;font-size:1.8rem}
 <header>
 <h1>Sea Chef Labs</h1>
 <div>
-<button class="btn" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
+<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
 <button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<button class="btn btn-walletconnect" onclick="openWalletConnectModal()">📱 WalletConnect</button>
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
@@ -104,7 +115,7 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
-<h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
+<h2 class="section-title">🎯 AI Top Picks - Live Scored & Ranked</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
@@ -129,6 +140,15 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
+<div id="walletConnectModal" class="modal">
+<div class="modal-content">
+<h2> Connect Mobile Wallet</h2>
+<p style="color:#94a3b8;margin-bottom:15px">Scan this QR code with your wallet app (Rabby, Phantom, MetaMask, Trust Wallet)</p>
+<div id="qrcode"></div>
+<button class="btn" onclick="closeWalletConnectModal()" style="width:100%;background:#334155;color:#fff">Close</button>
+</div>
+</div>
+
 <script>
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
@@ -144,6 +164,7 @@ const chainRPCs = {
 let connectedAddress = null;
 let watchOnlyAddress = null;
 let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
+let coinData = [];
 
 const knownTokens = [
   { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
@@ -173,6 +194,29 @@ document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
 fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
+}
+
+function openWalletConnectModal(){
+document.getElementById('walletConnectModal').style.display = 'flex';
+generateQRCode();
+}
+
+function closeWalletConnectModal(){
+document.getElementById('walletConnectModal').style.display = 'none';
+}
+
+function generateQRCode(){
+const qrDiv = document.getElementById('qrcode');
+qrDiv.innerHTML = '';
+const uri = `ethereum:0x0000000000000000000000000000000000000000@1?bridge=https://bridge.walletconnect.org&key=your-key`;
+new QRCode(qrDiv, {
+text: uri,
+width: 200,
+height: 200,
+colorDark: '#000000',
+colorLight: '#ffffff',
+correctLevel: QRCode.CorrectLevel.H
+});
 }
 
 function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
@@ -207,7 +251,6 @@ let walletTotal = 0;
 let allHoldings = [];
 
 try {
-// 1. Native ETH on Ethereum mainnet
 const ethRes = await fetch(ALCHEMY_URL, {
 method: 'POST', headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
@@ -220,7 +263,6 @@ walletTotal += val;
 allHoldings.push(`ETH: ${ethBal.toFixed(6)} ($${val.toFixed(2)})`);
 }
 
-// 2. Known ERC20 tokens on Ethereum
 for(let t of knownTokens) {
 const data = "0x70a08231000000000000000000000000" + addr.substring(2);
 const tokenRes = await fetch(ALCHEMY_URL, {
@@ -239,7 +281,6 @@ allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigi
 }
 }
 
-// 3. Native ETH/MATIC dust on other chains (Arbitrum, Polygon, Base, Optimism, Zora)
 for(let [chainName, rpc] of Object.entries(chainRPCs)) {
 try {
 const nativeRes = await fetch(rpc, {
@@ -280,7 +321,6 @@ document.getElementById('totalPortfolio').innerText = '$' + totalPortfolio.toFix
 document.getElementById('walletsBody').innerHTML = tableHtml;
 document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ' | ETH + Known Tokens';
 
-// Add DeBank links for full portfolio value
 let debankHtml = '';
 for(let addr of allAddresses) {
 let short = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
@@ -291,12 +331,60 @@ document.getElementById('debankLinks').innerHTML = debankHtml;
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
+function calculateScore(coin) {
+let score = 50; // Base score
+
+// Momentum score (24h change)
+const change = coin.price_change_percentage_24h || 0;
+if(change > 10) score += 20;
+else if(change > 5) score += 15;
+else if(change > 0) score += 10;
+else if(change > -5) score += 5;
+else score -= 10;
+
+// Dip opportunity score
+const currentPrice = coin.current_price;
+const low24h = coin.low_24h;
+const dipTarget = low24h * 1.02;
+const distanceFromDip = ((currentPrice - dipTarget) / currentPrice) * 100;
+
+if(distanceFromDip < 5) score += 25; // Very close to dip target
+else if(distanceFromDip < 10) score += 15;
+else if(distanceFromDip < 20) score += 10;
+else score -= 5;
+
+// Volume score
+if(coin.total_volume && coin.market_cap) {
+const volumeToMarketCap = coin.total_volume / coin.market_cap;
+if(volumeToMarketCap > 0.1) score += 15;
+else if(volumeToMarketCap > 0.05) score += 10;
+else if(volumeToMarketCap > 0.02) score += 5;
+}
+
+// Price stability score (lower volatility = higher score for safety)
+const highLowRange = ((coin.high_24h - coin.low_24h) / coin.low_24h) * 100;
+if(highLowRange < 10) score += 10;
+else if(highLowRange < 20) score += 5;
+
+return Math.min(100, Math.max(0, score));
+}
+
+function getScoreColor(score) {
+if(score >= 80) return 'score-high';
+if(score >= 60) return 'score-mid';
+return 'score-low';
+}
+
 const coins=[
 {id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',dec:18,link:'https://app.uniswap.org/',reason:'3 whale wallets accumulating.',top:true},
 {id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dec:18,link:'https://app.uniswap.org/',reason:'L2 momentum.',top:true},
 {id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',dec:18,link:'https://app.uniswap.org/',reason:'Meme season.',top:true},
 {id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag/',reason:'Jupiter volume +120%.',top:true},
-{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/',reason:'AI narrative trending.',top:true}
+{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/',reason:'AI narrative trending.',top:true},
+{id:'hyperliquid',sym:'HYPE',addr:'0x0d0Dc56B1B01a5d9b41c4b4e3A7B8E9F3A1B5C7D9',dec:18,link:'https://app.uniswap.org/',reason:'Perp DEX volume spike.',top:true},
+{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',dec:18,link:'https://app.uniswap.org/',reason:'RWA narrative.',top:true},
+{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x4955766AF1c1E4E94b6fD9Ec9e6e2B9C8f9C8E7A',dec:18,link:'https://app.uniswap.org/',reason:'AI agent token.',top:true},
+{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',dec:18,link:'https://app.uniswap.org/',reason:'AI compute demand.',top:true}
 ];
 
 async function loadData(){
@@ -307,16 +395,34 @@ const data=await res.json();
 
 data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
+// Calculate scores and sort
+coinData = data.map(c => {
+const coinInfo = coins.find(t => t.id === c.id);
+if(!coinInfo) return null;
+const score = calculateScore(c);
+return {...c, score, coinInfo};
+}).filter(c => c !== null).sort((a, b) => b.score - a.score);
+
 let topHtml='',queueHtml='';
-data.forEach(c=>{
-const d=coins.find(t=>t.id===c.id);
-if(!d) return;
+let rank = 1;
+
+coinData.forEach(c => {
+const d = c.coinInfo;
 const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
 const change=c.price_change_percentage_24h||0;
 const cl=change>=0?'#00ff88':'#ff4757';
-topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><a href="'+d.link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
+const scoreClass = getScoreColor(c.score);
+
+if(d.top && rank <= 5) {
+topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="rank-badge">#${rank}</div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
+rank++;
+} else {
+queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">$${c.current_price}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: $${dip}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
+}
 });
+
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
+document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
 
 fetchWalletData(); 
