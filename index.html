@@ -180,48 +180,46 @@ fetchBalances();
 }
 
 async function getEthBalance(address) {
-const rpc = "https://ethereum-rpc.publicnode.com";
+const rpc = "https://rpc.ankr.com/eth";
 const res = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", method: "eth_getBalance", params: [address, "latest"], id: 1 }) });
 const data = await res.json();
-return parseInt(data.result, 16) / 1e18;
+if(data.result) return parseInt(data.result, 16) / 1e18;
+return 0;
 }
 
 async function getSolBalance(address) {
-const rpc = "https://api.mainnet-beta.solana.com";
+const rpc = "https://rpc.ankr.com/solana";
 const res = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", method: "getBalance", params: [address], id: 1 }) });
 const data = await res.json();
-return data.result.value / 1e9;
+if(data.result && data.result.value) return data.result.value / 1e9;
+return 0;
 }
 
 async function fetchBalances(){
+if(!connectedAddress && !watchOnlyAddress) return;
 try{
-if(ethPrice === 0) ethPrice = await getTokenPrice('ethereum');
-if(solPrice === 0) solPrice = await getTokenPrice('solana');
-
 let connectedVal = 0;
 let watchVal = 0;
 let holdingsHtml = '';
 
-if(connectedAddress && connectedChain === 'ethereum'){
+if(connectedAddress && connectedChain === 'ethereum' && ethPrice > 0){
 const bal = await getEthBalance(connectedAddress);
 const val = bal * ethPrice;
 connectedVal += val;
 holdingsHtml += `<tr><td><strong>ETH</strong></td><td>${bal.toFixed(4)}</td><td>$${ethPrice.toFixed(2)}</td><td>$${val.toFixed(2)}</td></tr>`;
-} else if(connectedAddress && connectedChain === 'solana'){
+} else if(connectedAddress && connectedChain === 'solana' && solPrice > 0){
 const bal = await getSolBalance(connectedAddress);
 const val = bal * solPrice;
 connectedVal += val;
 holdingsHtml += `<tr><td><strong>SOL</strong></td><td>${bal.toFixed(4)}</td><td>$${solPrice.toFixed(2)}</td><td>$${val.toFixed(2)}</td></tr>`;
 }
 
-if(watchOnlyAddress && watchChain === 'ethereum'){
+if(watchOnlyAddress && watchChain === 'ethereum' && ethPrice > 0){
 const bal = await getEthBalance(watchOnlyAddress);
-const val = bal * ethPrice;
-watchVal += val;
-} else if(watchOnlyAddress && watchChain === 'solana'){
+watchVal += bal * ethPrice;
+} else if(watchOnlyAddress && watchChain === 'solana' && solPrice > 0){
 const bal = await getSolBalance(watchOnlyAddress);
-const val = bal * solPrice;
-watchVal += val;
+watchVal += bal * solPrice;
 }
 
 document.getElementById('connectedValue').innerText = '$' + connectedVal.toFixed(2);
@@ -232,14 +230,6 @@ document.getElementById('holdingsBody').innerHTML = holdingsHtml;
 document.getElementById('holdingsSection').style.display = 'block';
 }
 }catch(e){console.error('Balance fetch error:',e)}
-}
-
-async function getTokenPrice(id){
-try{
-const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+id+'&vs_currencies=usd');
-const data = await res.json();
-return data[id].usd;
-}catch(e){return 0}
 }
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
@@ -273,6 +263,12 @@ try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
+
+const ethData = data.find(c => c.id === 'ethereum');
+const solData = data.find(c => c.id === 'solana');
+if(ethData) ethPrice = ethData.current_price;
+if(solData) solPrice = solData.current_price;
+
 let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
@@ -283,18 +279,18 @@ const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
 topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
+fetchBalances(); 
 }catch(e){console.error(e)}
 }
 
 loadData();
 setInterval(loadData,60000);
-setInterval(fetchBalances,30000);
 </script>
 </body>
 </html>
