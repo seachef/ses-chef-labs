@@ -75,895 +75,960 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn-phantom-mobile{background:#ab9ff2;color:#fff}
 .btn-rabby-mobile{background:#00d9ff;color:#0f172a}
 
-/* GRID TRACKER STYLES */
-.grid-tracker { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #00d9ff; }
-.grid-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
-.grid-stats div { text-align: center; flex: 1; }
-.grid-stats span { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px; }
-.grid-stats strong { color: #fff; font-size: 16px; }
-.current-price-box { text-align: center; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; }
-.current-price-box span { display: block; color: #94a3b8; font-size: 14px; margin-bottom: 5px; }
-.current-price-box strong { color: #fff; font-size: 36px; font-weight: bold; }
-.grid-bar-container { position: relative; height: 30px; background: #334155; border-radius: 15px; margin: 20px 0; overflow: hidden; }
-.grid-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, rgba(0,255,136,0.3), rgba(255,71,87,0.3)); transition: width 0.5s ease; }
-.grid-marker { position: absolute; top: -5px; width: 4px; height: 40px; background: #fff; border-radius: 2px; transition: left 0.5s ease; box-shadow: 0 0 10px #fff; }
-.grid-signals { display: flex; justify-content: space-between; margin-top: 15px; }
-.signal-box { flex: 1; padding: 15px; border-radius: 8px; text-align: center; margin: 0 5px; }
-.signal-buy { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; }
-.signal-sell { background: rgba(255,71,87,0.1); border: 1px solid #ff471); border: 1px solid #ff4757; }
-.signal-box h4 { font-size57; }
-.signal-box h4 { font-size: 12px; color: #94a: 12px; color: #94a3b8; margin-bottom: 5px; }3b8; margin-bottom: 5px; }
-.signal-box p { font-size: 20px
-.signal-box p { font-size: 20px; font-weight: bold; margin: 0; }; font-weight: bold; margin: 0; }
-</style>
-</head>
-<body>
+/* 4-WINDOW GRID TRACKER STYLES */
+.grid-tracker { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #00d9ff; padding: 15px; border-radius: 12px; }
+.grid-stats { display: flex; justify-content: space-between; margin-bottom: 1div>
+  </div>
+</div>
 
+0px; font-size: 12px; }
+.grid-stats div { text-align: center; flex: 1; }
+.grid-stats span { display: block; color: #94a3b8; font-size: 10px; margin-bottom: 2px; }
+.grid-stats strong { color: #fff; font-size: 13px; }
+.current-price-box { text-align: center; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+.current-price-box span { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 2px; }
+.current-price-box strong { color: #fff; font-size: 24px; font-weight: bold; }
+.grid-bar-container { position: relative; height: 20px; background: #334155; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+.grid-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, rgba(0,255,136,0.3), rgba(255,71,87,0.3)); transition: width 0.5s ease; }
+.grid-marker { position: absolute; top: -2px; width: 3px; height: 24px; background: #fff; border-radius: 2px; transition: left 0.5s ease; box-shadow: 0 0 8px #fff; }
+.grid-signals { display: flex; justify-content: space-between; margin-top: 10px; }
+.signal-box { flex: 1; padding: 10px; border-radius: 8px; text-align: center; margin: 0 5px; }
+.signal-buy { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; }
+.signal-sell { background: rgba(255,71,87,0.1); border: 1px solid #ff4757; }
+.signal-box h4 { font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+.signal-box p { font-size: 16px; font-weight: bold; margin: 0; }
+.execute-btn { display: block; width: 100%; text-align: center; padding: 10px; margin-top: 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="container">
 <header>
-<h1><div class="container">
-<header>
 <h1>Sea Chef Labs</h1>
-<div style="displaySea Chef Labs</h1>
-<div style="display:flex;flex-wrap:wrap;gap:5px;:flex;flex-wrap:wrap;gap:5px;align-items:center">
-<button class="btn btn-rabbyalign-items:center">
-<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
-<button class="btn()">Connect Rabby</button>
-<button class="btn btn-phantom" id="phantomBtn" onclick btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
-<button="connectPhantom()">Connect Phantom</button>
-<button class="btn btn-mobile" onclick="openMobileModal()"> class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button>
-<button class="📱 Connect Mobile</button>
-<button class="btn btn-watch" onclick="openWatchOnlyModal()">Addbtn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
-<button class="btn btn-c Watch Wallet</button>
-<button class="btn btn-currency active" id="btnUSD" onclick="setCurrencyurrency active" id="btnUSD" onclick="setCurrency('USD')">USD</button>
-<button class="btn('USD')">USD</button>
-<button class="btn btn-currency" id="btnAUD" onclick="set btn-currency" id="btnAUD" onclick="setCurrency('AUD')">AUD</button>
-</div>Currency('AUD')">AUD</button>
+<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<button class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button>
+<button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
+<button class="btn btn-currency active" id="btnUSD" onclick="setCurrency('USD')">USD</button>
+<button class="btn btn-currency" id="btnAUD" onclick="setCurrency('AUD')">AUD</button>
 </div>
-</header>
-
-<div class="news-ticker-container
 </header>
 
 <div class="news-ticker-container">
-  <div class="news-ticker-track"">
   <div class="news-ticker-track" id="newsTickerTrack">
-    <div class=" id="newsTickerTrack">
     <div class="ticker-item">Loading live market data...</div>
- ticker-item">Loading live market data...</div>
   </div>
-</div>
-
-<div class="stats </div>
 </div>
 
 <div class="stats-grid">
-<div class="card" style="border:-grid">
-<div class="card" style="border: 2px solid #00ff88;">
- 2px solid #00ff88;">
+<div class="card"<div class="stats-grid">
+<div class="card" style="border: 2px solid #00ff style="border: 2px solid #00ff88;">
+<h3>Tracked Portfolio Value</88;">
 <h3>Tracked Portfolio Value</h3>
-<h3>Tracked Portfolio Value</h3>
-<h2 id="totalPortfolio" class="green">$0<h2 id="totalPortfolio" class="green">$0.00</h2>
-<div style="color.00</h2>
-<div style="color:#94a3b8;font-size:12:#94a3b8;font-size:12px" id="lastUpdated">ETH + Known Tokens Onlypx" id="lastUpdated">ETH + Known Tokens Only</div>
+<h2 id="totalPortfolio" classh3>
+<h2 id="totalPortfolio" class="green">$0.00</h2>
+="green">$0.00</h2>
+<div style="color:#94a3b8;font<div style="color:#94a3b8;font-size:12px" id="lastUpdated">ETH-size:12px" id="lastUpdated">ETH + Known Tokens Only</div>
 </div>
-<div class="card</div>
+ + Known Tokens Only</div>
 </div>
-<div class="card" style="border: 1px solid #ff6" style="border: 1px solid #ff6b35;">
-<h3>Full Portfolio Value</b35;">
+<div class="card" style="border: 1px<div class="card" style="border: 1px solid #ff6b35;">
+<h3> solid #ff6b35;">
 <h3>Full Portfolio Value</h3>
-<h2 style="color:#ff6h3>
-<h2 style="color:#ff6b35">Click Below</h2>
-<divb35">Click Below</h2>
-<div id="debankLinks" style="margin-top:1 id="debankLinks" style="margin-top:10px"></div>
-</div>
-<div class0px"></div>
+<h2 styleFull Portfolio Value</h3>
+<h2 style="color:#ff6b35">Click Below</="color:#ff6b35">Click Below</h2>
+<div id="debankLinks" styleh2>
+<div id="debankLinks" style="margin-top:10px"></div>
+</="margin-top:10px"></div>
 </div>
 <div class="card">
-<h3>Active Research</h3="card">
+<h3>div>
+<div class="card">
 <h3>Active Research</h3>
-<h2 id="coinCount">0</h>
+<h2 id="coinActive Research</h3>
 <h2 id="coinCount">0</h2>
-<div style="color:#94a32>
-<div style="color:#94a3b8">Coins scanning live</div>
-</divb8">Coins scanning live</div>
+<div style="colorCount">0</h2>
+<div style="color:#94a3b8">Coins scanning live</:#94a3b8">Coins scanning live</div>
 </div>
 </div>
 
-<!-- SOL/USDT GRID>
+<!--div>
+</div>
 </div>
 
-<!-- SOL/USDT GRID SIGNAL TRACKER -->
-<div class="card grid-tracker SIGNAL TRACKER -->
-<div class="card grid-tracker" style="margin-bottom: 30px;">
-" style="margin-bottom: 30px;">
-  <h3 style="color:#00d9  <h3 style="color:#00d9ff; font-size:18px; margin-bottom:ff; font-size:18px; margin-bottom:15px; text-align:center;">🤖 SOL15px; text-align:center;">🤖 SOL/USDT Live Grid Signal Tracker</h3>
-/USDT Live Grid Signal Tracker</h3>
+<!-- 4-WINDOW LOW FEE GRID DASHBOARD 4-WINDOW LOW FEE GRID DASHBOARD -->
+<h2 class="section-title"> -->
+<h2 class="section-title"> Lowest Fee Grid Trackers (Live)</ Lowest Fee Grid Trackers (Live)</h2>
+<div class="top-grid" style="h2>
+<div class="top-grid" style="margin-bottom: 30px;">
   
-  <div class="grid-stats">
-    <  
-  <div class="grid-stats">
-    <div><span>Grid Range</span><strong id="div><span>Grid Range</span><strong id="gridRange">$0 - $0</strong></div>gridRange">$0 - $0</strong></div>
-    <div><span>Grid Step (10
-    <div><span>Grid Step (10)</span><strong id="gridStep">$)</span><strong id="gridStep">$0.00</strong></div>
+margin-bottom: 30px;">
+  
+  <!-- SOL WINDOW -->
+  <div class="grid  <!-- SOL WINDOW -->
+  <div class="grid-tracker">
+    <h3 style="color:#-tracker">
+    <h3 style="color:#00d9ff; font-size:1600d9ff; font-size:16px; margin-bottom:10px; textpx; margin-bottom:10px; text-align:center;">SOL/USDC (Solana)-align:center;">SOL/USDC (Solana) - $0.0002 Fee</h3 - $0.0002 Fee</h3>
+    <div class="grid-stats">
+     >
+    <div class="grid-stats">
+      <div><span>Range</span><strong id=" <div><span>Range</span><strong id="solRange">$0-$0</strong></solRange">$0-$0</strong></div>
+      <div><span>Step</spandiv>
+      <div><span>Step</span><strong id="solStep">$0.><strong id="solStep">$0.00</strong></div>
+      <div><00</strong></div>
+      <div><span>Profit</span><strong class="green">~span>Profit</span><strong class="green">~0.5%</strong></div>
+    </div0.5%</strong></div>
+    </div>
+    <div class="current-price-box"><span>
+    <div class="current-price-box"><span>Current Price</span><strong id="solPrice">$>Current Price</span><strong id="solPrice">$0.00</strong></div>
     <0.00</strong></div>
-    <div><span>Profit/Grid</span><strong class="div><span>Profit/Grid</span><strong class="green">~0.5%</strong></div>
-green">~0.5%</strong></div>
-  </div>
-
-  <!-- NEW: HUGE  </div>
-
-  <!-- NEW: HUGE CURRENT PRICE DISPLAY -->
-  <div class="current-price CURRENT PRICE DISPLAY -->
-  <div class="current-price-box">
-    <span>Current SOL Price</span-box">
-    <span>Current SOL Price</span>
-    <strong id="currentSolPrice">$0>
-    <strong id="currentSolPrice">$0.00</strong>
-  </div>
-
-.00</strong>
-  </div>
-
-  <div class="grid-bar-container">
-    <  <div class="grid-bar-container">
-    <div class="grid-bar-fill" id="gridBarFilldiv class="grid-bar-fill" id="gridBarFill" style="width: 50%;"></div>" style="width: 50%;"></div>
-    <div class="grid-marker" id="grid
-    <div class="grid-marker" id="gridMarker" style="left: 50%;"></divMarker" style="left: 50%;"></div>
-  </div>
-
-  <div class=">
-  </div>
-
-  <div class="grid-signals">
-    <div class="signal-boxgrid-signals">
-    <div class="signal-box signal-buy">
-      <h4>Next BUY Signal signal-buy">
-      <h4>Next BUY Signal</h4>
-      <p id="nextBuy</h4>
-      <p id="nextBuyPrice" class="green">$0.00</pPrice" class="green">$0.00</p>
+    <div class="grid-bar-container"><div class="grid-bardiv class="grid-bar-container"><div class="grid-bar-fill" id="solFill" style="width:-fill" id="solFill" style="width:50%"></div><div class="grid-marker50%"></div><div class="grid-marker" id="solMarker" style="left:50" id="solMarker" style="left:50%"></div></div>
+    <div class="%"></div></div>
+    <div class="grid-signals">
+      <div class="signal-boxgrid-signals">
+      <div class="signal-box signal-buy"><h4>Next Buy</h4>< signal-buy"><h4>Next Buy</h4><p id="solBuy" class="green">$0.p id="solBuy" class="green">$0.00</p></div>
+      <div class00</p></div>
+      <div class="signal-box signal-sell"><h4>Next Sell="signal-box signal-sell"><h4>Next Sell</h4><p id="solSell" class="</h4><p id="solSell" class="red">$0.00</p></div>
+red">$0.00</p></div>
     </div>
-    <div class=">
-    </div>
-    <div class="signal-box signal-sell">
-      <h4>signal-box signal-sell">
-      <h4>Next SELL Signal</h4>
-      <pNext SELL Signal</h4>
-      <p id="nextSellPrice" class="red">$0. id="nextSellPrice" class="red">$0.00</p>
-    </div>
- 00</p>
-    </div>
+    <a href="https://    </div>
+    <a href="https://jup.ag/swap/SOL-USDC" target="_jup.ag/swap/SOL-USDC" target="_blank" class="execute-btn" style="background:#blank" class="execute-btn" style="background:#ab9ff2; color:#fff;">Trade on Jupiterab9ff2; color:#fff;">Trade on Jupiter</a>
   </div>
 
-  <div style="text-align:center </div>
+  <!-- ETH</a>
+  </div>
 
-  <div style="text-align:center; margin-top:20px;">
-    <a; margin-top:20px;">
-    <a href="https://jup.ag/swap/SOL-US href="https://jup.ag/swap/SOL-USDC" target="_blank" class="btn" style="DC" target="_blank" class="btn" style="background:#ab9ff2; color:#fff;background:#ab9ff2; color:#fff; padding:15px 30px; font padding:15px 30px; font-size:16px;">Execute Trade on Jupiter (Sol-size:16px;">Execute Trade on Jupiter (Solana)</a>
+  <!-- ETH WINDOW -->
+  <div class="grid-tracker"> WINDOW -->
+  <div class="grid-tracker">
+    <h3 style="color:#00d
+    <h3 style="color:#00d9ff; font-size:16px; margin-bottom9ff; font-size:16px; margin-bottom:10px; text-align:center;">ETH/US:10px; text-align:center;">ETH/USDC (Base) - $0.01 Fee</DC (Base) - $0.01 Fee</h3>
+    <div class="grid-stats">h3>
+    <div class="grid-stats">
+      <div><span>Range</span><strong
+      <div><span>Range</span><strong id="ethRange">$0-$0</strong></div id="ethRange">$0-$0</strong></div>
+      <div><span>Step</span><>
+      <div><span>Step</span><strong id="ethStep">$0.00</strongstrong id="ethStep">$0.00</strong></div>
+      <div><span>Profit</></div>
+      <div><span>Profit</span><strong class="green">~0.5%</span><strong class="green">~0.5%</strong></div>
+    </div>
+    <strong></div>
+    </div>
+    <div class="current-price-box"><span>Current Price</div class="current-price-box"><span>Current Price</span><strong id="ethPrice">$0.00span><strong id="ethPrice">$0.00</strong></div>
+    <div class="grid</strong></div>
+    <div class="grid-bar-container"><div class="grid-bar-fill" id="-bar-container"><div class="grid-bar-fill" id="ethFill" style="width:50%"></divethFill" style="width:50%"></div><div class="grid-marker" id="ethMarker"><div class="grid-marker" id="ethMarker" style="left:50%"></div></div> style="left:50%"></div></div>
+    <div class="grid-signals">
+     
+    <div class="grid-signals">
+      <div class="signal-box signal-buy"><h4> <div class="signal-box signal-buy"><h4>Next Buy</h4><p id="ethBuy"Next Buy</h4><p id="ethBuy" class="green">$0.00</p></div class="green">$0.00</p></div>
+      <div class="signal-box signal-sell>
+      <div class="signal-box signal-sell"><h4>Next Sell</h4><p id"><h4>Next Sell</h4><p id="ethSell" class="red">$0.00="ethSell" class="red">$0.00</p></div>
+    </div>
+   </p></div>
+    </div>
+    <a href="https://app.uniswap.org/# <a href="https://app.uniswap.org/#/swap?outputCurrency=ETH&chain=base"/swap?outputCurrency=ETH&chain=base" target="_blank" class="execute-btn" style="background target="_blank" class="execute-btn" style="background:#ff007a; color:#:#ff007a; color:#fff;">Trade on Uniswap (Base)</a>fff;">Trade on Uniswap (Base)</a>
   </div>
-</divana)</a>
+
+  <!-- ARB WINDOW -->
   </div>
+
+  <!-- ARB WINDOW -->
+  <div class="grid-tracker">
+   
+  <div class="grid-tracker">
+    <h3 style="color:#00d9ff <h3 style="color:#00d9ff; font-size:16px; margin-bottom:1; font-size:16px; margin-bottom:10px; text-align:center;">ARB/USDC (0px; text-align:center;">ARB/USDC (Arbitrum) - $0.02 Fee</Arbitrum) - $0.02 Fee</h3>
+    <div class="grid-stats">h3>
+    <div class="grid-stats">
+      <div><span>Range</span><strong
+      <div><span>Range</span><strong id="arbRange">$0-$0</strong></div id="arbRange">$0-$0</strong></div>
+      <div><span>Step</span><>
+      <div><span>Step</span><strong id="arbStep">$0.00</strongstrong id="arbStep">$0.00</strong></div>
+      <div><span>Profit</></div>
+      <div><span>Profit</span><strong class="green">~0.5%</span><strong class="green">~0.5%</strong></div>
+    </div>
+    <strong></div>
+    </div>
+    <div class="current-price-box"><span>Current Price</div class="current-price-box"><span>Current Price</span><strong id="arbPrice">$0.00span><strong id="arbPrice">$0.00</strong></div>
+    <div class="grid</strong></div>
+    <div class="grid-bar-container"><div class="grid-bar-fill" id="-bar-container"><div class="grid-bar-fill" id="arbFill" style="width:50%"></divarbFill" style="width:50%"></div><div class="grid-marker" id="arbMarker"><div class="grid-marker" id="arbMarker" style="left:50%"></div></div> style="left:50%"></div></div>
+    <div class="grid-signals">
+     
+    <div class="grid-signals">
+      <div class="signal-box signal-buy"><h4> <div class="signal-box signal-buy"><h4>Next Buy</h4><p id="arbBuy"Next Buy</h4><p id="arbBuy" class="green">$0.00</p></div class="green">$0.00</p></div>
+      <div class="signal-box signal-sell>
+      <div class="signal-box signal-sell"><h4>Next Sell</h4><p id"><h4>Next Sell</h4><p id="arbSell" class="red">$0.00="arbSell" class="red">$0.00</p></div>
+    </div>
+   </p></div>
+    </div>
+    <a href="https://app.uniswap.org/# <a href="https://app.uniswap.org/#/swap?outputCurrency=0x912CE/swap?outputCurrency=0x912CE59144191C12059144191C1204E64559FE82534E64559FE8253a0e49E6548&chaina0e49E6548&chain=arbitrum" target="_blank" class="execute=arbitrum" target="_blank" class="execute-btn" style="background:#28a0-btn" style="background:#28a0f0; color:#fff;">Trade on Uniswapf0; color:#fff;">Trade on Uniswap (Arb)</a>
+  </div>
+
+ (Arb)</a>
+  </div>
+
+  <!-- POL WINDOW -->
+  <div class="grid  <!-- POL WINDOW -->
+  <div class="grid-tracker">
+    <h3 style="color:#-tracker">
+    <h3 style="color:#00d9ff; font-size:16px00d9ff; font-size:16px; margin-bottom:10px; text-align:center;">; margin-bottom:10px; text-align:center;">POL/USDC (Polygon) - $0.0POL/USDC (Polygon) - $0.01 Fee</h3>
+    <div class="1 Fee</h3>
+    <div class="grid-stats">
+      <div><span>Range</grid-stats">
+      <div><span>Range</span><strong id="polRange">$0-$0</span><strong id="polRange">$0-$0</strong></div>
+      <div><span>Stepstrong></div>
+      <div><span>Step</span><strong id="polStep">$0.0</span><strong id="polStep">$0.00</strong></div>
+      <div><span0</strong></div>
+      <div><span>Profit</span><strong class="green">~0>Profit</span><strong class="green">~0.5%</strong></div>
+    </div>.5%</strong></div>
+    </div>
+    <div class="current-price-box"><span>
+    <div class="current-price-box"><span>Current Price</span><strong id="polPrice">$0Current Price</span><strong id="polPrice">$0.00</strong></div>
+    <div class="grid-bar-container"><div class="grid-bar-fill.00</strong></div>
+    <div class="grid-bar-container"><div class="grid-bar-fill" id="polFill" style="width:50" id="polFill" style="width:50%"></div><div class="grid-marker" id="%"></div><div class="grid-marker" id="polMarker" style="left:50%"></divpolMarker" style="left:50%"></div></div>
+    <div class="grid-signals></div>
+    <div class="grid-signals">
+      <div class="signal-box signal-buy"><">
+      <div class="signal-box signal-buy"><h4>Next Buy</h4><p id="h4>Next Buy</h4><p id="polBuy" class="green">$0.00</polBuy" class="green">$0.00</p></div>
+      <div class="signal-boxp></div>
+      <div class="signal-box signal-sell"><h4>Next Sell</h4 signal-sell"><h4>Next Sell</h4><p id="polSell" class="red">$0><p id="polSell" class="red">$0.00</p></div>
+    </div.00</p></div>
+    </div>
+    <a href="https://app.unis>
+    <a href="https://app.uniswap.org/#/swap?outputCurrency=0x7wap.org/#/swap?outputCurrency=0x7D1AfA7B718fb89D1AfA7B718fb893dB30A3aBc0Cfc3dB30A3aBc0Cfc608AaCfeBB0&chain=p608AaCfeBB0&chain=polygon" target="_blank" class="execute-btn" styleolygon" target="_blank" class="execute-btn" style="background:#8247e5; color:#="background:#8247e5; color:#fff;">Trade on Uniswap (Poly)</a>fff;">Trade on Uniswap (Poly)</a>
+  </div>
+
 </div>
 
-<div style="margin-bottom:30px>
+<div style
+  </div>
+
+</div>
 
 <div style="margin-bottom:30px">
-<h2 class="section-title">💼 Active">
-<h2 class="section-title">💼 Active Wallets & Live Balances</h2>
-<div Wallets & Live Balances</h2>
-<div class="card" style="padding:0;overflow:hidden class="card" style="padding:0;overflow:hidden">
+<h2 class="margin-bottom:30px">
+<h2 class="section-title">💼 Active Wallets & Live Bal="section-title">💼 Active Wallets & Live Balances</h2>
+<div class="card" styleances</h2>
+<div class="card" style="padding:0;overflow:hidden">
+<table class="="padding:0;overflow:hidden">
 <table class="wallets-table">
-<thead><">
-<table class="wallets-table">
-<thead><tr><th>Type</th><th>Address</thtr><th>Type</th><th>Address</th><th>Holdings (Tracked)</th><th><th>Holdings (Tracked)</th><th>USD Value</th></tr></thead>
-<tbody>USD Value</th></tr></thead>
+<thead><tr><th>Type</wallets-table">
+<thead><tr><th>Type</th><th>Address</th><th>Holdingsth><th>Address</th><th>Holdings (Tracked)</th><th>USD Value</th (Tracked)</th><th>USD Value</th></tr></thead>
+<tbody id="walletsBody></tr></thead>
 <tbody id="walletsBody">
-<tr><td colspan=" id="walletsBody">
-<tr><td colspan="4" style="text-align:center;color:#94a4" style="text-align:center;color:#94a3b8;padding:20px">Connect a wallet3b8;padding:20px">Connect a wallet or add a watch address</td></tr>
-</ or add a watch address</td></tr>
+<tr><td colspan="4" style="text">
+<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:-align:center;color:#94a3b8;padding:20px">Connect a wallet or add a watch address20px">Connect a wallet or add a watch address</td></tr>
+</tbody>
+</table</td></tr>
 </tbody>
 </table>
 </div>
-</tbody>
-</table>
+</div>
+
+<h2>
 </div>
 </div>
 
-<h2 class="section-title">div>
-
-<h2 class="section-title"> AI Top Picks - Live Scored & Ranked</h AI Top Picks - Live Scored & Ranked</h2>
-<div class="top-grid" id="top2>
-<div class="top-grid" id="topPicks"><div class="card">Loading...</div></Picks"><div class="card">Loading...</div></div>
-<h2 class="section-title">div>
-<h2 class="section-title"> Research Queue - Live Monitored</h2>
- Research Queue - Live Monitored</h2>
-<div class="queue-grid" id="queuePicks"><<div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
-
+<h2 class="section-title">🎯 AI Top class="section-title">🎯 AI Top Picks - Live Scored & Ranked</h2>
+ Picks - Live Scored & Ranked</h2>
+<div class="top-grid" id="topPicks"><<div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 div class="card">Loading...</div></div>
+<h2 class="section-title">🔬 Research Queue<h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
+<div class=" - Live Monitored</h2>
+<div class="queue-grid" id="queuePicks"><div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
+
+<div id="card">Loading...</div></div>
 
 <div id="watchModal" class="modal">
-<div<div id="watchModal" class="modal">
+<div class="modalwatchModal" class="modal">
 <div class="modal-content">
-<h2>Add Watch-Only class="modal-content">
+<h2>Add Watch-Only Wallet</h-content">
 <h2>Add Watch-Only Wallet</h2>
-<div class="input-group"> Wallet</h2>
 <div class="input-group">
-<label>Wallet Address (Ethereum 0x
-<label>Wallet Address (Ethereum 0x... or Solana)</label>
-<input type="text... or Solana)</label>
-<input type="text" id="watchAddress" placeholder="0x... or" id="watchAddress" placeholder="0x... or Solana address">
+<label>2>
+<div class="input-group">
+<label>Wallet Address (Ethereum 0x... or SolWallet Address (Ethereum 0x... or Solana)</label>
+<input type="text" id="ana)</label>
+<input type="text" id="watchAddress" placeholder="0x... or Solana addresswatchAddress" placeholder="0x... or Solana address">
 </div>
-<button class=" Solana address">
+<button class="btn" onclick">
 </div>
-<button class="btn" onclick="addWatchOnlyWallet()" style="widthbtn" onclick="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button>:100%">Add to Watchlist</button>
-<button class="btn" onclick="closeWatchOnlyModal
-<button class="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:()" style="width:100%;margin-top:10px;background:#334155;color10px;background:#334155;color:#fff">Cancel</button>
+<button class="btn" onclick="addWatchOnlyWallet()" style="width:10="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button>
+<button class0%">Add to Watchlist</button>
+<button class="btn" onclick="closeWatchOnlyModal()" style="="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:10pxwidth:100%;margin-top:10px;background:#334155;color:#fff">;background:#334155;color:#fff">Cancel</button>
 </div>
-:#fff">Cancel</button>
+</div>Cancel</button>
 </div>
 </div>
 
-<div id="mobileModal" class="</div>
+<div id="mobileModal" class="modal">
+
 
 <div id="mobileModal" class="modal">
 <div class="modal-content">
-<h2modal">
-<div class="modal-content">
-<h2>📱 Connect on iOS / Mobile</h2>📱 Connect on iOS / Mobile</h2>
-<p style="color:#94a3b>
-<p style="color:#94a3b8;margin-bottom:20px;font-size:148;margin-bottom:20px;font-size:14px">Tap your wallet below to open this site inside yourpx">Tap your wallet below to open this site inside your wallet's secure browser. Once it opens, click "Connect wallet's secure browser. Once it opens, click "Connect Rabby" or "Connect Phantom" at the top.</ Rabby" or "Connect Phantom" at the top.</p>
-<a href="#" id="linkMetaMask"p>
-<a href="#" id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</ class="mobile-btn btn-mm">Open in MetaMask</a>
-<a href="#" id="linkPhantom"a>
-<a href="#" id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in class="mobile-btn btn-phantom-mobile">Open in Phantom</a>
-<a href="#" id="linkR Phantom</a>
-<a href="#" id="linkRabby" class="mobile-btn btn-rabby-mobile">Openabby" class="mobile-btn btn-rabby-mobile">Open in Rabby</a>
-<button class="btn" in Rabby</a>
-<button class="btn" onclick="closeMobileModal()" style="width:10 onclick="closeMobileModal()" style="width:100%;background:#334155;color:#0%;background:#334155;color:#fff;margin-top:10px">Cancel</button>fff;margin-top:10px">Cancel</button>
+<h2><div class="modal-content">
+<h2> Connect on iOS / Mobile</h2>
+<p Connect on iOS / Mobile</h2>
+<p style="color:#94a3b8;margin-bottom style="color:#94a3b8;margin-bottom:20px;font-size:14px">Tap:20px;font-size:14px">Tap your wallet below to open this site inside your wallet's secure your wallet below to open this site inside your wallet's secure browser. Once it opens, click "Connect Rabby" browser. Once it opens, click "Connect Rabby" or "Connect Phantom" at the top.</p>
+ or "Connect Phantom" at the top.</p>
+<a href="#" id="linkMetaMask" class="mobile<a href="#" id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</a>
+-btn btn-mm">Open in MetaMask</a>
+<a href="#" id="linkPhantom" class="mobile<a href="#" id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in Phantom</a-btn btn-phantom-mobile">Open in Phantom</a>
+<a href="#" id="linkRabby" class>
+<a href="#" id="linkRabby" class="mobile-btn btn-rabby-mobile">Open in Rabby="mobile-btn btn-rabby-mobile">Open in Rabby</a>
+<button class="btn" onclick="close</a>
+<button class="btn" onclick="closeMobileModal()" style="width:100%;backgroundMobileModal()" style="width:100%;background:#334155;color:#fff;margin-top:#334155;color:#fff;margin-top:10px">Cancel</button>
+</div:10px">Cancel</button>
 </div>
 </div>
 
 <script>
-
-</div>
+const ALC>
 </div>
 
 <script>
-const ALCHEMY_KEY = 'alch_8const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7z91EHYfjb1LqQ7zXdW002';
-const ALCHEMYXdW002';
-const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
-
-const chainRPCs/v2/${ALCHEMY_KEY}`;
+const ALCHEMY_KEY = 'alch_891EHHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW0Yfjb1LqQ7zXdW002';
+const ALCHEMY_URL = `02';
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
 const chainRPCs = {
-  'Arbitrum': 'https:// = {
-  'Arbitrum': 'https://arb1.arbitrum.io/rpc',
-  'arb1.arbitrum.io/rpc',
+ALCHEMY_KEY}`;
+
+const chainRPCs = {
+  'Arbitrum': 'https://arb1.ar  'Arbitrum': 'https://arb1.arbitrum.io/rpc',
+  'Polygon': 'bitrum.io/rpc',
   'Polygon': 'https://polygon-rpc.com',
- Polygon': 'https://polygon-rpc.com',
+  'Base':https://polygon-rpc.com',
   'Base': 'https://mainnet.base.org',
- 'Base': 'https://mainnet.base.org',
-  'Optimism': 'https://mainnet.optim  'Optimism': 'https://mainnet.optimism.io',
-  'Zora': 'https://ism.io',
+  'Opt 'https://mainnet.base.org',
+  'Optimism': 'https://mainnet.optimism.io',imism': 'https://mainnet.optimism.io',
+  'Zora': 'https://rpc.zora
   'Zora': 'https://rpc.zora.energy'
 };
 
-let connectedAddress =rpc.zora.energy'
+let connectedAddress = null;
+.energy'
 };
 
 let connectedAddress = null;
 let watchOnlyAddress = null;
-let null;
-let watchOnlyAddress = null;
-let priceMap = { 'ETH': 0, 'M priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1,ATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE':  'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB':0, 'SHIB': 0, 'ARB': 0, 'SOL': 0 };
+let priceMap =let watchOnlyAddress = null;
+let priceMap = { 'ETH': 0, 'MATIC':  { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, '': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0,SHIB': 0, 'ARB': 0, 'SOL': 0 };
 
-let 0, 'SOL': 0 };
+let currentCurrency = 'SOL': 0 };
 
 let currentCurrency = 'USD';
-let audRate =  currentCurrency = 'USD';
+let audRate = 1.5 'USD';
 let audRate = 1.52; 
-let lastScoredData =1.52; 
+let lastScoredData = [];
+
+const2; 
 let lastScoredData = [];
 
 const knownTokens = [
-  { sym: [];
+  { sym: 'USDT knownTokens = [
+  { sym: 'USDT', addr: '0xdAC17F95', addr: '0xdAC17F958D2ee523a22068D2ee523a2206206994597C13206994597C13D831ec7', dec: 6 },D831ec7', dec: 6 },
+  { sym: 'USDC', addr: '
+  { sym: 'USDC', addr: '0xA0b86991c620xA0b86991c6218b36c1d19D418b36c1d19D4a2e9Eb0cE3606a2e9Eb0cE3606eB48', dec: 6 },
+ eB48', dec: 6 },
+  { sym: 'PEPE', addr: '0x { sym: 'PEPE', addr: '0x6982508145456982508145454Ce325dDbE47a24Ce325dDbE47a25d4ec3d2311935d4ec3d2311933', dec: 18 },
+  { sym3', dec: 18 },
+  { sym: 'SHIB', addr: '0x95: 'SHIB', addr: '0x95aD61b0a150d7aD61b0a150d79219dCF64E1E69219dCF64E1E6Cc01f0B64C4cECc01f0B64C4cE', dec: 18 },
+  { sym:', dec: 18 },
+  { sym: 'ARB', addr: '0x912CE 'ARB', addr: '0x912CE59144191C12059144191C1204E64559FE82534E64559FE8253a0e49E6548', deca0e49E6548', dec: 18 }
+];
 
-const knownTokens = [
-  { sym: 'USDT', addr: '0xdAC17 'USDT', addr: '0xdAC17F958D2ee523a2F958D2ee523a2206206994597206206994597C13D831ec7', dec:C13D831ec7', dec: 6 },
-  { sym: 'USDC', 6 },
-  { sym: 'USDC', addr: '0xA0b86991 addr: '0xA0b86991c6218b36c1d1c6218b36c1d19D4a2e9Eb0cE39D4a2e9Eb0cE3606eB48', dec: 6606eB48', dec: 6 },
-  { sym: 'PEPE', addr: },
-  { sym: 'PEPE', addr: '0x698250814 '0x6982508145454Ce325dDbE45454Ce325dDbE47a25d4ec3d2317a25d4ec3d2311933', dec: 18 },
-1933', dec: 18 },
-  { sym: 'SHIB', addr: '0  { sym: 'SHIB', addr: '0x95aD61b0a15x95aD61b0a150d79219dCF64E0d79219dCF64E1E6Cc01f0B64C1E6Cc01f0B64C4cE', dec: 18 },
- 4cE', dec: 18 },
-  { sym: 'ARB', addr: '0x9 { sym: 'ARB', addr: '0x912CE59144191C12CE59144191C1204E645591204E64559FE8253a0e49E6FE8253a0e49E6548', dec: 18 }
-];548', dec: 18 }
+function setCurrency(curr: 18 }
 ];
 
 function setCurrency(curr) {
-  currentCurrency =
-
-function setCurrency(curr) {
   currentCurrency = curr;
-  document.getElementById('btnUSD').classList.toggle curr;
-  document.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
-  document.getElementById('active', curr === 'USD');
-  document.getElementById('btnAUD').classList.toggle('active', curr === '('btnAUD').classList.toggle('active', curr === 'AUD');
+  document) {
+  currentCurrency = curr;
+  document.getElementById('btnUSD').classList.toggle('active', curr ===.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
+  document.getElementById('btnAUD').classList 'USD');
+  document.getElementById('btnAUD').classList.toggle('active', curr === 'AUD');
+  refresh.toggle('active', curr === 'AUD');
   refreshDisplay();
-  if(connectedAUD');
-  refreshDisplay();
+  if(connectedAddress || watchOnlyAddressDisplay();
   if(connectedAddress || watchOnlyAddress) fetchWalletData();
-}Address || watchOnlyAddress) fetchWalletData();
+}
+
+function formatMoney(us) fetchWalletData();
 }
 
 function formatMoney(usdAmount) {
-  let
-
-function formatMoney(usdAmount) {
+  let val = usdAmountdAmount) {
   let val = usdAmount;
-  let symbol = '$ val = usdAmount;
   let symbol = '$';
-  if (currentCurrency === 'AUD') {';
-  if (currentCurrency === 'AUD') { val = usdAmount * audRate; symbol = ' val = usdAmount * audRate; symbol = 'A$'; }
-  return symbol + val.toFixed(A$'; }
+  if (;
+  let symbol = '$';
+  if (currentCurrency === 'AUD') { val = usdAmountcurrentCurrency === 'AUD') { val = usdAmount * audRate; symbol = 'A$'; }
+ * audRate; symbol = 'A$'; }
   return symbol + val.toFixed(2);
 }
 
-function formatPrice(usdPrice)2);
+  return symbol + val.toFixed(2);
 }
 
 function formatPrice(usdPrice) {
+  let valfunction formatPrice(usdPrice) {
   let val = usdPrice;
-  {
-  let val = usdPrice;
+  let symbol = '$'; = usdPrice;
   let symbol = '$';
-  if (currentCurrency === let symbol = '$';
-  if (currentCurrency === 'AUD') { val = usdPrice * audRate 'AUD') { val = usdPrice * audRate; symbol = 'A$'; }
-  return symbol; symbol = 'A$'; }
-  return symbol + val.toFixed(usdPrice < 1 ? 6 + val.toFixed(usdPrice < 1 ? 6 : 2);
-}
-
-async function connectRabby : 2);
+  if (currentCurrency === 'AUD') { val
+  if (currentCurrency === 'AUD') { val = usdPrice * audRate; symbol = 'A = usdPrice * audRate; symbol = 'A$'; }
+  return symbol + val.toFixed(usd$'; }
+  return symbol + val.toFixed(usdPrice < 1 ? 6 : 2);
+Price < 1 ? 6 : 2);
 }
 
 async function connectRabby(){
-if(!window.ethereum){alert('R(){
-if(!window.ethereum){alert('Rabby not detected! If on iOS, use the "Connectabby not detected! If on iOS, use the "Connect Mobile" button.');return;}
+if}
+
+async function connectRabby(){
+if(!window.ethereum){alert('Rabby not detected!(!window.ethereum){alert('Rabby not detected! If on iOS, use the "Connect Mobile" button.'); If on iOS, use the "Connect Mobile" button.');return;}
 try{
-const accounts Mobile" button.');return;}
+const accounts = await window.ethreturn;}
 try{
-const accounts = await window.ethereum.request({method:'eth_requestAccounts = await window.ethereum.request({method:'eth_requestAccounts'});
+const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+connectedereum.request({method:'eth_requestAccounts'});
 connectedAddress = accounts[0];
-document'});
-connectedAddress = accounts[0];
-document.getElementById('rabbyBtn').innerText = 'Rabby ✓.getElementById('rabbyBtn').innerText = 'Rabby ✓';
-document.getElementById('rabbyBtn').classList.add('';
+document.getElementById('rabbyAddress = accounts[0];
+document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
+document.getElementByIdBtn').innerText = 'Rabby ✓';
 document.getElementById('rabbyBtn').classList.add('btn-connected');
+('rabbyBtn').classList.add('btn-connected');
 fetchWalletData();
-}catch(e){btn-connected');
-fetchWalletData();
+}catch(e){alert('Failed:fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
 }
 
-asyncalert('Failed: '+e.message)}
+async function connectPhantom '+e.message)}
 }
 
 async function connectPhantom(){
-if(!window.solana){ function connectPhantom(){
-if(!window.solana){alert('Phantom not detected! If on iOS, usealert('Phantom not detected! If on iOS, use the "Connect Mobile" button.');return;}
-try{ the "Connect Mobile" button.');return;}
+if(!window.solana){alert('Ph(){
+if(!window.solana){alert('Phantom not detected! If on iOS, use the "Connectantom not detected! If on iOS, use the "Connect Mobile" button.');return;}
+try{
+const resp Mobile" button.');return;}
 try{
 const resp = await window.solana.connect();
-connected
-const resp = await window.solana.connect();
+connectedAddress = resp = await window.solana.connect();
 connectedAddress = resp.publicKey.toString();
-document.getElementById('phantAddress = resp.publicKey.toString();
+document.getElementById('phantomBtn')..publicKey.toString();
 document.getElementById('phantomBtn').innerText = 'Phantom ✓';
-documentomBtn').innerText = 'Phantom ✓';
-document.getElementById('phantomBtn').classList.add('btn-connected');.getElementById('phantomBtn').classList.add('btn-connected');
+document.getElementById('phantinnerText = 'Phantom ✓';
+document.getElementById('phantomBtn').classList.add('btn-connected');
+fetchWalletomBtn').classList.add('btn-connected');
 fetchWalletData();
-}catch(e){alert('Failed
-fetchWalletData();
+}catch(e){alert('Failed: '+eData();
 }catch(e){alert('Failed: '+e.message)}
 }
 
-function openMobileModal: '+e.message)}
+function openMobileModal(){
+ .message)}
 }
 
 function openMobileModal(){
-  const currentUrl = encodeURIComponent(window.location.href);(){
   const currentUrl = encodeURIComponent(window.location.href);
-  document.getElementById('linkMetaMask').href = `
-  document.getElementById('linkMetaMask').href = `https://metamask.app.link/dapp/${window.locationhttps://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
-  document.getElementById('.hostname}${window.location.pathname}`;
-  document.getElementById('linkPhantom').href = `https://phantom.comlinkPhantom').href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${/ul/v1/web3modal/?dapp_url=${currentUrl}`;
-  document.getElementById('linkRabbycurrentUrl}`;
-  document.getElementById('linkRabby').href = `https://rabby.io/ul/v').href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`1/web3modal/?dapp_url=${currentUrl}`;
-  document.getElementById('mobileModal').style.display =;
-  document.getElementById('mobileModal').style.display = 'flex';
+  document const currentUrl = encodeURIComponent(window.location.href);
+  document.getElementById('linkMetaMask').href = `https://met.getElementById('linkMetaMask').href = `https://metamask.app.link/dapp/${window.location.hostname}${windowamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
+  document.getElementById('linkPhantom.location.pathname}`;
+  document.getElementById('linkPhantom').href = `https://phantom.com/ul/v').href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`1/web3modal/?dapp_url=${currentUrl}`;
+  document.getElementById('linkRabby').href =;
+  document.getElementById('linkRabby').href = `https://rabby.io/ul/v1/web3 `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+ modal/?dapp_url=${currentUrl}`;
+  document.getElementById('mobileModal').style.display = 'flex'; document.getElementById('mobileModal').style.display = 'flex';
 }
-function closeMobileModal(){document 'flex';
+function closeMobileModal(){document.getElementById('mobile
 }
-function closeMobileModal(){document.getElementById('mobileModal').style.display = 'none';}.getElementById('mobileModal').style.display = 'none';}
+function closeMobileModal(){document.getElementById('mobileModal').style.display = 'none';}
 
-function openWatchOnlyModal(){document.getElementById('watchModal
+function openModal').style.display = 'none';}
 
-function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
-function closeWatch').style.display = 'flex';}
-function closeWatchOnlyModal(){document.getElementById('watchModal').style.display =OnlyModal(){document.getElementById('watchModal').style.display = 'none';}
-
-async function addWatchOnlyWallet(){ 'none';}
+function openWatchOnlyModal(){document.getElementById('watchModal').style.displayWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
+function closeWatchOnlyModal(){ = 'flex';}
+function closeWatchOnlyModal(){document.getElementById('watchModal').style.display = 'none';document.getElementById('watchModal').style.display = 'none';}
 
 async function addWatchOnlyWallet(){
-const address = document.getElementById('watchAddress').value.trim
+const address}
+
+async function addWatchOnlyWallet(){
 const address = document.getElementById('watchAddress').value.trim();
-if(!address){alert('Please enter a wallet();
-if(!address){alert('Please enter a wallet address');return;}
-if(address.startsWith('0x') address');return;}
-if(address.startsWith('0x') && address.length === 42){ watchOnlyAddress = && address.length === 42){ watchOnlyAddress = address; }
-else if(address.length >= 32 address; }
-else if(address.length >= 32 && address.length <= 44){ watchOnlyAddress = && address.length <= 44){ watchOnlyAddress = address; }
-else{alert('Invalid address format'); address; }
+if = document.getElementById('watchAddress').value.trim();
+if(!address){alert('Please enter a wallet address');return(!address){alert('Please enter a wallet address');return;}
+if(address.startsWith('0x') && address.length;}
+if(address.startsWith('0x') && address.length === 42){ watchOnlyAddress = address; } === 42){ watchOnlyAddress = address; }
+else if(address.length >= 32 && address.length
+else if(address.length >= 32 && address.length <= 44){ watchOnlyAddress = address; } <= 44){ watchOnlyAddress = address; }
+else{alert('Invalid address format');return;}
+
 else{alert('Invalid address format');return;}
 closeWatchOnlyModal();
-fetchWalletDatareturn;}
-closeWatchOnlyModal();
+fetchWalletData();
+}closeWatchOnlyModal();
 fetchWalletData();
 }
 
 async function fetchWalletData(){
-if();
-}
+if(!connectedAddress
 
 async function fetchWalletData(){
 if(!connectedAddress && !watchOnlyAddress) return;
-(!connectedAddress && !watchOnlyAddress) return;
+let totalPortfolio && !watchOnlyAddress) return;
 let totalPortfolio = 0;
-let tableHtml =let totalPortfolio = 0;
+let tableHtml = '';
+let = 0;
 let tableHtml = '';
 let processedAddresses = new Set();
-let all '';
-let processedAddresses = new Set();
+let allAddresses = []; processedAddresses = new Set();
 let allAddresses = [];
 
-async function processWallet(addr, type)Addresses = [];
+async function processWallet(addr, type) {
+if
 
 async function processWallet(addr, type) {
-if(processedAddresses.has(addr.toLowerCase())) return; {
 if(processedAddresses.has(addr.toLowerCase())) return;
-processedAddresses.add(addr.toLowerCase());
-allAddresses.push(addr
+processedAddresses(processedAddresses.has(addr.toLowerCase())) return;
 processedAddresses.add(addr.toLowerCase());
 allAddresses.push(addr);
+let.add(addr.toLowerCase());
+allAddresses.push(addr);
 let walletTotal = 0;
-let all);
-let walletTotal = 0;
+let allHoldings = walletTotal = 0;
 let allHoldings = [];
 
 try {
-const ethRes =Holdings = [];
+const ethRes = await fetch(AL [];
 
 try {
-const ethRes = await fetch(ALCHEMY_URL, { method: 'POST', await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
-', params: [addr, 'latest'] }) });
+const ethRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: {CHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id:.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
+const ethData [addr, 'latest'] }) });
 const ethData = await ethRes.json();
-const ethconst ethData = await ethRes.json();
-const ethBal = ethData.result ? parseInt(ethData.result,Bal = ethData.result ? parseInt(ethData.result, 16) / 1e18 :  16) / 1e18 : 0;
-if(ethBal > 0.00;
-if(ethBal > 0.00001) {
-const val = ethBal0001) {
+const ethBal = eth = await ethRes.json();
+const ethBal = ethData.result ? parseInt(ethData.result, 16Data.result ? parseInt(ethData.result, 16) / 1e18 : 0;
+) / 1e18 : 0;
+if(ethBal > 0.0000if(ethBal > 0.00001) {
+const val = ethBal * (price1) {
 const val = ethBal * (priceMap['ETH'] || 0);
- * (priceMap['ETH'] || 0);
+walletTotal +=Map['ETH'] || 0);
 walletTotal += val;
-allHoldings.push(`ETHwalletTotal += val;
-allHoldings.push(`ETH: ${ethBal.toFixed(6)} (${formatMoney(val: ${ethBal.toFixed(6)} (${formatMoney(val)})`);
-}
-for(let t of knownTokens)})`);
+allHoldings.push(`ETH: ${eth val;
+allHoldings.push(`ETH: ${ethBal.toFixed(6)} (${formatMoney(val)})`);Bal.toFixed(6)} (${formatMoney(val)})`);
 }
 for(let t of knownTokens) {
-const data = "0x70a) {
-const data = "0x70a08231000000008231000000000000000000000000000000000000" + addr.substring(2);00000" + addr.substring(2);
-const tokenRes = await fetch(ALCHEMY_URL, {
-const tokenRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: '2.0', id: 1, method: 'eth_call', params: [{ to: t.addr: 'eth_call', params: [{ to: t.addr, data: data }, 'latest'] }) });
-const, data: data }, 'latest'] }) });
+
+}
+for(let t of knownTokens) {
+const data = "0x70a082const data = "0x70a08231000000000031000000000000000000000000000000000000" + addr.substring(2);
+const token00" + addr.substring(2);
+const tokenRes = await fetch(ALCHEMY_URL, { method: 'Res = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/jsonPOST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth.0', id: 1, method: 'eth_call', params: [{ to: t.addr, data:_call', params: [{ to: t.addr, data: data }, 'latest'] }) });
+const tokenData = data }, 'latest'] }) });
 const tokenData = await tokenRes.json();
-if(tokenData tokenData = await tokenRes.json();
-if(tokenData.result && tokenData.result !== '0x' && token.result && tokenData.result !== '0x' && tokenData.result !== '0x0') {
-const balData.result !== '0x0') {
-const bal = parseInt(tokenData.result, 16) / Math = parseInt(tokenData.result, 16) / Math.pow(10, t.dec);
-if(bal.pow(10, t.dec);
+if(tokenData.result && token await tokenRes.json();
+if(tokenData.result && tokenData.result !== '0x' && tokenData.result !==Data.result !== '0x' && tokenData.result !== '0x0') {
+const bal = parseInt(token '0x0') {
+const bal = parseInt(tokenData.result, 16) / Math.pow(1Data.result, 16) / Math.pow(10, t.dec);
+if(bal > 00, t.dec);
 if(bal > 0) {
-const price = priceMap[t > 0) {
+const price = priceMap[t.sym] ||) {
 const price = priceMap[t.sym] || 0;
-const val = bal *.sym] || 0;
+const val = bal * price;
+ 0;
 const val = bal * price;
 walletTotal += val;
-allHoldings price;
-walletTotal += val;
-allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} (${formatMoney(valmaximumFractionDigits: 4})} (${formatMoney(val)})`);
+allHoldings.push(`${twalletTotal += val;
+allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} (${formatMoney(val)})`);: 4})} (${formatMoney(val)})`);
 }
 }
 }
-for(let)})`);
+for(let [chainName
 }
 }
 }
-for(let [chainName, rpc] of Object.entries(chainRPCs [chainName, rpc] of Object.entries(chainRPCs)) {
+for(let [chainName, rpc] of Object.entries(chainRPCs)) {
+, rpc] of Object.entries(chainRPCs)) {
 try {
-const nativeRes = await fetch)) {
-try {
-const nativeRes = await fetch(rpc, { method: 'POST', headers: {(rpc, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id:.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
-const nativeData [addr, 'latest'] }) });
+const nativeRes = await fetch(rpc,try {
+const nativeRes = await fetch(rpc, { method: 'POST', headers: { 'Content-Type { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ json': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1,rpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, method: 'eth_getBalance', params: [addr, 'latest'] }) });
+const nativeData = await native 'latest'] }) });
 const nativeData = await nativeRes.json();
-const nativeBal = native = await nativeRes.json();
-const nativeBal = nativeData.result ? parseInt(nativeData.result, 16Data.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
-) / 1e18 : 0;
-if(nativeBal > 0.0000if(nativeBal > 0.00001) {
-const priceKey = chainName === '1) {
+const nativeBal = nativeData.result ?Res.json();
+const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) /  parseInt(nativeData.result, 16) / 1e18 : 0;
+if(native1e18 : 0;
+if(nativeBal > 0.00001) {Bal > 0.00001) {
+const priceKey = chainName === 'Polygon' ?
 const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
-Polygon' ? 'MATIC' : 'ETH';
-const val = nativeBal * (priceMap[priceKeyconst val = nativeBal * (priceMap[priceKey] || 0);
+const val = 'MATIC' : 'ETH';
+const val = nativeBal * (priceMap[priceKey] ||  nativeBal * (priceMap[priceKey] || 0);
 walletTotal += val;
-] || 0);
+allHoldings0);
 walletTotal += val;
-allHoldings.push(`${chainName} ETH: ${nativeallHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} (${formatMoney(val)})`);Bal.toFixed(6)} (${formatMoney(val)})`);
+allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(.push(`${chainName} ETH: ${nativeBal.toFixed(6)} (${formatMoney(val)})`);
+}
+6)} (${formatMoney(val)})`);
 }
 } catch(e) {}
 }
+} catch(e)} catch(e) {}
 }
-}
-} catch(e) {}
-}
-} catch(e) { console.error('Error:', e); all catch(e) { console.error('Error:', e); allHoldings.push('API Error'); }
+} catch(e) { console.error('Error:', e); allHoldings.push { console.error('Error:', e); allHoldings.push('API Error'); }
 
-totalPortfolio +=Holdings.push('API Error'); }
+totalPortfolio += walletTotal;('API Error'); }
 
 totalPortfolio += walletTotal;
-let shortAddr = addr.substring(0 walletTotal;
-let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length -,6) + '...' + addr.substring(addr.length - 4);
-let holdingsText = allHoldings.length 4);
-let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
-tableHtml += `<tr 'No tracked tokens found';
-tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong class="wallet-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style></td><td>${shortAddr}</td><td style="font-size:11px;color:#cbd5e="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</1;line-height:1.4">${holdingsText}</td><td class="green">${formatMoney(walletTotal)}</td><td class="green">${formatMoney(walletTotal)}</td></tr>`;
+let shortAddr = addr.substring(0,6)
+let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4); + '...' + addr.substring(addr.length - 4);
+let holdingsText = allHoldings.length > 0
+let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked ? allHoldings.join('<br>') : 'No tracked tokens found';
+tableHtml += `<tr class="wallet tokens found';
+tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong></td><-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style="font-sizetd>${shortAddr}</td><td style="font-size:11px;color:#cbd5e1;line-height:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td><td:1.4">${holdingsText}</td><td class="green">${formatMoney(walletTotal)}</td></tr class="green">${formatMoney(walletTotal)}</td></tr>`;
 }
 
-if(connectedAddresstd></tr>`;
+if(connectedAddress) await process>`;
 }
 
 if(connectedAddress) await processWallet(connectedAddress, 'Connected');
-) await processWallet(connectedAddress, 'Connected');
-if(watchOnlyAddress) await processWallet(watchOnlyif(watchOnlyAddress) await processWallet(watchOnlyAddress, 'Watch-Only');
+if(watchWallet(connectedAddress, 'Connected');
+if(watchOnlyAddress) await processWallet(watchOnlyAddress, 'OnlyAddress) await processWallet(watchOnlyAddress, 'Watch-Only');
 
-document.getElementById('Address, 'Watch-Only');
+document.getElementById('totalPortfolio').innerTextWatch-Only');
 
 document.getElementById('totalPortfolio').innerText = formatMoney(totalPortfolio);
-documenttotalPortfolio').innerText = formatMoney(totalPortfolio);
+document.getElementById('wallets = formatMoney(totalPortfolio);
 document.getElementById('walletsBody').innerHTML = tableHtml;
-.getElementById('walletsBody').innerHTML = tableHtml;
-document.getElementById('lastUpdated').innerText = 'Live: 'document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ` | ${current + new Date().toLocaleTimeString() + ` | ${currentCurrency} Mode`;
+document.getElementById('lastBody').innerHTML = tableHtml;
+document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().Updated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ` | ${currentCurrency} Mode`;toLocaleTimeString() + ` | ${currentCurrency} Mode`;
 
 let debankHtml = '';
-Currency} Mode`;
+for(let addr of
 
 let debankHtml = '';
 for(let addr of allAddresses) {
-let short =for(let addr of allAddresses) {
-let short = addr.substring(0,6) + '...' + addr addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
-debankHtml +=.substring(addr.length - 4);
-debankHtml += `<a href="https://debank.com/profile/${addr `<a href="https://debank.com/profile/${addr}" target="_blank" class="btn btn-debank"}" target="_blank" class="btn btn-debank" style="margin:3px">View ${short} on style="margin:3px">View ${short} on DeBank</a> `;
+let short = addr.substring(0 allAddresses) {
+let short = addr.substring(0,6) + '...' + addr.substring(addr.length -,6) + '...' + addr.substring(addr.length - 4);
+debankHtml += `<a href=" 4);
+debankHtml += `<a href="https://debank.com/profile/${addr}" target="_blankhttps://debank.com/profile/${addr}" target="_blank" class="btn btn-debank" style="margin:" class="btn btn-debank" style="margin:3px">View ${short} on DeBank</a3px">View ${short} on DeBank</a> `;
 }
-document.getElementById DeBank</a> `;
+document.getElementById('debankLinks> `;
 }
 document.getElementById('debankLinks').innerHTML = debankHtml;
-('debankLinks').innerHTML = debankHtml;
 }
 
-async function copyAddr(a){navigator.clipboard.write}
+async function').innerHTML = debankHtml;
+}
 
-async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
+async function copyAddr(a){navigator.clipboard.writeText(a);alert copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
-Text(a);alert('Copied: '+a)}
+function calculateScore(('Copied: '+a)}
 
 function calculateScore(coin) {
-let score = function calculateScore(coin) {
 let score = 50; 
-const change = coin.price_change_percentage_50; 
-const change = coin.price_change_percentage_24h || 0;
-if(change > 24h || 0;
+coin) {
+let score = 50; 
+const change = coin.price_change_percentage_24h ||const change = coin.price_change_percentage_24h || 0;
+if(change > 10) score 0;
 if(change > 10) score += 20;
-else if10) score += 20;
+else if(change > 5 += 20;
 else if(change > 5) score += 15;
-(change > 5) score += 15;
-else if(change > 0) score += 10else if(change > 0) score += 10;
-else if(change > -5) score += ;
+else if(change >) score += 15;
+else if(change > 0) score += 10;
+else if 0) score += 10;
 else if(change > -5) score += 5;
+else(change > -5) score += 5;
 else score -= 10;
 
-const5;
-else score -= 10;
+const currentPrice = score -= 10;
 
 const currentPrice = coin.current_price || 0;
-const currentPrice = coin.current_price || 0;
-const low24h = coin.low_24h || low24h = coin.low_24h || currentPrice;
-if(currentPrice > 0) { currentPrice;
+const low24 coin.current_price || 0;
+const low24h = coin.low_24h || currentPrice;h = coin.low_24h || currentPrice;
 if(currentPrice > 0) {
-const dipTarget = low24h * 1
-const dipTarget = low24h * 1.02;
-const distance = ((currentPrice -.02;
-const distance = ((currentPrice - dipTarget) / currentPrice) * 100 dipTarget) / currentPrice) * 100;
-if(distance < 5) score += 2;
+const dip
+if(currentPrice > 0) {
+const dipTarget = low24h * 1.02Target = low24h * 1.02;
+const distance = ((currentPrice - dipTarget);
+const distance = ((currentPrice - dipTarget) / currentPrice) * 100;
+if / currentPrice) * 100;
 if(distance < 5) score += 25;
-else if(distance < 15) score5;
-else if(distance < 15) score += 10;
+(distance < 5) score += 25;
+else if(distance < 15) score += 1else if(distance < 15) score += 10;
 }
-return Math.min( += 10;
+return Math.min(1000;
 }
-return Math.min(100, Math.max(0, Math.round(score100, Math.max(0, Math.round(score)));
-}
-
-function getScoreClass(score) {
-)));
+return Math.min(100, Math.max(0, Math.round(score)));
+}, Math.max(0, Math.round(score)));
 }
 
 function getScoreClass(score) {
-if(score >= 80) return 'score-high';if(score >= 80) return 'score-high';
-if(score >= 60) return 'score-m
+if(score >=
+
+function getScoreClass(score) {
+if(score >= 80) return 'score-high';
+if(score 80) return 'score-high';
 if(score >= 60) return 'score-mid';
-return 'score-low';
-}
-
-constid';
+ >= 60) return 'score-mid';
 return 'score-low';
 }
 
 const coins=[
-{id:'pepe',sym:' coins=[
-{id:'pepe',sym:'PEPE',addr:'0x69825PEPE',addr:'0x6982508145454Ce32508145454Ce325dDbE47a25d4ec3dDbE47a25d4ec3d2311933',dec:1d2311933',dec:18,link:'https://app.uniswap.org/#8,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982/swap?outputCurrency=0x6982508145454Ce32508145454Ce325dDbE47a25d4ec5dDbE47a25d4ec3d2311933&chain=3d2311933&chain=ethereum',reason:'3 whale wallets accumulating.',top:true},ethereum',reason:'3 whale wallets accumulating.',top:true},
-{id:'arbitrum',sym:'ARB',addr
-{id:'arbitrum',sym:'ARB',addr:'0x912CE59144:'0x912CE59144191C1204E645191C1204E64559FE8253a0e59FE8253a0e49E6548',dec:1849E6548',dec:18,link:'https://app.uniswap.org/#/,link:'https://app.uniswap.org/#/swap?outputCurrency=0x912CE5swap?outputCurrency=0x912CE59144191C12049144191C1204E64559FE825E64559FE8253a0e49E6548&3a0e49E6548&chain=ethereum',reason:'L2 momentum.',top:truechain=ethereum',reason:'L2 momentum.',top:true},
-{id:'shiba-inu',sym:'SH},
-{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61IB',addr:'0x95aD61b0a150d79219b0a150d79219dCF64E1E6Cc01fdCF64E1E6Cc01f0B64C4cE',dec:10B64C4cE',dec:18,link:'https://app.uniswap.org/#8,link:'https://app.uniswap.org/#/swap?outputCurrency=0x95aD/swap?outputCurrency=0x95aD61b0a150d79261b0a150d79219dCF64E1E6Cc019dCF64E1E6Cc01f0B64C4cE&chain1f0B64C4cE&chain=ethereum',reason:'Meme season.',top:true},=ethereum',reason:'Meme season.',top:true},
-{id:'dogwifcoin',sym:'WIF
-{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFq',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8KZ9KQanSqYXRcF8fBopzLHYxdM65zcjmfBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag',dec:6,link:'https://jup.ag/swap/SOL-EKpQGSJtj/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcMFqKZ9KQanSqYXRcF8fBopzLHYxdM65F8fBopzLHYxdM65zcjm',reason:'Jupiter volume +120zcjm',reason:'Jupiter volume +120%. (Solana)',top:true},
-{id:'render%. (Solana)',top:true},
-{id:'render-token',sym:'RNDR',addr:'0x6-token',sym:'RNDR',addr:'0x6de037ef9ad2725ebde037ef9ad2725eb40118bb1702ebb240118bb1702ebb27e4aeb24',dec:187e4aeb24',dec:18,link:'https://app.uniswap.org/#/,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6de037swap?outputCurrency=0x6de037ef9ad2725eb4011ef9ad2725eb40118bb1702ebb27e4a8bb1702ebb27e4aeb24&chain=ethereum',reason:'AI narrativeeb24&chain=ethereum',reason:'AI narrative trending.',top:true},
-{id:'ondo-finance', trending.',top:true},
-{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82Ff8e4a5E8Ab82F62fe7C39859FA562fe7C39859FA577269BE3',dec:1877269BE3',dec:18,link:'https://app.uniswap.org/#/,link:'https://app.uniswap.org/#/swap?outputCurrency=0xfAbA6f8swap?outputCurrency=0xfAbA6f8e4a5E8Ab82F62e4a5E8Ab82F62fe7C39859FA577fe7C39859FA577269BE3&chain=ethereum',reason:'269BE3&chain=ethereum',reason:'RWA narrative.',top:true},
-{id:'virtual-RWA narrative.',top:true},
-{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x0bprotocol',sym:'VIRTUAL',addr:'0x0b3e328455c4053e328455c4059EEb9e3f84b559EEb9e3f84b5543F74E24e7E143F74E24e7E1b',dec:18,link:'https://appb',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0.uniswap.org/#/swap?outputCurrency=0x0b3e328455cx0b3e328455c4059EEb9e3f844059EEb9e3f84b5543F74E24eb5543F74E24e7E1b&chain=base',reason:'7E1b&chain=base',reason:'AI agent token (Base Chain).',top:true},
-AI agent token (Base Chain).',top:true},
-{id:'fetch-ai',sym:'FET',addr{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368:'0xaea46A60368A7Db0442f9926A7Db0442f9926649aB438D181649aB438D1819d9a',dec:18,link:'9d9a',dec:18,link:'https://app.uniswap.org/#/swap?outputhttps://app.uniswap.org/#/swap?outputCurrency=0xaea46A6036Currency=0xaea46A60368A7Db0442f9928A7Db0442f9926649aB438D186649aB438D1819d9a&chain=ethereum',reason:'19d9a&chain=ethereum',reason:'AI compute demand.',top:true},
-{id:'hyperliquidAI compute demand.',top:true},
-{id:'hyperliquid',sym:'HYPE',addr:'Native L1',',sym:'HYPE',addr:'Native L1',dec:18,link:'https://app.hyperdec:18,link:'https://app.hyperliquid.xyz/',reason:'Native Hyperliquid L1.',topliquid.xyz/',reason:'Native Hyperliquid L1.',top:true},
-{id:'chainlink',sym:'LINK',:true},
-{id:'chainlink',sym:'LINK',addr:'0x51491077addr:'0x514910771AF9Ca656af840dff1AF9Ca656af840dff83E8264EcF98683E8264EcF986CA',dec:18,link:'https://appCA',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0.uniswap.org/#/swap?outputCurrency=0x514910771AF9x514910771AF9Ca656af840dff83ECa656af840dff83E8264EcF986CA&chain8264EcF986CA&chain=ethereum',reason:'Oracle demand. DeFi TVL=ethereum',reason:'Oracle demand. DeFi TVL rising.',top:false},
-{id:'uniswap',sym rising.',top:false},
-{id:'uniswap',sym:'UNI',addr:'0x1f984:'UNI',addr:'0x1f9840a85d5aF5bf1D0a85d5aF5bf1D1762F925BDADdC1762F925BDADdC4201F984',dec:14201F984',dec:18,link:'https://app.uniswap.org/#8,link:'https://app.uniswap.org/#/swap?outputCurrency=0x1f98/swap?outputCurrency=0x1f9840a85d5aF5bf140a85d5aF5bf1D1762F925BDADdD1762F925BDADdC4201F984&chain=C4201F984&chain=ethereum',reason:'DEX volume leader.',top:false},
-ethereum',reason:'DEX volume leader.',top:false},
-{id:'bitcoin',sym:'BTC',addr:'0x{id:'bitcoin',sym:'BTC',addr:'0x2260FAC5E55422260FAC5E5542a773Aa44fBCfeDa773Aa44fBCfeDf7C193bc2C599f7C193bc2C599',dec:8,link:'https://app.unis',dec:8,link:'https://app.uniswap.org/#/swap?outputCurrency=0x2wap.org/#/swap?outputCurrency=0x2260FAC5E5542a260FAC5E5542a773Aa44fBCfeDf773Aa44fBCfeDf7C193bc2C599&7C193bc2C599&chain=ethereum',reason:'ETF inflows (WBTCchain=ethereum',reason:'ETF inflows (WBTC).',top:false},
-{id:'ethereum',sym:').',top:false},
-{id:'ethereum',sym:'ETH',addr:'Native (No contract)',dec:1ETH',addr:'Native (No contract)',dec:18,link:'https://app.uniswap.org/',8,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
-{id:'reason:'L2 growth.',top:false},
-{id:'solana',sym:'SOL',addr:'Native (solana',sym:'SOL',addr:'Native (No contract)',dec:9,link:'https://jNo contract)',dec:9,link:'https://jup.ag/',reason:'Meme coin volume.',top:falseup.ag/',reason:'Meme coin volume.',top:false},
-{id:'xrp',sym:'XRP',},
-{id:'xrp',sym:'XRP',addr:'Native (No contract)',dec:6,linkaddr:'Native (No contract)',dec:6,link:'https://www.coinbase.com/price/xrp',:'https://www.coinbase.com/price/xrp',reason:'Legal clarity.',top:false},
-{id:'cardreason:'Legal clarity.',top:false},
-{id:'cardano',sym:'ADA',addr:'Native (No contractano',sym:'ADA',addr:'Native (No contract)',dec:6,link:'https://www.coinbase)',dec:6,link:'https://www.coinbase.com/price/cardano',reason:'Smart contract growth.',.com/price/cardano',reason:'Smart contract growth.',top:false},
-{id:'avalanche-2',symtop:false},
-{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',dec:'AVAX',addr:'Native (No contract)',dec:18,link:'https://traderjoex:18,link:'https://traderjoexyz.com/avalanche/trade',reason:'Subnetyz.com/avalanche/trade',reason:'Subnet adoption (Trader Joe).',top:false},
-{id:' adoption (Trader Joe).',top:false},
-{id:'dogecoin',sym:'DOGE',addr:'Native (dogecoin',sym:'DOGE',addr:'Native (No contract)',dec:8,link:'https://wwwNo contract)',dec:8,link:'https://www.coinbase.com/price/dogecoin',reason:'M.coinbase.com/price/dogecoin',reason:'Meme leader.',top:false},
-{id:'matic-network',eme leader.',top:false},
-{id:'matic-network',sym:'POL',addr:'0x7D1Afsym:'POL',addr:'0x7D1AfA7B718fb893dB3A7B718fb893dB30A3aBc0Cfc6080A3aBc0Cfc608AaCfeBB0',dec:18,AaCfeBB0',dec:18,link:'https://app.uniswap.org/#/swaplink:'https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7?outputCurrency=0x7D1AfA7B718fb893dB30AB718fb893dB30A3aBc0Cfc608Aa3aBc0Cfc608AaCfeBB0&chain=ethereum',reason:'LCfeBB0&chain=ethereum',reason:'L2 scaling.',top:false},
-{id:'bittensor2 scaling.',top:false},
-{id:'bittensor',sym:'TAO',addr:'Native (No contract',sym:'TAO',addr:'Native (No contract)',dec:9,link:'https://www.coinbase)',dec:9,link:'https://www.coinbase.com/price/bittensor',reason:'Decentralized.com/price/bittensor',reason:'Decentralized AI.',top:false},
-{id:'sui',sym AI.',top:false},
-{id:'sui',sym:'SUI',addr:'Native (No contract)',dec:'SUI',addr:'Native (No contract)',dec:9,link:'https://www.coinbase.com/:9,link:'https://www.coinbase.com/price/sui',reason:'Move language.',top:false}price/sui',reason:'Move language.',top:false}
+return 'score-low';
+}
+
+const coins=[
+{id:'pepe',sym:'PEPE',addr{id:'pepe',sym:'PEPE',addr:'0x698250814:'0x6982508145454Ce325dDbE45454Ce325dDbE47a25d4ec3d2317a25d4ec3d2311933',dec:18,link:'1933',dec:18,link:'https://app.uniswap.org/#/swap?outputhttps://app.uniswap.org/#/swap?outputCurrency=0x69825081Currency=0x6982508145454Ce325dDbE45454Ce325dDbE47a25d4ec3d2347a25d4ec3d2311933&chain=ethereum',reason:'11933&chain=ethereum',reason:'3 whale wallets accumulating.',top:true},
+{id:'ar3 whale wallets accumulating.',top:true},
+{id:'arbitrum',sym:'ARB',addr:'0x9bitrum',sym:'ARB',addr:'0x912CE59144191C12CE59144191C1204E64559FE81204E64559FE8253a0e49E654253a0e49E6548',dec:18,link:'https://app8',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0.uniswap.org/#/swap?outputCurrency=0x912CE5914419x912CE59144191C1204E645591C1204E64559FE8253a0e49E6FE8253a0e49E6548&chain=ethereum',reason:'L2548&chain=ethereum',reason:'L2 momentum.',top:true},
+{id:'shiba-inu momentum.',top:true},
+{id:'shiba-inu',sym:'SHIB',addr:'0x95',sym:'SHIB',addr:'0x95aD61b0a150d7aD61b0a150d79219dCF64E1E69219dCF64E1E6Cc01f0B64C4cECc01f0B64C4cE',dec:18,link:'https://app.un',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0xiswap.org/#/swap?outputCurrency=0x95aD61b0a15095aD61b0a150d79219dCF64E1d79219dCF64E1E6Cc01f0B64C4E6Cc01f0B64C4cE&chain=ethereum',reason:'Meme seasoncE&chain=ethereum',reason:'Meme season.',top:true},
+{id:'dogwifcoin',.',top:true},
+{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJsym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYtjMFqKZ9KQanSqYXRcF8fBopzLHYxdMXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https65zcjm',dec:6,link:'https://jup.ag/swap/SOL-EKpQ://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYSqYXRcF8fBopzLHYxdM65zcjm',reason:'Jupiter volumexdM65zcjm',reason:'Jupiter volume +120%. (Solana)',top:true}, +120%. (Solana)',top:true},
+{id:'render-token',sym:'RNDR',addr
+{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2:'0x6de037ef9ad2725eb40118bb17725eb40118bb1702ebb27e4aeb24',02ebb27e4aeb24',dec:18,link:'https://app.unisdec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6wap.org/#/swap?outputCurrency=0x6de037ef9ad2725ebde037ef9ad2725eb40118bb1702ebb240118bb1702ebb27e4aeb24&chain=ethereum',7e4aeb24&chain=ethereum',reason:'AI narrative trending.',top:true},
+{id:'reason:'AI narrative trending.',top:true},
+{id:'ondo-finance',sym:'ONDO',addr:'0ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8xfAbA6f8e4a5E8Ab82F62fe7C398Ab82F62fe7C39859FA577269BE3',59FA577269BE3',dec:18,link:'https://app.unisdec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0xfAbwap.org/#/swap?outputCurrency=0xfAbA6f8e4a5E8Ab8A6f8e4a5E8Ab82F62fe7C398592F62fe7C39859FA577269BE3&chain=FA577269BE3&chain=ethereum',reason:'RWA narrative.',top:true},
+ethereum',reason:'RWA narrative.',top:true},
+{id:'virtual-protocol',sym:'VIRTUAL',addr:'{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x0b3e3284550x0b3e328455c4059EEb9e3f8c4059EEb9e3f84b5543F74E244b5543F74E24e7E1b',dec:18,linke7E1b',dec:18,link:'https://app.uniswap.org/#/swap?:'https://app.uniswap.org/#/swap?outputCurrency=0x0b3e328outputCurrency=0x0b3e328455c4059EEb9e455c4059EEb9e3f84b5543F743f84b5543F74E24e7E1b&chain=E24e7E1b&chain=base',reason:'AI agent token (Base Chain).',base',reason:'AI agent token (Base Chain).',top:true},
+{id:'fetch-ai',sym:'top:true},
+{id:'fetch-ai',sym:'FET',addr:'0xaea46A6FET',addr:'0xaea46A60368A7Db0442f0368A7Db0442f9926649aB4389926649aB438D1819d9a',dec:1D1819d9a',dec:18,link:'https://app.uniswap.org/#8,link:'https://app.uniswap.org/#/swap?outputCurrency=0xaea46A/swap?outputCurrency=0xaea46A60368A7Db044260368A7Db0442f9926649aB43f9926649aB438D1819d9a&chain=8D1819d9a&chain=ethereum',reason:'AI compute demand.',top:true},
+ethereum',reason:'AI compute demand.',top:true},
+{id:'hyperliquid',sym:'HYPE',addr:'{id:'hyperliquid',sym:'HYPE',addr:'Native L1',dec:18,link:'httpsNative L1',dec:18,link:'https://app.hyperliquid.xyz/',reason:'Native Hyperliquid://app.hyperliquid.xyz/',reason:'Native Hyperliquid L1.',top:true},
+{id:'chainlink', L1.',top:true},
+{id:'chainlink',sym:'LINK',addr:'0x5149sym:'LINK',addr:'0x514910771AF9Ca656af10771AF9Ca656af840dff83E8264Ec840dff83E8264EcF986CA',dec:18,linkF986CA',dec:18,link:'https://app.uniswap.org/#/swap?:'https://app.uniswap.org/#/swap?outputCurrency=0x5149107outputCurrency=0x514910771AF9Ca656af84071AF9Ca656af840dff83E8264EcF98dff83E8264EcF986CA&chain=ethereum',reason:'Oracle demand.6CA&chain=ethereum',reason:'Oracle demand. DeFi TVL rising.',top:false},
+{id:' DeFi TVL rising.',top:false},
+{id:'uniswap',sym:'UNI',addr:'0x1uniswap',sym:'UNI',addr:'0x1f9840a85d5aFf9840a85d5aF5bf1D1762F9255bf1D1762F925BDADdC4201F984BDADdC4201F984',dec:18,link:'https://app.un',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0xiswap.org/#/swap?outputCurrency=0x1f9840a85d5a1f9840a85d5aF5bf1D1762F92F5bf1D1762F925BDADdC4201F985BDADdC4201F984&chain=ethereum',reason:'DEX volume leader.',4&chain=ethereum',reason:'DEX volume leader.',top:false},
+{id:'bitcoin',sym:'BTC',top:false},
+{id:'bitcoin',sym:'BTC',addr:'0x2260FAC5Eaddr:'0x2260FAC5E5542a773Aa445542a773Aa44fBCfeDf7C193bc2fBCfeDf7C193bc2C599',dec:8,link:'httpsC599',dec:8,link:'https://app.uniswap.org/#/swap?outputCurrency://app.uniswap.org/#/swap?outputCurrency=0x2260FAC5E5=0x2260FAC5E5542a773Aa44f542a773Aa44fBCfeDf7C193bc2CBCfeDf7C193bc2C599&chain=ethereum',reason:'ETF infl599&chain=ethereum',reason:'ETF inflows (WBTC).',top:false},
+{id:'ows (WBTC).',top:false},
+{id:'ethereum',sym:'ETH',addr:'Native (No contractethereum',sym:'ETH',addr:'Native (No contract)',dec:18,link:'https://app.un)',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:falseiswap.org/',reason:'L2 growth.',top:false},
+{id:'solana',sym:'SOL',},
+{id:'solana',sym:'SOL',addr:'Native (No contract)',dec:9,linkaddr:'Native (No contract)',dec:9,link:'https://jup.ag/',reason:'Meme coin:'https://jup.ag/',reason:'Meme coin volume.',top:false},
+{id:'xrp',sym volume.',top:false},
+{id:'xrp',sym:'XRP',addr:'Native (No contract)',dec:'XRP',addr:'Native (No contract)',dec:6,link:'https://www.coinbase.com/:6,link:'https://www.coinbase.com/price/xrp',reason:'Legal clarity.',top:false},price/xrp',reason:'Legal clarity.',top:false},
+{id:'cardano',sym:'ADA',addr:'
+{id:'cardano',sym:'ADA',addr:'Native (No contract)',dec:6,link:'httpsNative (No contract)',dec:6,link:'https://www.coinbase.com/price/cardano',reason:'://www.coinbase.com/price/cardano',reason:'Smart contract growth.',top:false},
+{id:'avalancheSmart contract growth.',top:false},
+{id:'avalanche-2',sym:'AVAX',addr:'Native (-2',sym:'AVAX',addr:'Native (No contract)',dec:18,link:'https://No contract)',dec:18,link:'https://traderjoexyz.com/avalanche/trade',traderjoexyz.com/avalanche/trade',reason:'Subnet adoption (Trader Joe).',top:falsereason:'Subnet adoption (Trader Joe).',top:false},
+{id:'dogecoin',sym:'DOGE',},
+{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',dec:8,linkaddr:'Native (No contract)',dec:8,link:'https://www.coinbase.com/price/dogecoin:'https://www.coinbase.com/price/dogecoin',reason:'Meme leader.',top:false},
+{id',reason:'Meme leader.',top:false},
+{id:'matic-network',sym:'POL',addr:'0x:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb87D1AfA7B718fb893dB30A3aBc0C93dB30A3aBc0Cfc608AaCfeBB0',decfc608AaCfeBB0',dec:18,link:'https://app.uniswap:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x7D.org/#/swap?outputCurrency=0x7D1AfA7B718fb8931AfA7B718fb893dB30A3aBc0Cfc6dB30A3aBc0Cfc608AaCfeBB0&chain=ethereum08AaCfeBB0&chain=ethereum',reason:'L2 scaling.',top:false},
+{id',reason:'L2 scaling.',top:false},
+{id:'bittensor',sym:'TAO',addr:':'bittensor',sym:'TAO',addr:'Native (No contract)',dec:9,link:'httpsNative (No contract)',dec:9,link:'https://www.coinbase.com/price/bittensor',reason://www.coinbase.com/price/bittensor',reason:'Decentralized AI.',top:false},
+{id:':'Decentralized AI.',top:false},
+{id:'sui',sym:'SUI',addr:'Native (sui',sym:'SUI',addr:'Native (No contract)',dec:9,link:'https://wwwNo contract)',dec:9,link:'https://www.coinbase.com/price/sui',reason:'Move language.coinbase.com/price/sui',reason:'Move language.',top:false}
 ];
 
-async function loadData(){
-try{
-try
+// Helper function to update.',top:false}
 ];
+
+// Helper function to update a single grid window
+function updateGridWindow( a single grid window
+function updateGridWindow(coinId, prefix) {
+  constcoinId, prefix) {
+  const coinData = lastScoredData.find(c => c.id coinData = lastScoredData.find(c => c.id === coinId);
+  if(!coinData === coinId);
+  if(!coinData) return;
+  
+  const currentPrice = coinData) return;
+  
+  const currentPrice = coinData.current_price;
+  const low = coinData.low_.current_price;
+  const low = coinData.low_24h;
+  const high = coinData.high24h;
+  const high = coinData.high_24h;
+  const grids = 1_24h;
+  const grids = 10;
+  const step = (high - low)0;
+  const step = (high - low) / grids;
+  
+  const gridsBelow = Math.floor / grids;
+  
+  const gridsBelow = Math.floor((currentPrice - low) / step);
+  const((currentPrice - low) / step);
+  const nextBuy = low + (gridsBelow * step); nextBuy = low + (gridsBelow * step);
+  const nextSell = low + ((gridsBelow
+  const nextSell = low + ((gridsBelow + 1) * step);
+  
+  const position + 1) * step);
+  
+  const positionPct = Math.max(0, Math.min(1Pct = Math.max(0, Math.min(100, ((currentPrice - low) / (high00, ((currentPrice - low) / (high - low)) * 100));
+  
+  - low)) * 100));
+  
+  document.getElementById(`${prefix}Price`).innerText = formatPrice(current document.getElementById(`${prefix}Price`).innerText = formatPrice(currentPrice);
+  document.getElementById(`${prefix}Range`).innerTextPrice);
+  document.getElementById(`${prefix}Range`).innerText = `${formatPrice(low)} - ${formatPrice(high) = `${formatPrice(low)} - ${formatPrice(high)}`;
+  document.getElementById(`${prefix}Step`).innerText}`;
+  document.getElementById(`${prefix}Step`).innerText = formatPrice(step);
+  document.getElementById(`${prefix} = formatPrice(step);
+  document.getElementById(`${prefix}Buy`).innerText = formatPrice(nextBuy);
+  documentBuy`).innerText = formatPrice(nextBuy);
+  document.getElementById(`${prefix}Sell`).innerText = formatPrice(nextSell.getElementById(`${prefix}Sell`).innerText = formatPrice(nextSell);
+  document.getElementById(`${prefix}Fill`).style);
+  document.getElementById(`${prefix}Fill`).style.width = `${positionPct}%`;
+  document.getElementById.width = `${positionPct}%`;
+  document.getElementById(`${prefix}Marker`).style.left = `${positionPct(`${prefix}Marker`).style.left = `${positionPct}%`;
+}
+
+async function loadData(){
+try{}%`;
+}
 
 async function loadData(){
 try{
 try {
-    const fxRes = await fetch('https:// {
-    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
-   open.er-api.com/v6/latest/USD');
+    const fxRes = await fetch
+try {
+    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD('https://open.er-api.com/v6/latest/USD');
+    const fxData = await fxRes.json();');
     const fxData = await fxRes.json();
-    if const fxData = await fxRes.json();
-    if(fxData && fxData.rates && fxData.r(fxData && fxData.rates && fxData.rates.AUD) audRate = fxData.rates.Aates.AUD) audRate = fxData.rates.AUD;
-} catch(e) { console.log('FXUD;
+    if(fxData && fxData.rates &&
+    if(fxData && fxData.rates && fxData.rates.AUD) audRate = fxData fxData.rates.AUD) audRate = fxData.rates.AUD;
+} catch(e) { console.rates.AUD;
 } catch(e) { console.log('FX fetch failed, using fallback'); }
 
-const ids=coins fetch failed, using fallback'); }
+const.log('FX fetch failed, using fallback'); }
 
-const ids=coins.map(c=>c.id).join(',');
-const res.map(c=>c.id).join(',');
-const res=await fetch('https://api.coingecko.com/api=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd/v3/coins/markets?vs_currency=usd&ids='+ids);
-const data=await res.json&ids='+ids);
+const ids=coins.map(c=>c.id).join(','); ids=coins.map(c=>c.id).join(',');
+const res=await fetch('https://api.coinge
+const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currencycko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
+const data==usd&ids='+ids);
 const data=await res.json();
 
-if(!Array.isArray(data)) {
-console.error();
+if(!Array.isArray(data)) {await res.json();
 
 if(!Array.isArray(data)) {
-console.error('CoinGecko API failed or rate limited:', data);('CoinGecko API failed or rate limited:', data);
-document.getElementById('topPicks').innerHTML = '<div
-document.getElementById('topPicks').innerHTML = '<div class="card">API Rate Limited. Waiting for next refresh class="card">API Rate Limited. Waiting for next refresh...</div>';
+console.error('CoinGecko API failed or rate limited
+console.error('CoinGecko API failed or rate limited:', data);
+document.getElementById('topPicks').innerHTML:', data);
+document.getElementById('topPicks').innerHTML = '<div class="card">API Rate Limited. Waiting = '<div class="card">API Rate Limited. Waiting for next refresh...</div>';
 return;
 }
 
-data.forEach(c...</div>';
+ for next refresh...</div>';
 return;
 }
 
-data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
+data.forEach(c => { if(c.symbol) priceMap[cdata.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
-lastScoredData = = c.current_price; });
+lastScore.symbol.toUpperCase()] = c.current_price; });
 
 lastScoredData = data.map(c => {
-const coinInfo = coins.find data.map(c => {
+const coinInfodData = data.map(c => {
 const coinInfo = coins.find(t => t.id === c.id);
-if(!coin(t => t.id === c.id);
+ = coins.find(t => t.id === c.id);
 if(!coinInfo) return null;
-const score = calculateScore(cInfo) return null;
+const score =if(!coinInfo) return null;
 const score = calculateScore(c);
+return {...c, score, coin calculateScore(c);
 return {...c, score, coinInfo};
-);
-return {...c, score, coinInfo};
-}).filter(c => c !== null).sort((a,}).filter(c => c !== null).sort((a, b) => b.score - a.score);
+}).filter(c => c !== null).sortInfo};
+}).filter(c => c !== null).sort((a, b) => b.score - a.score);((a, b) => b.score - a.score);
 
-// b) => b.score - a.score);
+// UPDATE ALL 4 GRID WINDOWS
+updateGridWindow
 
-// UPDATE GRID TRACKER
-const solData = data.find(c UPDATE GRID TRACKER
-const solData = data.find(c => c.id === 'solana');
-if(solData => c.id === 'solana');
-if(solData) {
-  const currentPrice = solData.current_price) {
-  const currentPrice = solData.current_price;
-  const low = solData.low_24;
-  const low = solData.low_24h;
-  const high = solData.high_2h;
-  const high = solData.high_24h;
-  const grids = 10;4h;
-  const grids = 10;
-  const step = (high - low) / grids
-  const step = (high - low) / grids;
-  
-  const gridsBelow = Math.floor((current;
-  
-  const gridsBelow = Math.floor((currentPrice - low) / step);
-  const nextBuyPrice - low) / step);
-  const nextBuy = low + (gridsBelow * step);
-  = low + (gridsBelow * step);
-  const nextSell = low + ((gridsBelow +  const nextSell = low + ((gridsBelow + 1) * step);
-  
-  const positionPct1) * step);
-  
-  const positionPct = Math.max(0, Math.min(100 = Math.max(0, Math.min(100, ((currentPrice - low) / (high - low, ((currentPrice - low) / (high - low)) * 100));
-  
-  //)) * 100));
-  
-  // Update the new Current Price display
-  document.getElementById('current Update the new Current Price display
-  document.getElementById('currentSolPrice').innerText = formatPrice(currentPrice);
-  
-SolPrice').innerText = formatPrice(currentPrice);
-  
-  document.getElementById('gridRange').innerText = `${formatPrice  document.getElementById('gridRange').innerText = `${formatPrice(low)} - ${formatPrice(high)}`;
- (low)} - ${formatPrice(high)}`;
-  document.getElementById('gridStep').innerText = formatPrice(step); document.getElementById('gridStep').innerText = formatPrice(step);
-  document.getElementById('nextBuyPrice').innerText = format
-  document.getElementById('nextBuyPrice').innerText = formatPrice(nextBuy);
-  document.getElementById('nextSellPricePrice(nextBuy);
-  document.getElementById('nextSellPrice').innerText = formatPrice(nextSell);
-  
-  document').innerText = formatPrice(nextSell);
-  
-  document.getElementById('gridBarFill').style.width = `${positionP.getElementById('gridBarFill').style.width = `${positionPct}%`;
-  document.getElementById('gridMarker').stylect}%`;
-  document.getElementById('gridMarker').style.left = `${positionPct}%`;
-}
-
-refresh.left = `${positionPct}%`;
-}
+// UPDATE ALL 4 GRID WINDOWS
+updateGridWindow('solana', 'sol');
+updateGridWindow('('solana', 'sol');
+updateGridWindow('ethereum', 'eth');
+updateGridWindow('arbitethereum', 'eth');
+updateGridWindow('arbitrum', 'arb');
+updateGridWindow('matic-networkrum', 'arb');
+updateGridWindow('matic-network', 'pol');
 
 refreshDisplay();
 
-if(connectedAddress || watchOnlyAddress)Display();
+if(connected', 'pol');
+
+refreshDisplay();
 
 if(connectedAddress || watchOnlyAddress) fetchWalletData(); 
-}catch(e){console.error('Load fetchWalletData(); 
+}catchAddress || watchOnlyAddress) fetchWalletData(); 
 }catch(e){console.error('Load Data Error:', e)}
-}
-
-function refreshDisplay() Data Error:', e)}
+(e){console.error('Load Data Error:', e)}
 }
 
 function refreshDisplay() {
-  if(lastScoredData.length === 0 {
+  if(last}
+
+function refreshDisplay() {
   if(lastScoredData.length === 0) return;
 
-  let tickerHtml = `<div class) return;
+ ScoredData.length === 0) return;
 
-  let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS="ticker-item">🚨 SEA CHEF LABS LIVE FEED (${currentCurrency}): </div>`;
- LIVE FEED (${currentCurrency}): </div>`;
+  let tickerHtml = `<div class="ticker-item"> let tickerHtml = `<div class="ticker-item"> SEA CHEF LABS LIVE FEED (${current SEA CHEF LABS LIVE FEED (${currentCurrency}): </div>`;
+  lastScoredDataCurrency}): </div>`;
   lastScoredData.forEach(c => {
-    const  lastScoredData.forEach(c => {
-    const change = c.price_change_percentage_24h ||  change = c.price_change_percentage_24h || 0;
-    const colorClass = change >= 00;
-    const colorClass = change >= 0 ? 'green' : 'red';
-    const arrow ? 'green' : 'red';
-    const arrow = change >= 0 ? '▲' : '▼ = change >= 0 ? '▲' : '▼';
-    const dip = (c.low_24';
-    const dip = (c.low_24h * 1.02);
-    tickerHtmlh * 1.02);
+    const change = c.price_change.forEach(c => {
+    const change = c.price_change_percentage_24h || 0;
+    const_percentage_24h || 0;
+    const colorClass = change >= 0 ? 'green' : colorClass = change >= 0 ? 'green' : 'red';
+    const arrow = change >= 0 'red';
+    const arrow = change >= 0 ? '▲' : '▼';
+    const dip ? '▲' : '▼';
+    const dip = (c.low_24h * 1. = (c.low_24h * 1.02);
+    tickerHtml += `<div class="02);
     tickerHtml += `<div class="ticker-item">
-      <strong += `<div class="ticker-item">
-      <strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} 
-      <span class="${colorClass}.current_price)} 
-      <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</">(${arrow} ${change.toFixed(2)}%)</span> 
-      | Dip Target: ${formatPrice(dspan> 
+      <strong>${c.symbol.toUpperCase()}</ticker-item">
+      <strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} 
+strong>: ${formatPrice(c.current_price)} 
+      <span class="${colorClass}">(${arrow}      <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</span> 
+      ${change.toFixed(2)}%)</span> 
       | Dip Target: ${formatPrice(dip)}
+    | Dip Target: ${formatPrice(dip)}
     </div>`;
   });
-ip)}
-    </div>`;
+  document.getElementById(' </div>`;
   });
-  document.getElementById('newsTickerTrack').innerHTML = tickerHtml  document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
-
-  let topHtml='',queueHtml + tickerHtml;
+  document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
 
   let topHtml='',queueHtml='';
-  lastScoredData.forEach(c => {='';
+ 
+
+  let topHtml='',queueHtml='';
   lastScoredData.forEach(c => {
+  const d lastScoredData.forEach(c => {
   const d = c.coinInfo;
-  const
-  const d = c.coinInfo;
-  const dip=(c.low_24h*1.0 dip=(c.low_24h*1.02);
-  const change=c.price_change_percentage_22);
-  const change=c.price_change_percentage_24h||0;
-  const scoreClass = get4h||0;
+  const dip=(c.low = c.coinInfo;
+  const dip=(c.low_24h*1.02);
+ _24h*1.02);
+  const change=c.price_change_percentage_24h||0 const change=c.price_change_percentage_24h||0;
+  const scoreClass = getScoreClass(c.score;
   const scoreClass = getScoreClass(c.score);
 
-  if(d.top) {ScoreClass(c.score);
+  if(d.top) {
+  topHtml);
 
   if(d.top) {
-  topHtml+=`<div class="coin-card
-  topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class=""><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCasecoin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><divc.score}/100</span></div><div class="price">Current: ${formatPrice(c.current_price class="price">Current: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr)}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entrydiv><div class="dip">🎯 Entry: ${formatPrice(dip)}</div><div class=": ${formatPrice(dip)}</div><div class="reason">${d.reason}</div><a href="${d.linkreason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
-  } else { Exchange</a></div>`;
+  topHtml+=`<div class="coin-card"><div class="+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><spanlive-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/1 class="score ${scoreClass}">${c.score}/100</span></div><div class="price">00</span></div><div class="price">Current: ${formatPrice(c.current_price)}</div><divCurrent: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr('${d.addr}') class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class">📋 ${d.addr}</div><div class="dip">🎯 Entry: ${formatPrice="dip">🎯 Entry: ${formatPrice(dip)}</div><div class="reason">${d.reason(dip)}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></" class="buy-btn">Buy on Exchange</a></div>`;
   } else {
-  queueHtml+=`<div class="coin-card
-  queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${ class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scorec.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${cClass}" style="font-size:11px">${c.score}/100</span></div><div class.score}/100</span></div><div class="price-small">${formatPrice(c.current_price)}</div><="price-small">${formatPrice(c.current_price)}</div><div class="contract-small" onclick="copyAddr('${ddiv class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: ${formatPricediv class="dip-small">Entry: ${formatPrice(dip)}</div><div class="reason-small">${d(dip)}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></blank" class="buy-btn-small">Buy</a></div>`;
+  queueHtmldiv>`;
+  } else {
+  queueHtml+=`<div class="coin-card-small"><div class+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/10font-size:11px">${c.score}/100</span></div><div class="price-small">${0</span></div><div class="price-small">${formatPrice(c.current_price)}</div><div class="contractformatPrice(c.current_price)}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">-small" onclick="copyAddr('${d.addr}')"> ${d.addr}</div><div class="d ${d.addr}</div><div class="dip-small">Entry: ${formatPrice(dip)}</divip-small">Entry: ${formatPrice(dip)}</div><div class="reason-small">${d.reason}</div><><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
+buy-btn-small">Buy</a></div>`;
   }
   });
 
-  documentdiv>`;
-  }
+  document.getElementById('topP  }
   });
 
-  document.getElementById('topPicks').innerHTML=topHtml||'<div.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
-  document class="card">No data</div>';
-  document.getElementById('queuePicks').innerHTML=queueHtml||'<.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
- div class="card">No data</div>';
-  document.getElementById('coinCount').innerText=lastScoredData document.getElementById('coinCount').innerText=lastScoredData.length;
+  document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">icks').innerHTML=topHtml||'<div class="card">No data</div>';
+  document.getElementById('queuePNo data</div>';
+  document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="cardicks').innerHTML=queueHtml||'<div class="card">No data</div>';
+  document.getElementById('coin">No data</div>';
+  document.getElementById('coinCount').innerText=lastScoredData.length;
+}Count').innerText=lastScoredData.length;
 }
 
 loadData();
-setInterval(load.length;
-}
+setInterval(loadData,60
 
 loadData();
 setInterval(loadData,60000);
-</script>Data,60000);
+</script>
+</body>000);
 </script>
 </body>
 </html>
