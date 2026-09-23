@@ -129,14 +129,13 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 <script>
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
+
 let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
-
-// The exact method single-dev dashboards use: AllOrigins proxy to hit DeBank API
-const PROXY = 'https://api.allorigins.win/raw?url=';
-const DEBANK_URL = 'https://openapi.debank.com/v1/user/total_balance?id=';
+let priceMap = { 'ETH': 0, 'SOL': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0 };
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -146,7 +145,7 @@ connectedAddress = accounts[0];
 connectedChain = 'evm';
 document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
 document.getElementById('rabbyBtn').classList.add('btn-connected');
-fetchWalletValue();
+fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -158,7 +157,7 @@ connectedAddress = resp.publicKey.toString();
 connectedChain = 'sol';
 document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
-fetchWalletValue();
+fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -174,46 +173,70 @@ watchOnlyAddress = address; watchChain = 'evm';
 watchOnlyAddress = address; watchChain = 'sol';
 }else{alert('Invalid address format');return;}
 closeWatchOnlyModal();
-fetchWalletValue();
+fetchWalletData();
 }
 
-async function fetchWalletValue(){
+async function fetchWalletData(){
 if(!connectedAddress && !watchOnlyAddress) return;
 
 let totalPortfolio = 0;
 let tableHtml = '';
 
 async function checkWallet(addr, chain, type) {
-let value = 0;
-let statusText = 'Scanning...';
+let walletTotal = 0;
+let holdingsList = [];
 
+if(chain === 'evm') {
 try {
-// Route through AllOrigins to completely bypass CORS browser blocks
-const targetUrl = DEBANK_URL + addr;
-const res = await fetch(PROXY + encodeURIComponent(targetUrl));
-const text = await res.text();
-const data = JSON.parse(text);
+const ethRes = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
+});
+const ethData = await ethRes.json();
+const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
+if(ethBal > 0.0001) {
+const val = ethBal * (priceMap['ETH'] || 0);
+walletTotal += val;
+holdingsList.push(`ETH: ${ethBal.toFixed(4)}`);
+}
 
-if(data && typeof data.data === 'number') {
-value = data.data; 
-statusText = 'All Tokens & Native';
+const tokenRes = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getTokenBalances', params: [addr, 'erc20'] })
+});
+const tokenData = await tokenRes.json();
+
+if(tokenData.result && tokenData.result.tokenBalances) {
+for(let token of tokenData.result.tokenBalances) {
+const bal = parseInt(token.tokenBalance, 16) / 1e18; 
+if(bal > 0) {
+const sym = token.contractAddress.substring(0,6); 
+const val = bal * 0.01; 
+walletTotal += val;
+holdingsList.push(`${sym}: ${bal.toFixed(2)}`);
+}
+}
+}
+} catch(e) {
+console.error('Alchemy Error:', e);
+holdingsList.push('API Error');
+}
 } else {
-statusText = 'API Limit / Error';
-}
-} catch(e) { 
-console.error('Fetch error:', e); 
-statusText = 'Connection Error';
+holdingsList.push('Solana scanning...');
 }
 
-totalPortfolio += value;
+totalPortfolio += walletTotal;
 let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
+let holdingsText = holdingsList.length > 0 ? holdingsList.join(', ') : 'No tracked tokens found';
 
 tableHtml += `<tr class="wallet-row">
 <td><strong>${type}</strong></td>
 <td>${shortAddr}</td>
 <td>${chain.toUpperCase()}</td>
-<td style="font-size:12px;color:#cbd5e1">${statusText}</td>
-<td class="green">$${value.toFixed(2)}</td>
+<td style="font-size:12px;color:#cbd5e1">${holdingsText}</td>
+<td class="green">$${walletTotal.toFixed(2)}</td>
 </tr>`;
 }
 
@@ -256,6 +279,11 @@ try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
+
+data.forEach(c => { 
+if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; 
+});
+
 let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
@@ -267,12 +295,14 @@ const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
 topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
+
+fetchWalletData(); 
 }catch(e){console.error(e)}
 }
 
@@ -281,3 +311,4 @@ setInterval(loadData,60000);
 </script>
 </body>
 </html>
+
