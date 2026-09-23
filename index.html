@@ -73,27 +73,13 @@ h1{color:#00ff88;font-size:1.8rem}
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
-
 <div class="stats-grid">
-<div class="card">
-<h3>Total Portfolio Value</h3>
-<h2 id="totalValue">$0.00</h2>
-<div class="green" id="walletStatus">Connect wallet or add watch address</div>
+<div class="card"><h3>Total Portfolio Value</h3><h2 id="totalValue">$0.00</h2><div class="green" id="walletStatus">Connect wallet or add watch address</div></div>
+<div class="card"><h3>24h Profit/Loss</h3><h2 id="pnl24h" class="green">$0.00</h2><div style="color:#94a3b8">Across all holdings</div></div>
+<div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2><div style="color:#94a3b8">Coins scanning live</div></div>
 </div>
-<div class="card">
-<h3>24h Profit/Loss</h3>
-<h2 id="pnl24h" class="green">$0.00</h2>
-<div style="color:#94a3b8">Across all holdings</div>
-</div>
-<div class="card">
-<h3>Active Research</h3>
-<h2 id="coinCount">0</h2>
-<div style="color:#94a3b8">Coins scanning live</div>
-</div>
-</div>
-
 <div id="holdingsSection" style="display:none;margin-bottom:30px">
-<h2 class="section-title"> Wallet Holdings</h2>
+<h2 class="section-title">💼 Wallet Holdings</h2>
 <div class="card" style="padding:0;overflow:hidden">
 <table class="holdings-table">
 <thead><tr><th>Token</th><th>Balance</th><th>Price</th><th>Value</th><th>24h Change</th></tr></thead>
@@ -101,13 +87,10 @@ h1{color:#00ff88;font-size:1.8rem}
 </table>
 </div>
 </div>
-
 <h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
-
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
-
 <h2 class="section-title">🤖 Whale AI Agents (Click to Expand)</h2>
 <div class="top-grid">
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Whale Alert Bot</h3><span class="green">● Active</span></div><div class="agent-details">• Last 24h: 47 whale movements detected<br>• Largest Move: $12.4M PEPE transferred to Binance<br>• Pattern: 3 wallets accumulating WIF over 48h<br>• Chains: ETH, SOL, ARB, BASE, BSC</div></div>
@@ -116,7 +99,6 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div></div>
 </div>
 </div>
-
 <div id="watchModal" class="modal">
 <div class="modal-content">
 <h2>Add Watch-Only Wallet</h2>
@@ -128,16 +110,14 @@ h1{color:#00ff88;font-size:1.8rem}
 <button class="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:10px;background:#334155;color:#fff">Cancel</button>
 </div>
 </div>
-
 <script>
 let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let walletBalances = [];
-let previousBalances = {};
 
 async function connectRabby(){
-if(!window.ethereum){alert('Rabby not detected! Install Rabby extension.');return;}
+if(!window.ethereum){alert('Rabby not detected!');return;}
 try{
 const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
 connectedAddress = accounts[0];
@@ -150,7 +130,7 @@ fetchWalletBalances();
 }
 
 async function connectPhantom(){
-if(!window.solana){alert('Phantom not detected! Install Phantom extension.');return;}
+if(!window.solana){alert('Phantom not detected!');return;}
 try{
 const resp = await window.solana.connect();
 connectedAddress = resp.publicKey.toString();
@@ -162,27 +142,17 @@ fetchWalletBalances();
 }catch(e){alert('Failed: '+e.message)}
 }
 
-function openWatchOnlyModal(){
-document.getElementById('watchModal').style.display = 'flex';
-}
-
-function closeWatchOnlyModal(){
-document.getElementById('watchModal').style.display = 'none';
-}
+function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
+function closeWatchOnlyModal(){document.getElementById('watchModal').style.display = 'none';}
 
 async function addWatchOnlyWallet(){
 const address = document.getElementById('watchAddress').value.trim();
 if(!address){alert('Please enter a wallet address');return;}
 if(address.startsWith('0x') && address.length === 42){
-watchOnlyAddress = address;
-connectedChain = 'ethereum';
+watchOnlyAddress = address; connectedChain = 'ethereum';
 }else if(address.length >= 32 && address.length <= 44){
-watchOnlyAddress = address;
-connectedChain = 'solana';
-}else{
-alert('Invalid address format');
-return;
-}
+watchOnlyAddress = address; connectedChain = 'solana';
+}else{alert('Invalid address format');return;}
 connectedAddress = watchOnlyAddress;
 closeWatchOnlyModal();
 document.getElementById('walletStatus').innerText = 'Watching: ' + connectedAddress.substring(0,6) + '...' + connectedAddress.substring(38);
@@ -194,21 +164,17 @@ if(!connectedAddress || !connectedChain)return;
 try{
 walletBalances = [];
 if(connectedChain === 'ethereum'){
-// Fetch ETH balance
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const ethBalance = await provider.getBalance(connectedAddress);
 const ethPrice = await getTokenPrice('ethereum');
 const ethValue = parseFloat(ethers.utils.formatEther(ethBalance)) * ethPrice;
 walletBalances.push({symbol:'ETH',balance:parseFloat(ethers.utils.formatEther(ethBalance)),price:ethPrice,value:ethValue,change:0});
-
-// Fetch common ERC20 tokens
 const tokens = [
 {address:'0xdAC17F958D2ee523a2206206994597C13D831ec7',symbol:'USDT',decimals:6,coingeckoId:'tether'},
 {address:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',symbol:'USDC',decimals:6,coingeckoId:'usd-coin'},
 {address:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',symbol:'PEPE',decimals:18,coingeckoId:'pepe'},
 {address:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',symbol:'SHIB',decimals:18,coingeckoId:'shiba-inu'}
 ];
-
 for(let token of tokens){
 try{
 const contract = new ethers.Contract(token.address,['function balanceOf(address) view returns (uint256)'],provider);
@@ -219,10 +185,9 @@ const price = await getTokenPrice(token.coingeckoId);
 const value = formattedBalance * price;
 walletBalances.push({symbol:token.symbol,balance:formattedBalance,price:price,value:value,change:0});
 }
-}catch(e){console.log('Error fetching '+token.symbol+':',e)}
+}catch(e){console.log('Error fetching '+token.symbol)}
 }
 }else if(connectedChain === 'solana'){
-// Fetch SOL balance
 const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
 const pubKey = new solanaWeb3.PublicKey(connectedAddress);
 const solBalance = await connection.getBalance(pubKey);
@@ -230,12 +195,9 @@ const solPrice = await getTokenPrice('solana');
 const solValue = (solBalance / solanaWeb3.LAMPORTS_PER_SOL) * solPrice;
 walletBalances.push({symbol:'SOL',balance:solBalance/solanaWeb3.LAMPORTS_PER_SOL,price:solPrice,value:solValue,change:0});
 }
-
 updateHoldingsDisplay();
 calculatePortfolioValue();
-}catch(e){
-console.error('Error fetching balances:',e);
-}
+}catch(e){console.error('Error fetching balances:',e)}
 }
 
 async function getTokenPrice(coingeckoId){
@@ -266,11 +228,7 @@ document.getElementById('holdingsSection').style.display = 'block';
 function calculatePortfolioValue(){
 let total = walletBalances.reduce((sum,h)=>sum + h.value,0);
 document.getElementById('totalValue').innerText = '$' + total.toFixed(2);
-
-// Calculate 24h P/L (simplified - based on price changes)
-let pnl = walletBalances.reduce((sum,h)=>{
-return sum + (h.value * (h.change / 100));
-},0);
+let pnl = walletBalances.reduce((sum,h)=>sum + (h.value * (h.change / 100)),0);
 const pnlElement = document.getElementById('pnl24h');
 pnlElement.innerText = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
 pnlElement.className = pnl >= 0 ? 'green' : 'red';
