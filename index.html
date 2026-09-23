@@ -132,7 +132,7 @@ let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
-let priceMap = {};
+let priceMap = { 'ETH': 0, 'SOL': 0 };
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -175,7 +175,7 @@ fetchDirectBalances();
 
 async function fetchDirectBalances(){
 if(!connectedAddress && !watchOnlyAddress) return;
-if(!priceMap['ETH'] || !priceMap['SOL']) return; 
+if(priceMap['ETH'] === 0 || priceMap['SOL'] === 0) return; 
 
 let totalPortfolio = 0;
 let tableHtml = '';
@@ -187,9 +187,8 @@ let price = priceMap[symbol];
 
 try {
 if(chain === 'evm') {
-const rpcs = ['https://eth.llamarpc.com', 'https://rpc.ankr.com/eth', 'https://cloudflare-eth.com'];
-for(let rpc of rpcs) {
-try {
+// Cloudflare is the most CORS-friendly node for browsers
+const rpc = 'https://cloudflare-eth.com';
 const res = await fetch(rpc, {
 method: 'POST',
 headers: {'Content-Type': 'application/json'},
@@ -198,12 +197,10 @@ body: JSON.stringify({jsonrpc: '2.0', method: 'eth_getBalance', params: [addr, '
 const data = await res.json();
 if(data.result) {
 balance = parseInt(data.result, 16) / 1e18;
-break; 
-}
-} catch(e) { continue; }
 }
 } else {
-const res = await fetch('https://api.mainnet-beta.solana.com', {
+const rpc = 'https://solana-rpc.publicnode.com';
+const res = await fetch(rpc, {
 method: 'POST',
 headers: {'Content-Type': 'application/json'},
 body: JSON.stringify({jsonrpc: '2.0', method: 'getBalance', params: [addr], id: 1})
