@@ -74,6 +74,22 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn-mm{background:#f6851b;color:#fff}
 .btn-phantom-mobile{background:#ab9ff2;color:#fff}
 .btn-rabby-mobile{background:#00d9ff;color:#0f172a}
+
+/* GRID TRACKER STYLES */
+.grid-tracker { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #00d9ff; }
+.grid-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+.grid-stats div { text-align: center; }
+.grid-stats span { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px; }
+.grid-stats strong { color: #fff; font-size: 16px; }
+.grid-bar-container { position: relative; height: 30px; background: #334155; border-radius: 15px; margin: 20px 0; overflow: hidden; }
+.grid-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, rgba(0,255,136,0.2), rgba(255,71,87,0.2)); transition: width 0.5s ease; }
+.grid-marker { position: absolute; top: -5px; width: 4px; height: 40px; background: #fff; border-radius: 2px; transition: left 0.5s ease; box-shadow: 0 0 10px #fff; }
+.grid-signals { display: flex; justify-content: space-between; margin-top: 15px; }
+.signal-box { flex: 1; padding: 10px; border-radius: 8px; text-align: center; margin: 0 5px; }
+.signal-buy { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; }
+.signal-sell { background: rgba(255,71,87,0.1); border: 1px solid #ff4757; }
+.signal-box h4 { font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+.signal-box p { font-size: 18px; font-weight: bold; margin: 0; }
 </style>
 </head>
 <body>
@@ -114,6 +130,33 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
+<!-- NEW: SOL/USDT GRID SIGNAL TRACKER -->
+<div class="card grid-tracker" style="margin-bottom: 30px;">
+  <h3 style="color:#00d9ff; font-size:16px; margin-bottom:15px;">🤖 SOL/USDT Live Grid Signal Tracker</h3>
+  <div class="grid-stats">
+    <div><span>Grid Range</span><strong id="gridRange">$0 - $0</strong></div>
+    <div><span>Grid Step (10 Grids)</span><strong id="gridStep">$0.00</strong></div>
+    <div><span>Profit per Grid</span><strong class="green">~0.5%</strong></div>
+  </div>
+  <div class="grid-bar-container">
+    <div class="grid-bar-fill" id="gridBarFill" style="width: 50%;"></div>
+    <div class="grid-marker" id="gridMarker" style="left: 50%;"></div>
+  </div>
+  <div class="grid-signals">
+    <div class="signal-box signal-buy">
+      <h4>Next BUY Signal</h4>
+      <p id="nextBuyPrice" class="green">$0.00</p>
+    </div>
+    <div class="signal-box signal-sell">
+      <h4>Next SELL Signal</h4>
+      <p id="nextSellPrice" class="red">$0.00</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:15px;">
+    <a href="https://jup.ag/swap/SOL-USDC" target="_blank" class="btn" style="background:#ab9ff2; color:#fff;">Execute Trade on Jupiter (Solana)</a>
+  </div>
+</div>
+
 <div style="margin-bottom:30px">
 <h2 class="section-title">💼 Active Wallets & Live Balances</h2>
 <div class="card" style="padding:0;overflow:hidden">
@@ -126,9 +169,9 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
-<h2 class="section-title">🎯 AI Top Picks - Live Scored & Ranked</h2>
+<h2 class="section-title"> AI Top Picks - Live Scored & Ranked</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
-<h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
+<h2 class="section-title"> Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
 
 <div id="watchModal" class="modal">
@@ -168,11 +211,10 @@ const chainRPCs = {
 
 let connectedAddress = null;
 let watchOnlyAddress = null;
-let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
+let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0, 'SOL': 0 };
 
-// CURRENCY STATE
 let currentCurrency = 'USD';
-let audRate = 1.52; // Fallback rate
+let audRate = 1.52; 
 let lastScoredData = [];
 
 const knownTokens = [
@@ -183,7 +225,6 @@ const knownTokens = [
   { sym: 'ARB', addr: '0x912CE59144191C1204E64559FE8253a0e49E6548', dec: 18 }
 ];
 
-// CURRENCY HELPERS
 function setCurrency(curr) {
   currentCurrency = curr;
   document.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
@@ -195,20 +236,14 @@ function setCurrency(curr) {
 function formatMoney(usdAmount) {
   let val = usdAmount;
   let symbol = '$';
-  if (currentCurrency === 'AUD') {
-    val = usdAmount * audRate;
-    symbol = 'A$';
-  }
+  if (currentCurrency === 'AUD') { val = usdAmount * audRate; symbol = 'A$'; }
   return symbol + val.toFixed(2);
 }
 
 function formatPrice(usdPrice) {
   let val = usdPrice;
   let symbol = '$';
-  if (currentCurrency === 'AUD') {
-    val = usdPrice * audRate;
-    symbol = 'A$';
-  }
+  if (currentCurrency === 'AUD') { val = usdPrice * audRate; symbol = 'A$'; }
   return symbol + val.toFixed(usdPrice < 1 ? 6 : 2);
 }
 
@@ -383,7 +418,6 @@ const coins=[
 
 async function loadData(){
 try{
-// Fetch Live AUD Exchange Rate
 try {
     const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
     const fxData = await fxRes.json();
@@ -409,6 +443,32 @@ const score = calculateScore(c);
 return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
+// UPDATE GRID TRACKER
+const solData = data.find(c => c.id === 'solana');
+if(solData) {
+  const currentPrice = solData.current_price;
+  const low = solData.low_24h;
+  const high = solData.high_24h;
+  const grids = 10;
+  const step = (high - low) / grids;
+  
+  // Find nearest grid levels
+  const gridsBelow = Math.floor((currentPrice - low) / step);
+  const nextBuy = low + (gridsBelow * step);
+  const nextSell = low + ((gridsBelow + 1) * step);
+  
+  // Calculate position percentage for visual bar
+  const positionPct = ((currentPrice - low) / (high - low)) * 100;
+  
+  document.getElementById('gridRange').innerText = `${formatPrice(low)} - ${formatPrice(high)}`;
+  document.getElementById('gridStep').innerText = formatPrice(step);
+  document.getElementById('nextBuyPrice').innerText = formatPrice(nextBuy);
+  document.getElementById('nextSellPrice').innerText = formatPrice(nextSell);
+  
+  document.getElementById('gridBarFill').style.width = `${positionPct}%`;
+  document.getElementById('gridMarker').style.left = `${positionPct}%`;
+}
+
 refreshDisplay();
 
 if(connectedAddress || watchOnlyAddress) fetchWalletData(); 
@@ -418,7 +478,6 @@ if(connectedAddress || watchOnlyAddress) fetchWalletData();
 function refreshDisplay() {
   if(lastScoredData.length === 0) return;
 
-  // 1. Update Ticker
   let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED (${currentCurrency}): </div>`;
   lastScoredData.forEach(c => {
     const change = c.price_change_percentage_24h || 0;
@@ -433,7 +492,6 @@ function refreshDisplay() {
   });
   document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
 
-  // 2. Update Cards
   let topHtml='',queueHtml='';
   lastScoredData.forEach(c => {
   const d = c.coinInfo;
@@ -442,7 +500,7 @@ function refreshDisplay() {
   const scoreClass = getScoreClass(c.score);
 
   if(d.top) {
-  topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: ${formatPrice(dip)}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
+  topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip"> Entry: ${formatPrice(dip)}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
   } else {
   queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">${formatPrice(c.current_price)}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: ${formatPrice(dip)}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
   }
