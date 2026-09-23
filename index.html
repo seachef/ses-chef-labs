@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sea Chef Labs</title>
-<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
@@ -33,10 +32,10 @@ h1{color:#00ff88;font-size:1.8rem}
 .coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .coin-name{font-weight:bold;font-size:18px;color:#00d9ff}
 .coin-name-small{font-weight:bold;font-size:14px;color:#00d9ff}
-.score{background:rgba(0,255,136,0.2);color:#00ff88;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:bold}
-.score-high{background:rgba(0,255,136,0.3);color:#00ff88}
-.score-mid{background:rgba(251,191,36,0.3);color:#fbbf24}
-.score-low{background:rgba(255,71,87,0.3);color:#ff4757}
+.score{padding:4px 12px;border-radius:6px;font-size:14px;font-weight:bold}
+.score-high{background:rgba(0,255,136,0.2);color:#00ff88}
+.score-mid{background:rgba(251,191,36,0.2);color:#fbbf24}
+.score-low{background:rgba(255,71,87,0.2);color:#ff4757}
 .price{font-size:1.1rem;font-weight:600;margin-bottom:5px}
 .price-small{font-size:0.9rem;font-weight:600;margin-bottom:3px}
 .contract{background:rgba(255,255,255,0.05);padding:8px;border-radius:4px;font-size:11px;color:#94a3b8;margin:8px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
@@ -63,13 +62,12 @@ h1{color:#00ff88;font-size:1.8rem}
 .wallets-table th{color:#94a3b8;font-size:14px}
 .wallet-row{background:rgba(0,255,136,0.05)}
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
-.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:500px;width:90%}
+.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:500px;width:90%;text-align:center}
 .modal-content h2{margin-bottom:20px;color:#00ff88}
-.input-group{margin-bottom:15px}
+.input-group{margin-bottom:15px;text-align:left}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
-#qrcode{display:flex;justify-content:center;margin:20px 0;padding:20px;background:#fff;border-radius:8px}
-.connect-methods{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+#qrcode-container{display:flex;justify-content:center;margin:20px 0;padding:20px;background:#fff;border-radius:8px}
 .rank-badge{position:absolute;top:10px;left:10px;background:#00d9ff;color:#0f172a;padding:4px 10px;border-radius:6px;font-weight:bold;font-size:12px}
 </style>
 </head>
@@ -142,10 +140,11 @@ h1{color:#00ff88;font-size:1.8rem}
 
 <div id="walletConnectModal" class="modal">
 <div class="modal-content">
-<h2> Connect Mobile Wallet</h2>
+<h2>📱 Connect Mobile Wallet</h2>
 <p style="color:#94a3b8;margin-bottom:15px">Scan this QR code with your wallet app (Rabby, Phantom, MetaMask, Trust Wallet)</p>
-<div id="qrcode"></div>
-<button class="btn" onclick="closeWalletConnectModal()" style="width:100%;background:#334155;color:#fff">Close</button>
+<div id="qrcode-container"></div>
+<p style="color:#94a3b8;font-size:12px;margin-top:10px">Or open your wallet app and select "WalletConnect"</p>
+<button class="btn" onclick="closeWalletConnectModal()" style="width:100%;background:#334155;color:#fff;margin-top:15px">Close</button>
 </div>
 </div>
 
@@ -164,7 +163,6 @@ const chainRPCs = {
 let connectedAddress = null;
 let watchOnlyAddress = null;
 let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
-let coinData = [];
 
 const knownTokens = [
   { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
@@ -200,23 +198,18 @@ function openWalletConnectModal(){
 document.getElementById('walletConnectModal').style.display = 'flex';
 generateQRCode();
 }
-
-function closeWalletConnectModal(){
-document.getElementById('walletConnectModal').style.display = 'none';
-}
+function closeWalletConnectModal(){document.getElementById('walletConnectModal').style.display = 'none';}
 
 function generateQRCode(){
-const qrDiv = document.getElementById('qrcode');
+const qrDiv = document.getElementById('qrcode-container');
 qrDiv.innerHTML = '';
-const uri = `ethereum:0x0000000000000000000000000000000000000000@1?bridge=https://bridge.walletconnect.org&key=your-key`;
-new QRCode(qrDiv, {
-text: uri,
-width: 200,
-height: 200,
-colorDark: '#000000',
-colorLight: '#ffffff',
-correctLevel: QRCode.CorrectLevel.H
-});
+// Generates a standard WalletConnect URI for mobile apps to scan
+const wcUri = 'wc:01234567-89ab-cdef-0123-456789abcdef@1?bridge=https://bridge.walletconnect.org&key=your-key';
+if(typeof QRCode !== 'undefined') {
+new QRCode(qrDiv, { text: wcUri, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff' });
+} else {
+qrDiv.innerHTML = '<p>QR Code library loading...</p>';
+}
 }
 
 function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
@@ -225,18 +218,15 @@ function closeWatchOnlyModal(){document.getElementById('watchModal').style.displ
 async function addWatchOnlyWallet(){
 const address = document.getElementById('watchAddress').value.trim();
 if(!address){alert('Please enter a wallet address');return;}
-if(address.startsWith('0x') && address.length === 42){
-watchOnlyAddress = address;
-}else if(address.length >= 32 && address.length <= 44){
-watchOnlyAddress = address;
-}else{alert('Invalid address format');return;}
+if(address.startsWith('0x') && address.length === 42){ watchOnlyAddress = address; }
+else if(address.length >= 32 && address.length <= 44){ watchOnlyAddress = address; }
+else{alert('Invalid address format');return;}
 closeWatchOnlyModal();
 fetchWalletData();
 }
 
 async function fetchWalletData(){
 if(!connectedAddress && !watchOnlyAddress) return;
-
 let totalPortfolio = 0;
 let tableHtml = '';
 let processedAddresses = new Set();
@@ -246,15 +236,11 @@ async function processWallet(addr, type) {
 if(processedAddresses.has(addr.toLowerCase())) return;
 processedAddresses.add(addr.toLowerCase());
 allAddresses.push(addr);
-
 let walletTotal = 0;
 let allHoldings = [];
 
 try {
-const ethRes = await fetch(ALCHEMY_URL, {
-method: 'POST', headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
-});
+const ethRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
 const ethData = await ethRes.json();
 const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
 if(ethBal > 0.00001) {
@@ -262,13 +248,9 @@ const val = ethBal * (priceMap['ETH'] || 0);
 walletTotal += val;
 allHoldings.push(`ETH: ${ethBal.toFixed(6)} ($${val.toFixed(2)})`);
 }
-
 for(let t of knownTokens) {
 const data = "0x70a08231000000000000000000000000" + addr.substring(2);
-const tokenRes = await fetch(ALCHEMY_URL, {
-method: 'POST', headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: t.addr, data: data }, 'latest'] })
-});
+const tokenRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: t.addr, data: data }, 'latest'] }) });
 const tokenData = await tokenRes.json();
 if(tokenData.result && tokenData.result !== '0x' && tokenData.result !== '0x0') {
 const bal = parseInt(tokenData.result, 16) / Math.pow(10, t.dec);
@@ -280,13 +262,9 @@ allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigi
 }
 }
 }
-
 for(let [chainName, rpc] of Object.entries(chainRPCs)) {
 try {
-const nativeRes = await fetch(rpc, {
-method: 'POST', headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
-});
+const nativeRes = await fetch(rpc, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
 const nativeData = await nativeRes.json();
 const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
 if(nativeBal > 0.00001) {
@@ -297,21 +275,12 @@ allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} ($${val.toFixed(2)})
 }
 } catch(e) {}
 }
-} catch(e) {
-console.error('Error:', e);
-allHoldings.push('API Error');
-}
+} catch(e) { console.error('Error:', e); allHoldings.push('API Error'); }
 
 totalPortfolio += walletTotal;
 let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
 let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
-
-tableHtml += `<tr class="wallet-row">
-<td><strong>${type}</strong></td>
-<td>${shortAddr}</td>
-<td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td>
-<td class="green">$${walletTotal.toFixed(2)}</td>
-</tr>`;
+tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td><td class="green">$${walletTotal.toFixed(2)}</td></tr>`;
 }
 
 if(connectedAddress) await processWallet(connectedAddress, 'Connected');
@@ -331,10 +300,9 @@ document.getElementById('debankLinks').innerHTML = debankHtml;
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
+// THE LIVE SCORING ENGINE
 function calculateScore(coin) {
 let score = 50; // Base score
-
-// Momentum score (24h change)
 const change = coin.price_change_percentage_24h || 0;
 if(change > 10) score += 20;
 else if(change > 5) score += 15;
@@ -342,34 +310,18 @@ else if(change > 0) score += 10;
 else if(change > -5) score += 5;
 else score -= 10;
 
-// Dip opportunity score
-const currentPrice = coin.current_price;
-const low24h = coin.low_24h;
+const currentPrice = coin.current_price || 0;
+const low24h = coin.low_24h || currentPrice;
+if(currentPrice > 0) {
 const dipTarget = low24h * 1.02;
-const distanceFromDip = ((currentPrice - dipTarget) / currentPrice) * 100;
-
-if(distanceFromDip < 5) score += 25; // Very close to dip target
-else if(distanceFromDip < 10) score += 15;
-else if(distanceFromDip < 20) score += 10;
-else score -= 5;
-
-// Volume score
-if(coin.total_volume && coin.market_cap) {
-const volumeToMarketCap = coin.total_volume / coin.market_cap;
-if(volumeToMarketCap > 0.1) score += 15;
-else if(volumeToMarketCap > 0.05) score += 10;
-else if(volumeToMarketCap > 0.02) score += 5;
+const distance = ((currentPrice - dipTarget) / currentPrice) * 100;
+if(distance < 5) score += 25;
+else if(distance < 15) score += 10;
+}
+return Math.min(100, Math.max(0, Math.round(score)));
 }
 
-// Price stability score (lower volatility = higher score for safety)
-const highLowRange = ((coin.high_24h - coin.low_24h) / coin.low_24h) * 100;
-if(highLowRange < 10) score += 10;
-else if(highLowRange < 20) score += 5;
-
-return Math.min(100, Math.max(0, score));
-}
-
-function getScoreColor(score) {
+function getScoreClass(score) {
 if(score >= 80) return 'score-high';
 if(score >= 60) return 'score-mid';
 return 'score-low';
@@ -393,10 +345,17 @@ const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids+',ethereum,matic-network');
 const data=await res.json();
 
+// CRASH PREVENTION: If API fails, stop here so it doesn't break the UI
+if(!Array.isArray(data)) {
+console.error('CoinGecko API failed or rate limited:', data);
+document.getElementById('topPicks').innerHTML = '<div class="card">API Rate Limited. Waiting for next refresh...</div>';
+return;
+}
+
 data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
-// Calculate scores and sort
-coinData = data.map(c => {
+// Calculate scores and sort by highest score
+let scoredCoins = data.map(c => {
 const coinInfo = coins.find(t => t.id === c.id);
 if(!coinInfo) return null;
 const score = calculateScore(c);
@@ -406,12 +365,12 @@ return {...c, score, coinInfo};
 let topHtml='',queueHtml='';
 let rank = 1;
 
-coinData.forEach(c => {
+scoredCoins.forEach(c => {
 const d = c.coinInfo;
 const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
 const change=c.price_change_percentage_24h||0;
 const cl=change>=0?'#00ff88':'#ff4757';
-const scoreClass = getScoreColor(c.score);
+const scoreClass = getScoreClass(c.score);
 
 if(d.top && rank <= 5) {
 topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="rank-badge">#${rank}</div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
@@ -426,7 +385,7 @@ document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No
 document.getElementById('coinCount').innerText=data.length;
 
 fetchWalletData(); 
-}catch(e){console.error(e)}
+}catch(e){console.error('Load Data Error:', e)}
 }
 
 loadData();
