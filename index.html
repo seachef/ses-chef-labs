@@ -92,10 +92,10 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 
 <div style="margin-bottom:30px">
-<h2 class="section-title">💼 Active Wallets & Live Balances</h2>
+<h2 class="section-title"> Active Wallets & Live Balances</h2>
 <div class="card" style="padding:0;overflow:hidden">
 <table class="wallets-table">
-<thead><tr><th>Wallet Type</th><th>Address</th><th>Chain</th><th>Live Balance</th><th>USD Value</th></tr></thead>
+<thead><tr><th>Wallet Type</th><th>Address</th><th>Chain</th><th>Holdings</th><th>USD Value</th></tr></thead>
 <tbody id="walletsBody">
 <tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">Connect a wallet or add a watch address to see live balances</td></tr>
 </tbody>
@@ -132,7 +132,6 @@ let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
-let priceMap = { 'ETH': 0, 'SOL': 0 };
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -142,7 +141,7 @@ connectedAddress = accounts[0];
 connectedChain = 'evm';
 document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
 document.getElementById('rabbyBtn').classList.add('btn-connected');
-fetchDirectBalances();
+fetchDeBankValue();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -154,7 +153,7 @@ connectedAddress = resp.publicKey.toString();
 connectedChain = 'sol';
 document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
-fetchDirectBalances();
+fetchDeBankValue();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -170,67 +169,53 @@ watchOnlyAddress = address; watchChain = 'evm';
 watchOnlyAddress = address; watchChain = 'sol';
 }else{alert('Invalid address format');return;}
 closeWatchOnlyModal();
-fetchDirectBalances();
+fetchDeBankValue();
 }
 
-async function fetchDirectBalances(){
+async function fetchDeBankValue(){
 if(!connectedAddress && !watchOnlyAddress) return;
-if(priceMap['ETH'] === 0 || priceMap['SOL'] === 0) return; 
 
 let totalPortfolio = 0;
 let tableHtml = '';
 
 async function checkWallet(addr, chain, type) {
-let balance = 0;
-let symbol = chain === 'evm' ? 'ETH' : 'SOL';
-let price = priceMap[symbol];
+let value = 0;
+let holdingsText = 'Scanning...';
 
 try {
-if(chain === 'evm') {
-// Cloudflare is the most CORS-friendly node for browsers
-const rpc = 'https://cloudflare-eth.com';
-const res = await fetch(rpc, {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({jsonrpc: '2.0', method: 'eth_getBalance', params: [addr, 'latest'], id: 1})
-});
+// Use CORS proxy to hit DeBank API for TOTAL wallet value (all tokens)
+const proxy = 'https://corsproxy.io/?';
+const url = `https://openapi.debank.com/v1/user/total_balance?id=${addr}`;
+
+const res = await fetch(proxy + encodeURIComponent(url));
 const data = await res.json();
-if(data.result) {
-balance = parseInt(data.result, 16) / 1e18;
+
+if(data && data.data) {
+value = data.data; 
+holdingsText = 'All Tokens & Native';
 }
-} else {
-const rpc = 'https://solana-rpc.publicnode.com';
-const res = await fetch(rpc, {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({jsonrpc: '2.0', method: 'getBalance', params: [addr], id: 1})
-});
-const data = await res.json();
-if(data.result && data.result.value) {
-balance = data.result.value / 1e9;
-}
+} catch(e) { 
+console.error('DeBank fetch failed:', e); 
+holdingsText = 'API Limit / Error';
 }
 
-let value = balance * price;
 totalPortfolio += value;
 let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
 
 tableHtml += `<tr class="wallet-row">
 <td><strong>${type}</strong></td>
 <td>${shortAddr}</td>
-<td>${symbol}</td>
-<td>${balance.toFixed(4)} ${symbol}</td>
+<td>${chain.toUpperCase()}</td>
+<td>${holdingsText}</td>
 <td class="green">$${value.toFixed(2)}</td>
 </tr>`;
-
-} catch(e) { console.error(e); }
 }
 
 if(connectedAddress) await checkWallet(connectedAddress, connectedChain, 'Connected');
 if(watchOnlyAddress) await checkWallet(watchOnlyAddress, watchChain, 'Watch-Only');
 
 document.getElementById('totalPortfolio').innerText = '$' + totalPortfolio.toFixed(2);
-document.getElementById('walletsBody').innerHTML = tableHtml || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">Scanning blockchain... (Wait 5 seconds)</td></tr>';
+document.getElementById('walletsBody').innerHTML = tableHtml;
 document.getElementById('lastUpdated').innerText = 'Live updated: ' + new Date().toLocaleTimeString();
 }
 
@@ -265,10 +250,6 @@ try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
-
-priceMap = {};
-data.forEach(c => { priceMap[c.symbol.toUpperCase()] = c.current_price; });
-
 let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
@@ -285,8 +266,6 @@ queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div 
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
-
-fetchDirectBalances(); 
 }catch(e){console.error(e)}
 }
 
