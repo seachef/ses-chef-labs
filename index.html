@@ -17,6 +17,8 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
 .btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
+.btn-currency{background:#334155;color:#fff;padding:10px 15px}
+.btn-currency.active{background:#00ff88;color:#0f172a}
 
 .news-ticker-container {width:100%;overflow:hidden;background:#020617;border-top:2px solid #00ff88;border-bottom:2px solid #00ff88;padding:12px 0;margin-bottom:30px;position:relative}
 .news-ticker-track {display:flex;width:max-content;animation:ticker-scroll 45s linear infinite}
@@ -78,11 +80,13 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="container">
 <header>
 <h1>Sea Chef Labs</h1>
-<div style="display:flex;flex-wrap:wrap;gap:5px">
+<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
 <button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
 <button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
 <button class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button>
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
+<button class="btn btn-currency active" id="btnUSD" onclick="setCurrency('USD')">USD</button>
+<button class="btn btn-currency" id="btnAUD" onclick="setCurrency('AUD')">AUD</button>
 </div>
 </header>
 
@@ -141,7 +145,7 @@ h1{color:#00ff88;font-size:1.8rem}
 
 <div id="mobileModal" class="modal">
 <div class="modal-content">
-<h2> Connect on iOS / Mobile</h2>
+<h2>📱 Connect on iOS / Mobile</h2>
 <p style="color:#94a3b8;margin-bottom:20px;font-size:14px">Tap your wallet below to open this site inside your wallet's secure browser. Once it opens, click "Connect Rabby" or "Connect Phantom" at the top.</p>
 <a href="#" id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</a>
 <a href="#" id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in Phantom</a>
@@ -166,6 +170,11 @@ let connectedAddress = null;
 let watchOnlyAddress = null;
 let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
 
+// CURRENCY STATE
+let currentCurrency = 'USD';
+let audRate = 1.52; // Fallback rate
+let lastScoredData = [];
+
 const knownTokens = [
   { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
   { sym: 'USDC', addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', dec: 6 },
@@ -173,6 +182,35 @@ const knownTokens = [
   { sym: 'SHIB', addr: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', dec: 18 },
   { sym: 'ARB', addr: '0x912CE59144191C1204E64559FE8253a0e49E6548', dec: 18 }
 ];
+
+// CURRENCY HELPERS
+function setCurrency(curr) {
+  currentCurrency = curr;
+  document.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
+  document.getElementById('btnAUD').classList.toggle('active', curr === 'AUD');
+  refreshDisplay();
+  if(connectedAddress || watchOnlyAddress) fetchWalletData();
+}
+
+function formatMoney(usdAmount) {
+  let val = usdAmount;
+  let symbol = '$';
+  if (currentCurrency === 'AUD') {
+    val = usdAmount * audRate;
+    symbol = 'A$';
+  }
+  return symbol + val.toFixed(2);
+}
+
+function formatPrice(usdPrice) {
+  let val = usdPrice;
+  let symbol = '$';
+  if (currentCurrency === 'AUD') {
+    val = usdPrice * audRate;
+    symbol = 'A$';
+  }
+  return symbol + val.toFixed(usdPrice < 1 ? 6 : 2);
+}
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected! If on iOS, use the "Connect Mobile" button.');return;}
@@ -239,7 +277,7 @@ const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
 if(ethBal > 0.00001) {
 const val = ethBal * (priceMap['ETH'] || 0);
 walletTotal += val;
-allHoldings.push(`ETH: ${ethBal.toFixed(6)} ($${val.toFixed(2)})`);
+allHoldings.push(`ETH: ${ethBal.toFixed(6)} (${formatMoney(val)})`);
 }
 for(let t of knownTokens) {
 const data = "0x70a08231000000000000000000000000" + addr.substring(2);
@@ -251,7 +289,7 @@ if(bal > 0) {
 const price = priceMap[t.sym] || 0;
 const val = bal * price;
 walletTotal += val;
-allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} ($${val.toFixed(2)})`);
+allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} (${formatMoney(val)})`);
 }
 }
 }
@@ -264,7 +302,7 @@ if(nativeBal > 0.00001) {
 const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
 const val = nativeBal * (priceMap[priceKey] || 0);
 walletTotal += val;
-allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} ($${val.toFixed(2)})`);
+allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} (${formatMoney(val)})`);
 }
 } catch(e) {}
 }
@@ -273,15 +311,15 @@ allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} ($${val.toFixed(2)})
 totalPortfolio += walletTotal;
 let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
 let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
-tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td><td class="green">$${walletTotal.toFixed(2)}</td></tr>`;
+tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td><td class="green">${formatMoney(walletTotal)}</td></tr>`;
 }
 
 if(connectedAddress) await processWallet(connectedAddress, 'Connected');
 if(watchOnlyAddress) await processWallet(watchOnlyAddress, 'Watch-Only');
 
-document.getElementById('totalPortfolio').innerText = '$' + totalPortfolio.toFixed(2);
+document.getElementById('totalPortfolio').innerText = formatMoney(totalPortfolio);
 document.getElementById('walletsBody').innerHTML = tableHtml;
-document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ' | ETH + Known Tokens';
+document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ` | ${currentCurrency} Mode`;
 
 let debankHtml = '';
 for(let addr of allAddresses) {
@@ -345,6 +383,13 @@ const coins=[
 
 async function loadData(){
 try{
+// Fetch Live AUD Exchange Rate
+try {
+    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+    const fxData = await fxRes.json();
+    if(fxData && fxData.rates && fxData.rates.AUD) audRate = fxData.rates.AUD;
+} catch(e) { console.log('FX fetch failed, using fallback'); }
+
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
@@ -357,49 +402,55 @@ return;
 
 data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
-let scoredCoins = data.map(c => {
+lastScoredData = data.map(c => {
 const coinInfo = coins.find(t => t.id === c.id);
 if(!coinInfo) return null;
 const score = calculateScore(c);
 return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
-let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED: </div>`;
-scoredCoins.forEach(c => {
-  const change = c.price_change_percentage_24h || 0;
-  const colorClass = change >= 0 ? 'green' : 'red';
-  const arrow = change >= 0 ? '▲' : '▼';
-  const dip = (c.low_24h * 1.02).toFixed(c.current_price < 1 ? 6 : 2);
-  tickerHtml += `<div class="ticker-item">
-    <strong>${c.symbol.toUpperCase()}</strong>: $${c.current_price} 
-    <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</span> 
-    | Dip Target: $${dip}
-  </div>`;
-});
-document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
+refreshDisplay();
 
-let topHtml='',queueHtml='';
-
-scoredCoins.forEach(c => {
-const d = c.coinInfo;
-const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
-const change=c.price_change_percentage_24h||0;
-const cl=change>=0?'#00ff88':'#ff4757';
-const scoreClass = getScoreClass(c.score);
-
-if(d.top) {
-topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip"> Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
-} else {
-queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">$${c.current_price}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: $${dip}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
-}
-});
-
-document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
-document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
-document.getElementById('coinCount').innerText=data.length;
-
-fetchWalletData(); 
+if(connectedAddress || watchOnlyAddress) fetchWalletData(); 
 }catch(e){console.error('Load Data Error:', e)}
+}
+
+function refreshDisplay() {
+  if(lastScoredData.length === 0) return;
+
+  // 1. Update Ticker
+  let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED (${currentCurrency}): </div>`;
+  lastScoredData.forEach(c => {
+    const change = c.price_change_percentage_24h || 0;
+    const colorClass = change >= 0 ? 'green' : 'red';
+    const arrow = change >= 0 ? '▲' : '▼';
+    const dip = (c.low_24h * 1.02);
+    tickerHtml += `<div class="ticker-item">
+      <strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} 
+      <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</span> 
+      | Dip Target: ${formatPrice(dip)}
+    </div>`;
+  });
+  document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
+
+  // 2. Update Cards
+  let topHtml='',queueHtml='';
+  lastScoredData.forEach(c => {
+  const d = c.coinInfo;
+  const dip=(c.low_24h*1.02);
+  const change=c.price_change_percentage_24h||0;
+  const scoreClass = getScoreClass(c.score);
+
+  if(d.top) {
+  topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: ${formatPrice(dip)}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
+  } else {
+  queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">${formatPrice(c.current_price)}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: ${formatPrice(dip)}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
+  }
+  });
+
+  document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
+  document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
+  document.getElementById('coinCount').innerText=lastScoredData.length;
 }
 
 loadData();
