@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sea Chef Labs</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
@@ -14,7 +13,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px;text-decoration:none;display:inline-block;text-align:center}
 .btn-phantom{background:#ab9ff2;color:#fff}
 .btn-rabby{background:#00d9ff}
-.btn-walletconnect{background:#3b99fc;color:#fff}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
 .btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
@@ -46,8 +44,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .dip-small{color:#fbbf24;font-weight:bold;font-size:12px;margin-bottom:8px}
 .reason{color:#cbd5e1;font-size:13px;margin-bottom:12px}
 .reason-small{color:#cbd5e1;font-size:11px;margin-bottom:8px}
-.social-links{display:flex;gap:8px;margin-bottom:10px}
-.social-btn{flex:1;background:rgba(255,255,255,0.05);color:#94a3b8;text-align:center;padding:6px;border-radius:4px;text-decoration:none;font-size:12px}
 .buy-btn{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold}
 .buy-btn-small{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:8px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:12px}
 .live-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite}
@@ -67,7 +63,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group{margin-bottom:15px;text-align:left}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
-#qrcode-container{display:flex;justify-content:center;margin:20px 0;padding:20px;background:#fff;border-radius:8px}
 </style>
 </head>
 <body>
@@ -77,7 +72,6 @@ h1{color:#00ff88;font-size:1.8rem}
 <div>
 <button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
 <button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
-<button class="btn btn-walletconnect" onclick="openWalletConnectModal()">📱 WalletConnect</button>
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
@@ -90,7 +84,7 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 <div class="card" style="border: 1px solid #ff6b35;">
 <h3>Full Portfolio Value</h3>
-<h2 style="color:#ff6b35" id="debankValue">Click Below</h2>
+<h2 style="color:#ff6b35">Click Below</h2>
 <div id="debankLinks" style="margin-top:10px"></div>
 </div>
 <div class="card">
@@ -134,16 +128,6 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 <button class="btn" onclick="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button>
 <button class="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:10px;background:#334155;color:#fff">Cancel</button>
-</div>
-</div>
-
-<div id="walletConnectModal" class="modal">
-<div class="modal-content">
-<h2>📱 Connect Mobile Wallet</h2>
-<p style="color:#94a3b8;margin-bottom:15px">Scan this QR code with your wallet app (Rabby, Phantom, MetaMask, Trust Wallet)</p>
-<div id="qrcode-container"></div>
-<p style="color:#94a3b8;font-size:12px;margin-top:10px">Or open your wallet app and select "WalletConnect"</p>
-<button class="btn" onclick="closeWalletConnectModal()" style="width:100%;background:#334155;color:#fff;margin-top:15px">Close</button>
 </div>
 </div>
 
@@ -191,23 +175,6 @@ document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
 fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
-}
-
-function openWalletConnectModal(){
-document.getElementById('walletConnectModal').style.display = 'flex';
-generateQRCode();
-}
-function closeWalletConnectModal(){document.getElementById('walletConnectModal').style.display = 'none';}
-
-function generateQRCode(){
-const qrDiv = document.getElementById('qrcode-container');
-qrDiv.innerHTML = '';
-const wcUri = 'wc:01234567-89ab-cdef-0123-456789abcdef@1?bridge=https://bridge.walletconnect.org&key=your-key';
-if(typeof QRCode !== 'undefined') {
-new QRCode(qrDiv, { text: wcUri, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff' });
-} else {
-qrDiv.innerHTML = '<p>QR Code library loading...</p>';
-}
 }
 
 function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
@@ -298,9 +265,8 @@ document.getElementById('debankLinks').innerHTML = debankHtml;
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
-// THE LIVE SCORING ENGINE
 function calculateScore(coin) {
-let score = 50; // Base score
+let score = 50; 
 const change = coin.price_change_percentage_24h || 0;
 if(change > 10) score += 20;
 else if(change > 5) score += 15;
@@ -334,13 +300,25 @@ const coins=[
 {id:'hyperliquid',sym:'HYPE',addr:'0x0d0Dc56B1B01a5d9b41c4b4e3A7B8E9F3A1B5C7D9',dec:18,link:'https://app.uniswap.org/',reason:'Perp DEX volume spike.',top:true},
 {id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',dec:18,link:'https://app.uniswap.org/',reason:'RWA narrative.',top:true},
 {id:'virtual-protocol',sym:'VIRTUAL',addr:'0x4955766AF1c1E4E94b6fD9Ec9e6e2B9C8f9C8E7A',dec:18,link:'https://app.uniswap.org/',reason:'AI agent token.',top:true},
-{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',dec:18,link:'https://app.uniswap.org/',reason:'AI compute demand.',top:true}
+{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',dec:18,link:'https://app.uniswap.org/',reason:'AI compute demand.',top:true},
+{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',dec:18,link:'https://app.uniswap.org/',reason:'Oracle demand. DeFi TVL rising.',top:false},
+{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',dec:18,link:'https://app.uniswap.org/',reason:'DEX volume leader.',top:false},
+{id:'bitcoin',sym:'BTC',addr:'Native (No contract)',dec:8,link:'https://app.uniswap.org/',reason:'ETF inflows.',top:false},
+{id:'ethereum',sym:'ETH',addr:'Native (No contract)',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
+{id:'solana',sym:'SOL',addr:'Native (No contract)',dec:9,link:'https://jup.ag/',reason:'Meme coin volume.',top:false},
+{id:'xrp',sym:'XRP',addr:'Native (No contract)',dec:6,link:'https://app.uniswap.org/',reason:'Legal clarity.',top:false},
+{id:'cardano',sym:'ADA',addr:'Native (No contract)',dec:6,link:'https://app.uniswap.org/',reason:'Smart contract growth.',top:false},
+{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',dec:18,link:'https://app.uniswap.org/',reason:'Subnet adoption.',top:false},
+{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',dec:8,link:'https://app.uniswap.org/',reason:'Meme leader.',top:false},
+{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',dec:18,link:'https://app.uniswap.org/',reason:'L2 scaling.',top:false},
+{id:'bittensor',sym:'TAO',addr:'Native (No contract)',dec:9,link:'https://app.uniswap.org/',reason:'Decentralized AI.',top:false},
+{id:'sui',sym:'SUI',addr:'Native (No contract)',dec:9,link:'https://app.uniswap.org/',reason:'Move language.',top:false}
 ];
 
 async function loadData(){
 try{
 const ids=coins.map(c=>c.id).join(',');
-const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids+',ethereum,matic-network');
+const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
 
 if(!Array.isArray(data)) {
@@ -368,7 +346,7 @@ const cl=change>=0?'#00ff88':'#ff4757';
 const scoreClass = getScoreClass(c.score);
 
 if(d.top) {
-topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
+topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip"> Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
 } else {
 queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">$${c.current_price}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: $${dip}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
 }
