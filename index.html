@@ -8,49 +8,22 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
 .container{max-width:1400px;margin:0 auto}
-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:20px;flex-wrap:wrap;gap:15px}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:20px;flex-wrap:wrap;gap:10px}
 h1{color:#00ff88;font-size:1.8rem}
-.btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px;text-decoration:none;display:inline-block;text-align:center}
+.btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:5px;text-decoration:none;display:inline-block;text-align:center;font-size:14px}
 .btn-phantom{background:#ab9ff2;color:#fff}
 .btn-rabby{background:#00d9ff}
+.btn-mobile{background:#3b99fc;color:#fff}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
 .btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
 
-/* LIVE NEWS TICKER STYLES */
-.news-ticker-container {
-  width: 100%;
-  overflow: hidden;
-  background: #020617;
-  border-top: 2px solid #00ff88;
-  border-bottom: 2px solid #00ff88;
-  padding: 12px 0;
-  margin-bottom: 30px;
-  position: relative;
-}
-.news-ticker-track {
-  display: flex;
-  width: max-content;
-  animation: ticker-scroll 45s linear infinite;
-}
-/* PAUSE ON HOVER */
-.news-ticker-container:hover .news-ticker-track {
-  animation-play-state: paused;
-}
-.ticker-item {
-  padding: 0 40px;
-  font-size: 15px;
-  white-space: nowrap;
-  color: #e2e8f0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.news-ticker-container {width:100%;overflow:hidden;background:#020617;border-top:2px solid #00ff88;border-bottom:2px solid #00ff88;padding:12px 0;margin-bottom:30px;position:relative}
+.news-ticker-track {display:flex;width:max-content;animation:ticker-scroll 45s linear infinite}
+.news-ticker-container:hover .news-ticker-track {animation-play-state:paused}
+.ticker-item {padding:0 40px;font-size:15px;white-space:nowrap;color:#e2e8f0;display:flex;align-items:center;gap:8px}
 .ticker-item strong { color: #00d9ff; font-size: 16px; }
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+@keyframes ticker-scroll {0% { transform: translateX(0); } 100% { transform: translateX(-50%); }}
 
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:30px}
 .card{background:#1e293b;padding:20px;border-radius:12px;border:1px solid #334155}
@@ -95,20 +68,24 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group{margin-bottom:15px;text-align:left}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
+.mobile-btn{display:block;width:100%;padding:15px;margin-bottom:10px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;text-align:center}
+.btn-mm{background:#f6851b;color:#fff}
+.btn-phantom-mobile{background:#ab9ff2;color:#fff}
+.btn-rabby-mobile{background:#00d9ff;color:#0f172a}
 </style>
 </head>
 <body>
 <div class="container">
 <header>
 <h1>Sea Chef Labs</h1>
-<div>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
 <button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
 <button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<button class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button>
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
 
-<!-- LIVE SCROLLING NEWS TICKER -->
 <div class="news-ticker-container">
   <div class="news-ticker-track" id="newsTickerTrack">
     <div class="ticker-item">Loading live market data...</div>
@@ -162,6 +139,17 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
+<div id="mobileModal" class="modal">
+<div class="modal-content">
+<h2> Connect on iOS / Mobile</h2>
+<p style="color:#94a3b8;margin-bottom:20px;font-size:14px">Tap your wallet below to open this site inside your wallet's secure browser. Once it opens, click "Connect Rabby" or "Connect Phantom" at the top.</p>
+<a href="#" id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</a>
+<a href="#" id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in Phantom</a>
+<a href="#" id="linkRabby" class="mobile-btn btn-rabby-mobile">Open in Rabby</a>
+<button class="btn" onclick="closeMobileModal()" style="width:100%;background:#334155;color:#fff;margin-top:10px">Cancel</button>
+</div>
+</div>
+
 <script>
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
@@ -187,7 +175,7 @@ const knownTokens = [
 ];
 
 async function connectRabby(){
-if(!window.ethereum){alert('Rabby not detected!');return;}
+if(!window.ethereum){alert('Rabby not detected! If on iOS, use the "Connect Mobile" button.');return;}
 try{
 const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
 connectedAddress = accounts[0];
@@ -198,7 +186,7 @@ fetchWalletData();
 }
 
 async function connectPhantom(){
-if(!window.solana){alert('Phantom not detected!');return;}
+if(!window.solana){alert('Phantom not detected! If on iOS, use the "Connect Mobile" button.');return;}
 try{
 const resp = await window.solana.connect();
 connectedAddress = resp.publicKey.toString();
@@ -207,6 +195,15 @@ document.getElementById('phantomBtn').classList.add('btn-connected');
 fetchWalletData();
 }catch(e){alert('Failed: '+e.message)}
 }
+
+function openMobileModal(){
+  const currentUrl = encodeURIComponent(window.location.href);
+  document.getElementById('linkMetaMask').href = `https://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
+  document.getElementById('linkPhantom').href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+  document.getElementById('linkRabby').href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+  document.getElementById('mobileModal').style.display = 'flex';
+}
+function closeMobileModal(){document.getElementById('mobileModal').style.display = 'none';}
 
 function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
 function closeWatchOnlyModal(){document.getElementById('watchModal').style.display = 'none';}
@@ -345,6 +342,7 @@ const coins=[
 {id:'bittensor',sym:'TAO',addr:'Native (No contract)',dec:9,link:'https://www.coinbase.com/price/bittensor',reason:'Decentralized AI.',top:false},
 {id:'sui',sym:'SUI',addr:'Native (No contract)',dec:9,link:'https://www.coinbase.com/price/sui',reason:'Move language.',top:false}
 ];
+
 async function loadData(){
 try{
 const ids=coins.map(c=>c.id).join(',');
@@ -366,7 +364,6 @@ const score = calculateScore(c);
 return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
-// UPDATE THE LIVE NEWS TICKER
 let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED: </div>`;
 scoredCoins.forEach(c => {
   const change = c.price_change_percentage_24h || 0;
@@ -379,7 +376,6 @@ scoredCoins.forEach(c => {
     | Dip Target: $${dip}
   </div>`;
 });
-// Duplicate content for seamless infinite scrolling
 document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
 
 let topHtml='',queueHtml='';
