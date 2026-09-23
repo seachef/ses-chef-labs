@@ -68,7 +68,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
 #qrcode-container{display:flex;justify-content:center;margin:20px 0;padding:20px;background:#fff;border-radius:8px}
-.rank-badge{position:absolute;top:10px;left:10px;background:#00d9ff;color:#0f172a;padding:4px 10px;border-radius:6px;font-weight:bold;font-size:12px}
 </style>
 </head>
 <body>
@@ -117,7 +116,7 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
-<h2 class="section-title">🤖 Whale AI Agents (Click to Expand)</h2>
+<h2 class="section-title"> Whale AI Agents (Click to Expand)</h2>
 <div class="top-grid">
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Whale Alert Bot</h3><span class="green">● Active</span></div><div class="agent-details">• Last 24h: 47 whale movements detected<br>• Largest Move: $12.4M PEPE transferred to Binance<br>• Pattern: 3 wallets accumulating WIF over 48h<br>• Chains: ETH, SOL, ARB, BASE, BSC</div></div>
 <div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>AI Market Analyzer</h3><span class="green">● Active</span></div><div class="agent-details">• Analysis: Momentum, volume, sentiment across 50+ pairs<br>• Top Signal: PEPE - Strong buy (92/100 confidence)<br>• Sources: 61 DEX + CEX sources, 26 chains<br>• Updates: Every 30 seconds</div></div>
@@ -203,7 +202,6 @@ function closeWalletConnectModal(){document.getElementById('walletConnectModal')
 function generateQRCode(){
 const qrDiv = document.getElementById('qrcode-container');
 qrDiv.innerHTML = '';
-// Generates a standard WalletConnect URI for mobile apps to scan
 const wcUri = 'wc:01234567-89ab-cdef-0123-456789abcdef@1?bridge=https://bridge.walletconnect.org&key=your-key';
 if(typeof QRCode !== 'undefined') {
 new QRCode(qrDiv, { text: wcUri, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff' });
@@ -345,7 +343,6 @@ const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids+',ethereum,matic-network');
 const data=await res.json();
 
-// CRASH PREVENTION: If API fails, stop here so it doesn't break the UI
 if(!Array.isArray(data)) {
 console.error('CoinGecko API failed or rate limited:', data);
 document.getElementById('topPicks').innerHTML = '<div class="card">API Rate Limited. Waiting for next refresh...</div>';
@@ -354,7 +351,6 @@ return;
 
 data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
-// Calculate scores and sort by highest score
 let scoredCoins = data.map(c => {
 const coinInfo = coins.find(t => t.id === c.id);
 if(!coinInfo) return null;
@@ -363,7 +359,6 @@ return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
 let topHtml='',queueHtml='';
-let rank = 1;
 
 scoredCoins.forEach(c => {
 const d = c.coinInfo;
@@ -372,9 +367,8 @@ const change=c.price_change_percentage_24h||0;
 const cl=change>=0?'#00ff88':'#ff4757';
 const scoreClass = getScoreClass(c.score);
 
-if(d.top && rank <= 5) {
-topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="rank-badge">#${rank}</div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
-rank++;
+if(d.top) {
+topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: $${c.current_price}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip">🎯 Entry: $${dip}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
 } else {
 queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">$${c.current_price}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: $${dip}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
 }
