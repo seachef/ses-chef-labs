@@ -132,7 +132,6 @@ h1{color:#00ff88;font-size:1.8rem}
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
-// Multi-chain RPCs for scanning dust on other chains (NOW INCLUDING ZORA!)
 const chainRPCs = {
   'Arbitrum': 'https://arb1.arbitrum.io/rpc',
   'Polygon': 'https://polygon-rpc.com',
@@ -145,7 +144,7 @@ let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
-let priceMap = { 'ETH': 0, 'SOL': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
+let priceMap = {};
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -186,6 +185,20 @@ closeWatchOnlyModal();
 fetchWalletData();
 }
 
+async function getTokenMetadata(contractAddress) {
+try {
+const res = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getTokenMetadata', params: [contractAddress] })
+});
+const data = await res.json();
+return data.result;
+} catch(e) {
+return null;
+}
+}
+
 async function fetchWalletData(){
 if(!connectedAddress && !watchOnlyAddress) return;
 
@@ -194,102 +207,93 @@ let tableHtml = '';
 let processedAddresses = new Set();
 
 async function processWallet(addr, chainType, type) {
-  if(processedAddresses.has(addr.toLowerCase())) {
-    return; 
-  }
-  processedAddresses.add(addr.toLowerCase());
+if(processedAddresses.has(addr.toLowerCase())) {
+return; 
+}
+processedAddresses.add(addr.toLowerCase());
 
-  let walletTotal = 0;
-  let allHoldings = [];
+let walletTotal = 0;
+let allHoldings = [];
 
-  if(chainType === 'evm') {
-    try {
-      // Get Native ETH Balance
-      const ethRes = await fetch(ALCHEMY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
-      });
-      const ethData = await ethRes.json();
-      const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
-      if(ethBal > 0.00001) {
-        const val = ethBal * (priceMap['ETH'] || 0);
-        walletTotal += val;
-        allHoldings.push(`ETH: ${ethBal.toFixed(6)}`);
-      }
+if(chainType === 'evm') {
+try {
+const ethRes = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
+});
+const ethData = await ethRes.json();
+const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
+if(ethBal > 0.00001) {
+const val = ethBal * (priceMap['ETH'] || 0);
+walletTotal += val;
+allHoldings.push(`ETH: ${ethBal.toFixed(6)} ($${val.toFixed(2)})`);
+}
 
-      // Get ALL ERC20 Token Balances using Alchemy
-      const tokenRes = await fetch(ALCHEMY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getTokenBalances', params: [addr, 'erc20'] })
-      });
-      const tokenData = await tokenRes.json();
+const tokenRes = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getTokenBalances', params: [addr, 'erc20'] })
+});
+const tokenData = await tokenRes.json();
 
-      if(tokenData.result && tokenData.result.tokenBalances) {
-        for(let token of tokenData.result.tokenBalances) {
-          if(token.tokenBalance === '0x0' || token.tokenBalance === '0') continue;
+if(tokenData.result && tokenData.result.tokenBalances) {
+for(let token of tokenData.result.tokenBalances) {
+if(token.tokenBalance === '0x0' || token.tokenBalance === '0') continue;
 
-          const addrLower = token.contractAddress.toLowerCase();
-          const coin = coins.find(c => c.addr && c.addr.toLowerCase() === addrLower);
+const metadata = await getTokenMetadata(token.contractAddress);
+if(!metadata) continue;
 
-          if(coin) {
-            const decimals = coin.dec || 18;
-            const bal = parseInt(token.tokenBalance, 16) / Math.pow(10, decimals);
-            if(bal > 0) {
-              const price = priceMap[coin.sym] || 0;
-              const val = bal * price;
-              walletTotal += val;
-              allHoldings.push(`${coin.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 6})}`);
-            }
-          } else {
-            // Unknown token - show it but can't calculate value
-            const bal = parseInt(token.tokenBalance, 16) / 1e18;
-            if(bal > 0.0001) {
-              allHoldings.push(`Unknown (${token.contractAddress.substring(0,8)}): ${bal.toFixed(4)}`);
-            }
-          }
-        }
-      }
+const decimals = metadata.decimals || 18;
+const symbol = metadata.symbol || 'UNKNOWN';
+const bal = parseInt(token.tokenBalance, 16) / Math.pow(10, decimals);
 
-      // Check dust on other chains INCLUDING ZORA
-      for(let [chainName, rpc] of Object.entries(chainRPCs)) {
-        try {
-          const nativeRes = await fetch(rpc, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
-          });
-          const nativeData = await nativeRes.json();
-          const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
-          
-          if(nativeBal > 0.00001) {
-            const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
-            const val = nativeBal * (priceMap[priceKey] || 0);
-            walletTotal += val;
-            allHoldings.push(`${chainName}: ${nativeBal.toFixed(6)}`);
-          }
-        } catch(e) { /* Skip chain if error */ }
-      }
-    } catch(e) {
-      console.error('Alchemy Error:', e);
-      allHoldings.push('API Error');
-    }
-  } else {
-    allHoldings.push('Solana scanning...');
-  }
+if(bal > 0.0001) {
+const price = priceMap[symbol.toUpperCase()] || 0;
+const val = bal * price;
+walletTotal += val;
+allHoldings.push(`${symbol}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} ($${val.toFixed(2)})`);
+}
+}
+}
 
-  totalPortfolio += walletTotal;
-  let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
-  let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
+for(let [chainName, rpc] of Object.entries(chainRPCs)) {
+try {
+const nativeRes = await fetch(rpc, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
+});
+const nativeData = await nativeRes.json();
+const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
 
-  tableHtml += `<tr class="wallet-row">
-  <td><strong>${type}</strong></td>
-  <td>${shortAddr}</td>
-  <td>${chainType.toUpperCase()}</td>
-  <td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td>
-  <td class="green">$${walletTotal.toFixed(2)}</td>
-  </tr>`;
+if(nativeBal > 0.00001) {
+const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
+const val = nativeBal * (priceMap[priceKey] || 0);
+walletTotal += val;
+allHoldings.push(`${chainName}: ${nativeBal.toFixed(6)} ($${val.toFixed(2)})`);
+}
+} catch(e) { /* Skip chain if error */ }
+}
+} catch(e) {
+console.error('Alchemy Error:', e);
+allHoldings.push('API Error');
+}
+} else {
+allHoldings.push('Solana scanning...');
+}
+
+totalPortfolio += walletTotal;
+let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
+let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
+
+tableHtml += `<tr class="wallet-row">
+<td><strong>${type}</strong></td>
+<td>${shortAddr}</td>
+<td>${chainType.toUpperCase()}</td>
+<td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td>
+<td class="green">$${walletTotal.toFixed(2)}</td>
+</tr>`;
 }
 
 if(connectedAddress) await processWallet(connectedAddress, connectedChain, 'Connected');
@@ -302,47 +306,23 @@ document.getElementById('lastUpdated').innerText = 'Live updated: ' + new Date()
 
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
-const coins=[
-{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',dec:18,link:'https://app.uniswap.org/',reason:'3 whale wallets accumulating.',top:true},
-{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dec:18,link:'https://app.uniswap.org/',reason:'L2 momentum.',top:true},
-{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',dec:18,link:'https://app.uniswap.org/',reason:'Meme season.',top:true},
-{id:'tether',sym:'USDT',addr:'0xdAC17F958D2ee523a2206206994597C13D831ec7',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
-{id:'usd-coin',sym:'USDC',addr:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
-{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag/',reason:'Jupiter volume +120%.',top:true},
-{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/',reason:'AI narrative trending.',top:true},
-{id:'ethereum',sym:'ETH',addr:'Native',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
-{id:'solana',sym:'SOL',addr:'Native',dec:9,link:'https://jup.ag/',reason:'Meme coin volume.',top:false},
-{id:'matic-network',sym:'MATIC',addr:'Native',dec:18,link:'https://app.uniswap.org/',reason:'L2 scaling.',top:false}
-];
-
-async function loadData(){
-try{
-const ids=coins.filter(c=>c.id!=='tether' && c.id!=='usd-coin').map(c=>c.id).join(',');
-const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
-const data=await res.json();
-
-data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
-
-let topHtml='';
-data.forEach(c=>{
-const d=coins.find(t=>t.id===c.id);
-if(!d || !d.addr || d.addr === 'Native') return;
-const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
-const change=c.price_change_percentage_24h||0;
-const cl=change>=0?'#00ff88':'#ff4757';
-if(d.top){
-topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><a href="'+d.link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
-}
-});
-document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
-document.getElementById('coinCount').innerText=data.length;
-
-fetchWalletData(); 
-}catch(e){console.error(e)}
+async function loadPrices(){
+try {
+const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin,matic-network,arbitrum,solana&vs_currencies=usd');
+const data = await res.json();
+priceMap = {
+'ETH': data.ethereum?.usd || 0,
+'BTC': data.bitcoin?.usd || 0,
+'MATIC': data['matic-network']?.usd || 0,
+'ARB': data.arbitrum?.usd || 0,
+'SOL': data.solana?.usd || 0
+};
+} catch(e) { console.error('Price fetch error:', e); }
 }
 
-loadData();
-setInterval(loadData,60000);
+loadPrices();
+setInterval(loadPrices, 60000);
+setInterval(fetchWalletData, 30000);
 </script>
 </body>
 </html>
