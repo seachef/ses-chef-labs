@@ -51,8 +51,7 @@ h1{color:#00ff88;font-size:1.8rem}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 .agent-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00d9ff;margin-bottom:15px;cursor:pointer}
 .agent-head{display:flex;justify-content:space-between;margin-bottom:10px}
-.agent-details{color:#cbd5e1;font-size:14px;line-height:1.6;display:none}
-.agent-card.open .agent-details{display:block}
+.agent-details{color:#cbd5e1;font-size:14px;line-height:1.6}
 .wallets-table{width:100%;border-collapse:collapse;margin-top:10px}
 .wallets-table th,.wallets-table td{padding:15px;text-align:left;border-bottom:1px solid #334155}
 .wallets-table th{color:#94a3b8;font-size:14px}
@@ -63,6 +62,8 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group{margin-bottom:15px;text-align:left}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
+.live-tool-btn{display:inline-block;background:rgba(0,217,255,0.1);color:#00d9ff;padding:8px 15px;border-radius:6px;text-decoration:none;font-size:13px;margin-top:10px;border:1px solid #00d9ff}
+.live-tool-btn:hover{background:rgba(0,217,255,0.2)}
 </style>
 </head>
 <body>
@@ -110,13 +111,10 @@ h1{color:#00ff88;font-size:1.8rem}
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
-<h2 class="section-title"> Whale AI Agents (Click to Expand)</h2>
-<div class="top-grid">
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Whale Alert Bot</h3><span class="green">● Active</span></div><div class="agent-details">• Last 24h: 47 whale movements detected<br>• Largest Move: $12.4M PEPE transferred to Binance<br>• Pattern: 3 wallets accumulating WIF over 48h<br>• Chains: ETH, SOL, ARB, BASE, BSC</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>AI Market Analyzer</h3><span class="green">● Active</span></div><div class="agent-details">• Analysis: Momentum, volume, sentiment across 50+ pairs<br>• Top Signal: PEPE - Strong buy (92/100 confidence)<br>• Sources: 61 DEX + CEX sources, 26 chains<br>• Updates: Every 30 seconds</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>Sniper Bot Tracker</h3><span class="green">● Active</span></div><div class="agent-details">• New (24h): 3 tokens with sniper activity<br>• Token #1: Unknown meme - 12 snipers in first block<br>• Token #2: AI agent token - 8 snipers, liquidity locked<br>• Risk: Token #2 safest (liquidity locked 6mo)</div></div>
-<div class="agent-card" onclick="this.classList.toggle('open')"><div class="agent-head"><h3>TG Signal Groups</h3><span class="green">● Active</span></div><div class="agent-details">• Active: 12 Telegram signal groups monitored<br>• Consensus: 8/12 groups calling PEPE accumulation<br>• Top Mentions: PEPE (8), WIF (6), RNDR (5)<br>• Speed: 4-8ms via Banana Gun / Maestro</div></div>
-</div>
+
+<h2 class="section-title"> Live Market Intelligence (Real-Time Data)</h2>
+<div class="top-grid" id="liveIntelligence">
+  <div class="card">Loading live market data...</div>
 </div>
 
 <div id="watchModal" class="modal">
@@ -146,6 +144,7 @@ const chainRPCs = {
 let connectedAddress = null;
 let watchOnlyAddress = null;
 let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
+let topCoinSymbol = '';
 
 const knownTokens = [
   { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
@@ -336,6 +335,8 @@ const score = calculateScore(c);
 return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
+topCoinSymbol = scoredCoins[0] ? scoredCoins[0].symbol.toUpperCase() : 'PEPE';
+
 let topHtml='',queueHtml='';
 
 scoredCoins.forEach(c => {
@@ -356,8 +357,65 @@ document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No dat
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
 
+// Fetch REAL Live Market Intelligence
+fetchLiveIntelligence();
+
 fetchWalletData(); 
 }catch(e){console.error('Load Data Error:', e)}
+}
+
+async function fetchLiveIntelligence() {
+  let intelHtml = '';
+  
+  // 1. Real Live Fear & Greed Index
+  try {
+    const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
+    const fngData = await fngRes.json();
+    if(fngData.data && fngData.data[0]) {
+      const val = fngData.data[0].value;
+      const classification = fngData.data[0].value_classification;
+      let color = val < 25 ? '#ff4757' : val < 50 ? '#fbbf24' : '#00ff88';
+      intelHtml += `<div class="agent-card" style="cursor:default">
+        <div class="agent-head"><h3>📊 Live Market Sentiment</h3><span style="color:${color};font-weight:bold">${val}/100</span></div>
+        <div class="agent-details" style="display:block">
+          Current Market Mood: <strong style="color:${color}">${classification}</strong><br>
+          <span style="font-size:12px;color:#94a3b8">Updated live via Alternative.me API</span>
+        </div>
+      </div>`;
+    }
+  } catch(e) {}
+
+  // 2. Real Live Top Gainer from our list
+  const topGainer = coins.reduce((prev, current) => (prev.price_change_percentage_24h > current.price_change_percentage_24h) ? prev : current);
+  if(topGainer) {
+    intelHtml += `<div class="agent-card" style="cursor:default">
+      <div class="agent-head"><h3>🚀 Live Top Mover (24h)</h3><span class="green">+${topGainer.price_change_percentage_24h.toFixed(2)}%</span></div>
+      <div class="agent-details" style="display:block">
+        <strong>${topGainer.sym}</strong> is leading our research list today.<br>
+        <span style="font-size:12px;color:#94a3b8">Calculated from live CoinGecko data</span>
+      </div>
+    </div>`;
+  }
+
+  // 3. Live Whale Tracker Link (Direct to DexScreener)
+  intelHtml += `<div class="agent-card" style="cursor:default">
+    <div class="agent-head"><h3>🐋 Live Whale Transactions</h3><span class="green">● Live</span></div>
+    <div class="agent-details" style="display:block">
+      Track real-time large buys and sells for <strong>${topCoinSymbol}</strong>.<br>
+      <a href="https://dexscreener.com/search?q=${topCoinSymbol}" target="_blank" class="live-tool-btn">Open Live DexScreener Feed →</a>
+    </div>
+  </div>`;
+
+  // 4. Live Social Hype Link (Direct to Twitter/X)
+  intelHtml += `<div class="agent-card" style="cursor:default">
+    <div class="agent-head"><h3>🔥 Live Social Hype</h3><span class="green">● Live</span></div>
+    <div class="agent-details" style="display:block">
+      See real-time tweets and sentiment for <strong>${topCoinSymbol}</strong>.<br>
+      <a href="https://twitter.com/search?q=%24${topCoinSymbol}&src=typed_query&f=live" target="_blank" class="live-tool-btn">Open Live Twitter Feed →</a>
+    </div>
+  </div>`;
+
+  document.getElementById('liveIntelligence').innerHTML = intelHtml;
 }
 
 loadData();
