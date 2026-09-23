@@ -92,7 +92,7 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 
 <div style="margin-bottom:30px">
-<h2 class="section-title"> Active Wallets & Live Balances</h2>
+<h2 class="section-title">💼 Active Wallets & Live Balances</h2>
 <div class="card" style="padding:0;overflow:hidden">
 <table class="wallets-table">
 <thead><tr><th>Wallet Type</th><th>Address</th><th>Chain</th><th>Holdings</th><th>USD Value</th></tr></thead>
@@ -103,9 +103,9 @@ h1{color:#00ff88;font-size:1.8rem}
 </div>
 </div>
 
-<h2 class="section-title"> AI Top Picks - Live Feed & Dip Targets</h2>
+<h2 class="section-title">🎯 AI Top Picks - Live Feed & Dip Targets</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
-<h2 class="section-title"> Research Queue - Live Monitored</h2>
+<h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
 <h2 class="section-title">🤖 Whale AI Agents (Click to Expand)</h2>
 <div class="top-grid">
@@ -132,6 +132,10 @@ let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
+let priceMap = { 'ETH': 0, 'SOL': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0 };
+
+// Alchemy Demo API - Specifically built to allow browser connections without CORS errors
+const ALCHEMY_URL = 'https://eth-mainnet.g.alchemy.com/v2/demo';
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -141,7 +145,7 @@ connectedAddress = accounts[0];
 connectedChain = 'evm';
 document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
 document.getElementById('rabbyBtn').classList.add('btn-connected');
-fetchDeBankValue();
+fetchTokenBalances();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -153,7 +157,7 @@ connectedAddress = resp.publicKey.toString();
 connectedChain = 'sol';
 document.getElementById('phantomBtn').innerText = 'Phantom ✓';
 document.getElementById('phantomBtn').classList.add('btn-connected');
-fetchDeBankValue();
+fetchTokenBalances();
 }catch(e){alert('Failed: '+e.message)}
 }
 
@@ -169,45 +173,79 @@ watchOnlyAddress = address; watchChain = 'evm';
 watchOnlyAddress = address; watchChain = 'sol';
 }else{alert('Invalid address format');return;}
 closeWatchOnlyModal();
-fetchDeBankValue();
+fetchTokenBalances();
 }
 
-async function fetchDeBankValue(){
+// Helper to talk to Alchemy
+async function callAlchemy(method, params) {
+const res = await fetch(ALCHEMY_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+});
+return await res.json();
+}
+
+async function fetchTokenBalances(){
 if(!connectedAddress && !watchOnlyAddress) return;
 
 let totalPortfolio = 0;
 let tableHtml = '';
 
 async function checkWallet(addr, chain, type) {
-let value = 0;
-let holdingsText = 'Scanning...';
+let walletTotal = 0;
+let holdingsList = [];
 
+if(chain === 'evm') {
 try {
-// Use CORS proxy to hit DeBank API for TOTAL wallet value (all tokens)
-const proxy = 'https://corsproxy.io/?';
-const url = `https://openapi.debank.com/v1/user/total_balance?id=${addr}`;
-
-const res = await fetch(proxy + encodeURIComponent(url));
-const data = await res.json();
-
-if(data && data.data) {
-value = data.data; 
-holdingsText = 'All Tokens & Native';
-}
-} catch(e) { 
-console.error('DeBank fetch failed:', e); 
-holdingsText = 'API Limit / Error';
+// 1. Check Native ETH
+const ethRes = await callAlchemy('eth_getBalance', [addr, 'latest']);
+const ethBal = ethRes.result ? parseInt(ethRes.result, 16) / 1e18 : 0;
+if(ethBal > 0.0001) {
+const val = ethBal * (priceMap['ETH'] || 0);
+walletTotal += val;
+holdingsList.push(`ETH: ${ethBal.toFixed(4)}`);
 }
 
-totalPortfolio += value;
+// 2. Check Specific Tokens (USDT, USDC, PEPE, SHIB)
+const tokens = [
+{ sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
+{ sym: 'USDC', addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', dec: 6 },
+{ sym: 'PEPE', addr: '0x6982508145454Ce325dDbE47a25d4ec3d2311933', dec: 18 },
+{ sym: 'SHIB', addr: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', dec: 18 }
+];
+
+for(let t of tokens) {
+const data = "0x70a08231000000000000000000000000" + addr.substring(2);
+const tokenRes = await callAlchemy('eth_call', [{ to: t.addr, data: data }, 'latest']);
+if (tokenRes.result && tokenRes.result !== '0x' && tokenRes.result !== '0x0') {
+const bal = parseInt(tokenRes.result, 16) / Math.pow(10, t.dec);
+if(bal > 0) {
+const price = priceMap[t.sym] || 0;
+const val = bal * price;
+walletTotal += val;
+holdingsList.push(`${t.sym}: ${bal.toFixed(2)}`);
+}
+}
+}
+} catch(e) {
+console.error('EVM Fetch Error:', e);
+holdingsList.push('Connection Error');
+}
+} else {
+holdingsList.push('Solana scanning...');
+}
+
+totalPortfolio += walletTotal;
 let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
+let holdingsText = holdingsList.length > 0 ? holdingsList.join(', ') : 'No tracked tokens found';
 
 tableHtml += `<tr class="wallet-row">
 <td><strong>${type}</strong></td>
 <td>${shortAddr}</td>
 <td>${chain.toUpperCase()}</td>
-<td>${holdingsText}</td>
-<td class="green">$${value.toFixed(2)}</td>
+<td style="font-size:12px;color:#cbd5e1">${holdingsText}</td>
+<td class="green">$${walletTotal.toFixed(2)}</td>
 </tr>`;
 }
 
@@ -242,7 +280,9 @@ const coins=[
 {id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Meme leader. Social sentiment spike.',top:false},
 {id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',link:'https://app.uniswap.org/',reason:'L2 scaling. Enterprise partnerships.',top:false},
 {id:'bittensor',sym:'TAO',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Decentralized AI. Miner rewards increasing.',top:false},
-{id:'sui',sym:'SUI',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Move language. Gaming dApps launching.',top:false}
+{id:'sui',sym:'SUI',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Move language. Gaming dApps launching.',top:false},
+{id:'tether',sym:'USDT',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
+{id:'usd-coin',sym:'USDC',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false}
 ];
 
 async function loadData(){
@@ -250,22 +290,30 @@ try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
+
+data.forEach(c => { 
+if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; 
+});
+
 let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
+if(!d) return;
 const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
-const link=d?d.link:'#';
+const link=d.link||'#';
 const change=c.price_change_percentage_24h||0;
 const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
 topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
+
+fetchTokenBalances(); 
 }catch(e){console.error(e)}
 }
 
