@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
 body{background:#0f172a;color:#fff;padding:20px}
 .container{max-width:1400px;margin:0 auto}
-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:30px;flex-wrap:wrap;gap:15px}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:20px;flex-wrap:wrap;gap:15px}
 h1{color:#00ff88;font-size:1.8rem}
 .btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:10px;text-decoration:none;display:inline-block;text-align:center}
 .btn-phantom{background:#ab9ff2;color:#fff}
@@ -16,6 +16,42 @@ h1{color:#00ff88;font-size:1.8rem}
 .btn-connected{background:#00ff88}
 .btn-watch{background:#fbbf24;color:#0f172a}
 .btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
+
+/* LIVE NEWS TICKER STYLES */
+.news-ticker-container {
+  width: 100%;
+  overflow: hidden;
+  background: #020617;
+  border-top: 2px solid #00ff88;
+  border-bottom: 2px solid #00ff88;
+  padding: 12px 0;
+  margin-bottom: 30px;
+  position: relative;
+}
+.news-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 45s linear infinite;
+}
+/* PAUSE ON HOVER */
+.news-ticker-container:hover .news-ticker-track {
+  animation-play-state: paused;
+}
+.ticker-item {
+  padding: 0 40px;
+  font-size: 15px;
+  white-space: nowrap;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ticker-item strong { color: #00d9ff; font-size: 16px; }
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:30px}
 .card{background:#1e293b;padding:20px;border-radius:12px;border:1px solid #334155}
 .card h3{color:#94a3b8;font-size:14px;margin-bottom:10px}
@@ -49,9 +85,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .live-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite}
 .live-dot-small{position:absolute;top:8px;right:8px;width:6px;height:6px;background:#00ff88;border-radius:50%;box-shadow:0 0 6px #00ff88;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-.agent-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00d9ff;margin-bottom:15px;cursor:pointer}
-.agent-head{display:flex;justify-content:space-between;margin-bottom:10px}
-.agent-details{color:#cbd5e1;font-size:14px;line-height:1.6}
 .wallets-table{width:100%;border-collapse:collapse;margin-top:10px}
 .wallets-table th,.wallets-table td{padding:15px;text-align:left;border-bottom:1px solid #334155}
 .wallets-table th{color:#94a3b8;font-size:14px}
@@ -62,8 +95,6 @@ h1{color:#00ff88;font-size:1.8rem}
 .input-group{margin-bottom:15px;text-align:left}
 .input-group label{display:block;margin-bottom:5px;color:#94a3b8}
 .input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
-.live-tool-btn{display:inline-block;background:rgba(0,217,255,0.1);color:#00d9ff;padding:8px 15px;border-radius:6px;text-decoration:none;font-size:13px;margin-top:10px;border:1px solid #00d9ff}
-.live-tool-btn:hover{background:rgba(0,217,255,0.2)}
 </style>
 </head>
 <body>
@@ -76,6 +107,13 @@ h1{color:#00ff88;font-size:1.8rem}
 <button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
 </div>
 </header>
+
+<!-- LIVE SCROLLING NEWS TICKER -->
+<div class="news-ticker-container">
+  <div class="news-ticker-track" id="newsTickerTrack">
+    <div class="ticker-item">Loading live market data...</div>
+  </div>
+</div>
 
 <div class="stats-grid">
 <div class="card" style="border: 2px solid #00ff88;">
@@ -112,11 +150,6 @@ h1{color:#00ff88;font-size:1.8rem}
 <h2 class="section-title">🔬 Research Queue - Live Monitored</h2>
 <div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
 
-<h2 class="section-title"> Live Market Intelligence (Real-Time Data)</h2>
-<div class="top-grid" id="liveIntelligence">
-  <div class="card">Loading live market data...</div>
-</div>
-
 <div id="watchModal" class="modal">
 <div class="modal-content">
 <h2>Add Watch-Only Wallet</h2>
@@ -144,7 +177,6 @@ const chainRPCs = {
 let connectedAddress = null;
 let watchOnlyAddress = null;
 let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
-let topCoinSymbol = '';
 
 const knownTokens = [
   { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
@@ -335,7 +367,21 @@ const score = calculateScore(c);
 return {...c, score, coinInfo};
 }).filter(c => c !== null).sort((a, b) => b.score - a.score);
 
-topCoinSymbol = scoredCoins[0] ? scoredCoins[0].symbol.toUpperCase() : 'PEPE';
+// UPDATE THE LIVE NEWS TICKER
+let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED: </div>`;
+scoredCoins.forEach(c => {
+  const change = c.price_change_percentage_24h || 0;
+  const colorClass = change >= 0 ? 'green' : 'red';
+  const arrow = change >= 0 ? '▲' : '▼';
+  const dip = (c.low_24h * 1.02).toFixed(c.current_price < 1 ? 6 : 2);
+  tickerHtml += `<div class="ticker-item">
+    <strong>${c.symbol.toUpperCase()}</strong>: $${c.current_price} 
+    <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</span> 
+    | Dip Target: $${dip}
+  </div>`;
+});
+// Duplicate content for seamless infinite scrolling
+document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
 
 let topHtml='',queueHtml='';
 
@@ -357,65 +403,8 @@ document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No dat
 document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
 
-// Fetch REAL Live Market Intelligence
-fetchLiveIntelligence();
-
 fetchWalletData(); 
 }catch(e){console.error('Load Data Error:', e)}
-}
-
-async function fetchLiveIntelligence() {
-  let intelHtml = '';
-  
-  // 1. Real Live Fear & Greed Index
-  try {
-    const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
-    const fngData = await fngRes.json();
-    if(fngData.data && fngData.data[0]) {
-      const val = fngData.data[0].value;
-      const classification = fngData.data[0].value_classification;
-      let color = val < 25 ? '#ff4757' : val < 50 ? '#fbbf24' : '#00ff88';
-      intelHtml += `<div class="agent-card" style="cursor:default">
-        <div class="agent-head"><h3>📊 Live Market Sentiment</h3><span style="color:${color};font-weight:bold">${val}/100</span></div>
-        <div class="agent-details" style="display:block">
-          Current Market Mood: <strong style="color:${color}">${classification}</strong><br>
-          <span style="font-size:12px;color:#94a3b8">Updated live via Alternative.me API</span>
-        </div>
-      </div>`;
-    }
-  } catch(e) {}
-
-  // 2. Real Live Top Gainer from our list
-  const topGainer = coins.reduce((prev, current) => (prev.price_change_percentage_24h > current.price_change_percentage_24h) ? prev : current);
-  if(topGainer) {
-    intelHtml += `<div class="agent-card" style="cursor:default">
-      <div class="agent-head"><h3>🚀 Live Top Mover (24h)</h3><span class="green">+${topGainer.price_change_percentage_24h.toFixed(2)}%</span></div>
-      <div class="agent-details" style="display:block">
-        <strong>${topGainer.sym}</strong> is leading our research list today.<br>
-        <span style="font-size:12px;color:#94a3b8">Calculated from live CoinGecko data</span>
-      </div>
-    </div>`;
-  }
-
-  // 3. Live Whale Tracker Link (Direct to DexScreener)
-  intelHtml += `<div class="agent-card" style="cursor:default">
-    <div class="agent-head"><h3>🐋 Live Whale Transactions</h3><span class="green">● Live</span></div>
-    <div class="agent-details" style="display:block">
-      Track real-time large buys and sells for <strong>${topCoinSymbol}</strong>.<br>
-      <a href="https://dexscreener.com/search?q=${topCoinSymbol}" target="_blank" class="live-tool-btn">Open Live DexScreener Feed →</a>
-    </div>
-  </div>`;
-
-  // 4. Live Social Hype Link (Direct to Twitter/X)
-  intelHtml += `<div class="agent-card" style="cursor:default">
-    <div class="agent-head"><h3>🔥 Live Social Hype</h3><span class="green">● Live</span></div>
-    <div class="agent-details" style="display:block">
-      See real-time tweets and sentiment for <strong>${topCoinSymbol}</strong>.<br>
-      <a href="https://twitter.com/search?q=%24${topCoinSymbol}&src=typed_query&f=live" target="_blank" class="live-tool-btn">Open Live Twitter Feed →</a>
-    </div>
-  </div>`;
-
-  document.getElementById('liveIntelligence').innerHTML = intelHtml;
 }
 
 loadData();
