@@ -135,7 +135,7 @@ let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
 let watchChain = null;
-let priceMap = { 'ETH': 0, 'SOL': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0 };
+let priceMap = { 'ETH': 0, 'SOL': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0 };
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -188,6 +188,7 @@ let holdingsList = [];
 
 if(chain === 'evm') {
 try {
+// 1. Get Native ETH Balance
 const ethRes = await fetch(ALCHEMY_URL, {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -201,6 +202,7 @@ walletTotal += val;
 holdingsList.push(`ETH: ${ethBal.toFixed(4)}`);
 }
 
+// 2. Get ALL ERC20 Token Balances
 const tokenRes = await fetch(ALCHEMY_URL, {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -210,12 +212,21 @@ const tokenData = await tokenRes.json();
 
 if(tokenData.result && tokenData.result.tokenBalances) {
 for(let token of tokenData.result.tokenBalances) {
-const bal = parseInt(token.tokenBalance, 16) / 1e18; 
+if(token.tokenBalance === '0x0' || token.tokenBalance === '0') continue;
+
+const addrLower = token.contractAddress.toLowerCase();
+// Find matching coin in our list to get correct decimals and symbol
+const coin = coins.find(c => c.addr && c.addr.toLowerCase() === addrLower);
+
+if(coin) {
+const decimals = coin.dec || 18;
+const bal = parseInt(token.tokenBalance, 16) / Math.pow(10, decimals);
 if(bal > 0) {
-const sym = token.contractAddress.substring(0,6); 
-const val = bal * 0.01; 
+const price = priceMap[coin.sym] || 0;
+const val = bal * price;
 walletTotal += val;
-holdingsList.push(`${sym}: ${bal.toFixed(2)}`);
+holdingsList.push(`${coin.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})}`);
+}
 }
 }
 }
@@ -251,32 +262,20 @@ document.getElementById('lastUpdated').innerText = 'Live updated: ' + new Date()
 async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
 const coins=[
-{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933',reason:'3 whale wallets accumulating. 12.4M PEPE moved to Binance.',top:true},
-{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',link:'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',reason:'Jupiter volume +120%. Breaking consolidation pattern.',top:true},
-{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',link:'https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',reason:'AI narrative trending. GPU demand rising. Support at $7.20.',top:true},
-{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',link:'https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548',reason:'L2 momentum. Whale buys 3x this week. TVL new highs.',top:true},
-{id:'hyperliquid',sym:'HYPE',addr:'0x0d0Dc56B1B01a5d9b41c4b4e3A7B8E9F3A1B5C7D9',link:'https://app.uniswap.org/',reason:'Perp DEX volume spike. 5,000 ETH bought by whales.',top:true},
-{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',link:'https://app.uniswap.org/',reason:'RWA narrative. Institutional inflows detected.',top:true},
-{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x4955766AF1c1E4E94b6fD9Ec9e6e2B9C8f9C8E7A',link:'https://app.uniswap.org/',reason:'AI agent token. 8 snipers in first block. Liquidity locked.',top:true},
-{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',link:'https://app.uniswap.org/',reason:'AI compute demand. TG groups calling accumulation.',top:true},
-{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',link:'https://app.uniswap.org/',reason:'Meme season. 47 whale movements in 24h.',top:true},
-{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',link:'https://app.uniswap.org/',reason:'Oracle demand. DeFi TVL rising.',top:false},
-{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',link:'https://app.uniswap.org/',reason:'DEX volume leader. Fee switch narrative.',top:false},
-{id:'bitcoin',sym:'BTC',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'ETF inflows. Whale accumulation at support.',top:false},
-{id:'ethereum',sym:'ETH',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'L2 growth. Staking yield attracting capital.',top:false},
-{id:'solana',sym:'SOL',addr:'Native (No contract)',link:'https://jup.ag/',reason:'Jupiter aggregator dominance. Meme coin volume.',top:false},
-{id:'xrp',sym:'XRP',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Legal clarity. Cross-border payments.',top:false},
-{id:'cardano',sym:'ADA',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Smart contract growth. Dev activity rising.',top:false},
-{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Subnet adoption. Gaming ecosystem.',top:false},
-{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Meme leader. Social sentiment spike.',top:false},
-{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',link:'https://app.uniswap.org/',reason:'L2 scaling. Enterprise partnerships.',top:false},
-{id:'bittensor',sym:'TAO',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Decentralized AI. Miner rewards increasing.',top:false},
-{id:'sui',sym:'SUI',addr:'Native (No contract)',link:'https://app.uniswap.org/',reason:'Move language. Gaming dApps launching.',top:false}
+{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933',reason:'3 whale wallets accumulating.',top:true},
+{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dec:18,link:'https://app.uniswap.org/',reason:'L2 momentum.',top:true},
+{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',dec:18,link:'https://app.uniswap.org/',reason:'Meme season.',top:true},
+{id:'tether',sym:'USDT',addr:'0xdAC17F958D2ee523a2206206994597C13D831ec7',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
+{id:'usd-coin',sym:'USDC',addr:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',dec:6,link:'https://app.uniswap.org/',reason:'Stablecoin.',top:false},
+{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag/',reason:'Jupiter volume +120%.',top:true},
+{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/',reason:'AI narrative trending.',top:true},
+{id:'ethereum',sym:'ETH',addr:'Native',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
+{id:'solana',sym:'SOL',addr:'Native',dec:9,link:'https://jup.ag/',reason:'Meme coin volume.',top:false}
 ];
 
 async function loadData(){
 try{
-const ids=coins.map(c=>c.id).join(',');
+const ids=coins.filter(c=>c.id!=='tether' && c.id!=='usd-coin').map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
 
@@ -287,19 +286,15 @@ if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price;
 let topHtml='',queueHtml='';
 data.forEach(c=>{
 const d=coins.find(t=>t.id===c.id);
-if(!d) return;
+if(!d || !d.addr) return;
 const dip=(c.low_24h*1.02).toFixed(c.current_price<1?6:2);
-const link=d.link||'#';
 const change=c.price_change_percentage_24h||0;
 const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
-topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
-}else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><a href="'+d.link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
-document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
 document.getElementById('coinCount').innerText=data.length;
 
 fetchWalletData(); 
@@ -311,4 +306,3 @@ setInterval(loadData,60000);
 </script>
 </body>
 </html>
-
