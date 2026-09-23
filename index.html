@@ -132,12 +132,13 @@ h1{color:#00ff88;font-size:1.8rem}
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
-// Multi-chain RPCs for scanning dust on other chains
+// Multi-chain RPCs for scanning dust on other chains (NOW INCLUDING ZORA!)
 const chainRPCs = {
   'Arbitrum': 'https://arb1.arbitrum.io/rpc',
   'Polygon': 'https://polygon-rpc.com',
   'Base': 'https://mainnet.base.org',
-  'Optimism': 'https://mainnet.optimism.io'
+  'Optimism': 'https://mainnet.optimism.io',
+  'Zora': 'https://rpc.zora.energy'
 };
 
 let connectedAddress = null;
@@ -251,7 +252,7 @@ async function processWallet(addr, chainType, type) {
         }
       }
 
-      // Check dust on other chains
+      // Check dust on other chains INCLUDING ZORA
       for(let [chainName, rpc] of Object.entries(chainRPCs)) {
         try {
           const nativeRes = await fetch(rpc, {
