@@ -134,8 +134,9 @@ let watchOnlyAddress = null;
 let watchChain = null;
 let priceMap = { 'ETH': 0, 'SOL': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0 };
 
-// Alchemy Demo API - Specifically built to allow browser connections without CORS errors
-const ALCHEMY_URL = 'https://eth-mainnet.g.alchemy.com/v2/demo';
+// CORS Proxy to bypass browser security blocks
+const PROXY = 'https://api.codetabs.com/v1/proxy?quest=';
+const RPC = 'https://cloudflare-eth.com';
 
 async function connectRabby(){
 if(!window.ethereum){alert('Rabby not detected!');return;}
@@ -176,9 +177,9 @@ closeWatchOnlyModal();
 fetchTokenBalances();
 }
 
-// Helper to talk to Alchemy
-async function callAlchemy(method, params) {
-const res = await fetch(ALCHEMY_URL, {
+// Helper to talk to blockchain via proxy
+async function callRPC(method, params) {
+const res = await fetch(PROXY + encodeURIComponent(RPC), {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
@@ -199,7 +200,7 @@ let holdingsList = [];
 if(chain === 'evm') {
 try {
 // 1. Check Native ETH
-const ethRes = await callAlchemy('eth_getBalance', [addr, 'latest']);
+const ethRes = await callRPC('eth_getBalance', [addr, 'latest']);
 const ethBal = ethRes.result ? parseInt(ethRes.result, 16) / 1e18 : 0;
 if(ethBal > 0.0001) {
 const val = ethBal * (priceMap['ETH'] || 0);
@@ -217,7 +218,7 @@ const tokens = [
 
 for(let t of tokens) {
 const data = "0x70a08231000000000000000000000000" + addr.substring(2);
-const tokenRes = await callAlchemy('eth_call', [{ to: t.addr, data: data }, 'latest']);
+const tokenRes = await callRPC('eth_call', [{ to: t.addr, data: data }, 'latest']);
 if (tokenRes.result && tokenRes.result !== '0x' && tokenRes.result !== '0x0') {
 const bal = parseInt(tokenRes.result, 16) / Math.pow(10, t.dec);
 if(bal > 0) {
@@ -306,7 +307,7 @@ const cl=change>=0?'#00ff88':'#ff4757';
 if(d.top){
 topHtml+='<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+'">'+change.toFixed(1)+'%</span></div><div class="price">Current: $'+c.current_price+'</div><div class="contract" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip">🎯 Entry: $'+dip+'</div><div class="reason">'+d.reason+'</div><div class="social-links"><a href="https://dexscreener.com/search?q='+c.symbol+'" target="_blank" class="social-btn">DexScreener</a><a href="https://twitter.com/search?q=%24'+c.symbol+'" target="_blank" class="social-btn">Twitter/X</a></div><a href="'+link+'" target="_blank" class="buy-btn">Buy on Exchange</a></div>';
 }else{
-queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')"> '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
+queueHtml+='<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">'+c.symbol.toUpperCase()+'</span><span class="score" style="color:'+cl+';font-size:10px">'+change.toFixed(1)+'%</span></div><div class="price-small">$'+c.current_price+'</div><div class="contract-small" onclick="copyAddr(\''+d.addr+'\')">📋 '+d.addr+'</div><div class="dip-small">Entry: $'+dip+'</div><div class="reason-small">'+d.reason+'</div><a href="'+link+'" target="_blank" class="buy-btn-small">Buy</a></div>';
 }
 });
 document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
