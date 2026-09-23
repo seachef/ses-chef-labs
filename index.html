@@ -132,6 +132,14 @@ h1{color:#00ff88;font-size:1.8rem}
 const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
+// Multi-chain RPCs for scanning dust on other chains
+const chainRPCs = {
+  'Arbitrum': 'https://arb1.arbitrum.io/rpc',
+  'Polygon': 'https://polygon-rpc.com',
+  'Base': 'https://mainnet.base.org',
+  'Optimism': 'https://mainnet.optimism.io'
+};
+
 let connectedAddress = null;
 let connectedChain = null;
 let watchOnlyAddress = null;
@@ -203,13 +211,13 @@ async function processWallet(addr, chainType, type) {
       });
       const ethData = await ethRes.json();
       const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
-      if(ethBal > 0.0001) {
+      if(ethBal > 0.00001) {
         const val = ethBal * (priceMap['ETH'] || 0);
         walletTotal += val;
-        allHoldings.push(`ETH: ${ethBal.toFixed(4)}`);
+        allHoldings.push(`ETH: ${ethBal.toFixed(6)}`);
       }
 
-      // Get ALL ERC20 Token Balances using Alchemy's special method
+      // Get ALL ERC20 Token Balances using Alchemy
       const tokenRes = await fetch(ALCHEMY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -231,10 +239,36 @@ async function processWallet(addr, chainType, type) {
               const price = priceMap[coin.sym] || 0;
               const val = bal * price;
               walletTotal += val;
-              allHoldings.push(`${coin.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})}`);
+              allHoldings.push(`${coin.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 6})}`);
+            }
+          } else {
+            // Unknown token - show it but can't calculate value
+            const bal = parseInt(token.tokenBalance, 16) / 1e18;
+            if(bal > 0.0001) {
+              allHoldings.push(`Unknown (${token.contractAddress.substring(0,8)}): ${bal.toFixed(4)}`);
             }
           }
         }
+      }
+
+      // Check dust on other chains
+      for(let [chainName, rpc] of Object.entries(chainRPCs)) {
+        try {
+          const nativeRes = await fetch(rpc, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] })
+          });
+          const nativeData = await nativeRes.json();
+          const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
+          
+          if(nativeBal > 0.00001) {
+            const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
+            const val = nativeBal * (priceMap[priceKey] || 0);
+            walletTotal += val;
+            allHoldings.push(`${chainName}: ${nativeBal.toFixed(6)}`);
+          }
+        } catch(e) { /* Skip chain if error */ }
       }
     } catch(e) {
       console.error('Alchemy Error:', e);
@@ -252,7 +286,7 @@ async function processWallet(addr, chainType, type) {
   <td><strong>${type}</strong></td>
   <td>${shortAddr}</td>
   <td>${chainType.toUpperCase()}</td>
-  <td style="font-size:12px;color:#cbd5e1;line-height:1.4">${holdingsText}</td>
+  <td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td>
   <td class="green">$${walletTotal.toFixed(2)}</td>
   </tr>`;
 }
