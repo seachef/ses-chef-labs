@@ -1,42 +1,538 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sea Chef Labs</title>
-<style>
-*{box-sizing:border-box;font-family:-apple-system,sans-serif}body{margin:0;padding:15px;background:#0f172a;color:#fff}.container{max-width:1200px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:15px;margin-bottom:15px}h1{color:#00ff88;font-size:1.6rem}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:6px;padding:10px 14px;font-weight:bold;cursor:pointer;background:#00d9ff;color:#0f172a}.phantom{background:#ab9ff2;color:#fff}.alert{background:#ff4757;color:#fff}.alert.on{background:#00ff88;color:#0f172a}.wallet{border:1px solid #334155;border-radius:20px;padding:9px 12px;color:#cbd5e1;font-size:12px}.ticker{overflow:hidden;background:#020617;border-block:2px solid #00ff88;padding:10px 0;margin-bottom:20px}.track{display:flex;width:max-content;animation:scroll 40s linear infinite}.item{padding:0 30px;white-space:nowrap;color:#e2e8f0}.item strong{color:#00d9ff}@keyframes scroll{to{transform:translateX(-50%)}}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}.card,.window{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:15px}.card h3,.label{color:#94a3b8;font-size:12px}.card h2{margin:5px 0;font-size:22px}.green{color:#00ff88}.red{color:#ff4757}.title{font-size:1.1rem;margin:12px 0}.coins{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}.coin{border-left:3px solid #00ff88;padding:12px;background:#1e293b;border-radius:8px}.coin b{color:#00d9ff}.window{margin-bottom:20px}.window-head{display:flex;justify-content:space-between;margin-bottom:15px}.window-head strong{font-size:18px}.fee{font-size:12px;color:#94a3b8}.values{display:flex;justify-content:space-around;text-align:center;margin-bottom:15px}.values strong{display:block;font-size:15px;margin-top:4px}.zones{display:flex;height:50px;position:relative;overflow:hidden;border-radius:8px;margin-bottom:12px}.zone{flex:1;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px}.buy{background:rgba(255,71,87,.15);color:#ff4757;border-right:1px solid #475569}.sell{background:rgba(0,255,136,.15);color:#00ff88}.active-buy{animation:redpulse .8s infinite alternate;color:#fff}.active-sell{animation:greenpulse .8s infinite alternate;color:#0f172a}@keyframes redpulse{to{background:rgba(255,71,87,.65)}}@keyframes greenpulse{to{background:rgba(0,255,136,.65)}}.marker{position:absolute;top:0;bottom:0;width:3px;background:#fff;box-shadow:0 0 10px #fff;transition:left .4s}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.controls .btn{font-size:12px;padding:8px 10px}.execute{display:block;text-align:center;text-decoration:none;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;padding:12px;border-radius:8px;font-weight:bold}@media(max-width:700px){.stats{grid-template-columns:1fr}.values{gap:8px}.values .label{font-size:10px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sea Chef Labs</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    body {
+      background: #0f172a;
+      color: #fff;
+      padding: 15px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    h1 { color: #00ff88; font-size: 1.6rem; }
+    .header-actions {
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .wallet-indicator {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid #334155;
+      border-radius: 999px;
+      color: #cbd5e1;
+      padding: 8px 12px;
+      font-size: 12px;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn {
+      background: #00d9ff;
+      color: #0f172a;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      font-size: 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-phantom { background: #ab9ff2; color: #fff; }
+    .btn-rabby { background: #00d9ff; }
+    .btn-connected { background: #00ff88; }
+    .btn-alert { background: #ff4757; color: #fff; }
+    .btn-alert.on { background: #00ff88; color: #0f172a; }
+
+    .news-ticker-container {
+      width: 100%;
+      overflow: hidden;
+      background: #020617;
+      border-top: 2px solid #00ff88;
+      border-bottom: 2px solid #00ff88;
+      padding: 10px 0;
+      margin-bottom: 20px;
+    }
+    .news-ticker-track {
+      display: flex;
+      width: max-content;
+      animation: ticker-scroll 40s linear infinite;
+    }
+    .news-ticker-container:hover .news-ticker-track { animation-play-state: paused; }
+    .ticker-item {
+      padding: 0 30px;
+      font-size: 14px;
+      white-space: nowrap;
+      color: #e2e8f0;
+    }
+    .ticker-item strong { color: #00d9ff; }
+    @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    .stats-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:20px; }
+    .card {
+      background:#1e293b;
+      padding:15px;
+      border-radius:10px;
+      border:1px solid #334155;
+      min-height: 90px;
+    }
+    .card h3 { color:#94a3b8; font-size:12px; margin-bottom:5px; }
+    .card h2 { font-size:22px; margin-bottom:2px; }
+    .green { color:#00ff88; }
+    .red { color:#ff4757; }
+
+    .section-title { font-size:1.1rem; margin-bottom:10px; color:#fff; }
+    .top-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; margin-bottom:20px; }
+    .coin-card { background:#1e293b; padding:12px; border-radius:8px; border-left:3px solid #00ff88; }
+    .coin-head { display:flex; justify-content:space-between; margin-bottom:5px; }
+    .coin-name { font-weight:bold; font-size:14px; color:#00d9ff; }
+    .score { font-size:11px; padding:2px 6px; border-radius:4px; background:rgba(0,255,136,0.2); color:#00ff88; }
+    .price { font-size:13px; font-weight:600; margin-bottom:5px; }
+
+    .trading-window {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    .window-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .window-title { font-size: 18px; font-weight: bold; color: #fff; }
+    .window-fee { font-size: 12px; color: #94a3b8; }
+    .window-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; }
+    .stat-box { text-align: center; flex: 1; }
+    .stat-box span { display: block; color: #94a3b8; font-size: 11px; margin-bottom: 3px; }
+    .stat-box strong { color: #fff; font-size: 15px; }
+
+    .zone-container {
+      display: flex;
+      height: 50px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .zone-buy {
+      flex: 1;
+      background: rgba(255,71,87,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff4757;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.3s;
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    .zone-sell {
+      flex: 1;
+      background: rgba(0,255,136,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00ff88;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    @keyframes pulseRed { 0% { background: rgba(255,71,87,0.1); } 100% { background: rgba(255,71,87,0.6); } }
+    @keyframes pulseGreen { 0% { background: rgba(0,255,136,0.1); } 100% { background: rgba(0,255,136,0.6); } }
+    .zone-buy.active { animation: pulseRed 0.8s infinite alternate; color: #fff; }
+    .zone-sell.active { animation: pulseGreen 0.8s infinite alternate; color: #0f172a; }
+
+    .price-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #fff;
+      box-shadow: 0 0 10px #fff;
+      transition: left 0.5s ease;
+      z-index: 10;
+    }
+    .execute-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      background: linear-gradient(90deg, #00d9ff 0%, #00ff88 100%);
+      color: #0f172a;
+    }
+
+    @media (max-width: 700px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .window-stats { flex-direction: column; gap: 10px; }
+      .header-actions { width: 100%; }
+      .wallet-indicator { flex: 1; }
+    }
+  </style>
 </head>
-<body><div class="container">
-<header><h1>Sea Chef Labs</h1><div class="actions"><span class="wallet" id="wallet">Wallet: Not connected</span><button class="btn" onclick="connectRabby()">Rabby</button><button class="btn phantom" onclick="connectPhantom()">Phantom</button><button class="btn alert" id="alertBtn" onclick="enableAlerts()">🔔 Enable Alerts</button></div></header>
-<div class="ticker"><div class="track" id="ticker">Loading live prices...</div></div>
-<div class="stats"><div class="card" style="border:2px solid #00ff88"><h3>Portfolio</h3><h2 class="green">$0.00</h2></div><div class="card" style="border-color:#ff6b35"><h3>Full Value</h3><h2 style="color:#ff6b35">DeBank</h2></div></div>
-<h2 class="title">🎯 Top 6 AI Researched Coins</h2><div class="coins" id="coins"><div class="card">Loading...</div></div>
-<h2 class="title">🚨 In & Out Command Center (Live Price + Fixed Entry)</h2>
-<div id="windows"></div>
-</div>
-<script>
-const ALERT_PCT=.05;
-const assets=[
-{id:'solana',sym:'SOL',name:'SOL/USDC (Solana)',fee:'~$0.0002',swap:'https://jup.ag/swap/SOL-USDC'},
-{id:'dogwifcoin',sym:'WIF',name:'WIF/USDC (Solana)',fee:'~$0.0002',swap:'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-{id:'jupiter-exchange-solana',sym:'JUP',name:'JUP/USDC (Solana)',fee:'~$0.0002',swap:'https://jup.ag/swap/SOL-JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
-{id:'matic-network',sym:'POL',name:'POL/USDC (Polygon)',fee:'~$0.01',swap:'https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon'}];
-const research=['pepe','arbitrum','render-token','fetch-ai','chainlink','uniswap'];
-let data=[],entries=JSON.parse(localStorage.getItem('seaChefEntries')||'{}'),alertState={};
-const $=id=>document.getElementById(id), money=p=>'$'+(p<1?p.toFixed(4):p.toFixed(2));
-function build(){ $('windows').innerHTML=assets.map(a=>`<section class="window"><div class="window-head"><strong>${a.name}</strong><span class="fee">Fee: ${a.fee}</span></div><div class="values"><div><span class="label">LIVE CURRENT</span><strong id="${a.sym}-current">$0.00</strong></div><div><span class="label">FIXED BUY ENTRY</span><strong id="${a.sym}-buy" class="red">Not set</strong></div><div><span class="label">5% SELL TARGET</span><strong id="${a.sym}-sell" class="green">Not set</strong></div></div><div class="zones"><div class="zone buy" id="${a.sym}-buyzone">BUY BELOW ENTRY</div><div class="zone sell" id="${a.sym}-sellzone">HOLD / SELL ZONE</div><div class="marker" id="${a.sym}-marker"></div></div><div class="controls"><button class="btn" onclick="setEntry('${a.id}')">Set Buy Price</button><button class="btn phantom" onclick="setNow('${a.id}')">Set Now</button><button class="btn alert" onclick="clearEntry('${a.id}')">Clear Entry</button></div><a class="execute" href="${a.swap}" target="_blank" rel="noreferrer">Execute Swap</a></section>`).join('')}
-}
-function coin(id){return data.find(x=>x.id===id)}
-function setEntry(id){let c=coin(id),v=prompt(`Enter fixed buy price for ${c?.symbol||id}:`,entries[id]||c?.current_price||'');if(v!==null&&Number(v)>0){entries[id]=Number(v);save();refresh()}}
-function setNow(id){let c=coin(id);if(c){entries[id]=Number(c.current_price);save();refresh();alert(`${c.symbol} buy entry set at ${money(entries[id])}`)}}
-function clearEntry(id){delete entries[id];save();refresh()}
-function save(){localStorage.setItem('seaChefEntries',JSON.stringify(entries))}
-function refresh(){assets.forEach(a=>{let c=coin(a.id);if(!c)return;let now=Number(c.current_price),entry=Number(entries[a.id]);$(`${a.sym}-current`).textContent=money(now);$(`${a.sym}-buy`).textContent=entry?money(entry):'Not set';$(`${a.sym}-sell`).textContent=entry?money(entry*1.05):'Not set';let bz=$(`${a.sym}-buyzone`),sz=$(`${a.sym}-sellzone`),m=$(`${a.sym}-marker`);bz.classList.remove('active-buy');sz.classList.remove('active-sell');if(!entry){m.style.left='50%';bz.textContent='SET BUY ENTRY';sz.textContent='LIVE PRICE';return}let target=entry*1.05;let pct=now<=entry?Math.max(0,now/entry*50):Math.min(100,50+((now-entry)/(target-entry))*50);m.style.left=pct+'%';if(now<=entry){bz.classList.add('active-buy');bz.textContent='BUY BELOW ENTRY';sz.textContent='WAIT / HOLD'}else if(now>=target){sz.classList.add('active-sell');sz.textContent='🚨 5% SELL ALERT';bz.textContent='BUY ZONE';notify(a.id,a.sym,entry,now,target)}else{bz.textContent='BUY ZONE';sz.textContent='HOLD / WATCH'}})}
-function notify(id,sym,entry,now,target){if(!alertState[id]&&Notification.permission==='granted'){alertState[id]=1;new Notification(`🚨 ${sym} reached 5% target`,{body:`Entry ${money(entry)} | Current ${money(now)} | Target ${money(target)}`})}if(now<target)delete alertState[id]}
-async function load(){try{let ids=[...assets.map(a=>a.id),...research].join(',');let r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);data=await r.json();let html='';data.slice(0,6).forEach(c=>html+=`<div class="coin"><b>${c.symbol.toUpperCase()}</b><div>${money(c.current_price)}</div><span class="${c.price_change_percentage_24h>=0?'green':'red'}">${(c.price_change_percentage_24h||0).toFixed(2)}% (24h)</span></div>`);$('coins').innerHTML=html;let t=data.map(c=>`<span class="item"><strong>${c.symbol.toUpperCase()}</strong>: ${money(c.current_price)}</span>`).join('');$('ticker').innerHTML=t+t;refresh()}catch(e){console.error(e)}}
-async function connectRabby(){if(!window.ethereum)return alert('Rabby not detected');let a=await window.ethereum.request({method:'eth_requestAccounts'});$('wallet').textContent='Wallet: '+a[0].slice(0,6)+'...'+a[0].slice(-4)}
-async function connectPhantom(){if(!window.solana)return alert('Phantom not detected');let a=await window.solana.connect();$('wallet').textContent='Wallet: '+a.publicKey.toString().slice(0,6)+'...'+a.publicKey.toString().slice(-4)}
-function enableAlerts(){if(!('Notification'in window))return alert('Notifications are not supported');Notification.requestPermission().then(p=>{if(p==='granted'){$('alertBtn').textContent='🔔 Alerts ON';$('alertBtn').classList.add('on')}})}
-build();load();setInterval(load,30000);
-</script></body></html>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sea Chef Labs</h1>
+      <div class="header-actions">
+        <div class="wallet-indicator" id="walletStatus">Wallet: Not connected</div>
+        <button class="btn btn-rabby" id="rabbyBtn" type="button" onclick="connectRabby()">Rabby</button>
+        <button class="btn btn-phantom" id="phantomBtn" type="button" onclick="connectPhantom()">Phantom</button>
+        <button class="btn btn-alert" id="alertsBtn" type="button" onclick="enableAlerts()">🔔 Enable Alerts</button>
+      </div>
+    </header>
+
+    <div class="news-ticker-container">
+      <div class="news-ticker-track" id="newsTickerTrack"><div class="ticker-item">Loading...</div></div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="card" style="border: 2px solid #00ff88;"><h3>Portfolio</h3><h2 id="totalPortfolio" class="green">$0.00</h2></div>
+      <div class="card" style="border: 1px solid #ff6b35;"><h3>Full Value</h3><h2 style="color:#ff6b35">DeBank</h2><div id="debankLinks" style="margin-top:5px"></div></div>
+    </div>
+
+    <h2 class="section-title">🎯 Top 6 AI Researched Coins</h2>
+    <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
+
+    <h2 class="section-title">🚨 In & Out Command Center (Live Price + Fixed Entry)</h2>
+
+    <div class="trading-window" id="window-sol">
+      <div class="window-header">
+        <div class="window-title">SOL/USDC (Solana)</div>
+        <div class="window-fee">Fee: ~$0.0002</div>
+      </div>
+      <div class="window-stats">
+        <div class="stat-box"><span>CURRENT</span><strong id="sol-current">$0.00</strong></div>
+        <div class="stat-box"><span>BUY</span><strong id="sol-buy" class="red">$0.00</strong></div>
+        <div class="stat-box"><span>SELL</span><strong id="sol-sell" class="green">$0.00</strong></div>
+      </div>
+      <div class="zone-container">
+        <div class="zone-buy" id="sol-buyzone">BUY ZONE</div>
+        <div class="zone-sell" id="sol-sellzone">SELL ZONE</div>
+        <div class="price-marker" id="sol-marker" style="left:50%"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn" type="button" onclick="setEntryPrice('solana', 115)">Set Buy @ $115</button>
+        <button class="btn btn-phantom" type="button" onclick="setEntryPrice('solana', 'live')">Set Now</button>
+        <button class="btn" type="button" onclick="clearEntryPrice('solana')">Clear</button>
+      </div>
+      <a href="https://jup.ag/swap/SOL-USDC" target="_blank" rel="noreferrer" class="execute-btn">Execute on Jupiter</a>
+    </div>
+
+    <div class="trading-window" id="window-wif">
+      <div class="window-header"><div class="window-title">WIF/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
+      <div class="window-stats">
+        <div class="stat-box"><span>CURRENT</span><strong id="wif-current">$0.00</strong></div>
+        <div class="stat-box"><span>BUY</span><strong id="wif-buy" class="red">$0.00</strong></div>
+        <div class="stat-box"><span>SELL</span><strong id="wif-sell" class="green">$0.00</strong></div>
+      </div>
+      <div class="zone-container">
+        <div class="zone-buy" id="wif-buyzone">BUY ZONE</div>
+        <div class="zone-sell" id="wif-sellzone">SELL ZONE</div>
+        <div class="price-marker" id="wif-marker" style="left:50%"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn" type="button" onclick="setEntryPrice('dogwifcoin', 0.35)">Set Buy @ $0.35</button>
+        <button class="btn btn-phantom" type="button" onclick="setEntryPrice('dogwifcoin', 'live')">Set Now</button>
+        <button class="btn" type="button" onclick="clearEntryPrice('dogwifcoin')">Clear</button>
+      </div>
+      <a href="https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" target="_blank" rel="noreferrer" class="execute-btn">Execute on Jupiter</a>
+    </div>
+
+    <div class="trading-window" id="window-jup">
+      <div class="window-header"><div class="window-title">JUP/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
+      <div class="window-stats">
+        <div class="stat-box"><span>CURRENT</span><strong id="jup-current">$0.00</strong></div>
+        <div class="stat-box"><span>BUY</span><strong id="jup-buy" class="red">$0.00</strong></div>
+        <div class="stat-box"><span>SELL</span><strong id="jup-sell" class="green">$0.00</strong></div>
+      </div>
+      <div class="zone-container">
+        <div class="zone-buy" id="jup-buyzone">BUY ZONE</div>
+        <div class="zone-sell" id="jup-sellzone">SELL ZONE</div>
+        <div class="price-marker" id="jup-marker" style="left:50%"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn" type="button" onclick="setEntryPrice('jupiter-exchange-solana', 0.65)">Set Buy @ $0.65</button>
+        <button class="btn btn-phantom" type="button" onclick="setEntryPrice('jupiter-exchange-solana', 'live')">Set Now</button>
+        <button class="btn" type="button" onclick="clearEntryPrice('jupiter-exchange-solana')">Clear</button>
+      </div>
+      <a href="https://jup.ag/swap/SOL-JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" target="_blank" rel="noreferrer" class="execute-btn">Execute on Jupiter</a>
+    </div>
+
+    <div class="trading-window" id="window-pol">
+      <div class="window-header"><div class="window-title">POL/USDC (Polygon)</div><div class="window-fee">Fee: ~$0.01</div></div>
+      <div class="window-stats">
+        <div class="stat-box"><span>CURRENT</span><strong id="pol-current">$0.00</strong></div>
+        <div class="stat-box"><span>BUY</span><strong id="pol-buy" class="red">$0.00</strong></div>
+        <div class="stat-box"><span>SELL</span><strong id="pol-sell" class="green">$0.00</strong></div>
+      </div>
+      <div class="zone-container">
+        <div class="zone-buy" id="pol-buyzone">BUY ZONE</div>
+        <div class="zone-sell" id="pol-sellzone">SELL ZONE</div>
+        <div class="price-marker" id="pol-marker" style="left:50%"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn" type="button" onclick="setEntryPrice('matic-network', 0.80)">Set Buy @ $0.80</button>
+        <button class="btn btn-phantom" type="button" onclick="setEntryPrice('matic-network', 'live')">Set Now</button>
+        <button class="btn" type="button" onclick="clearEntryPrice('matic-network')">Clear</button>
+      </div>
+      <a href="https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon" target="_blank" rel="noreferrer" class="execute-btn">Execute on Uniswap</a>
+    </div>
+
+  </div>
+
+  <script>
+    let connectedAddress = null;
+    let lastScoredData = [];
+    let alertsEnabled = false;
+    let alertHistory = {};
+    let entries = JSON.parse(localStorage.getItem('seaChefEntries') || '{}');
+
+    const ALERT_THRESHOLD_PCT = 0.05;
+    const ASSET_IDS = [
+      'solana', 'dogwifcoin', 'jupiter-exchange-solana', 'matic-network', 'pepe', 'arbitrum', 'render-token', 'fetch-ai', 'chainlink', 'uniswap'
+    ];
+
+    function updateWalletStatus() {
+      const walletEl = document.getElementById('walletStatus');
+      if (connectedAddress) {
+        walletEl.textContent = `Wallet: ${connectedAddress.slice(0, 6)}...${connectedAddress.slice(-4)}`;
+        walletEl.style.color = '#00ff88';
+      } else {
+        walletEl.textContent = 'Wallet: Not connected';
+        walletEl.style.color = '#cbd5e1';
+      }
+    }
+
+    async function connectRabby() {
+      if (!window.ethereum) {
+        alert('Rabby not detected!');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        connectedAddress = accounts && accounts[0] ? accounts[0] : null;
+        updateWalletStatus();
+        document.getElementById('rabbyBtn').classList.add('btn-connected');
+        document.getElementById('rabbyBtn').textContent = 'Rabby Connected';
+      } catch (error) {
+        console.error('Rabby connection failed:', error);
+        alert('Unable to connect to Rabby.');
+      }
+    }
+
+    async function connectPhantom() {
+      if (!window.solana) {
+        alert('Phantom not detected!');
+        return;
+      }
+      try {
+        const resp = await window.solana.connect();
+        connectedAddress = resp.publicKey.toString();
+        updateWalletStatus();
+        document.getElementById('phantomBtn').classList.add('btn-connected');
+        document.getElementById('phantomBtn').textContent = 'Phantom Connected';
+      } catch (error) {
+        console.error('Phantom connection failed:', error);
+        alert('Unable to connect to Phantom.');
+      }
+    }
+
+    function enableAlerts() {
+      if (!('Notification' in window)) {
+        alert('This browser does not support notifications.');
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        const alertsBtn = document.getElementById('alertsBtn');
+        if (permission === 'granted') {
+          alertsEnabled = true;
+          alertsBtn.textContent = '🔔 Alerts ON';
+          alertsBtn.classList.add('on');
+          new Notification('Sea Chef Labs', { body: 'Alerts enabled! We will notify you at your 5% target.' });
+        } else {
+          alertsEnabled = false;
+          alertsBtn.textContent = '🔔 Alerts Off';
+          alertsBtn.classList.remove('on');
+          alert('Notifications permission denied. Alerts are disabled.');
+        }
+      });
+    }
+
+    function formatPrice(p) {
+      if (!Number.isFinite(p)) return '$0.00';
+      return '$' + p.toFixed(p < 1 ? 4 : 2);
+    }
+
+    function saveEntries() {
+      localStorage.setItem('seaChefEntries', JSON.stringify(entries));
+    }
+
+    function setEntryPrice(id, value) {
+      if (value === 'live') {
+        const found = lastScoredData.find(c => c.id === id);
+        if (found) entries[id] = Number(found.current_price);
+      } else {
+        entries[id] = Number(value);
+      }
+      saveEntries();
+      renderAll();
+    }
+
+    function clearEntryPrice(id) {
+      delete entries[id];
+      saveEntries();
+      renderAll();
+    }
+
+    function getEntry(id) {
+      const val = Number(entries[id]);
+      return Number.isFinite(val) && val > 0 ? val : null;
+    }
+
+    function notifyOnce(key, title, body) {
+      if (!alertsEnabled) return;
+      if (alertHistory[key]) return;
+      alertHistory[key] = true;
+      if ('Notification' in window) {
+        new Notification(title, { body });
+      }
+    }
+
+    function resetAlert(key) {
+      delete alertHistory[key];
+    }
+
+    function renderAll() {
+      assets.forEach(asset => {
+        const coin = lastScoredData.find(c => c.id === asset.id);
+        if (!coin) return;
+
+        const current = Number(coin.current_price) || 0;
+        const entry = getEntry(asset.id);
+        const buy = entry ?? current;
+        const sell = buy * (1 + ALERT_THRESHOLD_PCT);
+
+        document.getElementById(`${asset.sym}-current`).textContent = formatPrice(current);
+        document.getElementById(`${asset.sym}-buy`).textContent = entry ? formatPrice(entry) : 'Not set';
+        document.getElementById(`${asset.sym}-sell`).textContent = entry ? formatPrice(sell) : 'Not set';
+
+        const buyZone = document.getElementById(`${asset.sym}-buyzone`);
+        const sellZone = document.getElementById(`${asset.sym}-sellzone`);
+        const marker = document.getElementById(`${asset.sym}-marker`);
+
+        buyZone.classList.remove('active');
+        sellZone.classList.remove('active');
+
+        if (!entry) {
+          buyZone.textContent = 'SET BUY ENTRY';
+          sellZone.textContent = 'LIVE PRICE';
+          marker.style.left = '50%';
+          return;
+        }
+
+        const range = sell - buy || 1;
+        const pct = Math.max(0, Math.min(100, ((current - buy) / range) * 100));
+        marker.style.left = pct + '%';
+
+        if (current <= buy) {
+          buyZone.classList.add('active');
+          buyZone.textContent = 'BUY BELOW ENTRY';
+          sellZone.textContent = 'HOLD / WATCH';
+          resetAlert(`${asset.id}:5p`);
+        } else if (current >= sell) {
+          sellZone.classList.add('active');
+          sellZone.textContent = '🚨 5% TARGET';
+          buyZone.textContent = 'BUY ZONE';
+          notifyOnce(`${asset.id}:5p`, `${asset.sym} reached 5% target`, `Entry: ${formatPrice(entry)} | Current: ${formatPrice(current)} | Target: ${formatPrice(sell)}`);
+        } else {
+          buyZone.textContent = 'BUY ZONE';
+          sellZone.textContent = 'HOLD / WATCH';
+          resetAlert(`${asset.id}:5p`);
+        }
+      });
+    }
+
+    const assets = [
+      { id: 'solana', sym: 'SOL', name: 'SOL/USDC (Solana)', fee: '~$0.0002', swap: 'https://jup.ag/swap/SOL-USDC' },
+      { id: 'dogwifcoin', sym: 'WIF', name: 'WIF/USDC (Solana)', fee: '~$0.0002', swap: 'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm' },
+      { id: 'jupiter-exchange-solana', sym: 'JUP', name: 'JUP/USDC (Solana)', fee: '~$0.0002', swap: 'https://jup.ag/swap/SOL-JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN' },
+      { id: 'matic-network', sym: 'POL', name: 'POL/USDC (Polygon)', fee: '~$0.01', swap: 'https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon' }
+    ];
+
+    async function loadData() {
+      try {
+        const marketIds = ASSET_IDS.join(',');
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + marketIds);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || !data.length) {
+          document.getElementById('topPicks').innerHTML = '<div class="card">Market feed unavailable.</div>';
+          document.getElementById('newsTickerTrack').innerHTML = '<div class="ticker-item">Waiting for market data...</div>';
+          return;
+        }
+
+        lastScoredData = data;
+
+        let html = '';
+        data.slice(0, 6).forEach(c => {
+          const change = Number(c.price_change_percentage_24h) || 0;
+          const changeClass = change >= 0 ? 'green' : 'red';
+          html += `
+            <div class="coin-card">
+              <div class="coin-head">
+                <span class="coin-name">${c.symbol.toUpperCase()}</span>
+                <span class="score">LIVE</span>
+              </div>
+              <div class="price">${formatPrice(c.current_price)}</div>
+              <div class="${changeClass}">${change.toFixed(2)}% (24h)</div>
+            </div>
+          `;
+        });
+        document.getElementById('topPicks').innerHTML = html;
+
+        let tickerHtml = '';
+        data.forEach(c => {
+          const change = Number(c.price_change_percentage_24h) || 0;
+          const color = change >= 0 ? 'green' : 'red';
+          tickerHtml += `<div class="ticker-item"><strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} <span class="${color}">(${change.toFixed(2)}%)</span></div>`;
+        });
+        document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
+
+        renderAll();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('topPicks').innerHTML = '<div class="card">Unable to load market data right now.</div>';
+      }
+    }
+
+    updateWalletStatus();
+    loadData();
+    setInterval(loadData, 30000);
+  </script>
+</body>
+</html>
