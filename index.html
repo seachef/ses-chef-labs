@@ -89,7 +89,7 @@
     .ticker-item strong { color: #00d9ff; }
     @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-    .stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:20px; }
+    .stats-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:20px; }
     .card {
       background:#1e293b;
       padding:15px;
@@ -213,7 +213,6 @@
     <div class="stats-grid">
       <div class="card" style="border: 2px solid #00ff88;"><h3>Portfolio</h3><h2 id="totalPortfolio" class="green">$0.00</h2></div>
       <div class="card" style="border: 1px solid #ff6b35;"><h3>Full Value</h3><h2 style="color:#ff6b35">DeBank</h2><div id="debankLinks" style="margin-top:5px"></div></div>
-      <div class="card"><h3>Research</h3><h2 id="coinCount">0</h2></div>
     </div>
 
     <h2 class="section-title">🎯 Top 6 AI Researched Coins</h2>
@@ -500,7 +499,6 @@
           `;
         });
         document.getElementById('topPicks').innerHTML = topHtml;
-        document.getElementById('coinCount').innerText = lastScoredData.length;
 
         let tickerHtml = '';
         lastScoredData.forEach(c => {
