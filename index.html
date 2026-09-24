@@ -1,100 +1,316 @@
-<script>
-const coins = [
-  { id: 'ethereum', sym: 'ETH', top: false },
-  { id: 'solana', sym: 'SOL', top: false },
-  { id: 'arbitrum', sym: 'ARB', top: false },
-  { id: 'matic-network', sym: 'POL', top: false }
-];
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sea Chef Labs</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body {
+        background: #0f172a;
+        color: #fff;
+        padding: 24px;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+      }
+      h1 {
+        color: #00ff88;
+        font-size: 2rem;
+      }
+      .wallet-box {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 20px;
+      }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      button, .link-btn {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+      button:hover, .link-btn:hover { transform: translateY(-1px); }
+      .primary { background: #00d9ff; color: #0f172a; }
+      .rabby { background: #00d9ff; color: #0f172a; }
+      .phantom { background: #ab9ff2; color: white; }
+      .metamask { background: #f6851b; color: white; }
+      .status {
+        margin-top: 18px;
+        font-size: 14px;
+        color: #cbd5e1;
+        line-height: 1.6;
+      }
+      .status strong { color: #fff; }
+      .address {
+        color: #00ff88;
+        word-break: break-all;
+        font-weight: 700;
+      }
+      .warning {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px solid rgba(251, 191, 36, 0.5);
+        border-radius: 10px;
+        background: rgba(251, 191, 36, 0.08);
+        color: #fcd34d;
+        font-size: 13px;
+      }
+      .small-muted {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Sea Chef Labs</h1>
+      </header>
 
-let lastScoredData = [];
-let currentCurrency = 'USD';
-let audRate = 1.52;
+      <div class="wallet-box">
+        <h2 style="margin-bottom: 8px;">Wallet Connect</h2>
+        <p class="small-muted">Desktop uses the wallet provider. iPhone uses WalletConnect or wallet deep links.</p>
 
-function setCurrency(curr) {
-  currentCurrency = curr;
-  document.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
-  document.getElementById('btnAUD').classList.toggle('active', curr === 'AUD');
-  refreshDisplay();
-}
+        <div class="button-row">
+          <button class="primary" id="connectWalletBtn">Connect Wallet</button>
+          <button class="rabby" id="connectRabbyBtn">Connect Rabby</button>
+          <button class="metamask" id="connectMetaMaskBtn">Connect MetaMask</button>
+          <button class="phantom" id="connectPhantomBtn">Connect Phantom</button>
+        </div>
 
-function formatPrice(value) {
-  let display = value;
-  if (currentCurrency === 'AUD') display = value * audRate;
-  return '$' + display.toFixed(value < 1 ? 6 : 2);
-}
+        <div class="status" id="walletStatus">
+          <strong>Status:</strong> Not connected
+        </div>
 
-function updateGridWindow(coinId, prefix) {
-  const coinData = lastScoredData.find(c => c.id === coinId);
-  if (!coinData) return;
-
-  const currentPrice = Number(coinData.current_price);
-  const low = Number(coinData.low_24h);
-  const high = Number(coinData.high_24h);
-
-  if (!currentPrice || !low || !high || high <= low) return;
-
-  const step = (high - low) / 10;
-  const gridsBelow = Math.floor((currentPrice - low) / step);
-  const nextBuy = low + gridsBelow * step;
-  const nextSell = low + (gridsBelow + 1) * step;
-  const pos = Math.max(0, Math.min(100, ((currentPrice - low) / (high - low)) * 100));
-
-  document.getElementById(`${prefix}Price`).innerText = formatPrice(currentPrice);
-  document.getElementById(`${prefix}Range`).innerText = `${formatPrice(low)} - ${formatPrice(high)}`;
-  document.getElementById(`${prefix}Step`).innerText = formatPrice(step);
-  document.getElementById(`${prefix}Buy`).innerText = formatPrice(nextBuy);
-  document.getElementById(`${prefix}Sell`).innerText = formatPrice(nextSell);
-  document.getElementById(`${prefix}Fill`).style.width = pos + '%';
-  document.getElementById(`${prefix}Marker`).style.left = pos + '%';
-}
-
-function refreshDisplay() {
-  if (!lastScoredData.length) return;
-
-  let tickerHtml = `<div class="ticker-item">SEA CHEF LABS LIVE FEED (${currentCurrency}):</div>`;
-
-  lastScoredData.forEach(c => {
-    const change = c.price_change_percentage_24h || 0;
-    const color = change >= 0 ? 'green' : 'red';
-    const arrow = change >= 0 ? '▲' : '▼';
-
-    tickerHtml += `
-      <div class="ticker-item">
-        <strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)}
-        <span class="${color}">(${arrow} ${change.toFixed(2)}%)</span>
+        <div class="warning">
+          iPhone note: Rabby, MetaMask, and Phantom must be opened in-app or via WalletConnect. Deep links alone do not always complete the session.
+        </div>
       </div>
-    `;
-  });
+    </div>
 
-  document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
-  document.getElementById('coinCount').innerText = lastScoredData.length;
-}
+    <script type="module">
+      import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers';
 
-async function loadData() {
-  try {
-    const ids = coins.map(c => c.id).join(',');
-    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids)}`);
+      const projectId = 'YOUR_WALLETCONNECT_PROJECT_ID';
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    if (!res.ok) throw new Error(`CoinGecko failed: ${res.status}`);
+      const metadata = {
+        name: 'Sea Chef Labs',
+        description: 'Sea Chef Labs wallet connection',
+        url: window.location.origin,
+        icons: ['https://avatars.githubusercontent.com/u/0?v=4']
+      };
 
-    const data = await res.json();
+      const mainnet = {
+        chainId: 1,
+        name: 'Ethereum',
+        currency: 'ETH',
+        explorerUrl: 'https://etherscan.io',
+        rpcUrl: 'https://cloudflare-eth.com'
+      };
 
-    lastScoredData = data.filter(Boolean);
+      const ethersConfig = defaultConfig({
+        metadata,
+        defaultChainId: 1,
+        enableEIP6963: true,
+        enableInjected: true,
+        enableCoinbase: true,
+        rpcUrl: mainnet.rpcUrl,
+        chainId: mainnet.chainId
+      });
 
-    updateGridWindow('solana', 'sol');
-    updateGridWindow('ethereum', 'eth');
-    updateGridWindow('arbitrum', 'arb');
-    updateGridWindow('matic-network', 'pol');
+      const modal = createWeb3Modal({
+        ethersConfig,
+        chains: [mainnet],
+        projectId,
+        enableAnalytics: false,
+        enableOnramp: false,
+        themeMode: 'dark'
+      });
 
-    refreshDisplay();
+      const walletStatus = document.getElementById('walletStatus');
 
-  } catch (e) {
-    console.error(e);
-    document.getElementById('topPicks').innerHTML = '<div class="card">Market data unavailable</div>';
-    document.getElementById('queuePicks').innerHTML = '<div class="card">Try again in a minute</div>';
-  }
-}
+      function setStatus(text) {
+        walletStatus.innerHTML = text;
+      }
 
-loadData();
-setInterval(loadData, 60000);
-</script>
+      function isInjectedEthereumWalletAvailable() {
+        return !!(window.ethereum && window.ethereum.request);
+      }
+
+      function isPhantomAvailable() {
+        return !!(window.phantom && window.phantom.ethereum);
+      }
+
+      function openDeepLink(walletName) {
+        const currentUrl = encodeURIComponent(window.location.href);
+
+        if (walletName === 'rabby') {
+          window.location.href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+          return;
+        }
+
+        if (walletName === 'metamask') {
+          window.location.href = `https://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
+          return;
+        }
+
+        if (walletName === 'phantom') {
+          window.location.href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+        }
+      }
+
+      async function connectBrowserWallet() {
+        try {
+          setStatus('<strong>Status:</strong> Opening wallet modal...');
+          const connection = await modal.open();
+          const provider = connection?.provider || null;
+
+          if (!provider) {
+            setStatus('<strong>Status:</strong> Wallet modal closed without a connection.');
+            return;
+          }
+
+          const signer = await provider.getSigner();
+          const address = await signer.getAddress();
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+        } catch (error) {
+          console.error('Wallet connect error:', error);
+          setStatus('<strong>Status:</strong> Connection was cancelled or failed.');
+        }
+      }
+
+      async function connectInjectedWallet(type) {
+        if (!isInjectedEthereumWalletAvailable()) {
+          if (isMobile) {
+            openDeepLink(type);
+            setStatus(`<strong>Status:</strong> No injected wallet detected. Opened ${type.toUpperCase()} on your phone.`);
+            return;
+          }
+
+          setStatus(`<strong>Status:</strong> ${type.toUpperCase()} is not installed on this device.`);
+          return;
+        }
+
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const address = accounts?.[0];
+
+          if (!address) {
+            setStatus('<strong>Status:</strong> No wallet address returned.');
+            return;
+          }
+
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+        } catch (error) {
+          console.error('Injected wallet error:', error);
+          setStatus('<strong>Status:</strong> Wallet connection failed. Please try again.');
+        }
+      }
+
+      async function connectPhantomDirect() {
+        if (!isPhantomAvailable()) {
+          if (isMobile) {
+            openDeepLink('phantom');
+            setStatus('<strong>Status:</strong> Phantom is not installed here. You were sent to the Phantom app to approve the connection.');
+            return;
+          }
+
+          setStatus('<strong>Status:</strong> Phantom is not installed on this device.');
+          return;
+        }
+
+        try {
+          const resp = await window.phantom.solana.connect();
+          const address = resp?.publicKey?.toString();
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+        } catch (error) {
+          console.error('Phantom connect error:', error);
+          setStatus('<strong>Status:</strong> Phantom connection failed.');
+        }
+      }
+
+      document.getElementById('connectWalletBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          // On mobile, prefer WalletConnect instead of direct app injection.
+          try {
+            await modal.open();
+            const provider = modal.getWalletProvider?.();
+            if (provider) {
+              const signer = await provider.getSigner();
+              const address = await signer.getAddress();
+              setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+            }
+          } catch (error) {
+            console.error('Mobile WalletConnect error:', error);
+            setStatus('<strong>Status:</strong> Mobile wallet connection failed. Try the wallet-specific buttons below.');
+          }
+          return;
+        }
+
+        await connectBrowserWallet();
+      });
+
+      document.getElementById('connectRabbyBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('rabby');
+          setStatus('<strong>Status:</strong> Opened Rabby on your phone. Please approve the connection in the app.');
+          return;
+        }
+
+        await connectInjectedWallet('rabby');
+      });
+
+      document.getElementById('connectMetaMaskBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('metamask');
+          setStatus('<strong>Status:</strong> Opened MetaMask on your phone. Please approve the connection in the app.');
+          return;
+        }
+
+        await connectInjectedWallet('metamask');
+      });
+
+      document.getElementById('connectPhantomBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('phantom');
+          setStatus('<strong>Status:</strong> Opened Phantom on your phone. Please approve the connection in the app.');
+          return;
+        }
+
+        await connectPhantomDirect();
+      });
+
+      window.addEventListener('load', () => {
+        if (!projectId || projectId === 'YOUR_WALLETCONNECT_PROJECT_ID') {
+          setStatus('<strong>Status:</strong> WalletConnect project ID is missing. Add your real project ID in index.html to enable the mobile modal.');
+        }
+      });
+    </script>
+  </body>
+</html>
