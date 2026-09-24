@@ -14,8 +14,8 @@ h1{color:#00ff88;font-size:1.6rem}
 .btn-phantom{background:#ab9ff2;color:#fff}
 .btn-rabby{background:#00d9ff}
 .btn-connected{background:#00ff88}
+.btn-alert{background:#ff4757;color:#fff}
 
-/* TICKER */
 .news-ticker-container {width:100%;overflow:hidden;background:#020617;border-top:2px solid #00ff88;border-bottom:2px solid #00ff88;padding:10px 0;margin-bottom:20px}
 .news-ticker-track {display:flex;width:max-content;animation:ticker-scroll 40s linear infinite}
 .news-ticker-container:hover .news-ticker-track {animation-play-state:paused}
@@ -23,7 +23,6 @@ h1{color:#00ff88;font-size:1.6rem}
 .ticker-item strong { color: #00d9ff; }
 @keyframes ticker-scroll {0% { transform: translateX(0); } 100% { transform: translateX(-50%); }}
 
-/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
 .card{background:#1e293b;padding:15px;border-radius:10px;border:1px solid #334155}
 .card h3{color:#94a3b8;font-size:12px;margin-bottom:5px}
@@ -31,7 +30,6 @@ h1{color:#00ff88;font-size:1.6rem}
 .green{color:#00ff88}
 .red{color:#ff4757}
 
-/* RESEARCHED COINS (TOP 6) */
 .section-title{font-size:1.1rem;margin-bottom:10px;color:#fff}
 .top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
 .coin-card{background:#1e293b;padding:12px;border-radius:8px;border-left:3px solid #00ff88}
@@ -39,18 +37,8 @@ h1{color:#00ff88;font-size:1.6rem}
 .coin-name{font-weight:bold;font-size:14px;color:#00d9ff}
 .score{font-size:11px;padding:2px 6px;border-radius:4px;background:rgba(0,255,136,0.2);color:#00ff88}
 .price{font-size:13px;font-weight:600;margin-bottom:5px}
-.buy-btn{display:block;background:#334155;color:#fff;text-align:center;padding:6px;border-radius:4px;text-decoration:none;font-size:11px;margin-top:5px}
-.buy-btn:hover{background:#00d9ff;color:#0f172a}
 
-/* FULL WIDTH PIONEX WINDOWS */
-.trading-window { 
-  background: #1e293b; 
-  border: 1px solid #334155; 
-  border-radius: 12px; 
-  padding: 20px; 
-  margin-bottom: 20px; 
-  width: 100%;
-}
+.trading-window { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 20px; width: 100%; }
 .window-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .window-title { font-size: 18px; font-weight: bold; color: #fff; }
 .window-fee { font-size: 12px; color: #94a3b8; }
@@ -59,86 +47,51 @@ h1{color:#00ff88;font-size:1.6rem}
 .stat-box span { display: block; color: #94a3b8; font-size: 11px; margin-bottom: 3px; }
 .stat-box strong { color: #fff; font-size: 15px; }
 
-/* THE PULSING ZONES */
 .zone-container { display: flex; height: 50px; border-radius: 8px; overflow: hidden; margin-bottom: 15px; position: relative; }
-.zone-buy { 
-  flex: 1; 
-  background: rgba(255,71,87,0.1); 
-  display: flex; align-items: center; justify-content: center; 
-  color: #ff4757; font-weight: bold; font-size: 14px;
-  transition: background 0.3s;
-}
-.zone-sell { 
-  flex: 1; 
-  background: rgba(0,255,136,0.1); 
-  display: flex; align-items: center; justify-content: center; 
-  color: #00ff88; font-weight: bold; font-size: 14px;
-  transition: background 0.3s;
-}
-/* Pulsing Animations */
-@keyframes pulseRed { 0% { background: rgba(255,71,87,0.1); } 100% { background: rgba(255,71,87,0.5); } }
-@keyframes pulseGreen { 0% { background: rgba(0,255,136,0.1); } 100% { background: rgba(0,255,136,0.5); } }
-.zone-buy.active { animation: pulseRed 0.8s infinite alternate; }
-.zone-sell.active { animation: pulseGreen 0.8s infinite alternate; }
+.zone-buy { flex: 1; background: rgba(255,71,87,0.1); display: flex; align-items: center; justify-content: center; color: #ff4757; font-weight: bold; font-size: 14px; transition: background 0.3s; }
+.zone-sell { flex: 1; background: rgba(0,255,136,0.1); display: flex; align-items: center; justify-content: center; color: #00ff88; font-weight: bold; font-size: 14px; transition: background 0.3s; }
 
-.price-marker { 
-  position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; 
-  box-shadow: 0 0 10px #fff; transition: left 0.5s ease; z-index: 10;
-}
+@keyframes pulseRed { 0% { background: rgba(255,71,87,0.1); } 100% { background: rgba(255,71,87,0.6); } }
+@keyframes pulseGreen { 0% { background: rgba(0,255,136,0.1); } 100% { background: rgba(0,255,136,0.6); } }
+.zone-buy.active { animation: pulseRed 0.8s infinite alternate; color: #fff; }
+.zone-sell.active { animation: pulseGreen 0.8s infinite alternate; color: #0f172a; }
 
-.execute-btn { 
-  display: block; width: 100%; text-align: center; padding: 12px; 
-  border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; 
-  background: linear-gradient(90deg, #00d9ff, #00ff88); color: #0f172a; 
-}
+.price-marker { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; box-shadow: 0 0 10px #fff; transition: left 0.5s ease; z-index: 10; }
+.execute-btn { display: block; width: 100%; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; background: linear-gradient(90deg, #00d9ff, #00ff88); color: #0f172a; }
 </style>
 </head>
 <body>
 <div class="container">
 <header>
 <h1>Sea Chef Labs</h1>
-<div style="display:flex;gap:10px">
-<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
-<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Phantom</button>
+<button class="btn btn-alert" onclick="enableAlerts()">🔔 Enable Alerts</button>
 </div>
 </header>
 
 <div class="news-ticker-container">
-  <div class="news-ticker-track" id="newsTickerTrack">
-    <div class="ticker-item">Loading live market data...</div>
-  </div>
+  <div class="news-ticker-track" id="newsTickerTrack"><div class="ticker-item">Loading...</div></div>
 </div>
 
 <div class="stats-grid">
-<div class="card" style="border: 2px solid #00ff88;">
-<h3>Tracked Portfolio</h3>
-<h2 id="totalPortfolio" class="green">$0.00</h2>
-</div>
-<div class="card" style="border: 1px solid #ff6b35;">
-<h3>Full Value</h3>
-<h2 style="color:#ff6b35" id="debankValue">DeBank</h2>
-<div id="debankLinks" style="margin-top:5px"></div>
-</div>
-<div class="card">
-<h3>Active Research</h3>
-<h2 id="coinCount">0</h2>
-</div>
+<div class="card" style="border: 2px solid #00ff88;"><h3>Portfolio</h3><h2 id="totalPortfolio" class="green">$0.00</h2></div>
+<div class="card" style="border: 1px solid #ff6b35;"><h3>Full Value</h3><h2 style="color:#ff6b35">DeBank</h2><div id="debankLinks" style="margin-top:5px"></div></div>
+<div class="card"><h3>Research</h3><h2 id="coinCount">0</h2></div>
 </div>
 
-<!-- 6 RESEARCHED COINS -->
 <h2 class="section-title">🎯 Top 6 AI Researched Coins</h2>
 <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 
-<!-- 4 FULL-WIDTH TRADING WINDOWS -->
-<h2 class="section-title"> In & Out Trading Command Center (0.8% Wiggle)</h2>
+<h2 class="section-title">🚨 In & Out Command Center (0.8% Wiggle)</h2>
 
-<!-- SOL WINDOW -->
 <div class="trading-window" id="window-sol">
   <div class="window-header"><div class="window-title">SOL/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
   <div class="window-stats">
     <div class="stat-box"><span>Current</span><strong id="sol-current">$0.00</strong></div>
-    <div class="stat-box"><span>BUY Target (Red)</span><strong id="sol-buy" class="red">$0.00</strong></div>
-    <div class="stat-box"><span>SELL Target (Green)</span><strong id="sol-sell" class="green">$0.00</strong></div>
+    <div class="stat-box"><span>BUY (Red)</span><strong id="sol-buy" class="red">$0.00</strong></div>
+    <div class="stat-box"><span>SELL (Green)</span><strong id="sol-sell" class="green">$0.00</strong></div>
   </div>
   <div class="zone-container">
     <div class="zone-buy" id="sol-zone-buy">BUY ZONE</div>
@@ -148,13 +101,12 @@ h1{color:#00ff88;font-size:1.6rem}
   <a href="https://jup.ag/swap/SOL-USDC" target="_blank" class="execute-btn">Execute on Jupiter</a>
 </div>
 
-<!-- WIF WINDOW -->
 <div class="trading-window" id="window-wif">
   <div class="window-header"><div class="window-title">WIF/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
   <div class="window-stats">
     <div class="stat-box"><span>Current</span><strong id="wif-current">$0.00</strong></div>
-    <div class="stat-box"><span>BUY Target (Red)</span><strong id="wif-buy" class="red">$0.00</strong></div>
-    <div class="stat-box"><span>SELL Target (Green)</span><strong id="wif-sell" class="green">$0.00</strong></div>
+    <div class="stat-box"><span>BUY (Red)</span><strong id="wif-buy" class="red">$0.00</strong></div>
+    <div class="stat-box"><span>SELL (Green)</span><strong id="wif-sell" class="green">$0.00</strong></div>
   </div>
   <div class="zone-container">
     <div class="zone-buy" id="wif-zone-buy">BUY ZONE</div>
@@ -164,13 +116,12 @@ h1{color:#00ff88;font-size:1.6rem}
   <a href="https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" target="_blank" class="execute-btn">Execute on Jupiter</a>
 </div>
 
-<!-- JUP WINDOW -->
 <div class="trading-window" id="window-jup">
   <div class="window-header"><div class="window-title">JUP/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
   <div class="window-stats">
     <div class="stat-box"><span>Current</span><strong id="jup-current">$0.00</strong></div>
-    <div class="stat-box"><span>BUY Target (Red)</span><strong id="jup-buy" class="red">$0.00</strong></div>
-    <div class="stat-box"><span>SELL Target (Green)</span><strong id="jup-sell" class="green">$0.00</strong></div>
+    <div class="stat-box"><span>BUY (Red)</span><strong id="jup-buy" class="red">$0.00</strong></div>
+    <div class="stat-box"><span>SELL (Green)</span><strong id="jup-sell" class="green">$0.00</strong></div>
   </div>
   <div class="zone-container">
     <div class="zone-buy" id="jup-zone-buy">BUY ZONE</div>
@@ -180,61 +131,52 @@ h1{color:#00ff88;font-size:1.6rem}
   <a href="https://jup.ag/swap/SOL-JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" target="_blank" class="execute-btn">Execute on Jupiter</a>
 </div>
 
-<!-- POL WINDOW -->
 <div class="trading-window" id="window-pol">
   <div class="window-header"><div class="window-title">POL/USDC (Polygon)</div><div class="window-fee">Fee: ~$0.01</div></div>
   <div class="window-stats">
     <div class="stat-box"><span>Current</span><strong id="pol-current">$0.00</strong></div>
-    <div class="stat-box"><span>BUY Target (Red)</span><strong id="pol-buy" class="red">$0.00</strong></div>
-    <div class="stat-box"><span>SELL Target (Green)</span><strong id="pol-sell" class="green">$0.00</strong></div>
+    <div class="stat-box"><span>BUY (Red)</span><strong id="pol-buy" class="red">$0.00</strong></div>
+    <div class="stat-box"><span>SELL (Green)</span><strong id="pol-sell" class="green">$0.00</strong></div>
   </div>
   <div class="zone-container">
     <div class="zone-buy" id="pol-zone-buy">BUY ZONE</div>
     <div class="zone-sell" id="pol-zone-sell">SELL ZONE</div>
     <div class="price-marker" id="pol-marker" style="left: 50%;"></div>
   </div>
-  <a href="https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon" target="_blank" class="execute-btn">Execute on Uniswap (Polygon)</a>
+  <a href="https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon" target="_blank" class="execute-btn">Execute on Uniswap</a>
 </div>
 
 </div>
 
 <script>
-const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
-const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
-
 let connectedAddress = null;
 let priceMap = { 'ETH': 0, 'SOL': 0, 'POL': 0, 'WIF': 0, 'JUP': 0 };
 let lastScoredData = [];
+let alertsEnabled = false;
 
-async function connectRabby(){
-if(!window.ethereum){alert('Rabby not detected!');return;}
-try{
-const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-connectedAddress = accounts[0];
-document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
-document.getElementById('rabbyBtn').classList.add('btn-connected');
-}catch(e){alert('Failed: '+e.message)}
-}
+async function connectRabby(){ if(!window.ethereum){alert('Rabby not detected!');return;} try{ const accounts = await window.ethereum.request({method:'eth_requestAccounts'}); connectedAddress = accounts[0]; document.getElementById('rabbyBtn').innerText = 'Rabby ✓'; document.getElementById('rabbyBtn').classList.add('btn-connected'); }catch(e){alert('Failed: '+e.message)} }
+async function connectPhantom(){ if(!window.solana){alert('Phantom not detected!');return;} try{ const resp = await window.solana.connect(); connectedAddress = resp.publicKey.toString(); document.getElementById('phantomBtn').innerText = 'Phantom ✓'; document.getElementById('phantomBtn').classList.add('btn-connected'); }catch(e){alert('Failed: '+e.message)} }
 
-async function connectPhantom(){
-if(!window.solana){alert('Phantom not detected!');return;}
-try{
-const resp = await window.solana.connect();
-connectedAddress = resp.publicKey.toString();
-document.getElementById('phantomBtn').innerText = 'Phantom ✓';
-document.getElementById('phantomBtn').classList.add('btn-connected');
-}catch(e){alert('Failed: '+e.message)}
+function enableAlerts() {
+  if (!("Notification" in window)) { alert("This browser does not support notifications."); return; }
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      alertsEnabled = true;
+      document.querySelector('.btn-alert').innerText = '🔔 Alerts ON';
+      document.querySelector('.btn-alert').style.background = '#00ff88';
+      document.querySelector('.btn-alert').style.color = '#0f172a';
+      new Notification("Sea Chef Labs", { body: "Alerts enabled! We will notify you when zones hit." });
+    }
+  });
 }
 
 function formatPrice(p) { return '$' + p.toFixed(p < 1 ? 4 : 2); }
 
-// THE TRADING WINDOW LOGIC
-function updateTradingWindow(coinId, prefix) {
+function updateTradingWindow(coinId, prefix, coinName) {
   const coin = lastScoredData.find(c => c.id === coinId);
   if(!coin) return;
   
   const current = coin.current_price;
-  // 0.8% wiggle target to cover fees and make small profit
   const buyTarget = current * 0.992; 
   const sellTarget = current * 1.008;
   
@@ -246,24 +188,23 @@ function updateTradingWindow(coinId, prefix) {
   const sellZone = document.getElementById(`${prefix}-zone-sell`);
   const marker = document.getElementById(`${prefix}-marker`);
   
-  // Reset pulses
   buyZone.classList.remove('active');
   sellZone.classList.remove('active');
   
-  // Calculate marker position (0% to 100% between buy and sell target)
   let pct = ((current - buyTarget) / (sellTarget - buyTarget)) * 100;
   pct = Math.max(0, Math.min(100, pct));
   marker.style.left = `${pct}%`;
   
-  // Trigger Pulses
   if(current <= buyTarget) {
-    buyZone.classList.add('active'); // Flash Red
-    buyZone.innerText = " BUY NOW!";
+    buyZone.classList.add('active'); 
+    buyZone.innerText = "🚨 BUY NOW!";
     sellZone.innerText = "SELL ZONE";
+    if(alertsEnabled) new Notification(`🚨 BUY ${coinName}!`, { body: `Price dropped to ${formatPrice(current)}. Execute now!` });
   } else if(current >= sellTarget) {
-    sellZone.classList.add('active'); // Flash Green
+    sellZone.classList.add('active'); 
     sellZone.innerText = " SELL NOW!";
     buyZone.innerText = "BUY ZONE";
+    if(alertsEnabled) new Notification(`🚨 SELL ${coinName}!`, { body: `Price pumped to ${formatPrice(current)}. Take profit!` });
   } else {
     buyZone.innerText = "BUY ZONE";
     sellZone.innerText = "SELL ZONE";
@@ -288,36 +229,22 @@ try{
 const ids=coins.map(c=>c.id).join(',');
 const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
 const data=await res.json();
-
 if(!Array.isArray(data)) return;
-
 data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
+lastScoredData = data.map(c => { const coinInfo = coins.find(t => t.id === c.id); if(!coinInfo) return null; return {...c, coinInfo}; }).filter(c => c !== null);
 
-lastScoredData = data.map(c => {
-const coinInfo = coins.find(t => t.id === c.id);
-if(!coinInfo) return null;
-return {...c, coinInfo};
-}).filter(c => c !== null);
+updateTradingWindow('solana', 'sol', 'SOL');
+updateTradingWindow('dogwifcoin', 'wif', 'WIF');
+updateTradingWindow('jupiter-exchange-solana', 'jup', 'JUP');
+updateTradingWindow('matic-network', 'pol', 'POL');
 
-// Update 4 Trading Windows
-updateTradingWindow('solana', 'sol');
-updateTradingWindow('dogwifcoin', 'wif');
-updateTradingWindow('jupiter-exchange-solana', 'jup');
-updateTradingWindow('matic-network', 'pol');
-
-// Update Top 6 Researched Coins
 let topHtml = '';
 lastScoredData.slice(0, 6).forEach(c => {
-  topHtml += `<div class="coin-card">
-    <div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score">LIVE</span></div>
-    <div class="price">${formatPrice(c.current_price)}</div>
-    <div style="font-size:11px;color:#94a3b8">${c.price_change_percentage_24h?.toFixed(2) || 0}% (24h)</div>
-  </div>`;
+  topHtml += `<div class="coin-card"><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score">LIVE</span></div><div class="price">${formatPrice(c.current_price)}</div><div style="font-size:11px;color:#94a3b8">${c.price_change_percentage_24h?.toFixed(2) || 0}% (24h)</div></div>`;
 });
 document.getElementById('topPicks').innerHTML = topHtml;
 document.getElementById('coinCount').innerText = lastScoredData.length;
 
-// Update Ticker
 let tickerHtml = '';
 lastScoredData.forEach(c => {
   const change = c.price_change_percentage_24h || 0;
@@ -325,12 +252,11 @@ lastScoredData.forEach(c => {
   tickerHtml += `<div class="ticker-item"><strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} <span class="${color}">(${change.toFixed(2)}%)</span></div>`;
 });
 document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
-
 }catch(e){console.error(e)}
 }
 
 loadData();
-setInterval(loadData, 30000); // Updates every 30 seconds for fast reactions
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>
