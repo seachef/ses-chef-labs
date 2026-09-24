@@ -410,11 +410,11 @@
       const current = Number(coin.current_price) || 0;
       const reference = getReferencePrice(coinId) || current;
       const buyTarget = reference * 0.99;
-      const sellTarget = reference * (1 + ALERT_THRESHOLD_PCT);
+      const greenTarget = reference * (1 + ALERT_THRESHOLD_PCT);
 
       document.getElementById(`${prefix}-current`).innerText = formatPrice(current);
       document.getElementById(`${prefix}-buy`).innerText = formatPrice(buyTarget);
-      document.getElementById(`${prefix}-sell`).innerText = formatPrice(sellTarget);
+      document.getElementById(`${prefix}-sell`).innerText = formatPrice(greenTarget);
 
       const buyZone = document.getElementById(`${prefix}-zone-buy`);
       const sellZone = document.getElementById(`${prefix}-zone-sell`);
@@ -423,31 +423,37 @@
       buyZone.classList.remove('active');
       sellZone.classList.remove('active');
 
-      let pct = ((current - buyTarget) / (sellTarget - buyTarget)) * 100;
+      const lowerBound = buyTarget;
+      const upperBound = greenTarget;
+      let pct = ((current - lowerBound) / (upperBound - lowerBound)) * 100;
       pct = Math.max(0, Math.min(100, pct));
       marker.style.left = `${pct}%`;
 
       const buySignalKey = `${coinId}:buy`;
       const greenSignalKey = `${coinId}:green5`;
 
-      if (current <= buyTarget) {
+      if (current < reference) {
         buyZone.classList.add('active');
         buyZone.innerText = '🚨 BUY NOW!';
         sellZone.innerText = 'SELL ZONE';
         resetAlertState(greenSignalKey);
-      } else if (current >= sellTarget) {
+        resetAlertState(buySignalKey);
+      } else if (current >= reference) {
         sellZone.classList.add('active');
-        sellZone.innerText = '🚨 SELL NOW!';
+        sellZone.innerText = 'SELL NOW';
         buyZone.innerText = 'BUY ZONE';
-        if (!alertHistory[greenSignalKey]) {
+        if (current >= greenTarget && !alertHistory[greenSignalKey]) {
           notifyOnce(greenSignalKey, `🚨 ${coinName} is +5% into the green`, `Reference: ${formatPrice(reference)} | Current: ${formatPrice(current)} | Consider taking profit or watching sentiment.`);
         }
+        if (current < greenTarget) {
+          resetAlertState(greenSignalKey);
+        }
         resetAlertState(buySignalKey);
-      } else {
-        buyZone.innerText = 'BUY ZONE';
-        sellZone.innerText = 'SELL ZONE';
-        resetAlertState(greenSignalKey);
-        resetAlertState(buySignalKey);
+      }
+
+      if (current <= buyTarget) {
+        buyZone.classList.add('active');
+        buyZone.innerText = '🚨 BUY NOW!';
       }
     }
 
