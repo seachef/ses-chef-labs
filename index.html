@@ -1,316 +1,518 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sea Chef Labs</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      body {
-        background: #0f172a;
-        color: #fff;
-        padding: 24px;
-      }
-      .container {
-        max-width: 1000px;
-        margin: 0 auto;
-      }
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        border-bottom: 1px solid #334155;
-        padding-bottom: 20px;
-        margin-bottom: 24px;
-      }
-      h1 {
-        color: #00ff88;
-        font-size: 2rem;
-      }
-      .wallet-box {
-        background: rgba(30, 41, 59, 0.9);
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 20px;
-      }
-      .button-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 16px;
-      }
-      button, .link-btn {
-        appearance: none;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 18px;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.15s ease, opacity 0.15s ease;
-      }
-      button:hover, .link-btn:hover { transform: translateY(-1px); }
-      .primary { background: #00d9ff; color: #0f172a; }
-      .rabby { background: #00d9ff; color: #0f172a; }
-      .phantom { background: #ab9ff2; color: white; }
-      .metamask { background: #f6851b; color: white; }
-      .status {
-        margin-top: 18px;
-        font-size: 14px;
-        color: #cbd5e1;
-        line-height: 1.6;
-      }
-      .status strong { color: #fff; }
-      .address {
-        color: #00ff88;
-        word-break: break-all;
-        font-weight: 700;
-      }
-      .warning {
-        margin-top: 14px;
-        padding: 12px 14px;
-        border: 1px solid rgba(251, 191, 36, 0.5);
-        border-radius: 10px;
-        background: rgba(251, 191, 36, 0.08);
-        color: #fcd34d;
-        font-size: 13px;
-      }
-      .small-muted {
-        color: #94a3b8;
-        font-size: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>Sea Chef Labs</h1>
-      </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sea Chef Labs</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
+body{background:#0f172a;color:#fff;padding:20px}
+.container{max-width:1400px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+h1{color:#00ff88;font-size:1.8rem}
+.btn{background:#00d9ff;color:#0f172a;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:5px;text-decoration:none;display:inline-block;text-align:center;font-size:14px}
+.btn-phantom{background:#ab9ff2;color:#fff}
+.btn-rabby{background:#00d9ff}
+.btn-mobile{background:#3b99fc;color:#fff}
+.btn-connected{background:#00ff88}
+.btn-watch{background:#fbbf24;color:#0f172a}
+.btn-debank{background:#ff6b35;color:#fff;font-size:12px;padding:6px 12px}
+.btn-currency{background:#334155;color:#fff;padding:10px 15px}
+.btn-currency.active{background:#00ff88;color:#0f172a}
 
-      <div class="wallet-box">
-        <h2 style="margin-bottom: 8px;">Wallet Connect</h2>
-        <p class="small-muted">Desktop uses the wallet provider. iPhone uses WalletConnect or wallet deep links.</p>
+.news-ticker-container {width:100%;overflow:hidden;background:#020617;border-top:2px solid #00ff88;border-bottom:2px solid #00ff88;padding:12px 0;margin-bottom:30px;position:relative}
+.news-ticker-track {display:flex;width:max-content;animation:ticker-scroll 45s linear infinite}
+.news-ticker-container:hover .news-ticker-track {animation-play-state:paused}
+.ticker-item {padding:0 40px;font-size:15px;white-space:nowrap;color:#e2e8f0;display:flex;align-items:center;gap:8px}
+.ticker-item strong { color: #00d9ff; font-size: 16px; }
+@keyframes ticker-scroll {0% { transform: translateX(0); } 100% { transform: translateX(-50%); }}
 
-        <div class="button-row">
-          <button class="primary" id="connectWalletBtn">Connect Wallet</button>
-          <button class="rabby" id="connectRabbyBtn">Connect Rabby</button>
-          <button class="metamask" id="connectMetaMaskBtn">Connect MetaMask</button>
-          <button class="phantom" id="connectPhantomBtn">Connect Phantom</button>
-        </div>
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:30px}
+.card{background:#1e293b;padding:20px;border-radius:12px;border:1px solid #334155}
+.card h3{color:#94a3b8;font-size:14px;margin-bottom:10px}
+.card h2{font-size:28px;margin-bottom:5px}
+.green{color:#00ff88}
+.red{color:#ff4757}
+.section-title{font-size:1.3rem;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-bottom:30px}
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:30px}
+.coin-card{background:#1e293b;padding:15px;border-radius:10px;border-left:4px solid #00ff88;position:relative}
+.coin-card-small{background:#1e293b;padding:12px;border-radius:8px;border-left:3px solid #00d9ff;position:relative}
+.coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.coin-name{font-weight:bold;font-size:18px;color:#00d9ff}
+.coin-name-small{font-weight:bold;font-size:14px;color:#00d9ff}
+.score{padding:4px 12px;border-radius:6px;font-size:14px;font-weight:bold}
+.score-high{background:rgba(0,255,136,0.2);color:#00ff88}
+.score-mid{background:rgba(251,191,36,0.2);color:#fbbf24}
+.score-low{background:rgba(255,71,87,0.2);color:#ff4757}
+.price{font-size:1.1rem;font-weight:600;margin-bottom:5px}
+.price-small{font-size:0.9rem;font-weight:600;margin-bottom:3px}
+.contract{background:rgba(255,255,255,0.05);padding:8px;border-radius:4px;font-size:11px;color:#94a3b8;margin:8px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
+.contract:hover{background:rgba(0,217,255,0.1);color:#00d9ff}
+.contract-small{background:rgba(255,255,255,0.05);padding:6px;border-radius:4px;font-size:10px;color:#94a3b8;margin:6px 0;cursor:pointer;word-break:break-all;border:1px solid #334155}
+.contract-small:hover{background:rgba(0,217,255,0.1);color:#00d9ff}
+.dip{color:#fbbf24;font-weight:bold;font-size:14px;margin-bottom:10px}
+.dip-small{color:#fbbf24;font-weight:bold;font-size:12px;margin-bottom:8px}
+.reason{color:#cbd5e1;font-size:13px;margin-bottom:12px}
+.reason-small{color:#cbd5e1;font-size:11px;margin-bottom:8px}
+.buy-btn{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold}
+.buy-btn-small{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:8px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:12px}
+.live-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite}
+.live-dot-small{position:absolute;top:8px;right:8px;width:6px;height:6px;background:#00ff88;border-radius:50%;box-shadow:0 0 6px #00ff88;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.wallets-table{width:100%;border-collapse:collapse;margin-top:10px}
+.wallets-table th,.wallets-table td{padding:15px;text-align:left;border-bottom:1px solid #334155}
+.wallets-table th{color:#94a3b8;font-size:14px}
+.wallet-row{background:rgba(0,255,136,0.05)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
+.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:500px;width:90%;text-align:center}
+.modal-content h2{margin-bottom:20px;color:#00ff88}
+.input-group{margin-bottom:15px;text-align:left}
+.input-group label{display:block;margin-bottom:5px;color:#94a3b8}
+.input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}
+.mobile-btn{display:block;width:100%;padding:15px;margin-bottom:10px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;text-align:center}
+.btn-mm{background:#f6851b;color:#fff}
+.btn-phantom-mobile{background:#ab9ff2;color:#fff}
+.btn-rabby-mobile{background:#00d9ff;color:#0f172a}
 
-        <div class="status" id="walletStatus">
-          <strong>Status:</strong> Not connected
-        </div>
+/* GRID TRACKER STYLES */
+.grid-tracker { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #00d9ff; }
+.grid-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+.grid-stats div { text-align: center; }
+.grid-stats span { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px; }
+.grid-stats strong { color: #fff; font-size: 16px; }
+.grid-bar-container { position: relative; height: 30px; background: #334155; border-radius: 15px; margin: 20px 0; overflow: hidden; }
+.grid-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, rgba(0,255,136,0.2), rgba(255,71,87,0.2)); transition: width 0.5s ease; }
+.grid-marker { position: absolute; top: -5px; width: 4px; height: 40px; background: #fff; border-radius: 2px; transition: left 0.5s ease; box-shadow: 0 0 10px #fff; }
+.grid-signals { display: flex; justify-content: space-between; margin-top: 15px; }
+.signal-box { flex: 1; padding: 10px; border-radius: 8px; text-align: center; margin: 0 5px; }
+.signal-buy { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; }
+.signal-sell { background: rgba(255,71,87,0.1); border: 1px solid #ff4757; }
+.signal-box h4 { font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+.signal-box p { font-size: 18px; font-weight: bold; margin: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Sea Chef Labs</h1>
+<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+<button class="btn btn-rabby" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button>
+<button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button>
+<button class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button>
+<button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button>
+<button class="btn btn-currency active" id="btnUSD" onclick="setCurrency('USD')">USD</button>
+<button class="btn btn-currency" id="btnAUD" onclick="setCurrency('AUD')">AUD</button>
+</div>
+</header>
 
-        <div class="warning">
-          iPhone note: Rabby, MetaMask, and Phantom must be opened in-app or via WalletConnect. Deep links alone do not always complete the session.
-        </div>
-      </div>
+<div class="news-ticker-container">
+  <div class="news-ticker-track" id="newsTickerTrack">
+    <div class="ticker-item">Loading live market data...</div>
+  </div>
+</div>
+
+<div class="stats-grid">
+<div class="card" style="border: 2px solid #00ff88;">
+<h3>Tracked Portfolio Value</h3>
+<h2 id="totalPortfolio" class="green">$0.00</h2>
+<div style="color:#94a3b8;font-size:12px" id="lastUpdated">ETH + Known Tokens Only</div>
+</div>
+<div class="card" style="border: 1px solid #ff6b35;">
+<h3>Full Portfolio Value</h3>
+<h2 style="color:#ff6b35">Click Below</h2>
+<div id="debankLinks" style="margin-top:10px"></div>
+</div>
+<div class="card">
+<h3>Active Research</h3>
+<h2 id="coinCount">0</h2>
+<div style="color:#94a3b8">Coins scanning live</div>
+</div>
+</div>
+
+<!-- NEW: SOL/USDT GRID SIGNAL TRACKER -->
+<div class="card grid-tracker" style="margin-bottom: 30px;">
+  <h3 style="color:#00d9ff; font-size:16px; margin-bottom:15px;">🤖 SOL/USDT Live Grid Signal Tracker</h3>
+  <div class="grid-stats">
+    <div><span>Grid Range</span><strong id="gridRange">$0 - $0</strong></div>
+    <div><span>Grid Step (10 Grids)</span><strong id="gridStep">$0.00</strong></div>
+    <div><span>Profit per Grid</span><strong class="green">~0.5%</strong></div>
+  </div>
+  <div class="grid-bar-container">
+    <div class="grid-bar-fill" id="gridBarFill" style="width: 50%;"></div>
+    <div class="grid-marker" id="gridMarker" style="left: 50%;"></div>
+  </div>
+  <div class="grid-signals">
+    <div class="signal-box signal-buy">
+      <h4>Next BUY Signal</h4>
+      <p id="nextBuyPrice" class="green">$0.00</p>
     </div>
+    <div class="signal-box signal-sell">
+      <h4>Next SELL Signal</h4>
+      <p id="nextSellPrice" class="red">$0.00</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:15px;">
+    <a href="https://jup.ag/swap/SOL-USDC" target="_blank" class="btn" style="background:#ab9ff2; color:#fff;">Execute Trade on Jupiter (Solana)</a>
+  </div>
+</div>
 
-    <script type="module">
-      import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers';
+<div style="margin-bottom:30px">
+<h2 class="section-title">💼 Active Wallets & Live Balances</h2>
+<div class="card" style="padding:0;overflow:hidden">
+<table class="wallets-table">
+<thead><tr><th>Type</th><th>Address</th><th>Holdings (Tracked)</th><th>USD Value</th></tr></thead>
+<tbody id="walletsBody">
+<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px">Connect a wallet or add a watch address</td></tr>
+</tbody>
+</table>
+</div>
+</div>
 
-      const projectId = 'YOUR_WALLETCONNECT_PROJECT_ID';
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+<h2 class="section-title"> AI Top Picks - Live Scored & Ranked</h2>
+<div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
+<h2 class="section-title"> Research Queue - Live Monitored</h2>
+<div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div>
 
-      const metadata = {
-        name: 'Sea Chef Labs',
-        description: 'Sea Chef Labs wallet connection',
-        url: window.location.origin,
-        icons: ['https://avatars.githubusercontent.com/u/0?v=4']
-      };
+<div id="watchModal" class="modal">
+<div class="modal-content">
+<h2>Add Watch-Only Wallet</h2>
+<div class="input-group">
+<label>Wallet Address (Ethereum 0x... or Solana)</label>
+<input type="text" id="watchAddress" placeholder="0x... or Solana address">
+</div>
+<button class="btn" onclick="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button>
+<button class="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:10px;background:#334155;color:#fff">Cancel</button>
+</div>
+</div>
 
-      const mainnet = {
-        chainId: 1,
-        name: 'Ethereum',
-        currency: 'ETH',
-        explorerUrl: 'https://etherscan.io',
-        rpcUrl: 'https://cloudflare-eth.com'
-      };
+<div id="mobileModal" class="modal">
+<div class="modal-content">
+<h2>📱 Connect on iOS / Mobile</h2>
+<p style="color:#94a3b8;margin-bottom:20px;font-size:14px">Tap your wallet below to open this site inside your wallet's secure browser. Once it opens, click "Connect Rabby" or "Connect Phantom" at the top.</p>
+<a href="#" id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</a>
+<a href="#" id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in Phantom</a>
+<a href="#" id="linkRabby" class="mobile-btn btn-rabby-mobile">Open in Rabby</a>
+<button class="btn" onclick="closeMobileModal()" style="width:100%;background:#334155;color:#fff;margin-top:10px">Cancel</button>
+</div>
+</div>
 
-      const ethersConfig = defaultConfig({
-        metadata,
-        defaultChainId: 1,
-        enableEIP6963: true,
-        enableInjected: true,
-        enableCoinbase: true,
-        rpcUrl: mainnet.rpcUrl,
-        chainId: mainnet.chainId
-      });
+<script>
+const ALCHEMY_KEY = 'alch_891EHYfjb1LqQ7zXdW002';
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 
-      const modal = createWeb3Modal({
-        ethersConfig,
-        chains: [mainnet],
-        projectId,
-        enableAnalytics: false,
-        enableOnramp: false,
-        themeMode: 'dark'
-      });
+const chainRPCs = {
+  'Arbitrum': 'https://arb1.arbitrum.io/rpc',
+  'Polygon': 'https://polygon-rpc.com',
+  'Base': 'https://mainnet.base.org',
+  'Optimism': 'https://mainnet.optimism.io',
+  'Zora': 'https://rpc.zora.energy'
+};
 
-      const walletStatus = document.getElementById('walletStatus');
+let connectedAddress = null;
+let watchOnlyAddress = null;
+let priceMap = { 'ETH': 0, 'MATIC': 0, 'USDT': 1, 'USDC': 1, 'PEPE': 0, 'SHIB': 0, 'ARB': 0, 'SOL': 0 };
 
-      function setStatus(text) {
-        walletStatus.innerHTML = text;
-      }
+let currentCurrency = 'USD';
+let audRate = 1.52; 
+let lastScoredData = [];
 
-      function isInjectedEthereumWalletAvailable() {
-        return !!(window.ethereum && window.ethereum.request);
-      }
+const knownTokens = [
+  { sym: 'USDT', addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', dec: 6 },
+  { sym: 'USDC', addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', dec: 6 },
+  { sym: 'PEPE', addr: '0x6982508145454Ce325dDbE47a25d4ec3d2311933', dec: 18 },
+  { sym: 'SHIB', addr: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', dec: 18 },
+  { sym: 'ARB', addr: '0x912CE59144191C1204E64559FE8253a0e49E6548', dec: 18 }
+];
 
-      function isPhantomAvailable() {
-        return !!(window.phantom && window.phantom.ethereum);
-      }
+function setCurrency(curr) {
+  currentCurrency = curr;
+  document.getElementById('btnUSD').classList.toggle('active', curr === 'USD');
+  document.getElementById('btnAUD').classList.toggle('active', curr === 'AUD');
+  refreshDisplay();
+  if(connectedAddress || watchOnlyAddress) fetchWalletData();
+}
 
-      function openDeepLink(walletName) {
-        const currentUrl = encodeURIComponent(window.location.href);
+function formatMoney(usdAmount) {
+  let val = usdAmount;
+  let symbol = '$';
+  if (currentCurrency === 'AUD') { val = usdAmount * audRate; symbol = 'A$'; }
+  return symbol + val.toFixed(2);
+}
 
-        if (walletName === 'rabby') {
-          window.location.href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
-          return;
-        }
+function formatPrice(usdPrice) {
+  let val = usdPrice;
+  let symbol = '$';
+  if (currentCurrency === 'AUD') { val = usdPrice * audRate; symbol = 'A$'; }
+  return symbol + val.toFixed(usdPrice < 1 ? 6 : 2);
+}
 
-        if (walletName === 'metamask') {
-          window.location.href = `https://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
-          return;
-        }
+async function connectRabby(){
+if(!window.ethereum){alert('Rabby not detected! If on iOS, use the "Connect Mobile" button.');return;}
+try{
+const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+connectedAddress = accounts[0];
+document.getElementById('rabbyBtn').innerText = 'Rabby ✓';
+document.getElementById('rabbyBtn').classList.add('btn-connected');
+fetchWalletData();
+}catch(e){alert('Failed: '+e.message)}
+}
 
-        if (walletName === 'phantom') {
-          window.location.href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
-        }
-      }
+async function connectPhantom(){
+if(!window.solana){alert('Phantom not detected! If on iOS, use the "Connect Mobile" button.');return;}
+try{
+const resp = await window.solana.connect();
+connectedAddress = resp.publicKey.toString();
+document.getElementById('phantomBtn').innerText = 'Phantom ✓';
+document.getElementById('phantomBtn').classList.add('btn-connected');
+fetchWalletData();
+}catch(e){alert('Failed: '+e.message)}
+}
 
-      async function connectBrowserWallet() {
-        try {
-          setStatus('<strong>Status:</strong> Opening wallet modal...');
-          const connection = await modal.open();
-          const provider = connection?.provider || null;
+function openMobileModal(){
+  const currentUrl = encodeURIComponent(window.location.href);
+  document.getElementById('linkMetaMask').href = `https://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
+  document.getElementById('linkPhantom').href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+  document.getElementById('linkRabby').href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+  document.getElementById('mobileModal').style.display = 'flex';
+}
+function closeMobileModal(){document.getElementById('mobileModal').style.display = 'none';}
 
-          if (!provider) {
-            setStatus('<strong>Status:</strong> Wallet modal closed without a connection.');
-            return;
-          }
+function openWatchOnlyModal(){document.getElementById('watchModal').style.display = 'flex';}
+function closeWatchOnlyModal(){document.getElementById('watchModal').style.display = 'none';}
 
-          const signer = await provider.getSigner();
-          const address = await signer.getAddress();
-          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
-        } catch (error) {
-          console.error('Wallet connect error:', error);
-          setStatus('<strong>Status:</strong> Connection was cancelled or failed.');
-        }
-      }
+async function addWatchOnlyWallet(){
+const address = document.getElementById('watchAddress').value.trim();
+if(!address){alert('Please enter a wallet address');return;}
+if(address.startsWith('0x') && address.length === 42){ watchOnlyAddress = address; }
+else if(address.length >= 32 && address.length <= 44){ watchOnlyAddress = address; }
+else{alert('Invalid address format');return;}
+closeWatchOnlyModal();
+fetchWalletData();
+}
 
-      async function connectInjectedWallet(type) {
-        if (!isInjectedEthereumWalletAvailable()) {
-          if (isMobile) {
-            openDeepLink(type);
-            setStatus(`<strong>Status:</strong> No injected wallet detected. Opened ${type.toUpperCase()} on your phone.`);
-            return;
-          }
+async function fetchWalletData(){
+if(!connectedAddress && !watchOnlyAddress) return;
+let totalPortfolio = 0;
+let tableHtml = '';
+let processedAddresses = new Set();
+let allAddresses = [];
 
-          setStatus(`<strong>Status:</strong> ${type.toUpperCase()} is not installed on this device.`);
-          return;
-        }
+async function processWallet(addr, type) {
+if(processedAddresses.has(addr.toLowerCase())) return;
+processedAddresses.add(addr.toLowerCase());
+allAddresses.push(addr);
+let walletTotal = 0;
+let allHoldings = [];
 
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          const address = accounts?.[0];
+try {
+const ethRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
+const ethData = await ethRes.json();
+const ethBal = ethData.result ? parseInt(ethData.result, 16) / 1e18 : 0;
+if(ethBal > 0.00001) {
+const val = ethBal * (priceMap['ETH'] || 0);
+walletTotal += val;
+allHoldings.push(`ETH: ${ethBal.toFixed(6)} (${formatMoney(val)})`);
+}
+for(let t of knownTokens) {
+const data = "0x70a08231000000000000000000000000" + addr.substring(2);
+const tokenRes = await fetch(ALCHEMY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: t.addr, data: data }, 'latest'] }) });
+const tokenData = await tokenRes.json();
+if(tokenData.result && tokenData.result !== '0x' && tokenData.result !== '0x0') {
+const bal = parseInt(tokenData.result, 16) / Math.pow(10, t.dec);
+if(bal > 0) {
+const price = priceMap[t.sym] || 0;
+const val = bal * price;
+walletTotal += val;
+allHoldings.push(`${t.sym}: ${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} (${formatMoney(val)})`);
+}
+}
+}
+for(let [chainName, rpc] of Object.entries(chainRPCs)) {
+try {
+const nativeRes = await fetch(rpc, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) });
+const nativeData = await nativeRes.json();
+const nativeBal = nativeData.result ? parseInt(nativeData.result, 16) / 1e18 : 0;
+if(nativeBal > 0.00001) {
+const priceKey = chainName === 'Polygon' ? 'MATIC' : 'ETH';
+const val = nativeBal * (priceMap[priceKey] || 0);
+walletTotal += val;
+allHoldings.push(`${chainName} ETH: ${nativeBal.toFixed(6)} (${formatMoney(val)})`);
+}
+} catch(e) {}
+}
+} catch(e) { console.error('Error:', e); allHoldings.push('API Error'); }
 
-          if (!address) {
-            setStatus('<strong>Status:</strong> No wallet address returned.');
-            return;
-          }
+totalPortfolio += walletTotal;
+let shortAddr = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
+let holdingsText = allHoldings.length > 0 ? allHoldings.join('<br>') : 'No tracked tokens found';
+tableHtml += `<tr class="wallet-row"><td><strong>${type}</strong></td><td>${shortAddr}</td><td style="font-size:11px;color:#cbd5e1;line-height:1.4">${holdingsText}</td><td class="green">${formatMoney(walletTotal)}</td></tr>`;
+}
 
-          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
-        } catch (error) {
-          console.error('Injected wallet error:', error);
-          setStatus('<strong>Status:</strong> Wallet connection failed. Please try again.');
-        }
-      }
+if(connectedAddress) await processWallet(connectedAddress, 'Connected');
+if(watchOnlyAddress) await processWallet(watchOnlyAddress, 'Watch-Only');
 
-      async function connectPhantomDirect() {
-        if (!isPhantomAvailable()) {
-          if (isMobile) {
-            openDeepLink('phantom');
-            setStatus('<strong>Status:</strong> Phantom is not installed here. You were sent to the Phantom app to approve the connection.');
-            return;
-          }
+document.getElementById('totalPortfolio').innerText = formatMoney(totalPortfolio);
+document.getElementById('walletsBody').innerHTML = tableHtml;
+document.getElementById('lastUpdated').innerText = 'Live: ' + new Date().toLocaleTimeString() + ` | ${currentCurrency} Mode`;
 
-          setStatus('<strong>Status:</strong> Phantom is not installed on this device.');
-          return;
-        }
+let debankHtml = '';
+for(let addr of allAddresses) {
+let short = addr.substring(0,6) + '...' + addr.substring(addr.length - 4);
+debankHtml += `<a href="https://debank.com/profile/${addr}" target="_blank" class="btn btn-debank" style="margin:3px">View ${short} on DeBank</a> `;
+}
+document.getElementById('debankLinks').innerHTML = debankHtml;
+}
 
-        try {
-          const resp = await window.phantom.solana.connect();
-          const address = resp?.publicKey?.toString();
-          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
-        } catch (error) {
-          console.error('Phantom connect error:', error);
-          setStatus('<strong>Status:</strong> Phantom connection failed.');
-        }
-      }
+async function copyAddr(a){navigator.clipboard.writeText(a);alert('Copied: '+a)}
 
-      document.getElementById('connectWalletBtn').addEventListener('click', async () => {
-        if (isMobile) {
-          // On mobile, prefer WalletConnect instead of direct app injection.
-          try {
-            await modal.open();
-            const provider = modal.getWalletProvider?.();
-            if (provider) {
-              const signer = await provider.getSigner();
-              const address = await signer.getAddress();
-              setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
-            }
-          } catch (error) {
-            console.error('Mobile WalletConnect error:', error);
-            setStatus('<strong>Status:</strong> Mobile wallet connection failed. Try the wallet-specific buttons below.');
-          }
-          return;
-        }
+function calculateScore(coin) {
+let score = 50; 
+const change = coin.price_change_percentage_24h || 0;
+if(change > 10) score += 20;
+else if(change > 5) score += 15;
+else if(change > 0) score += 10;
+else if(change > -5) score += 5;
+else score -= 10;
 
-        await connectBrowserWallet();
-      });
+const currentPrice = coin.current_price || 0;
+const low24h = coin.low_24h || currentPrice;
+if(currentPrice > 0) {
+const dipTarget = low24h * 1.02;
+const distance = ((currentPrice - dipTarget) / currentPrice) * 100;
+if(distance < 5) score += 25;
+else if(distance < 15) score += 10;
+}
+return Math.min(100, Math.max(0, Math.round(score)));
+}
 
-      document.getElementById('connectRabbyBtn').addEventListener('click', async () => {
-        if (isMobile) {
-          openDeepLink('rabby');
-          setStatus('<strong>Status:</strong> Opened Rabby on your phone. Please approve the connection in the app.');
-          return;
-        }
+function getScoreClass(score) {
+if(score >= 80) return 'score-high';
+if(score >= 60) return 'score-mid';
+return 'score-low';
+}
 
-        await connectInjectedWallet('rabby');
-      });
+const coins=[
+{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6982508145454Ce325dDbE47a25d4ec3d2311933&chain=ethereum',reason:'3 whale wallets accumulating.',top:true},
+{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548&chain=ethereum',reason:'L2 momentum.',top:true},
+{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE&chain=ethereum',reason:'Meme season.',top:true},
+{id:'dogwifcoin',sym:'WIF',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dec:6,link:'https://jup.ag/swap/SOL-EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',reason:'Jupiter volume +120%. (Solana)',top:true},
+{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24&chain=ethereum',reason:'AI narrative trending.',top:true},
+{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3&chain=ethereum',reason:'RWA narrative.',top:true},
+{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b&chain=base',reason:'AI agent token (Base Chain).',top:true},
+{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0xaea46A60368A7Db0442f9926649aB438D1819d9a&chain=ethereum',reason:'AI compute demand.',top:true},
+{id:'hyperliquid',sym:'HYPE',addr:'Native L1',dec:18,link:'https://app.hyperliquid.xyz/',reason:'Native Hyperliquid L1.',top:true},
+{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x514910771AF9Ca656af840dff83E8264EcF986CA&chain=ethereum',reason:'Oracle demand. DeFi TVL rising.',top:false},
+{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984&chain=ethereum',reason:'DEX volume leader.',top:false},
+{id:'bitcoin',sym:'BTC',addr:'0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',dec:8,link:'https://app.uniswap.org/#/swap?outputCurrency=0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599&chain=ethereum',reason:'ETF inflows (WBTC).',top:false},
+{id:'ethereum',sym:'ETH',addr:'Native (No contract)',dec:18,link:'https://app.uniswap.org/',reason:'L2 growth.',top:false},
+{id:'solana',sym:'SOL',addr:'Native (No contract)',dec:9,link:'https://jup.ag/',reason:'Meme coin volume.',top:false},
+{id:'xrp',sym:'XRP',addr:'Native (No contract)',dec:6,link:'https://www.coinbase.com/price/xrp',reason:'Legal clarity.',top:false},
+{id:'cardano',sym:'ADA',addr:'Native (No contract)',dec:6,link:'https://www.coinbase.com/price/cardano',reason:'Smart contract growth.',top:false},
+{id:'avalanche-2',sym:'AVAX',addr:'Native (No contract)',dec:18,link:'https://traderjoexyz.com/avalanche/trade',reason:'Subnet adoption (Trader Joe).',top:false},
+{id:'dogecoin',sym:'DOGE',addr:'Native (No contract)',dec:8,link:'https://www.coinbase.com/price/dogecoin',reason:'Meme leader.',top:false},
+{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',dec:18,link:'https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=ethereum',reason:'L2 scaling.',top:false},
+{id:'bittensor',sym:'TAO',addr:'Native (No contract)',dec:9,link:'https://www.coinbase.com/price/bittensor',reason:'Decentralized AI.',top:false},
+{id:'sui',sym:'SUI',addr:'Native (No contract)',dec:9,link:'https://www.coinbase.com/price/sui',reason:'Move language.',top:false}
+];
 
-      document.getElementById('connectMetaMaskBtn').addEventListener('click', async () => {
-        if (isMobile) {
-          openDeepLink('metamask');
-          setStatus('<strong>Status:</strong> Opened MetaMask on your phone. Please approve the connection in the app.');
-          return;
-        }
+async function loadData(){
+try{
+try {
+    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+    const fxData = await fxRes.json();
+    if(fxData && fxData.rates && fxData.rates.AUD) audRate = fxData.rates.AUD;
+} catch(e) { console.log('FX fetch failed, using fallback'); }
 
-        await connectInjectedWallet('metamask');
-      });
+const ids=coins.map(c=>c.id).join(',');
+const res=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids);
+const data=await res.json();
 
-      document.getElementById('connectPhantomBtn').addEventListener('click', async () => {
-        if (isMobile) {
-          openDeepLink('phantom');
-          setStatus('<strong>Status:</strong> Opened Phantom on your phone. Please approve the connection in the app.');
-          return;
-        }
+if(!Array.isArray(data)) {
+console.error('CoinGecko API failed or rate limited:', data);
+document.getElementById('topPicks').innerHTML = '<div class="card">API Rate Limited. Waiting for next refresh...</div>';
+return;
+}
 
-        await connectPhantomDirect();
-      });
+data.forEach(c => { if(c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price; });
 
-      window.addEventListener('load', () => {
-        if (!projectId || projectId === 'YOUR_WALLETCONNECT_PROJECT_ID') {
-          setStatus('<strong>Status:</strong> WalletConnect project ID is missing. Add your real project ID in index.html to enable the mobile modal.');
-        }
-      });
-    </script>
-  </body>
+lastScoredData = data.map(c => {
+const coinInfo = coins.find(t => t.id === c.id);
+if(!coinInfo) return null;
+const score = calculateScore(c);
+return {...c, score, coinInfo};
+}).filter(c => c !== null).sort((a, b) => b.score - a.score);
+
+// UPDATE GRID TRACKER
+const solData = data.find(c => c.id === 'solana');
+if(solData) {
+  const currentPrice = solData.current_price;
+  const low = solData.low_24h;
+  const high = solData.high_24h;
+  const grids = 10;
+  const step = (high - low) / grids;
+  
+  // Find nearest grid levels
+  const gridsBelow = Math.floor((currentPrice - low) / step);
+  const nextBuy = low + (gridsBelow * step);
+  const nextSell = low + ((gridsBelow + 1) * step);
+  
+  // Calculate position percentage for visual bar
+  const positionPct = ((currentPrice - low) / (high - low)) * 100;
+  
+  document.getElementById('gridRange').innerText = `${formatPrice(low)} - ${formatPrice(high)}`;
+  document.getElementById('gridStep').innerText = formatPrice(step);
+  document.getElementById('nextBuyPrice').innerText = formatPrice(nextBuy);
+  document.getElementById('nextSellPrice').innerText = formatPrice(nextSell);
+  
+  document.getElementById('gridBarFill').style.width = `${positionPct}%`;
+  document.getElementById('gridMarker').style.left = `${positionPct}%`;
+}
+
+refreshDisplay();
+
+if(connectedAddress || watchOnlyAddress) fetchWalletData(); 
+}catch(e){console.error('Load Data Error:', e)}
+}
+
+function refreshDisplay() {
+  if(lastScoredData.length === 0) return;
+
+  let tickerHtml = `<div class="ticker-item">🚨 SEA CHEF LABS LIVE FEED (${currentCurrency}): </div>`;
+  lastScoredData.forEach(c => {
+    const change = c.price_change_percentage_24h || 0;
+    const colorClass = change >= 0 ? 'green' : 'red';
+    const arrow = change >= 0 ? '▲' : '▼';
+    const dip = (c.low_24h * 1.02);
+    tickerHtml += `<div class="ticker-item">
+      <strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} 
+      <span class="${colorClass}">(${arrow} ${change.toFixed(2)}%)</span> 
+      | Dip Target: ${formatPrice(dip)}
+    </div>`;
+  });
+  document.getElementById('newsTickerTrack').innerHTML = tickerHtml + tickerHtml;
+
+  let topHtml='',queueHtml='';
+  lastScoredData.forEach(c => {
+  const d = c.coinInfo;
+  const dip=(c.low_24h*1.02);
+  const change=c.price_change_percentage_24h||0;
+  const scoreClass = getScoreClass(c.score);
+
+  if(d.top) {
+  topHtml+=`<div class="coin-card"><div class="live-dot"></div><div class="coin-head"><span class="coin-name">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}">${c.score}/100</span></div><div class="price">Current: ${formatPrice(c.current_price)}</div><div class="contract" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip"> Entry: ${formatPrice(dip)}</div><div class="reason">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn">Buy on Exchange</a></div>`;
+  } else {
+  queueHtml+=`<div class="coin-card-small"><div class="live-dot-small"></div><div class="coin-head"><span class="coin-name-small">${c.symbol.toUpperCase()}</span><span class="score ${scoreClass}" style="font-size:11px">${c.score}/100</span></div><div class="price-small">${formatPrice(c.current_price)}</div><div class="contract-small" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="dip-small">Entry: ${formatPrice(dip)}</div><div class="reason-small">${d.reason}</div><a href="${d.link}" target="_blank" class="buy-btn-small">Buy</a></div>`;
+  }
+  });
+
+  document.getElementById('topPicks').innerHTML=topHtml||'<div class="card">No data</div>';
+  document.getElementById('queuePicks').innerHTML=queueHtml||'<div class="card">No data</div>';
+  document.getElementById('coinCount').innerText=lastScoredData.length;
+}
+
+loadData();
+setInterval(loadData,60000);
+</script>
+</body>
 </html>
