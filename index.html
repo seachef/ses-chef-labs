@@ -8,10 +8,8 @@
     <style>
       :root {
         --bg: #07111f;
-        --bg-2: #0b1729;
         --panel: rgba(15, 23, 42, 0.88);
         --panel-strong: #10233b;
-        --panel-soft: rgba(148, 163, 184, 0.08);
         --line: rgba(148, 163, 184, 0.18);
         --text: #f8fafc;
         --muted: #9bb0c8;
@@ -35,11 +33,13 @@
           var(--bg);
         font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
+
       a { color: inherit; text-decoration: none; }
       button, input { font: inherit; }
       button { cursor: pointer; }
+
       .shell {
-        width: min(1160px, calc(100% - 32px));
+        width: min(1180px, calc(100% - 32px));
         margin: 0 auto;
       }
 
@@ -51,11 +51,13 @@
         padding: 26px 0 20px;
         border-bottom: 1px solid var(--line);
       }
+
       .brand {
         display: flex;
         align-items: center;
         gap: 12px;
       }
+
       .brand-mark {
         display: grid;
         place-items: center;
@@ -67,38 +69,45 @@
         background: linear-gradient(135deg, var(--cyan), var(--green));
         box-shadow: 0 0 28px rgba(72, 242, 165, 0.25);
       }
+
       .brand h1 {
         margin: 0;
         font-size: 1.08rem;
         letter-spacing: -0.03em;
       }
+
       .brand p {
         margin: 4px 0 0;
         color: var(--muted);
         font-size: 0.76rem;
       }
+
       .top-actions {
         display: flex;
         align-items: center;
         gap: 10px;
       }
+
       .pill, .ghost-btn, .primary-btn {
         border: 1px solid var(--line);
         border-radius: 12px;
         padding: 10px 14px;
         color: var(--text);
-        background: rgba(255, 255, 255, 0.04);
-        transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        background: rgba(255,255,255,0.04);
+        transition: transform 0.18s ease, border-color 0.18s ease;
       }
+
       .pill {
         color: var(--green);
         font-size: 0.78rem;
         font-weight: 700;
       }
+
       .ghost-btn:hover, .primary-btn:hover {
         transform: translateY(-2px);
-        border-color: rgba(94, 231, 255, 0.7);
+        border-color: rgba(94,231,255,0.7);
       }
+
       .primary-btn {
         border: 0;
         color: #07111f;
@@ -112,23 +121,25 @@
         gap: 18px;
         padding: 40px 0 24px;
       }
+
       .hero h2 {
         margin: 0;
         max-width: 760px;
-        font-size: clamp(2.4rem, 5vw, 4.7rem);
+        font-size: clamp(2.5rem, 6vw, 4.8rem);
         line-height: 0.96;
         letter-spacing: -0.07em;
       }
-      .hero h2 span {
-        color: var(--cyan);
-      }
+
+      .hero h2 span { color: var(--cyan); }
+
       .hero-copy {
         max-width: 620px;
         margin: 22px 0 0;
         color: var(--muted);
         font-size: 1rem;
-        line-height: 1.68;
+        line-height: 1.7;
       }
+
       .eyebrow {
         margin: 0 0 10px;
         color: var(--green);
@@ -137,6 +148,7 @@
         letter-spacing: 0.14em;
         text-transform: uppercase;
       }
+
       .glass-card, .card {
         border: 1px solid var(--line);
         border-radius: 22px;
@@ -144,16 +156,18 @@
         box-shadow: var(--shadow);
         backdrop-filter: blur(16px);
       }
+
       .hero-card {
         align-self: end;
         padding: 22px;
       }
+
       .hero-card strong {
         display: block;
         font-size: clamp(1.7rem, 4vw, 2.4rem);
-        line-height: 1.1;
         letter-spacing: -0.05em;
       }
+
       .hero-card small {
         color: var(--muted);
       }
@@ -165,23 +179,22 @@
         gap: 14px;
         margin: 28px 0 14px;
       }
-      .section-heading h3 {
-        margin: 0;
-        font-size: 1.2rem;
-        letter-spacing: -0.03em;
-      }
+
+      .section-heading h3 { margin: 0; font-size: 1.2rem; letter-spacing: -0.03em; }
       .section-heading p {
         margin: 4px 0 0;
         color: var(--muted);
         font-size: 0.84rem;
       }
+
       .currency-switch {
         display: flex;
         padding: 4px;
         border: 1px solid var(--line);
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.18);
+        background: rgba(0,0,0,0.18);
       }
+
       .currency-switch button {
         border: 0;
         border-radius: 8px;
@@ -191,6 +204,7 @@
         font-weight: 800;
         font-size: 0.75rem;
       }
+
       .currency-switch button.active {
         color: #07111f;
         background: var(--cyan);
@@ -201,11 +215,13 @@
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 12px;
       }
+
       .coin-card {
         position: relative;
         overflow: hidden;
         padding: 18px;
       }
+
       .coin-card::after {
         content: "";
         position: absolute;
@@ -216,22 +232,25 @@
         border-radius: 50%;
         background: rgba(94, 231, 255, 0.06);
       }
+
       .coin-top, .coin-bottom {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
       }
+
       .coin-top {
         color: var(--muted);
         font-size: 0.76rem;
       }
+
       .coin-name {
         display: flex;
         align-items: center;
         font-weight: 800;
-        color: var(--text);
       }
+
       .coin-icon {
         display: inline-grid;
         place-items: center;
@@ -242,18 +261,18 @@
         color: #07111f;
         font-weight: 900;
       }
-      .coin-price {
-        margin: 18px 0 12px;
-        font-size: 1.45rem;
-        font-weight: 900;
-        letter-spacing: -0.05em;
+
+      .coin-price { 
+        margin: 18px 0 12px; 
+        font-size: 1.45rem; 
+        font-weight: 900; 
+        letter-spacing: -0.05em; 
       }
-      .change {
-        font-size: 0.72rem;
-        font-weight: 800;
-      }
+
+      .change { font-size: 0.72rem; font-weight: 800; }
       .change.up { color: var(--green); }
       .change.down { color: var(--danger); }
+
       .coin-link {
         color: var(--muted);
         font-size: 0.76rem;
@@ -265,23 +284,25 @@
         gap: 18px;
         align-items: start;
       }
-      .card {
-        padding: 22px;
-      }
+
+      .card { padding: 22px; }
+
       .pick-list {
         display: grid;
         gap: 11px;
       }
+
       .pick {
         display: grid;
         grid-template-columns: auto 1fr auto;
-        align-items: center;
         gap: 12px;
-        padding: 14px;
+        align-items: center;
         border: 1px solid var(--line);
         border-radius: 15px;
-        background: rgba(255, 255, 255, 0.025);
+        padding: 14px;
+        background: rgba(255,255,255,0.025);
       }
+
       .pick-dot {
         width: 10px;
         height: 10px;
@@ -289,16 +310,19 @@
         background: var(--green);
         box-shadow: 0 0 14px var(--green);
       }
+
       .pick h4 {
         margin: 0 0 4px;
         font-size: 0.94rem;
       }
+
       .pick p {
         margin: 0;
         color: var(--muted);
         font-size: 0.78rem;
-        line-height: 1.5;
+        line-height: 1.45;
       }
+
       .risk {
         color: var(--orange);
         font-size: 0.7rem;
@@ -311,23 +335,27 @@
         gap: 8px;
         margin-bottom: 14px;
       }
+
       .queue-form input {
         width: 100%;
         padding: 11px 12px;
         color: var(--text);
         border: 1px solid var(--line);
         border-radius: 11px;
-        background: rgba(0, 0, 0, 0.18);
+        background: rgba(0,0,0,0.18);
         outline: none;
       }
+
       .queue-form input:focus {
         border-color: var(--cyan);
-        box-shadow: 0 0 0 3px rgba(94, 231, 255, 0.12);
+        box-shadow: 0 0 0 3px rgba(94,231,255,0.12);
       }
+
       .queue-list {
         display: grid;
         gap: 8px;
       }
+
       .queue-item {
         display: flex;
         align-items: center;
@@ -335,19 +363,22 @@
         gap: 10px;
         padding: 12px;
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.04);
+        background: rgba(255,255,255,0.04);
       }
+
       .queue-item span {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
       .remove-btn {
         border: 0;
         color: var(--muted);
         background: transparent;
         font-size: 1.15rem;
       }
+
       .empty {
         color: var(--muted);
         font-size: 0.84rem;
@@ -361,9 +392,8 @@
         margin: 18px 0 36px;
         padding: 24px;
       }
-      .wallet-panel h3 {
-        margin: 0 0 8px;
-      }
+
+      .wallet-panel h3 { margin: 0 0 8px; }
       .wallet-panel p {
         margin: 0;
         color: var(--muted);
@@ -372,11 +402,107 @@
         font-size: 0.86rem;
       }
 
-      .watch-card {
+      .bot-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .bot-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(15,23,42,0.8);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .bot-top {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 18px;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .bot-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--green);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .bot-badge::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 12px var(--green);
+      }
+
+      .bot-pair {
+        margin: 12px 0 8px;
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+
+      .bot-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 14px 0;
+      }
+
+      .meta-box {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.02);
+      }
+
+      .meta-label {
+        display: block;
+        color: var(--muted);
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .meta-value {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.96rem;
+        font-weight: 800;
+      }
+
+      .bot-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+      }
+
+      .small-btn {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        padding: 8px 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .live-pill {
+        color: var(--green);
+        font-size: 0.72rem;
+        font-weight: 700;
       }
 
       .footer {
@@ -396,6 +522,7 @@
         background: rgba(2, 8, 23, 0.76);
         backdrop-filter: blur(8px);
       }
+
       .modal {
         position: relative;
         width: min(480px, 100%);
@@ -405,33 +532,39 @@
         background: #0d1b2d;
         box-shadow: var(--shadow);
       }
+
       .modal h3 {
         margin: 0 0 8px;
         font-size: 1.3rem;
       }
+
       .modal p {
         margin: 0 0 18px;
         color: var(--muted);
         line-height: 1.55;
         font-size: 0.86rem;
       }
+
       .modal input {
         width: 100%;
         padding: 11px 12px;
         border: 1px solid var(--line);
         border-radius: 11px;
-        background: rgba(0, 0, 0, 0.18);
+        background: rgba(0,0,0,0.18);
         color: var(--text);
         outline: none;
       }
+
       .modal input:focus {
         border-color: var(--cyan);
-        box-shadow: 0 0 0 3px rgba(94, 231, 255, 0.12);
+        box-shadow: 0 0 0 3px rgba(94,231,255,0.12);
       }
+
       .modal .primary-btn {
         width: 100%;
         margin-top: 12px;
       }
+
       .close-modal {
         position: absolute;
         top: 10px;
@@ -441,20 +574,23 @@
         background: transparent;
         font-size: 1.5rem;
       }
+
       .modal-result {
         margin-top: 14px;
         line-height: 1.6;
         font-size: 0.82rem;
       }
+
       [hidden] { display: none !important; }
 
       @media (max-width: 860px) {
-        .hero, .main-grid { grid-template-columns: 1fr; }
+        .hero, .main-grid, .bot-grid { grid-template-columns: 1fr; }
         .ticker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
+
       @media (max-width: 520px) {
-        .shell { width: min(100% - 22px, 1160px); }
-        .topbar, .section-heading, .wallet-panel, .watch-card { flex-direction: column; align-items: flex-start; }
+        .shell { width: min(100% - 22px, 1180px); }
+        .topbar, .section-heading, .wallet-panel { flex-direction: column; align-items: flex-start; }
         .top-actions { width: 100%; justify-content: space-between; }
         .ticker { grid-template-columns: 1fr; }
         .queue-form { flex-direction: column; }
@@ -484,8 +620,10 @@
         <section class="hero">
           <div>
             <p class="eyebrow">2026 market desk</p>
-            <h2>See the market.<br /><span>Think before you click.</span></h2>
-            <p class="hero-copy">A calm place to watch prices, collect research notes, and track what matters. This page keeps it simple, readable, and helpful without turning into hype.</p>
+            <h2>See the market.<br><span>Think before you click.</span></h2>
+            <p class="hero-copy">
+              A calm place to watch crypto prices, collect research ideas, and track the best pairs without the hype.
+            </p>
           </div>
 
           <div class="glass-card hero-card">
@@ -499,8 +637,9 @@
           <div class="section-heading">
             <div>
               <h3>Market snapshot</h3>
-              <p>Prices refresh each time the page loads.</p>
+              <p>Prices update as the page loads.</p>
             </div>
+
             <div class="currency-switch" aria-label="Choose display currency">
               <button type="button" class="active" data-currency="usd">USD</button>
               <button type="button" data-currency="aud">AUD</button>
@@ -525,7 +664,7 @@
                 <span class="pick-dot"></span>
                 <div>
                   <h4>Ethereum · ETH</h4>
-                  <p>Big ecosystem and lots of developer activity. Watch fees and upgrade timing.</p>
+                  <p>Big ecosystem and strong developer activity. Watch fees and network upgrades.</p>
                 </div>
                 <span class="risk">Medium</span>
               </article>
@@ -543,7 +682,7 @@
                 <span class="pick-dot" style="background: var(--orange); box-shadow: 0 0 14px var(--orange);"></span>
                 <div>
                   <h4>Arbitrum · ARB</h4>
-                  <p>Layer 2 momentum matters. Check ecosystem adoption and governance updates.</p>
+                  <p>Layer 2 momentum matters. Check ecosystem adoption and governance.</p>
                 </div>
                 <span class="risk">High</span>
               </article>
@@ -558,28 +697,160 @@
               </div>
             </div>
 
-            <form class="queue-form" id="queueForm">
-              <input id="queueInput" type="text" maxlength="60" placeholder="Add a token or topic…" aria-label="Add a research item" />
+            <form id="queueForm" class="queue-form">
+              <input id="queueInput" type="text" maxlength="60" placeholder="Add a token or topic…" aria-label="Add research item" />
               <button class="primary-btn" type="submit">Add</button>
             </form>
 
-            <div class="queue-list" id="queueList"></div>
+            <div id="queueList" class="queue-list"></div>
           </div>
         </section>
 
         <section class="card wallet-panel">
           <div>
             <h3>Watch-only wallet</h3>
-            <p>Paste a public wallet address to open it on an explorer. This never asks for a password, recovery phrase, or private key.</p>
+            <p>Paste a public address to open it on an explorer. This never asks for a password, recovery phrase, or private key.</p>
           </div>
           <button class="primary-btn" id="openWatchBtn2">Check address</button>
+        </section>
+
+        <section class="card" style="padding:22px; margin-top: 18px;">
+          <div class="section-heading" style="margin-top:0;">
+            <div>
+              <h3>Liquidity desk</h3>
+              <p>Four bot panels for the deepest liquidity pairs.</p>
+            </div>
+            <span class="pill">Simulated monitors</span>
+          </div>
+
+          <div class="bot-grid">
+            <div class="bot-card">
+              <div class="bot-top">
+                <span class="bot-badge">Bot 01</span>
+                <span class="live-pill">Live</span>
+              </div>
+              <div class="bot-pair">SOL/USDT</div>
+              <div class="bot-meta">
+                <div class="meta-box">
+                  <span class="meta-label">Depth</span>
+                  <span class="meta-value">$18.4M</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Spread</span>
+                  <span class="meta-value">0.04%</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Trend</span>
+                  <span class="meta-value">Bullish</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Risk</span>
+                  <span class="meta-value">Medium</span>
+                </div>
+              </div>
+              <div class="bot-actions">
+                <button class="small-btn">View Pair</button>
+                <button class="small-btn">Pause</button>
+              </div>
+            </div>
+
+            <div class="bot-card">
+              <div class="bot-top">
+                <span class="bot-badge">Bot 02</span>
+                <span class="live-pill">Live</span>
+              </div>
+              <div class="bot-pair">ETH/USDT</div>
+              <div class="bot-meta">
+                <div class="meta-box">
+                  <span class="meta-label">Depth</span>
+                  <span class="meta-value">$24.9M</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Spread</span>
+                  <span class="meta-value">0.02%</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Trend</span>
+                  <span class="meta-value">Neutral</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Risk</span>
+                  <span class="meta-value">Low</span>
+                </div>
+              </div>
+              <div class="bot-actions">
+                <button class="small-btn">View Pair</button>
+                <button class="small-btn">Pause</button>
+              </div>
+            </div>
+
+            <div class="bot-card">
+              <div class="bot-top">
+                <span class="bot-badge">Bot 03</span>
+                <span class="live-pill">Live</span>
+              </div>
+              <div class="bot-pair">ARB/USDT</div>
+              <div class="bot-meta">
+                <div class="meta-box">
+                  <span class="meta-label">Depth</span>
+                  <span class="meta-value">$9.3M</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Spread</span>
+                  <span class="meta-value">0.07%</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Trend</span>
+                  <span class="meta-value">Bullish</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Risk</span>
+                  <span class="meta-value">Medium</span>
+                </div>
+              </div>
+              <div class="bot-actions">
+                <button class="small-btn">View Pair</button>
+                <button class="small-btn">Pause</button>
+              </div>
+            </div>
+
+            <div class="bot-card">
+              <div class="bot-top">
+                <span class="bot-badge">Bot 04</span>
+                <span class="live-pill">Live</span>
+              </div>
+              <div class="bot-pair">POL/USDT</div>
+              <div class="bot-meta">
+                <div class="meta-box">
+                  <span class="meta-label">Depth</span>
+                  <span class="meta-value">$7.8M</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Spread</span>
+                  <span class="meta-value">0.05%</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Trend</span>
+                  <span class="meta-value">Bullish</span>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Risk</span>
+                  <span class="meta-value">Medium</span>
+                </div>
+              </div>
+              <div class="bot-actions">
+                <button class="small-btn">View Pair</button>
+                <button class="small-btn">Pause</button>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
 
       <footer class="footer">Market data by CoinGecko · Educational research only · Never share your secret wallet words</footer>
     </div>
 
-    <div class="modal-backdrop" id="watchModal" hidden>
+    <div id="watchModal" class="modal-backdrop" hidden>
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="watchTitle">
         <button class="close-modal" id="closeWatchBtn" aria-label="Close modal">×</button>
         <h3 id="watchTitle">Watch a public wallet</h3>
@@ -662,7 +933,11 @@
         button.addEventListener('click', () => {
           currency = button.dataset.currency;
           localStorage.setItem('seaChefCurrency', currency);
-          document.querySelectorAll('[data-currency]').forEach((item) => item.classList.toggle('active', item === button));
+
+          document.querySelectorAll('[data-currency]').forEach((item) => {
+            item.classList.toggle('active', item === button);
+          });
+
           loadPrices();
         });
       });
@@ -678,9 +953,9 @@
         }
 
         list.innerHTML = items.map((item, index) => `
-          <div class="queue-item">
+          <div class=\"queue-item\">
             <span>${item.replace(/</g, '&lt;')}</span>
-            <button class="remove-btn" data-remove="${index}" aria-label="Remove ${item}">×</button>
+            <button class=\"remove-btn\" data-remove="${index}" aria-label=\"Remove ${item}\">×</button>
           </div>
         `).join('');
 
@@ -696,6 +971,7 @@
 
       document.getElementById('queueForm').addEventListener('submit', (event) => {
         event.preventDefault();
+
         const input = document.getElementById('queueInput');
         const value = input.value.trim();
 
@@ -712,10 +988,12 @@
       });
 
       const modal = document.getElementById('watchModal');
+
       function openModal() {
         modal.hidden = false;
         document.getElementById('addressInput').focus();
       }
+
       function closeModal() {
         modal.hidden = true;
         document.getElementById('modalResult').textContent = '';
@@ -724,6 +1002,7 @@
       document.getElementById('openWatchBtn').addEventListener('click', openModal);
       document.getElementById('openWatchBtn2').addEventListener('click', openModal);
       document.getElementById('closeWatchBtn').addEventListener('click', closeModal);
+
       modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal();
       });
@@ -752,6 +1031,13 @@
         result.innerHTML = `Looks like a ${isEvm ? 'public Ethereum' : 'public Solana'} address. <a href="${url}" target="_blank" rel="noopener" style="color: var(--cyan)">Open explorer ↗</a>`;
       });
 
+      function getRabbyProvider() {
+        const providers = window.ethereum?.providers || [];
+        return window.ethereum?.isRabby
+          ? window.ethereum
+          : providers.find((provider) => provider.isRabby) || null;
+      }
+
       document.getElementById('connectRabbyBtn').addEventListener('click', async () => {
         const walletStatus = document.getElementById('walletStatus');
         if (!walletStatus) return;
@@ -760,17 +1046,10 @@
           walletStatus.innerHTML = message;
         }
 
-        function getRabbyProvider() {
-          const providers = window.ethereum?.providers || [];
-          return window.ethereum?.isRabby
-            ? window.ethereum
-            : providers.find((provider) => provider.isRabby) || null;
-        }
-
         const provider = getRabbyProvider();
 
         if (!provider) {
-          setStatus('<strong>Status:</strong> Rabby was not found. Install the Rabby browser extension, unlock it, then refresh this page.');
+          setStatus('<strong>Status:</strong> Rabby was not found. Install the Rabby browser extension, unlock it, then refresh.');
           return;
         }
 
@@ -787,6 +1066,7 @@
           setStatus(`<strong>Status:</strong> Rabby connected<br><span class="address">${address}</span>`);
         } catch (error) {
           console.error('Rabby connection error:', error);
+
           if (error?.code === 4001) {
             setStatus('<strong>Status:</strong> You cancelled the Rabby connection.');
           } else {
@@ -799,6 +1079,7 @@
         window.ethereum.on?.('accountsChanged', (accounts) => {
           const walletStatus = document.getElementById('walletStatus');
           if (!walletStatus) return;
+
           const address = accounts?.[0];
           walletStatus.innerHTML = address
             ? `<strong>Status:</strong> Rabby connected<br><span class="address">${address}</span>`
