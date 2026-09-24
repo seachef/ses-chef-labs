@@ -1,39 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sea Chef Labs</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{background:#0f172a;color:#fff;padding:20px}.container{max-width:1400px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #334155;margin-bottom:20px;flex-wrap:wrap;gap:10px}h1{color:#00ff88;font-size:1.8rem}
-.btn{background:#00d9ff;color:#0f172a;border:0;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block;text-align:center;font-size:14px}.btn:hover{opacity:.88}.btn-phantom{background:#ab9ff2;color:#fff}.btn-mobile{background:#3b99fc;color:#fff}.btn-watch{background:#fbbf24;color:#0f172a}.btn-connected{background:#00ff88}.btn-currency{background:#334155;color:#fff;padding:10px 15px}.btn-currency.active{background:#00ff88;color:#0f172a}
-.news-ticker-container{width:100%;overflow:hidden;background:#020617;border-top:2px solid #00ff88;border-bottom:2px solid #00ff88;padding:12px 0;margin-bottom:30px}.news-ticker-track{display:flex;width:max-content;animation:ticker-scroll 45s linear infinite}.news-ticker-container:hover .news-ticker-track{animation-play-state:paused}.ticker-item{padding:0 40px;font-size:15px;white-space:nowrap;color:#e2e8f0}.ticker-item strong{color:#00d9ff;font-size:16px}@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.stats-grid,.top-grid,.queue-grid{display:grid;gap:15px;margin-bottom:30px}.stats-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}.top-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.queue-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.card,.coin-card,.coin-card-small,.grid-tracker{background:#1e293b;border:1px solid #334155;border-radius:12px}.card{padding:20px}.card h3{color:#94a3b8;font-size:14px;margin-bottom:10px}.card h2{font-size:28px}.section-title{font-size:1.3rem;margin-bottom:15px}.green{color:#00ff88}.red{color:#ff4757}.coin-card{padding:15px;border-left:4px solid #00ff88;position:relative}.coin-card-small{padding:12px;border-left:3px solid #00d9ff;position:relative}.coin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.coin-name,.coin-name-small{font-weight:bold;color:#00d9ff}.coin-name{font-size:18px}.score{padding:4px 12px;border-radius:6px;font-size:14px;font-weight:bold}.score-high{background:#003d27;color:#00ff88}.score-mid{background:#493b08;color:#fbbf24}.score-low{background:#4b1118;color:#ff4757}.price{font-size:1.1rem;font-weight:600;margin-bottom:5px}.price-small{font-size:.9rem}.contract,.contract-small{background:#253247;padding:8px;border-radius:4px;font-size:11px;color:#94a3b8;margin:8px 0;cursor:pointer;word-break:break-all}.contract:hover,.contract-small:hover{color:#00d9ff}.dip,.dip-small{color:#fbbf24;font-weight:bold;margin-bottom:10px}.reason,.reason-small{color:#cbd5e1;margin-bottom:12px}.reason{font-size:13px}.reason-small{font-size:11px}.buy-btn{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold}.buy-btn-small{display:block;background:linear-gradient(90deg,#00d9ff,#00ff88);color:#0f172a;text-align:center;padding:8px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold}.live-dot,.live-dot-small{position:absolute;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88}.live-dot{top:10px;right:10px;width:8px;height:8px}.live-dot-small{top:8px;right:8px;width:6px;height:6px}
-.grid-tracker{background:linear-gradient(145deg,#1e293b,#0f172a);border-color:#00d9ff;padding:15px}.grid-stats,.grid-signals{display:flex;justify-content:space-between;margin:10px 0}.grid-stats div,.signal-box{flex:1;text-align:center}.grid-stats span,.current-price-box span{display:block;color:#94a3b8;font-size:11px}.current-price-box{text-align:center;margin:10px 0;padding:10px;background:#0005;border-radius:8px}.current-price-box strong{font-size:24px}.grid-bar-container{position:relative;height:20px;background:#334155;border-radius:10px;margin:15px 0;overflow:hidden}.grid-bar-fill{height:100%;background:linear-gradient(90deg,#00ff884d,#ff47574d)}.grid-marker{position:absolute;top:-2px;width:3px;height:24px;background:#fff;box-shadow:0 0 8px #fff}.signal-box{padding:10px;border-radius:8px;margin:0 5px}.signal-buy{background:#00ff881a;border:1px solid #00ff88}.signal-sell{background:#ff47571a;border:1px solid #ff4757}.signal-box h4{font-size:10px;color:#94a3b8}.execute-btn{display:block;width:100%;text-align:center;padding:10px;margin-top:15px;border-radius:6px;text-decoration:none;font-weight:bold}
-.wallets-table{width:100%;border-collapse:collapse}.wallets-table th,.wallets-table td{padding:15px;text-align:left;border-bottom:1px solid #334155}.wallets-table th{color:#94a3b8;font-size:14px}.wallet-row{background:#00ff880d}.modal{display:none;position:fixed;inset:0;background:#000c;z-index:1000;justify-content:center;align-items:center}.modal-content{background:#1e293b;padding:30px;border-radius:12px;max-width:500px;width:90%;text-align:center}.modal-content h2{margin-bottom:20px;color:#00ff88}.input-group{margin-bottom:15px;text-align:left}.input-group label{display:block;margin-bottom:5px;color:#94a3b8}.input-group input{width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff}.mobile-btn{display:block;width:100%;padding:15px;margin-bottom:10px;border-radius:8px;text-decoration:none;font-weight:bold;text-align:center}.btn-mm{background:#f6851b;color:#fff}.btn-phantom-mobile{background:#ab9ff2;color:#fff}.btn-rabby-mobile{background:#00d9ff;color:#0f172a}@media(max-width:650px){body{padding:12px}header>div{width:100%}.btn{margin:2px;padding:10px 12px}.wallets-table{font-size:11px}.wallets-table th,.wallets-table td{padding:8px}.grid-signals{gap:3px}.signal-box{margin:0 2px}}
-</style>
-</head>
-<body><div class="container"><header><h1>Sea Chef Labs</h1><div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center"><button class="btn" id="rabbyBtn" onclick="connectRabby()">Connect Rabby</button><button class="btn btn-phantom" id="phantomBtn" onclick="connectPhantom()">Connect Phantom</button><button class="btn btn-mobile" onclick="openMobileModal()">📱 Connect Mobile</button><button class="btn btn-watch" onclick="openWatchOnlyModal()">Add Watch Wallet</button><button class="btn btn-currency active" id="btnUSD" onclick="setCurrency('USD')">USD</button><button class="btn btn-currency" id="btnAUD" onclick="setCurrency('AUD')">AUD</button></div></header>
-<div class="news-ticker-container"><div class="news-ticker-track" id="newsTickerTrack"><div class="ticker-item">Loading live market data...</div></div></div>
-<div class="stats-grid"><div class="card"><h3>Tracked Portfolio Value</h3><h2 id="totalPortfolio" class="green">$0.00</h2><div style="color:#94a3b8;font-size:12px" id="lastUpdated">ETH + Known Tokens Only</div></div><div class="card"><h3>Full Portfolio Value</h3><h2 style="color:#ff6b35">Click Below</h2><div id="debankLinks" style="margin-top:10px"></div></div><div class="card"><h3>Active Research</h3><h2 id="coinCount">0</h2><div style="color:#94a3b8">Coins scanning live</div></div></div>
-<h2 class="section-title">Lowest Fee Grid Trackers (Live)</h2><div class="top-grid"><script>/* grid cards are inserted below */</script><div class="grid-tracker"><h3 style="color:#00d9ff;text-align:center">SOL/USDC (Solana)</h3><div class="grid-stats"><div><span>Range</span><strong id="solRange">$0-$0</strong></div><div><span>Step</span><strong id="solStep">$0.00</strong></div><div><span>Profit</span><strong class="green">~0.5%</strong></div></div><div class="current-price-box"><span>Current Price</span><strong id="solPrice">$0.00</strong></div><div class="grid-bar-container"><div class="grid-bar-fill" id="solFill" style="width:50%"></div><div class="grid-marker" id="solMarker" style="left:50%"></div></div><div class="grid-signals"><div class="signal-box signal-buy"><h4>Next Buy</h4><p id="solBuy" class="green">$0.00</p></div><div class="signal-box signal-sell"><h4>Next Sell</h4><p id="solSell" class="red">$0.00</p></div></div><a class="execute-btn" style="background:#ab9ff2;color:#fff" href="https://jup.ag/swap/SOL-USDC" target="_blank">Trade on Jupiter</a></div>
-<div class="grid-tracker"><h3 style="color:#00d9ff;text-align:center">ETH/USDC (Base)</h3><div class="grid-stats"><div><span>Range</span><strong id="ethRange">$0-$0</strong></div><div><span>Step</span><strong id="ethStep">$0.00</strong></div><div><span>Profit</span><strong class="green">~0.5%</strong></div></div><div class="current-price-box"><span>Current Price</span><strong id="ethPrice">$0.00</strong></div><div class="grid-bar-container"><div class="grid-bar-fill" id="ethFill" style="width:50%"></div><div class="grid-marker" id="ethMarker" style="left:50%"></div></div><div class="grid-signals"><div class="signal-box signal-buy"><h4>Next Buy</h4><p id="ethBuy" class="green">$0.00</p></div><div class="signal-box signal-sell"><h4>Next Sell</h4><p id="ethSell" class="red">$0.00</p></div></div><a class="execute-btn" style="background:#ff007a;color:#fff" href="https://app.uniswap.org/#/swap?outputCurrency=ETH&chain=base" target="_blank">Trade on Uniswap</a></div>
-<div class="grid-tracker"><h3 style="color:#00d9ff;text-align:center">ARB/USDC (Arbitrum)</h3><div class="grid-stats"><div><span>Range</span><strong id="arbRange">$0-$0</strong></div><div><span>Step</span><strong id="arbStep">$0.00</strong></div><div><span>Profit</span><strong class="green">~0.5%</strong></div></div><div class="current-price-box"><span>Current Price</span><strong id="arbPrice">$0.00</strong></div><div class="grid-bar-container"><div class="grid-bar-fill" id="arbFill" style="width:50%"></div><div class="grid-marker" id="arbMarker" style="left:50%"></div></div><div class="grid-signals"><div class="signal-box signal-buy"><h4>Next Buy</h4><p id="arbBuy" class="green">$0.00</p></div><div class="signal-box signal-sell"><h4>Next Sell</h4><p id="arbSell" class="red">$0.00</p></div></div><a class="execute-btn" style="background:#28a0f0;color:#fff" href="https://app.uniswap.org/#/swap?outputCurrency=0x912CE59144191C1204E64559FE8253a0e49E6548&chain=arbitrum" target="_blank">Trade on Uniswap</a></div>
-<div class="grid-tracker"><h3 style="color:#00d9ff;text-align:center">POL/USDC (Polygon)</h3><div class="grid-stats"><div><span>Range</span><strong id="polRange">$0-$0</strong></div><div><span>Step</span><strong id="polStep">$0.00</strong></div><div><span>Profit</span><strong class="green">~0.5%</strong></div></div><div class="current-price-box"><span>Current Price</span><strong id="polPrice">$0.00</strong></div><div class="grid-bar-container"><div class="grid-bar-fill" id="polFill" style="width:50%"></div><div class="grid-marker" id="polMarker" style="left:50%"></div></div><div class="grid-signals"><div class="signal-box signal-buy"><h4>Next Buy</h4><p id="polBuy" class="green">$0.00</p></div><div class="signal-box signal-sell"><h4>Next Sell</h4><p id="polSell" class="red">$0.00</p></div></div><a class="execute-btn" style="background:#8247e5;color:#fff" href="https://app.uniswap.org/#/swap?outputCurrency=0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0&chain=polygon" target="_blank">Trade on Uniswap</a></div></div>
-<h2 class="section-title">💼 Active Wallets & Live Balances</h2><div class="card" style="padding:0;overflow:auto"><table class="wallets-table"><thead><tr><th>Type</th><th>Address</th><th>Holdings</th><th>USD Value</th></tr></thead><tbody id="walletsBody"><tr><td colspan="4" style="text-align:center;color:#94a3b8">Connect a wallet or add a watch address</td></tr></tbody></table></div>
-<h2 class="section-title" style="margin-top:30px">🎯 AI Top Picks - Live Scored & Ranked</h2><div class="top-grid" id="topPicks"><div class="card">Loading...</div></div><h2 class="section-title">🔬 Research Queue - Live Monitored</h2><div class="queue-grid" id="queuePicks"><div class="card">Loading...</div></div></div>
-<div id="watchModal" class="modal"><div class="modal-content"><h2>Add Watch-Only Wallet</h2><div class="input-group"><label>Wallet Address</label><input id="watchAddress" placeholder="0x... or Solana address"></div><button class="btn" onclick="addWatchOnlyWallet()" style="width:100%">Add to Watchlist</button><button class="btn" onclick="closeWatchOnlyModal()" style="width:100%;margin-top:10px;background:#334155;color:#fff">Cancel</button></div></div>
-<div id="mobileModal" class="modal"><div class="modal-content"><h2>📱 Connect on iOS / Mobile</h2><p style="color:#94a3b8;margin-bottom:20px;font-size:14px">Tap a wallet below to open this site in the wallet browser. Then press its connect button at the top.</p><a id="linkMetaMask" class="mobile-btn btn-mm">Open in MetaMask</a><a id="linkPhantom" class="mobile-btn btn-phantom-mobile">Open in Phantom</a><a id="linkRabby" class="mobile-btn btn-rabby-mobile">Open in Rabby</a><button class="btn" onclick="closeMobileModal()" style="width:100%;background:#334155;color:#fff">Cancel</button></div></div>
-<script>
-const coins=[{id:'pepe',sym:'PEPE',addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933',reason:'3 whale wallets accumulating.',top:true},{id:'arbitrum',sym:'ARB',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',reason:'L2 momentum.',top:true},{id:'shiba-inu',sym:'SHIB',addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',reason:'Meme season.',top:true},{id:'dogwifcoin',sym:'WIF',addr:'Solana token',reason:'Jupiter volume.',top:true},{id:'render-token',sym:'RNDR',addr:'0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',reason:'AI narrative trending.',top:true},{id:'ondo-finance',sym:'ONDO',addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',reason:'RWA narrative.',top:true},{id:'virtual-protocol',sym:'VIRTUAL',addr:'0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b',reason:'AI agent token.',top:true},{id:'fetch-ai',sym:'FET',addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a',reason:'AI compute demand.',top:true},{id:'hyperliquid',sym:'HYPE',addr:'Native L1',reason:'Native Hyperliquid L1.',top:true},{id:'chainlink',sym:'LINK',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',reason:'Oracle demand.',top:false},{id:'uniswap',sym:'UNI',addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',reason:'DEX volume leader.',top:false},{id:'bitcoin',sym:'BTC',addr:'WBTC',reason:'ETF inflows.',top:false},{id:'ethereum',sym:'ETH',addr:'Native',reason:'L2 growth.',top:false},{id:'solana',sym:'SOL',addr:'Native',reason:'Meme coin volume.',top:false},{id:'matic-network',sym:'POL',addr:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0',reason:'L2 scaling.',top:false},{id:'avalanche-2',sym:'AVAX',addr:'Native',reason:'Subnet adoption.',top:false},{id:'dogecoin',sym:'DOGE',addr:'Native',reason:'Meme leader.',top:false},{id:'bittensor',sym:'TAO',addr:'Native',reason:'Decentralized AI.',top:false},{id:'sui',sym:'SUI',addr:'Native',reason:'Move language.',top:false}];
-let lastScoredData=[],currentCurrency='USD',audRate=1.52,connectedAddress=null,watchOnlyAddress=null,priceMap={};
-function setCurrency(c){currentCurrency=c;btnUSD.classList.toggle('active',c==='USD');btnAUD.classList.toggle('active',c==='AUD');refreshDisplay()}function formatPrice(v){v=Number(v)||0;return(currentCurrency==='AUD'?'A$':'$')+(v*(currentCurrency==='AUD'?audRate:1)).toFixed(v<1?6:2)}function formatMoney(v){return(currentCurrency==='AUD'?'A$':'$')+(Number(v||0)*(currentCurrency==='AUD'?audRate:1)).toFixed(2)}
-function updateGridWindow(id,p){let c=lastScoredData.find(x=>x.id===id);if(!c||c.high_24h<=c.low_24h)return;let low=c.low_24h,high=c.high_24h,step=(high-low)/10,pos=Math.max(0,Math.min(100,(c.current_price-low)/(high-low)*100)),g=Math.floor((c.current_price-low)/step);document.getElementById(p+'Price').innerText=formatPrice(c.current_price);document.getElementById(p+'Range').innerText=formatPrice(low)+' - '+formatPrice(high);document.getElementById(p+'Step').innerText=formatPrice(step);document.getElementById(p+'Buy').innerText=formatPrice(low+g*step);document.getElementById(p+'Sell').innerText=formatPrice(low+(g+1)*step);document.getElementById(p+'Fill').style.width=pos+'%';document.getElementById(p+'Marker').style.left=pos+'%'}
-function score(c){let s=50,x=c.price_change_percentage_24h||0;s+=x>10?20:x>5?15:x>0?10:x>-5?5:-10;return Math.max(0,Math.min(100,Math.round(s)))}function copyAddr(a){if(a&&navigator.clipboard)navigator.clipboard.writeText(a);alert('Copied: '+a)}
-function refreshDisplay(){if(!lastScoredData.length)return;let t='<div class="ticker-item">SEA CHEF LABS LIVE FEED ('+currentCurrency+')</div>';lastScoredData.forEach(c=>{let ch=c.price_change_percentage_24h||0;t+=`<div class="ticker-item"><strong>${c.symbol.toUpperCase()}</strong>: ${formatPrice(c.current_price)} <span class="${ch>=0?'green':'red'}">(${ch>=0?'▲':'▼'} ${ch.toFixed(2)}%)</span></div>`});newsTickerTrack.innerHTML=t+t;coinCount.innerText=lastScoredData.length;let top='',queue='';lastScoredData.forEach(c=>{let d=c.coinInfo,html=`<div class="${d.top?'coin-card':'coin-card-small'}"><div class="${d.top?'live-dot':'live-dot-small'}"></div><div class="coin-head"><span class="${d.top?'coin-name':'coin-name-small'}">${c.symbol.toUpperCase()}</span><span class="score ${c.score>=80?'score-high':c.score>=60?'score-mid':'score-low'}">${c.score}/100</span></div><div class="${d.top?'price':'price-small'}">Current: ${formatPrice(c.current_price)}</div><div class="${d.top?'contract':'contract-small'}" onclick="copyAddr('${d.addr}')">📋 ${d.addr}</div><div class="${d.top?'reason':'reason-small'}">${d.reason}</div><a class="${d.top?'buy-btn':'buy-btn-small'}" href="https://www.coingecko.com/en/coins/${c.id}" target="_blank">View Market</a></div>`;if(d.top)top+=html;else queue+=html});topPicks.innerHTML=top||'<div class="card">No data</div>';queuePicks.innerHTML=queue||'<div class="card">No data</div>'}
-async function loadData(){try{let ids=coins.map(c=>c.id).join(','),r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+encodeURIComponent(ids)+'&sparkline=false');if(!r.ok)throw Error('Market data unavailable');let data=await r.json();lastScoredData=data.map(c=>({...c,score:score(c),coinInfo:coins.find(x=>x.id===c.id)})).filter(x=>x.coinInfo).sort((a,b)=>b.score-a.score);updateGridWindow('solana','sol');updateGridWindow('ethereum','eth');updateGridWindow('arbitrum','arb');updateGridWindow('matic-network','pol');refreshDisplay()}catch(e){console.error(e);topPicks.innerHTML='<div class="card">Market data unavailable. Try again shortly.</div>';queuePicks.innerHTML=''}}
-function connectRabby(){if(!window.ethereum){alert('Open this page inside Rabby on iPhone, or use Connect Mobile.');return}window.ethereum.request({method:'eth_requestAccounts'}).then(a=>{connectedAddress=a[0];rabbyBtn.innerText='Rabby ✓';rabbyBtn.classList.add('btn-connected');walletsBody.innerHTML=`<tr class="wallet-row"><td>Connected</td><td>${a[0]}</td><td>Wallet connected</td><td>—</td></tr>`}).catch(e=>alert('Connection cancelled: '+e.message))}function connectPhantom(){if(!window.solana){alert('Open this page inside Phantom on iPhone, or use Connect Mobile.');return}window.solana.connect().then(x=>{connectedAddress=x.publicKey.toString();phantomBtn.innerText='Phantom ✓';phantomBtn.classList.add('btn-connected');walletsBody.innerHTML=`<tr class="wallet-row"><td>Connected</td><td>${connectedAddress}</td><td>Solana wallet connected</td><td>—</td></tr>`}).catch(e=>alert('Connection cancelled: '+e.message))}function openMobileModal(){let u=encodeURIComponent(location.href);linkMetaMask.href=`https://metamask.app.link/dapp/${location.host}${location.pathname}`;linkPhantom.href=`https://phantom.com/ul/v1/web3modal/?dapp_url=${u}`;linkRabby.href=`https://rabby.io/ul/v1/web3modal/?dapp_url=${u}`;mobileModal.style.display='flex'}function closeMobileModal(){mobileModal.style.display='none'}function openWatchOnlyModal(){watchModal.style.display='flex'}function closeWatchOnlyModal(){watchModal.style.display='none'}function addWatchOnlyWallet(){let a=watchAddress.value.trim();if(!a)return alert('Please enter an address');watchOnlyAddress=a;closeWatchOnlyModal();walletsBody.innerHTML=`<tr class="wallet-row"><td>Watch-Only</td><td>${a}</td><td>Address added</td><td>—</td></tr>`;debankLinks.innerHTML=`<a class="btn" href="https://debank.com/profile/${a}" target="_blank">View on DeBank</a>`}
-loadData();setInterval(loadData,60000);
-</script></body></html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sea Chef Labs</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body { background: #0f172a; color: #fff; padding: 24px; }
+      .container { max-width: 1000px; margin: 0 auto; }
+      header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid #334155; padding-bottom: 20px; margin-bottom: 24px; }
+      h1 { color: #00ff88; font-size: 2rem; }
+      .wallet-box { background: rgba(30, 41, 59, 0.9); border: 1px solid #334155; border-radius: 16px; padding: 20px; }
+      .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+      button { appearance: none; border: none; border-radius: 10px; padding: 12px 18px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s ease, opacity 0.15s ease; }
+      button:hover { transform: translateY(-1px); }
+      .rabby { background: #00d9ff; color: #0f172a; }
+      .status { margin-top: 18px; font-size: 14px; color: #cbd5e1; line-height: 1.6; }
+      .status strong { color: #fff; }
+      .address { color: #00ff88; word-break: break-all; font-weight: 700; }
+      .warning { margin-top: 14px; padding: 12px 14px; border: 1px solid rgba(251, 191, 36, 0.5); border-radius: 10px; background: rgba(251, 191, 36, 0.08); color: #fcd34d; font-size: 13px; }
+      .small-muted { color: #94a3b8; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header><h1>Sea Chef Labs</h1></header>
+
+      <div class="wallet-box">
+        <h2 style="margin-bottom: 8px;">Desktop Wallet</h2>
+        <p class="small-muted">For Windows and Mac, unlock Rabby in your browser and connect.</p>
+
+        <div class="button-row">
+          <button class="rabby" id="connectRabbyBtn">Connect Rabby</button>
+        </div>
+
+        <div class="status" id="walletStatus">
+          <strong>Status:</strong> Not connected
+        </div>
+
+        <div class="warning">
+          This only reads your public wallet address. Never enter a wallet password, private key, or recovery phrase on this website.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const walletStatus = document.getElementById('walletStatus');
+
+      function setStatus(message) {
+        walletStatus.innerHTML = message;
+      }
+
+      function getRabbyProvider() {
+        const providers = window.ethereum?.providers || [];
+        return window.ethereum?.isRabby
+          ? window.ethereum
+          : providers.find((provider) => provider.isRabby) || null;
+      }
+
+      async function connectRabby() {
+        const provider = getRabbyProvider();
+
+        if (!provider) {
+          setStatus('<strong>Status:</strong> Rabby was not found. Install the Rabby browser extension, unlock it, then refresh this page.');
+          return;
+        }
+
+        try {
+          setStatus('<strong>Status:</strong> Waiting for Rabby approval...');
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          const address = accounts?.[0];
+
+          if (!address) {
+            setStatus('<strong>Status:</strong> Rabby did not return an address.');
+            return;
+          }
+
+          setStatus(`<strong>Status:</strong> Rabby connected<br><span class="address">${address}</span>`);
+        } catch (error) {
+          console.error('Rabby connection error:', error);
+
+          if (error?.code === 4001) {
+            setStatus('<strong>Status:</strong> You cancelled the Rabby connection.');
+          } else {
+            setStatus('<strong>Status:</strong> Rabby connection failed. Please try again.');
+          }
+        }
+      }
+
+      document.getElementById('connectRabbyBtn').addEventListener('click', connectRabby);
+
+      if (window.ethereum) {
+        window.ethereum.on?.('accountsChanged', (accounts) => {
+          const address = accounts?.[0];
+          setStatus(address
+            ? `<strong>Status:</strong> Rabby connected<br><span class="address">${address}</span>`
+            : '<strong>Status:</strong> Rabby disconnected.');
+        });
+      }
+    </script>
+  </body>
+</html>
