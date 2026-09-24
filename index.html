@@ -219,7 +219,7 @@
     <h2 class="section-title">🎯 Top 6 AI Researched Coins</h2>
     <div class="top-grid" id="topPicks"><div class="card">Loading...</div></div>
 
-    <h2 class="section-title">🚨 In & Out Command Center (0.8% Wiggle)</h2>
+    <h2 class="section-title">🚨 In & Out Command Center (Daily Reference + 5% Alert)</h2>
 
     <div class="trading-window" id="window-sol">
       <div class="window-header"><div class="window-title">SOL/USDC (Solana)</div><div class="window-fee">Fee: ~$0.0002</div></div>
@@ -289,6 +289,9 @@
     let lastScoredData = [];
     let alertsEnabled = false;
     let alertHistory = {};
+    let dailyReferencePrice = {};
+
+    const ALERT_THRESHOLD_PCT = 0.05;
 
     const coins = [
       { id: 'solana', sym: 'SOL', top: true },
@@ -360,7 +363,7 @@
           alertsEnabled = true;
           alertsBtn.textContent = '🔔 Alerts ON';
           alertsBtn.classList.add('on');
-          new Notification('Sea Chef Labs', { body: 'Alerts enabled! We will notify you when zones hit.' });
+          new Notification('Sea Chef Labs', { body: 'Alerts enabled! We will notify you when the 5% green signal is reached.' });
         } else {
           alertsEnabled = false;
           alertsBtn.textContent = '🔔 Alerts Off';
@@ -376,10 +379,9 @@
     }
 
     function notifyOnce(key, title, body) {
-      const stateKey = key;
       if (!alertsEnabled) return;
-      if (alertHistory[stateKey]) return;
-      alertHistory[stateKey] = true;
+      if (alertHistory[key]) return;
+      alertHistory[key] = true;
       if ('Notification' in window) {
         new Notification(title, { body });
       }
@@ -389,13 +391,27 @@
       delete alertHistory[key];
     }
 
+    function initializeReferencePrices(data) {
+      data.forEach(c => {
+        const coinId = c.id;
+        if (!dailyReferencePrice[coinId] && Number(c.current_price)) {
+          dailyReferencePrice[coinId] = Number(c.current_price);
+        }
+      });
+    }
+
+    function getReferencePrice(coinId) {
+      return Number(dailyReferencePrice[coinId]) || 0;
+    }
+
     function updateTradingWindow(coinId, prefix, coinName) {
       const coin = lastScoredData.find(c => c.id === coinId);
       if (!coin) return;
 
       const current = Number(coin.current_price) || 0;
-      const buyTarget = current * 0.992;
-      const sellTarget = current * 1.008;
+      const reference = getReferencePrice(coinId) || current;
+      const buyTarget = reference * 0.99;
+      const sellTarget = reference * (1 + ALERT_THRESHOLD_PCT);
 
       document.getElementById(`${prefix}-current`).innerText = formatPrice(current);
       document.getElementById(`${prefix}-buy`).innerText = formatPrice(buyTarget);
@@ -413,29 +429,26 @@
       marker.style.left = `${pct}%`;
 
       const buySignalKey = `${coinId}:buy`;
-      const sellSignalKey = `${coinId}:sell`;
+      const greenSignalKey = `${coinId}:green5`;
 
       if (current <= buyTarget) {
         buyZone.classList.add('active');
         buyZone.innerText = '🚨 BUY NOW!';
         sellZone.innerText = 'SELL ZONE';
-        if (!alertHistory[buySignalKey]) {
-          notifyOnce(buySignalKey, `🚨 BUY ${coinName}!`, `Price dropped to ${formatPrice(current)}. Execute now!`);
-        }
-        resetAlertState(sellSignalKey);
+        resetAlertState(greenSignalKey);
       } else if (current >= sellTarget) {
         sellZone.classList.add('active');
         sellZone.innerText = '🚨 SELL NOW!';
         buyZone.innerText = 'BUY ZONE';
-        if (!alertHistory[sellSignalKey]) {
-          notifyOnce(sellSignalKey, `🚨 SELL ${coinName}!`, `Price pumped to ${formatPrice(current)}. Take profit!`);
+        if (!alertHistory[greenSignalKey]) {
+          notifyOnce(greenSignalKey, `🚨 ${coinName} is +5% into the green`, `Reference: ${formatPrice(reference)} | Current: ${formatPrice(current)} | Consider taking profit or watching sentiment.`);
         }
         resetAlertState(buySignalKey);
       } else {
         buyZone.innerText = 'BUY ZONE';
         sellZone.innerText = 'SELL ZONE';
+        resetAlertState(greenSignalKey);
         resetAlertState(buySignalKey);
-        resetAlertState(sellSignalKey);
       }
     }
 
@@ -450,6 +463,8 @@
           document.getElementById('newsTickerTrack').innerHTML = '<div class="ticker-item">Waiting for market data...</div>';
           return;
         }
+
+        initializeReferencePrices(data);
 
         data.forEach(c => {
           if (c.symbol) priceMap[c.symbol.toUpperCase()] = c.current_price;
