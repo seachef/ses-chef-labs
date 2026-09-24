@@ -4,111 +4,73 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sea Chef Labs</title>
-
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       body {
         background: #0f172a;
         color: #fff;
         padding: 24px;
       }
-
       .container {
         max-width: 1000px;
         margin: 0 auto;
       }
-
       header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
         border-bottom: 1px solid #334155;
         padding-bottom: 20px;
         margin-bottom: 24px;
       }
-
       h1 {
         color: #00ff88;
         font-size: 2rem;
       }
-
       .wallet-box {
         background: rgba(30, 41, 59, 0.9);
         border: 1px solid #334155;
         border-radius: 16px;
         padding: 20px;
       }
-
       .button-row {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
         margin-top: 16px;
       }
-
-      button {
+      button, .link-btn {
         appearance: none;
         border: none;
         border-radius: 10px;
         padding: 12px 18px;
         font-weight: 700;
         cursor: pointer;
+        text-decoration: none;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: transform 0.15s ease, opacity 0.15s ease;
       }
-
-      button:hover {
-        transform: translateY(-1px);
-        opacity: 0.9;
-      }
-
-      button:disabled {
-        cursor: wait;
-        opacity: 0.6;
-      }
-
-      .primary {
-        background: #00d9ff;
-        color: #0f172a;
-      }
-
-      .rabby {
-        background: #00d9ff;
-        color: #0f172a;
-      }
-
-      .metamask {
-        background: #f6851b;
-        color: white;
-      }
-
-      .phantom {
-        background: #ab9ff2;
-        color: white;
-      }
-
+      button:hover, .link-btn:hover { transform: translateY(-1px); }
+      .primary { background: #00d9ff; color: #0f172a; }
+      .rabby { background: #00d9ff; color: #0f172a; }
+      .phantom { background: #ab9ff2; color: white; }
+      .metamask { background: #f6851b; color: white; }
       .status {
         margin-top: 18px;
         font-size: 14px;
         color: #cbd5e1;
         line-height: 1.6;
       }
-
-      .status strong {
-        color: #fff;
-      }
-
+      .status strong { color: #fff; }
       .address {
         color: #00ff88;
         word-break: break-all;
         font-weight: 700;
       }
-
       .warning {
         margin-top: 14px;
         padding: 12px 14px;
@@ -117,17 +79,13 @@
         background: rgba(251, 191, 36, 0.08);
         color: #fcd34d;
         font-size: 13px;
-        line-height: 1.5;
       }
-
       .small-muted {
         color: #94a3b8;
         font-size: 12px;
-        line-height: 1.5;
       }
     </style>
   </head>
-
   <body>
     <div class="container">
       <header>
@@ -136,28 +94,13 @@
 
       <div class="wallet-box">
         <h2 style="margin-bottom: 8px;">Wallet Connect</h2>
-
-        <p class="small-muted">
-          Connect using WalletConnect on your iPhone, or use a wallet extension
-          on your laptop.
-        </p>
+        <p class="small-muted">Desktop uses the wallet provider. iPhone uses WalletConnect or wallet deep links.</p>
 
         <div class="button-row">
-          <button class="primary" id="connectWalletBtn">
-            Connect Wallet
-          </button>
-
-          <button class="rabby" id="connectRabbyBtn">
-            Connect Rabby
-          </button>
-
-          <button class="metamask" id="connectMetaMaskBtn">
-            Connect MetaMask
-          </button>
-
-          <button class="phantom" id="connectPhantomBtn">
-            Connect Phantom
-          </button>
+          <button class="primary" id="connectWalletBtn">Connect Wallet</button>
+          <button class="rabby" id="connectRabbyBtn">Connect Rabby</button>
+          <button class="metamask" id="connectMetaMaskBtn">Connect MetaMask</button>
+          <button class="phantom" id="connectPhantomBtn">Connect Phantom</button>
         </div>
 
         <div class="status" id="walletStatus">
@@ -165,44 +108,30 @@
         </div>
 
         <div class="warning">
-          Your wallet password, recovery phrase, and private key should only
-          ever be entered inside the official wallet application. Sea Chef
-          Labs will never ask for them.
+          iPhone note: Rabby, MetaMask, and Phantom must be opened in-app or via WalletConnect. Deep links alone do not always complete the session.
         </div>
       </div>
     </div>
 
     <script type="module">
-      import {
-        createWeb3Modal,
-        defaultConfig
-      } from "https://esm.sh/@web3modal/ethers";
+      import { createWeb3Modal, defaultConfig } from 'https://esm.sh/@web3modal/ethers';
 
-      import {
-        BrowserProvider
-      } from "https://esm.sh/ethers@6.13.5";
-
-      /*
-       * Your WalletConnect Project ID
-       */
-      const projectId = "4953d2b76b1fb4b4ad369110b97869cc";
-
-      const isMobile =
-        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const projectId = 'YOUR_WALLETCONNECT_PROJECT_ID';
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
       const metadata = {
-        name: "Sea Chef Labs",
-        description: "Sea Chef Labs wallet connection",
+        name: 'Sea Chef Labs',
+        description: 'Sea Chef Labs wallet connection',
         url: window.location.origin,
-        icons: ["https://avatars.githubusercontent.com/u/0?v=4"]
+        icons: ['https://avatars.githubusercontent.com/u/0?v=4']
       };
 
       const mainnet = {
         chainId: 1,
-        name: "Ethereum",
-        currency: "ETH",
-        explorerUrl: "https://etherscan.io",
-        rpcUrl: "https://cloudflare-eth.com"
+        name: 'Ethereum',
+        currency: 'ETH',
+        explorerUrl: 'https://etherscan.io',
+        rpcUrl: 'https://cloudflare-eth.com'
       };
 
       const ethersConfig = defaultConfig({
@@ -221,249 +150,166 @@
         projectId,
         enableAnalytics: false,
         enableOnramp: false,
-        themeMode: "dark"
+        themeMode: 'dark'
       });
 
-      const walletStatus = document.getElementById("walletStatus");
-      const buttons = document.querySelectorAll("button");
+      const walletStatus = document.getElementById('walletStatus');
 
-      function setStatus(message, address = "") {
-        walletStatus.innerHTML = "";
+      function setStatus(text) {
+        walletStatus.innerHTML = text;
+      }
 
-        const strong = document.createElement("strong");
-        strong.textContent = "Status: ";
+      function isInjectedEthereumWalletAvailable() {
+        return !!(window.ethereum && window.ethereum.request);
+      }
 
-        walletStatus.appendChild(strong);
-        walletStatus.appendChild(document.createTextNode(message));
+      function isPhantomAvailable() {
+        return !!(window.phantom && window.phantom.ethereum);
+      }
 
-        if (address) {
-          walletStatus.appendChild(document.createElement("br"));
+      function openDeepLink(walletName) {
+        const currentUrl = encodeURIComponent(window.location.href);
 
-          const addressElement = document.createElement("span");
-          addressElement.className = "address";
-          addressElement.textContent = address;
+        if (walletName === 'rabby') {
+          window.location.href = `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+          return;
+        }
 
-          walletStatus.appendChild(addressElement);
+        if (walletName === 'metamask') {
+          window.location.href = `https://metamask.app.link/dapp/${window.location.hostname}${window.location.pathname}`;
+          return;
+        }
+
+        if (walletName === 'phantom') {
+          window.location.href = `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
         }
       }
 
-      function setButtonsDisabled(disabled) {
-        buttons.forEach((button) => {
-          button.disabled = disabled;
-        });
-      }
-
-      function getInjectedProvider(walletType) {
-        const ethereum = window.ethereum;
-
-        if (!ethereum) {
-          return null;
-        }
-
-        const providers = ethereum.providers || [ethereum];
-
-        if (walletType === "rabby") {
-          return (
-            providers.find((provider) => provider.isRabby) ||
-            null
-          );
-        }
-
-        if (walletType === "metamask") {
-          return (
-            providers.find(
-              (provider) =>
-                provider.isMetaMask && !provider.isRabby
-            ) || null
-          );
-        }
-
-        if (walletType === "phantom") {
-          return window.phantom?.ethereum || null;
-        }
-
-        return ethereum;
-      }
-
-      function waitForWalletConnectProvider(timeout = 60000) {
-        return new Promise((resolve, reject) => {
-          const startedAt = Date.now();
-
-          const checkProvider = () => {
-            const provider = modal.getWalletProvider?.();
-
-            if (provider) {
-              resolve(provider);
-              return;
-            }
-
-            if (Date.now() - startedAt >= timeout) {
-              reject(
-                new Error(
-                  "No wallet was connected before the connection window expired."
-                )
-              );
-              return;
-            }
-
-            setTimeout(checkProvider, 500);
-          };
-
-          checkProvider();
-        });
-      }
-
-      async function showConnectedAddress(eip1193Provider) {
-        const browserProvider = new BrowserProvider(
-          eip1193Provider
-        );
-
-        const accounts = await browserProvider.send(
-          "eth_accounts",
-          []
-        );
-
-        const address = accounts?.[0];
-
-        if (!address) {
-          throw new Error("No wallet address was returned.");
-        }
-
-        setStatus("Connected", address);
-        return address;
-      }
-
-      async function connectWithWalletConnect() {
+      async function connectBrowserWallet() {
         try {
-          setButtonsDisabled(true);
-          setStatus("Opening WalletConnect...");
+          setStatus('<strong>Status:</strong> Opening wallet modal...');
+          const connection = await modal.open();
+          const provider = connection?.provider || null;
 
-          await modal.open();
+          if (!provider) {
+            setStatus('<strong>Status:</strong> Wallet modal closed without a connection.');
+            return;
+          }
 
-          const provider = await waitForWalletConnectProvider();
-
-          await showConnectedAddress(provider);
+          const signer = await provider.getSigner();
+          const address = await signer.getAddress();
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
         } catch (error) {
-          console.error("WalletConnect error:", error);
-
-          setStatus(
-            "The wallet connection was cancelled or could not be completed."
-          );
-        } finally {
-          setButtonsDisabled(false);
+          console.error('Wallet connect error:', error);
+          setStatus('<strong>Status:</strong> Connection was cancelled or failed.');
         }
       }
 
-      async function connectInjectedWallet(walletType) {
-        const provider = getInjectedProvider(walletType);
+      async function connectInjectedWallet(type) {
+        if (!isInjectedEthereumWalletAvailable()) {
+          if (isMobile) {
+            openDeepLink(type);
+            setStatus(`<strong>Status:</strong> No injected wallet detected. Opened ${type.toUpperCase()} on your phone.`);
+            return;
+          }
 
-        if (!provider) {
-          setStatus(
-            `${walletType} was not detected. Use Connect Wallet instead, or install the wallet extension.`
-          );
+          setStatus(`<strong>Status:</strong> ${type.toUpperCase()} is not installed on this device.`);
           return;
         }
 
         try {
-          setButtonsDisabled(true);
-          setStatus(`Opening ${walletType}...`);
-
-          const accounts = await provider.request({
-            method: "eth_requestAccounts"
-          });
-
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
           const address = accounts?.[0];
 
           if (!address) {
-            throw new Error("No wallet address was returned.");
+            setStatus('<strong>Status:</strong> No wallet address returned.');
+            return;
           }
 
-          setStatus("Connected", address);
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
         } catch (error) {
-          console.error(`${walletType} connection error:`, error);
-
-          setStatus(
-            `${walletType} connection was cancelled or failed.`
-          );
-        } finally {
-          setButtonsDisabled(false);
+          console.error('Injected wallet error:', error);
+          setStatus('<strong>Status:</strong> Wallet connection failed. Please try again.');
         }
       }
 
-      function openWalletDeepLink(walletName) {
-        const currentUrl = encodeURIComponent(
-          window.location.href
-        );
+      async function connectPhantomDirect() {
+        if (!isPhantomAvailable()) {
+          if (isMobile) {
+            openDeepLink('phantom');
+            setStatus('<strong>Status:</strong> Phantom is not installed here. You were sent to the Phantom app to approve the connection.');
+            return;
+          }
 
-        if (walletName === "rabby") {
-          window.location.href =
-            `https://rabby.io/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+          setStatus('<strong>Status:</strong> Phantom is not installed on this device.');
           return;
         }
 
-        if (walletName === "metamask") {
-          window.location.href =
-            `https://metamask.app.link/dapp/` +
-            `${window.location.hostname}${window.location.pathname}`;
-          return;
-        }
-
-        if (walletName === "phantom") {
-          window.location.href =
-            `https://phantom.com/ul/v1/web3modal/?dapp_url=${currentUrl}`;
+        try {
+          const resp = await window.phantom.solana.connect();
+          const address = resp?.publicKey?.toString();
+          setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+        } catch (error) {
+          console.error('Phantom connect error:', error);
+          setStatus('<strong>Status:</strong> Phantom connection failed.');
         }
       }
 
-      document
-        .getElementById("connectWalletBtn")
-        .addEventListener("click", connectWithWalletConnect);
-
-      document
-        .getElementById("connectRabbyBtn")
-        .addEventListener("click", () => {
-          if (isMobile) {
-            setStatus(
-              "Opening Rabby. Approve the connection in the Rabby app."
-            );
-            openWalletDeepLink("rabby");
-            return;
+      document.getElementById('connectWalletBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          // On mobile, prefer WalletConnect instead of direct app injection.
+          try {
+            await modal.open();
+            const provider = modal.getWalletProvider?.();
+            if (provider) {
+              const signer = await provider.getSigner();
+              const address = await signer.getAddress();
+              setStatus(`<strong>Status:</strong> Connected<br><span class="address">${address}</span>`);
+            }
+          } catch (error) {
+            console.error('Mobile WalletConnect error:', error);
+            setStatus('<strong>Status:</strong> Mobile wallet connection failed. Try the wallet-specific buttons below.');
           }
+          return;
+        }
 
-          connectInjectedWallet("rabby");
-        });
+        await connectBrowserWallet();
+      });
 
-      document
-        .getElementById("connectMetaMaskBtn")
-        .addEventListener("click", () => {
-          if (isMobile) {
-            setStatus(
-              "Opening MetaMask. Approve the connection in the MetaMask app."
-            );
-            openWalletDeepLink("metamask");
-            return;
-          }
+      document.getElementById('connectRabbyBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('rabby');
+          setStatus('<strong>Status:</strong> Opened Rabby on your phone. Please approve the connection in the app.');
+          return;
+        }
 
-          connectInjectedWallet("metamask");
-        });
+        await connectInjectedWallet('rabby');
+      });
 
-      document
-        .getElementById("connectPhantomBtn")
-        .addEventListener("click", () => {
-          if (isMobile) {
-            setStatus(
-              "Opening Phantom. Approve the connection in the Phantom app."
-            );
-            openWalletDeepLink("phantom");
-            return;
-          }
+      document.getElementById('connectMetaMaskBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('metamask');
+          setStatus('<strong>Status:</strong> Opened MetaMask on your phone. Please approve the connection in the app.');
+          return;
+        }
 
-          connectInjectedWallet("phantom");
-        });
+        await connectInjectedWallet('metamask');
+      });
 
-      window.addEventListener("load", () => {
-        setStatus(
-          "Ready. Tap Connect Wallet and choose your wallet."
-        );
+      document.getElementById('connectPhantomBtn').addEventListener('click', async () => {
+        if (isMobile) {
+          openDeepLink('phantom');
+          setStatus('<strong>Status:</strong> Opened Phantom on your phone. Please approve the connection in the app.');
+          return;
+        }
+
+        await connectPhantomDirect();
+      });
+
+      window.addEventListener('load', () => {
+        if (!projectId || projectId === 'YOUR_WALLETCONNECT_PROJECT_ID') {
+          setStatus('<strong>Status:</strong> WalletConnect project ID is missing. Add your real project ID in index.html to enable the mobile modal.');
+        }
       });
     </script>
   </body>
