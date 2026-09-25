@@ -1,227 +1,308 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sea Chef Labs</title>
-<style>
-*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{margin:0;padding:16px;background:#0f172a;color:#f8fafc}.container{max-width:1280px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:15px}h1{color:#00ff88;margin:0;font-size:1.5rem}.actions,.buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wallet{border:1px solid #334155;border-radius:20px;padding:9px 12px;color:#cbd5e1;font-size:12px}.btn{border:0;border-radius:7px;padding:9px 12px;font-weight:700;background:#00d9ff;color:#06111d;cursor:pointer}.purple{background:#a9bfff;color:#fff}.danger{background:#ff4757;color:#fff}.muted{color:#94a3b8}.ticker{overflow:hidden;background:#020617;border:2px solid #00ff88;padding:10px 0;margin:16px 0}.track{display:flex;width:max-content;animation:scroll 45s linear infinite}.item{padding:0 24px;white-space:nowrap}.item b{color:#00d9ff}.section{background:#111d31;border:1px solid #334155;border-radius:12px;padding:16px;margin:20px 0}.section h2{margin:0 0 5px}.section>p{margin:0 0 12px;color:#cbd5e1}.grid{display:grid;grid-template-columns:repeat(4,minmax(280px,1fr));gap:12px}.card,.order{background:#1e293b;border:1px solid #475569;border-radius:10px;padding:14px}.card-head,.order-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.name{font-size:17px;font-weight:800}.chain{font-size:11px;color:#00d9ff;background:#0b2940;border-radius:4px;padding:4px 6px}.price-row{display:flex;justify-content:space-between;align-items:end;margin:15px 0 8px}.price{font-size:24px;font-weight:800}.green{color:#00ff88}.red{color:#ff4757}.flat{color:#f8fafc}.change{font-size:13px}.info{font-size:11px;line-height:1.5;color:#cbd5e1}.links,.buttons{display:flex;gap:10px;margin:10px 0 0}.links a,.research a{font-size:11px;color:#00d9ff;text-decoration:none}.label{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1;margin-top:10px}.slider{width:100%;accent-color:#00ff88;display:block;min-height:28px;touch-action:none}.sliderWrap{margin-top:10px}.sliderLabels{display:flex;justify-content:space-between;gap:4px;font-size:11px;color:#94a3b8;margin-top:4px}.sliderLabels span{min-width:19px;text-align:center}.sliderLabels .zero{color:#f8fafc;font-weight:700}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.input{width:100%;background:#0f172a;color:#fff;border:1px solid #475569;border-radius:6px;padding:9px}.status{margin-top:10px;padding:8px;border-radius:6px;background:#0f172a;color:#facc15;font-size:12px}.up{background:#064e3b;color:#86efac}.down{background:#7f1d1d;color:#fecaca}.flat{background:#1f2937;color:#e2e8f0}.research{margin-top:20px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px}.research summary{cursor:pointer;color:#00d9ff;font-weight:700}.research table{width:100%;border-collapse:collapse;font-size:12px}.research td,.research th{border-top:1px solid #334155;padding:8px 7px;text-align:left}.research th{color:#94a3b8}.empty{padding:12px;background:#0f172a;border-radius:8px;color:#94a3b8}.pin{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.pin.up{background:#00ff88}.pin.down{background:#ff4757}.pin.flat{background:#94a3b8}.portfolio-grid{display:grid;grid-template-columns:repeat(2,minmax(300px,1fr));gap:16px}.portfolio-box{background:#101b2d;border:1px solid #334155;border-radius:12px;padding:16px}.portfolio-box h3{margin:0 0 8px;color:#00ff88}.portfolio-box .addr{font-size:12px;color:#cbd5e1;word-break:break-all}.portfolio-stat{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #334155}.portfolio-stat strong{color:#f8fafc}.portfolio-list{margin-top:10px;padding:0;list-style:none}.portfolio-list li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px}.portfolio-list li:last-child{border-bottom:0}.portfolio-list small{color:#94a3b8}@keyframes scroll{to{transform:translateX(-50%)}}@media(max-width:980px){.grid{grid-template-columns:repeat(2,minmax(260px,1fr))}.portfolio-grid{grid-template-columns:1fr}}@media(max-width:650px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.price{font-size:20px}}</style></head><body><div class="container">
-<header><h1>Sea Chef Labs</h1><div class="actions"><span class="wallet" id="wallet">Wallet: Not connected</span><button class="btn" onclick="connectEvm()">Rabby / EVM</button><button class="btn purple" onclick="connectSolana()">Phantom</button><button class="btn" onclick="resetLiveSession()">Reset Live Session</button></div></header>
-<div class="ticker"><div class="track" id="ticker">Loading live prices...</div></div>
-<section class="section"><h2>Portfolio Tracker</h2><p>Read-only wallet balances and totals for Phantom and Rabby.</p><div class="portfolio-grid"><div class="portfolio-box"><h3>Phantom</h3><div class="addr" id="phantomAddr">Not connected</div><div class="portfolio-stat"><span>Total</span><strong id="phantomTotal">$0.00</strong></div><ul class="portfolio-list" id="phantomList"></ul></div><div class="portfolio-box"><h3>Rabby</h3><div class="addr" id="rabbyAddr">Not connected</div><div class="portfolio-stat"><span>Total</span><strong id="rabbyTotal">$0.00</strong></div><ul class="portfolio-list" id="rabbyList"></ul></div></div></section>
-<section class="section"><h2>Limit Orders</h2><p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p><h3>Deep-Liquidity Limit Orders</h3><div class="grid" id="orders"></div></section>
-<section class="section"><h2>Active Deep-Liquidity Pairs <span class="muted" id="trayCount"></span></h2><p>Eight pairs are shown at a time. They stay visible until you reset the session.</p><div class="grid" id="tray"></div><div class="buttons" style="margin-top:12px"><button class="btn" onclick="togglePool()">Deep Liquidity Pairs</button><button class="btn" onclick="refillTray()">Refresh Tray</button></div><div class="research" id="pool" hidden><b>Available pair pool</b><p class="muted" style="font-size:12px">Select a pair to bring it into the active tray.</p><div class="grid" id="poolGrid"></div></div></section>
-<section class="section"><h2>Dump-a-Thon Coins</h2><p>Compact research file. Use a row to inspect a market or prepare a future limit order.</p><details class="research"><summary>Open Dump-a-Thon list</summary><table><tbody id="dumpRows"></tbody></table></details></section>
-</div><script>
-const deep=[
-{id:'solana',s:'SOL',n:'Solana',c:'Solana',a:'Native SOL',cg:'solana',dex:'https://dexscreener.com/solana/solana'},
-{id:'dogwifcoin',s:'WIF',n:'dogwifhat',c:'Solana',a:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',cg:'dogwifcoin',dex:'https://dexscreener.com/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-{id:'jupiter-exchange-solana',s:'JUP',n:'Jupiter',c:'Solana',a:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',cg:'jupiter-exchange-solana',dex:'https://dexscreener.com/solana/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
-{id:'matic-network',s:'POL',n:'POL',c:'Polygon',a:'0x0000000000000000000000000000000000001010',cg:'matic-network',dex:'https://dexscreener.com/polygon/polygon'},
-{id:'bonk',s:'BONK',n:'Bonk',c:'Solana',a:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8',cg:'bonk',dex:'https://dexscreener.com/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8'},
-{id:'raydium',s:'RAY',n:'Raydium',c:'Solana',a:'4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2',cg:'raydium',dex:'https://dexscreener.com/solana/4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2'},
-{id:'pyth-network',s:'PYTH',n:'Pyth Network',c:'Solana',a:'HhJp6gW6k8sQ9xJ9uM5Y5k1e4D7R4p3P2n8Q6t5V4C',cg:'pyth-network',dex:'https://dexscreener.com/solana'},
-{id:'render-token',s:'RENDER',n:'Render',c:'Solana',a:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',cg:'render-token',dex:'https://dexscreener.com/solana/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof'},
-{id:'chainlink',s:'LINK',n:'Chainlink',c:'Ethereum',a:'0x514910771AF9Ca656af840dff83E8264EcF986CA',cg:'chainlink',dex:'https://dexscreener.com/ethereum/0x514910771AF9Ca656af840dff83E8264EcF986CA'},
-{id:'arbitrum',s:'ARB',n:'Arbitrum',c:'Arbitrum',a:'0x912CE59144191C1204E64559FE8253a0e49E6548',cg:'arbitrum',dex:'https://dexscreener.com/arbitrum/0x912CE59144191C1204E64559FE8253a0e49E6548'},
-{id:'optimism',s:'OP',n:'Optimism',c:'Optimism',a:'0x4200000000000000000000000000000000000042',cg:'optimism',dex:'https://dexscreener.com/optimism'},
-{id:'avalanche-2',s:'AVAX',n:'Avalanche',c:'Avalanche',a:'Native AVAX',cg:'avalanche-2',dex:'https://dexscreener.com/avalanche'},
-{id:'aave',s:'AAVE',n:'Aave',c:'Ethereum',a:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',cg:'aave',dex:'https://dexscreener.com/ethereum/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'}];
-const dumpCoins=[
-{symbol:'HYPE',cg:'hyperliquid'},
-{symbol:'ONDO',cg:'ondo'},
-{symbol:'SUI',cg:'sui'},
-{symbol:'LINK',cg:'chainlink'},
-{symbol:'AAVE',cg:'aave'},
-{symbol:'INJ',cg:'injective-protocol'},
-{symbol:'PENDLE',cg:'pendle'},
-{symbol:'TAO',cg:'bittensor'},
-{symbol:'NEAR',cg:'near'},
-{symbol:'TIA',cg:'celestia'},
-{symbol:'SEI',cg:'sei-network'},
-{symbol:'JUP',cg:'jupiter-exchange-solana'},
-{symbol:'RUNE',cg:'thorchain'},
-{symbol:'ARB',cg:'arbitrum'},
-{symbol:'OP',cg:'optimism'},
-{symbol:'ZRO',cg:'layerzero'},
-{symbol:'PYTH',cg:'pyth-network'},
-{symbol:'ENA',cg:'ena'},
-{symbol:'WIF',cg:'dogwifcoin'},
-{symbol:'BONK',cg:'bonk'},
-{symbol:'FLOKI',cg:'floki'},
-{symbol:'PEPE',cg:'pepe'},
-{symbol:'JASMY',cg:'jasmy'},
-{symbol:'HBAR',cg:'hedera-hashgraph'},
-{symbol:'XLM',cg:'stellar'},
-{symbol:'ADA',cg:'cardano'},
-{symbol:'AVAX',cg:'avalanche-2'},
-{symbol:'APT',cg:'aptos'},
-{symbol:'ATOM',cg:'cosmos'},
-{symbol:'FIL',cg:'filecoin'},
-{symbol:'ICP',cg:'internet-computer'},
-{symbol:'FET',cg:'fetch-ai'},
-{symbol:'AKT',cg:'akash-network'},
-{symbol:'IMX',cg:'immutable-x'},
-{symbol:'GRT',cg:'the-graph'},
-{symbol:'OMI',cg:'echelon'},
-{symbol:'PLUME',cg:'plume'},
-{symbol:'LTC',cg:'litecoin'},
-{symbol:'ALGO',cg:'algorand'},
-{symbol:'ZEN',cg:'zen'},
-{symbol:'ROSE',cg:'oasis-network'},
-{symbol:'MATIC',cg:'matic-network'},
-{symbol:'BTC',cg:'bitcoin'},
-{symbol:'ETH',cg:'ethereum'}
-];
-const ids=[...deep.map(x=>x.cg), ...dumpCoins.map(x=>x.cg)];
-let market=[],active=deep.slice(0,8).map(x=>x.id),orders=JSON.parse(localStorage.getItem('seaChefOrders')||'[]'),sessionBaseline={};
-const $=id=>document.getElementById(id),money=p=>p==null?'—':'$'+(p<1?Number(p).toFixed(4):Number(p).toFixed(2));
-function coin(id){return deep.find(x=>x.id===id)}
-function price(id){return market.find(x=>x.id===id)}
-function save(){localStorage.setItem('seaChefOrders',JSON.stringify(orders));}
-function next(){return deep.find(x=>!active.includes(x.id)&&!orders.some(o=>o.id===x.id));}
-function primaryDexUrl(a){if(a.c==='Solana'){if(a.id==='solana')return'https://jup.ag/swap/SOL-USDC';return'https://jup.ag';}return a.dex;}
-function signalForChange(change){if(change<0)return'red';if(change>0)return'green';return'flat';}
-function textForSignal(change){if(change<0)return'Red';if(change>0)return'Green';return'Neutral';}
-function liveChangeForCoin(cg){const baseline=sessionBaseline[cg];const current=price(cg)?.current_price;if(baseline===undefined||baseline===null||baseline===0||current===undefined||current===null||!Number.isFinite(Number(baseline))||!Number.isFinite(Number(current)))return 0;return ((Number(current)-Number(baseline))/Number(baseline))*100;}
-function resetLiveSession(){sessionBaseline={};[...deep, ...dumpCoins].forEach(item=>{const current=price(item.cg)?.current_price;if(current!==undefined&&current!==null&&Number.isFinite(Number(current))){sessionBaseline[item.cg]=Number(current);}});render();buildDump();}
-function sliderPercentLabel(v){return v===0?'0':`${v>0?'+':''}${v}%`}
-function card(a){const m=price(a.cg),p=m?.current_price||0;const change=liveChangeForCoin(a.cg),signal=signalForChange(change);const sliderValue=0;return `<article class="card"><div class="card-head"><div class="name">${a.s} — ${a.n}</div></div><div class="chain">${a.c}</div><div class="price-row"><div class="muted">LIVE PRICE</div><div class="price" id="p-${a.id}">${money(p)}</div></div><div class="label"><span class="muted">Session</span><span class="change ${signal==='red'?'red':signal==='green'?'green':'flat'}" id="ch-${a.id}">${change>=0?'+':''}${change.toFixed(2)}%</span></div><div class="info"><strong>Address:</strong> ${a.a}<br><strong>Live:</strong> <span id="st-${a.id}"><i class="pin ${signal==='red'?'down':signal==='green'?'up':'flat'}"></i>${signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL'}</span></div><div class="links"><a href="${a.dex}" target="_blank" rel="noopener noreferrer">Ticker / DEX</a><a href="https://x.com/search?q=%24${a.s}&src=typed_query" target="_blank" rel="noopener noreferrer">Social search</a></div><div class="label"><span>LIMIT RANGE</span><b id="lim-${a.id}">${sliderPercentLabel(sliderValue)}</b></div><div class="sliderWrap"><input class="slider" id="slider-${a.id}" type="range" min="-25" max="25" value="0" step="1" oninput="slide('${a.id}',this.value)" onchange="slide('${a.id}',this.value)" aria-label="Choose limit price percent"><div class="sliderLabels"><span>-25</span><span>-20</span><span>-15</span><span>-10</span><span>-5</span><span class="zero">0</span><span>+5</span><span>+10</span><span>+15</span><span>+20</span><span>+25</span></div></div><div class="row"><input class="input" id="amt-${a.id}" type="number" min="0" step="any" inputmode="decimal" placeholder="USDC amount"><button class="btn" onclick="place('${a.id}')">Place Limit</button></div><div class="status ${signal==='red'?'down':signal==='green'?'up':'flat'}" id="msg-${a.id}">${textForSignal(change)}</div></article>`}
-function slide(id,v){const current=Number(price(coin(id).cg)?.current_price);if(!Number.isFinite(current))return;const pct=Number(v)||0;const priceTarget=current*(1+(pct/100));$("lim-"+id).textContent=sliderPercentLabel(pct)+' / '+money(priceTarget)}
-function place(id){const a=coin(id),slider=$("slider-"+id),m=price(a.cg);if(!a||!slider||!m)return alert('Price unavailable right now.');const pct=Number(slider.value)||0;const targetPrice=Number(m.current_price)*(1+(pct/100));const dexUrl=primaryDexUrl(a);window.open(dexUrl,'_blank','noopener,noreferrer');console.log('Target price for '+a.s+': $'+targetPrice.toFixed(4));}
-function cancel(i){orders.splice(i,1);save();render()}
-function orderCard(o,i){const a=coin(o.id);return `<article class="order"><div class="order-head"><b>${o.sym} — ${a.n}</b><span class="chain">${a.c}</span></div><p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${o.status}</p><div class="buttons"><button class="btn" onclick="window.open('${primaryDexUrl(a)}','_blank','noopener,noreferrer')">Open DEX</button><button class="btn danger" onclick="cancel(${i})">Cancel</button></div></article>`}
-function render(){const ranked=active.slice().sort((a,b)=>{const ca=liveChangeForCoin(coin(a).cg),cb=liveChangeForCoin(coin(b).cg);return ca-cb;});$('tray').innerHTML=ranked.map(id=>card(coin(id))).join('')||'<div class="empty">No active pairs.</div>';$('orders').innerHTML=orders.map(orderCard).join('')||'<div class="empty">No deep-liquidity limit orders.</div>';$('trayCount').textContent=`(${ranked.length} visible / ${deep.length} in pool)`;renderPool();updatePrices();}
-function renderPool(){const hidden=deep.filter(a=>!active.includes(a.id));$('poolGrid').innerHTML=hidden.map(a=>`<div class="card"><b>${a.s}</b> — ${a.n}<br><span class="muted">${a.c}</span></div>`).join('')||'<div class="empty">All pairs are visible in the tray.</div>'}
-function togglePool(){$('pool').hidden=!$('pool').hidden}
-function refillTray(){active=deep.slice(0,8).map(x=>x.id);save();render();}
-function updatePrices(){active.forEach(id=>{const a=coin(id),m=price(a.cg);if(!m)return;const change=liveChangeForCoin(a.cg),signal=signalForChange(change);$("p-"+id).textContent=money(Number(m.current_price));$("ch-"+id).textContent=(change>=0?'+':'')+change.toFixed(2)+'%';$("ch-"+id).className='change '+(signal==='red'?'red':signal==='green'?'green':'flat');$("st-"+id).innerHTML=`<i class="pin ${signal==='red'?'down':signal==='green'?'up':'flat'}"></i>${signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL'}`;$("msg-"+id).textContent=textForSignal(change);$("msg-"+id).className='status '+(signal==='red'?'down':signal==='green'?'up':'flat')})}
-
-const walletState={phantom:{address:null, total:0, list:[]}, rabby:{address:null, total:0, list:[]}};
-function shortAddr(addr){return addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Not connected';}
-function formatUsd(value){return '$'+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});}
-function renderWalletList(stateKey, listId, totalId){
-  const state = walletState[stateKey];
-  const listEl = $(listId);
-  const totalEl = $(totalId);
-  if(!state.address){
-    listEl.innerHTML = '<li><span>Connect wallet</span><small>—</small></li>';
-    totalEl.textContent = '$0.00';
-    return;
-  }
-  if(state.list.length===0){
-    listEl.innerHTML = '<li><span>No balances found</span><small>—</small></li>';
-    totalEl.textContent = '$0.00';
-    return;
-  }
-  listEl.innerHTML = state.list.slice(0,8).map(item => `<li><span>${item.symbol}</span><small>${Number(item.amount).toLocaleString(undefined,{maximumFractionDigits:4)}</small></li>`).join('');
-  totalEl.textContent = formatUsd(state.total || 0);
-}
-async function getCoinPriceMap(){try{const ids=['solana','ethereum','usd-coin','tether','chainlink','aave','arbitrum','optimism','avalanche-2','matic-network','dogwifcoin','bonk','jupiter-exchange-solana'];const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids.join(',')+'&vs_currencies=usd');return r.ok ? await r.json() : {}; }catch{return {};}}
-const SOLANA_RPC='https://api.mainnet-beta.solana.com';
-const SOLANA_TOKENS={
-  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': {symbol:'USDC', decimal:6, priceKey:'usd-coin'},
-  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': {symbol:'USDT', decimal:6, priceKey:'tether'},
-  'So11111111111111111111111111111111111111112': {symbol:'SOL', decimal:9, priceKey:'solana'},
-  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8': {symbol:'BONK', decimal:5, priceKey:'bonk'},
-  'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm': {symbol:'WIF', decimal:6, priceKey:'dogwifcoin'},
-  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': {symbol:'JUP', decimal:6, priceKey:'jupiter-exchange-solana'}
-};
-function base58Encode(buffer){
-  const alphabet='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  let num = 0n;
-  for (let i=0;i<buffer.length;i++) { num = (num << 8n) + BigInt(buffer[i]); }
-  let out='';
-  while (num > 0n){ const mod = Number(num % 58n); num = num / 58n; out = alphabet[mod] + out; }
-  return out || '1';
-}
-function readUint64LE(buf, offset){
-  const lo = buf.readUInt32LE(offset);
-  const hi = buf.readUInt32LE(offset + 4);
-  return (BigInt(hi) << 32n) + BigInt(lo);
-}
-async function fetchJson(url, payload){
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  return r.ok ? await r.json() : null;
-}
-async function refreshPhantomPortfolio(){
-  if(!walletState.phantom.address) return;
-  const priceMap=await getCoinPriceMap();
-  const balRes=await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:1,method:'getBalance',params:[walletState.phantom.address]});
-  const solBalance = Number((balRes && balRes.result) ? balRes.result.value : 0) / 1e9;
-  const tokenRes=await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:2,method:'getTokenAccountsByOwner',params:[walletState.phantom.address,{programId:'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'},{encoding:'base64'}]});
-  const tokenAccounts = (tokenRes && tokenRes.result && tokenRes.result.value) || [];
-  const holdings={};
-  for (const acct of tokenAccounts){
-    try{
-      const data=Buffer.from(acct.account.data[0],'base64');
-      const mint = base58Encode(data.slice(0,32));
-      const amountRaw = readUint64LE(data,64);
-      const meta = SOLANA_TOKENS[mint];
-      if(!meta) continue;
-      holdings[mint] = holdings[mint] || {symbol:meta.symbol, amount:0};
-      holdings[mint].amount += Number(amountRaw) / (10 ** meta.decimal);
-    }catch(e){}
-  }
-  const rows=[{symbol:'SOL', amount:solBalance, value:solBalance*(priceMap.solana?priceMap.solana.usd:0)}];
-  let total=rows[0].value;
-  for (const mint of Object.keys(holdings)){
-    const item = holdings[mint];
-    const meta = SOLANA_TOKENS[mint];
-    const value = item.amount * (priceMap[meta.priceKey] ? priceMap[meta.priceKey].usd : 0);
-    total += value;
-    rows.push({symbol:item.symbol, amount:item.amount, value});
-  }
-  walletState.phantom.list = rows;
-  walletState.phantom.total = total;
-  renderWalletList('phantom','phantomList','phantomTotal');
-}
-async function refreshRabbyPortfolio(){
-  if(!walletState.rabby.address) return;
-  const priceMap=await getCoinPriceMap();
-  const ethRes = await window.ethereum.request({method:'eth_getBalance',params:[walletState.rabby.address,'latest']});
-  const ethBalance = Number(BigInt(ethRes||'0x0')) / 1e18;
-  const rows=[{symbol:'ETH', amount:ethBalance, value:ethBalance*(priceMap.ethereum?priceMap.ethereum.usd:0)}];
-  let total = rows[0].value;
-  const tokens=[
-    {symbol:'USDC', address:'0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6, priceKey:'usd-coin'},
-    {symbol:'USDT', address:'0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals:6, priceKey:'tether'},
-    {symbol:'LINK', address:'0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals:18, priceKey:'chainlink'},
-    {symbol:'AAVE', address:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9', decimals:18, priceKey:'aave'},
-    {symbol:'ARB', address:'0x912CE59144191C1204E64559FE8253a0e49E6548', decimals:18, priceKey:'arbitrum'},
-    {symbol:'OP', address:'0x4200000000000000000000000000000000000042', decimals:18, priceKey:'optimism'},
-    {symbol:'AVAX', address:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', decimals:18, priceKey:'avalanche-2'},
-    {symbol:'MATIC', address:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', decimals:18, priceKey:'matic-network'}
-  ];
-  for (const token of tokens){
-    const data='0x70a08231';
-    const owner='0x000000000000000000000000'+walletState.rabby.address.replace('0x','');
-    const balanceHex = await window.ethereum.request({method:'eth_call',params:[{to: token.address, data: data + owner.slice(2).padStart(64,'0')}, 'latest']});
-    const raw = BigInt(balanceHex || '0x0');
-    const amount = Number(raw) / (10 ** token.decimals);
-    if(amount > 0){
-      const value = amount * (priceMap[token.priceKey] ? priceMap[token.priceKey].usd : 0);
-      total += value;
-      rows.push({symbol:token.symbol, amount, value});
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sea Chef Labs</title>
+  <style>
+    * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
+    body {
+      margin:0; padding:16px; background:#0f172a; color:#f8fafc;
     }
-  }
-  walletState.rabby.list = rows;
-  walletState.rabby.total = total;
-  renderWalletList('rabby','rabbyList','rabbyTotal');
-}
-async function connectSolana(){
-  if(!window.solana){return alert('Phantom not detected.');}
-  const resp = await window.solana.connect();
-  walletState.phantom.address = resp.publicKey.toString();
-  $('phantomAddr').textContent = shortAddr(walletState.phantom.address);
-  $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.phantom.address);
-  refreshPhantomPortfolio();
-}
-async function connectEvm(){
-  if(!window.ethereum){return alert('Rabby not detected.');}
-  const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-  walletState.rabby.address = accounts[0];
-  $('rabbyAddr').textContent = shortAddr(walletState.rabby.address);
-  $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.rabby.address);
-  refreshRabbyPortfolio();
-}
-async function load(){
-  try{const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&order=market_cap_desc&per_page=250&sparkline=false');market=await r.json();if(Object.keys(sessionBaseline).length===0){resetLiveSession();}const ticker=market.map(m=>{const change=liveChangeForCoin(m.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price ${signal==='red'?'red':signal==='green'?'green':'flat'}">${money(m.current_price)}</span> <span class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</span></span>`}).join('');$('ticker').innerHTML=ticker+ticker;render();buildDump();}catch(e){$('ticker').textContent='Live feed unavailable — retrying';}}
-function buildDump(){const rows=dumpCoins.map(item=>{const marketItem=market.find(m=>m.id===item.cg);if(!marketItem)return `<tr><td><b>${item.symbol}</b></td><td class="muted">No live feed</td><td class="muted">NEUTRAL</td></tr>`;const change=liveChangeForCoin(marketItem.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<tr><td><b>${item.symbol}</b></td><td class="${signal === 'red' ? 'red' : signal === 'green' ? 'green' : 'flat'}">${money(marketItem.current_price)}</td><td class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</td></tr>`}).join('');$('dumpRows').innerHTML=rows;}
-render();load();setInterval(load,30000);</script></body></html>
+    .container { max-width:1280px; margin:auto; }
+    header {
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      flex-wrap:wrap; border-bottom:1px solid #334155; padding-bottom:15px; margin-bottom:20px;
+    }
+    h1 { margin:0; color:#00f7ff; font-size:1.7rem; }
+    .actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn {
+      border:0; border-radius:7px; padding:9px 12px; font-weight:700; background:#0d9fff; color:#06111d; cursor:pointer;
+    }
+    .btn.purple { background:#a9bfff; color:#fff; }
+    .btn.danger { background:#ff4757; color:#fff; }
+    .ticker {
+      overflow:hidden; background:#020617; border:2px solid #00ff88; padding:10px 0; margin:16px 0;
+    }
+    .track { display:flex; width:max-content; animation:scroll 45s linear infinite; }
+    .item { padding:0 24px; white-space:nowrap; }
+    .item b { color:#00d9ff; }
+    .item .price { color:#dbeafe; }
+    .item .red { color:#ff4757; }
+    .item .green { color:#4ade80; }
+    .item .flat { color:#f8fafc; }
+    @keyframes scroll { to { transform:translateX(-50%); } }
+    .section {
+      background:#111d31; border:1px solid #334155; border-radius:12px; padding:16px; margin:20px 0;
+    }
+    .section h2 { margin:0 0 10px; }
+    .section p { color:#cbd5e1; margin:0 0 14px; }
+    .muted { color:#94a3b8; }
+    .grid { display:grid; grid-template-columns:repeat(4,minmax(280px,1fr)); gap:12px; }
+    .card, .order {
+      background:#1e293b; border:1px solid #475569; border-radius:10px; padding:14px;
+    }
+    .card-head, .order-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+    .name { font-size:17px; font-weight:800; }
+    .chain { font-size:11px; color:#00d9ff; background:#0b2940; border-radius:4px; padding:4px 6px; }
+    .price-row { display:flex; justify-content:space-between; align-items:flex-end; margin:12px 0 8px; }
+    .price { font-size:24px; font-weight:800; }
+    .label { display:flex; justify-content:space-between; font-size:12px; color:#cbd5e1; margin-top:12px; }
+    .info { font-size:12px; line-height:1.5; color:#cbd5e1; }
+    .links, .buttons { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+    .links a, .buttons a { color:#00d9ff; text-decoration:none; }
+    .slider-wrap { margin-top:12px; }
+    .slider { width:100%; accent-color:#00f7ff; display:block; min-height:28px; }
+    .slider-labels { display:flex; justify-content:space-between; gap:4px; font-size:11px; color:#94a3b8; margin-top:4px; }
+    .input { width:100%; background:#0f172a; color:#fff; border:1px solid #475569; border-radius:6px; padding:9px; margin-top:10px; }
+    .status { margin-top:10px; padding:8px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:#facc15; }
+    .status.red { background:#2f1a1b; color:#ff4757; }
+    .status.green { background:#103a2b; color:#4ade80; }
+    .status.flat { background:#1f2937; color:#f8fafc; }
+    .empty { padding:12px; border:1px dashed #334155; border-radius:8px; color:#94a3b8; background:#0f172a; }
+    .research { margin-top:10px; }
+    .research table { width:100%; border-collapse:collapse; font-size:12px; }
+    .research th, .research td { border-top:1px solid #334155; padding:8px 7px; text-align:left; }
+    .research td.red { color:#ff4757; }
+    .research td.green { color:#4ade80; }
+    .research td.flat { color:#f8fafc; }
+    @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
+    @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sea Chef Labs</h1>
+      <div class="actions">
+        <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
+      </div>
+    </header>
+
+    <div class="ticker">
+      <div class="track" id="ticker">Loading live prices...</div>
+    </div>
+
+    <section class="section">
+      <h2>Limit Orders</h2>
+      <p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p>
+      <div class="grid" id="orders"></div>
+    </section>
+
+    <section class="section">
+      <h2>Active Deep-Liquidity Pairs <span class="muted" id="trayCount"></span></h2>
+      <p>Eight pairs are shown at a time. They stay visible until you reset the session.</p>
+      <div class="grid" id="tray"></div>
+      <div class="buttons" style="margin-top:12px;">
+        <button class="btn" onclick="togglePool()">Deep Liquidity Pairs</button>
+        <button class="btn" onclick="refillTray()">Refresh Tray</button>
+      </div>
+      <div class="research" id="pool" hidden>
+        <div class="muted" style="font-size:12px; margin-bottom:8px;">Select a pair to bring it into the active tray.</div>
+        <div class="grid" id="poolGrid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Dump-a-Thon Coins</h2>
+      <p>Compact research file. Use a row to inspect a market or prepare a future limit order.</p>
+      <div class="research">
+        <table>
+          <tbody id="dumpRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const deep = [
+      {id:'solana',s:'SOL',n:'Solana',c:'Solana',a:'Native SOL',cg:'solana',dex:'https://dexscreener.com/solana/solana'},
+      {id:'dogwifcoin',s:'WIF',n:'dogwifhat',c:'Solana',a:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',cg:'dogwifcoin',dex:'https://dexscreener.com/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
+      {id:'jupiter-exchange-solana',s:'JUP',n:'Jupiter',c:'Solana',a:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',cg:'jupiter-exchange-solana',dex:'https://dexscreener.com/solana/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
+      {id:'matic-network',s:'POL',n:'POL',c:'Polygon',a:'0x0000000000000000000000000000000000001010',cg:'matic-network',dex:'https://dexscreener.com/polygon/polygon'},
+      {id:'bonk',s:'BONK',n:'Bonk',c:'Solana',a:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8',cg:'bonk',dex:'https://dexscreener.com/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8'},
+      {id:'raydium',s:'RAY',n:'Raydium',c:'Solana',a:'4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2',cg:'raydium',dex:'https://dexscreener.com/solana/4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2'},
+      {id:'pyth-network',s:'PYTH',n:'Pyth Network',c:'Solana',a:'HhJp6gW6k8sQ9xJ9uM5Y5k1e4D7R4p3P2n8Q6t5V4C',cg:'pyth-network',dex:'https://dexscreener.com/solana'},
+      {id:'render-token',s:'RENDER',n:'Render',c:'Solana',a:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',cg:'render-token',dex:'https://dexscreener.com/solana/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof'},
+      {id:'chainlink',s:'LINK',n:'Chainlink',c:'Ethereum',a:'0x514910771AF9Ca656af840dff83E8264EcF986CA',cg:'chainlink',dex:'https://dexscreener.com/ethereum/0x514910771AF9Ca656af840dff83E8264EcF986CA'},
+      {id:'arbitrum',s:'ARB',n:'Arbitrum',c:'Arbitrum',a:'0x912CE59144191C1204E64559FE8253a0e49E6548',cg:'arbitrum',dex:'https://dexscreener.com/arbitrum/0x912CE59144191C1204E64559FE8253a0e49E6548'},
+      {id:'optimism',s:'OP',n:'Optimism',c:'Optimism',a:'0x4200000000000000000000000000000000000042',cg:'optimism',dex:'https://dexscreener.com/optimism'},
+      {id:'avalanche-2',s:'AVAX',n:'Avalanche',c:'Avalanche',a:'Native AVAX',cg:'avalanche-2',dex:'https://dexscreener.com/avalanche'},
+      {id:'aave',s:'AAVE',n:'Aave',c:'Ethereum',a:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',cg:'aave',dex:'https://dexscreener.com/ethereum/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'}
+    ];
+
+    const dumpCoins = [
+      {symbol:'HYPE',cg:'hyperliquid'}, {symbol:'ONDO',cg:'ondo'}, {symbol:'SUI',cg:'sui'}, {symbol:'LINK',cg:'chainlink'},
+      {symbol:'AAVE',cg:'aave'}, {symbol:'INJ',cg:'injective-protocol'}, {symbol:'PENDLE',cg:'pendle'}, {symbol:'TAO',cg:'bittensor'},
+      {symbol:'NEAR',cg:'near'}, {symbol:'TIA',cg:'celestia'}, {symbol:'SEI',cg:'sei-network'}, {symbol:'JUP',cg:'jupiter-exchange-solana'},
+      {symbol:'RUNE',cg:'thorchain'}, {symbol:'ARB',cg:'arbitrum'}, {symbol:'OP',cg:'optimism'}, {symbol:'ZRO',cg:'layerzero'},
+      {symbol:'PYTH',cg:'pyth-network'}, {symbol:'ENA',cg:'ena'}, {symbol:'WIF',cg:'dogwifcoin'}, {symbol:'BONK',cg:'bonk'},
+      {symbol:'FLOKI',cg:'floki'}, {symbol:'PEPE',cg:'pepe'}, {symbol:'JASMY',cg:'jasmy'}, {symbol:'HBAR',cg:'hedera-hashgraph'},
+      {symbol:'XLM',cg:'stellar'}, {symbol:'ADA',cg:'cardano'}, {symbol:'AVAX',cg:'avalanche-2'}, {symbol:'APT',cg:'aptos'},
+      {symbol:'ATOM',cg:'cosmos'}, {symbol:'FIL',cg:'filecoin'}, {symbol:'ICP',cg:'internet-computer'}, {symbol:'FET',cg:'fetch-ai'},
+      {symbol:'AKT',cg:'akash-network'}, {symbol:'IMX',cg:'immutable-x'}, {symbol:'GRT',cg:'the-graph'}, {symbol:'OMI',cg:'echelon'},
+      {symbol:'PLUME',cg:'plume'}, {symbol:'LTC',cg:'litecoin'}, {symbol:'ALGO',cg:'algorand'}, {symbol:'ZEN',cg:'zen'},
+      {symbol:'ROSE',cg:'oasis-network'}, {symbol:'MATIC',cg:'matic-network'}, {symbol:'BTC',cg:'bitcoin'}, {symbol:'ETH',cg:'ethereum'}
+    ];
+
+    const ids = [...deep.map(x => x.cg), ...dumpCoins.map(x => x.cg)];
+    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = JSON.parse(localStorage.getItem('seaChefOrders') || '[]'), sessionBaseline = {};
+    const $ = id => document.getElementById(id);
+    const money = p => p == null ? '—' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
+
+    function coin(id) { return deep.find(x => x.id === id); }
+    function price(id) { return market.find(x => x.id === id); }
+    function save() { localStorage.setItem('seaChefOrders', JSON.stringify(orders)); }
+    function next() { return deep.find(x => !active.includes(x.id) && !orders.some(o => o.id === x.id)); }
+    function signalForChange(change) { if (change < 0) return 'red'; if (change > 0) return 'green'; return 'flat'; }
+    function textForSignal(change) { if (change < 0) return 'Red'; if (change > 0) return 'Green'; return 'Neutral'; }
+    function liveChangeForCoin(cg) {
+      const baseline = sessionBaseline[cg];
+      const current = price(cg)?.current_price;
+      if (baseline === undefined || baseline === null || baseline === 0 || current === undefined || current === null || !Number.isFinite(Number(baseline)) || !Number.isFinite(Number(current))) return 0;
+      return ((Number(current) - Number(baseline)) / Number(baseline)) * 100;
+    }
+    function resetLiveSession() {
+      sessionBaseline = {};
+      [...deep, ...dumpCoins].forEach(item => {
+        const current = price(item.cg)?.current_price;
+        if (current !== undefined && current !== null && Number.isFinite(Number(current))) {
+          sessionBaseline[item.cg] = Number(current);
+        }
+      });
+      render();
+      buildDump();
+    }
+    function sliderPercentLabel(v) { return v === 0 ? '0' : `${v > 0 ? '+' : ''}${v}%`; }
+    function card(a) {
+      const m = price(a.cg), p = m?.current_price || 0;
+      const change = liveChangeForCoin(a.cg);
+      const signal = signalForChange(change);
+      const sliderValue = 0;
+      return `
+        <article class="card">
+          <div class="card-head">
+            <div class="name">${a.s} — ${a.n}</div>
+            <span class="chain">${a.c}</span>
+          </div>
+          <div class="price-row">
+            <div class="label" style="display:block; margin:0;">
+              <span class="muted">LIVE PRICE</span>
+              <div class="price" id="p-${a.id}">${money(p)}</div>
+            </div>
+          </div>
+          <div class="label">
+            <span>Session</span>
+            <span class="status ${signal}" id="ch-${a.id}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+          </div>
+          <div class="info">
+            <strong>Address:</strong> ${a.a}<br>
+            <strong>Dex:</strong> <a href="${a.dex}" target="_blank" rel="noopener noreferrer">Open DEX</a>
+          </div>
+          <div class="slider-wrap">
+            <div class="label"><span>LIMIT RANGE</span><b id="lim-${a.id}">${sliderPercentLabel(sliderValue)}</b></div>
+            <input class="slider" id="slider-${a.id}" type="range" min="-25" max="25" value="0" step="1" oninput="slide('${a.id}', this.value)" onchange="slide('${a.id}', this.value)">
+            <div class="slider-labels">
+              <span>-25</span><span>-20</span><span>-15</span><span>-10</span><span>-5</span><span>0</span><span>+5</span><span>+10</span><span>+15</span><span>+20</span><span>+25</span>
+            </div>
+          </div>
+          <div class="buttons">
+            <button class="btn" onclick="place('${a.id}')">Place Limit</button>
+          </div>
+          <div class="status ${signal}" id="msg-${a.id}">${textForSignal(change)}</div>
+        </article>
+      `;
+    }
+    function slide(id, v) {
+      const current = Number(price(coin(id).cg)?.current_price);
+      if (!Number.isFinite(current)) return;
+      const pct = Number(v) || 0;
+      const priceTarget = current * (1 + (pct / 100));
+      $(`lim-${id}`).textContent = sliderPercentLabel(pct);
+      $(`msg-${id}`).textContent = `${pct >= 0 ? 'Up' : 'Down'} ${Math.abs(pct).toFixed(0)}% target ${money(priceTarget)}`;
+      $(`msg-${id}`).className = `status ${signalForChange(pct)}`;
+    }
+    function place(id) {
+      const a = coin(id), slider = $(`slider-${id}`), m = price(a.cg);
+      if (!a || !slider || !m) return alert('Price unavailable right now.');
+      const pct = Number(slider.value) || 0;
+      const targetPrice = Number(m.current_price) * (1 + (pct / 100));
+      const order = { id: a.id, sym: a.s, amount: 1, limit: targetPrice, status: 'Open', chain: a.c };
+      orders.push(order); save(); render();
+      window.open(a.dex || 'https://jup.ag', '_blank', 'noopener,noreferrer');
+    }
+    function cancel(i) { orders.splice(i, 1); save(); render(); }
+    function orderCard(o, i) {
+      const a = coin(o.id);
+      return `
+        <article class="order">
+          <div class="order-head"><b>${o.sym} — ${a.n}</b><span class="chain">${a.c}</span></div>
+          <p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${o.status}</p>
+          <div class="buttons">
+            <button class="btn" onclick="window.open('${a.dex}', '_blank', 'noopener,noreferrer')">Open DEX</button>
+            <button class="btn danger" onclick="cancel(${i})">Cancel</button>
+          </div>
+        </article>
+      `;
+    }
+    function render() {
+      const ranked = active.slice().sort((a, b) => liveChangeForCoin(coin(a).cg) - liveChangeForCoin(coin(b).cg));
+      $('tray').innerHTML = ranked.map(id => card(coin(id))).join('') || '<div class="empty">No active pairs.</div>';
+      $('orders').innerHTML = orders.map(orderCard).join('') || '<div class="empty">No deep-liquidity limit orders.</div>';
+      $('trayCount').textContent = `(${ranked.length} visible / ${deep.length} total)`;
+      renderPool();
+      updatePrices();
+    }
+    function renderPool() {
+      const hidden = deep.filter(a => !active.includes(a.id));
+      $('poolGrid').innerHTML = hidden.map(a => `<div class="card"><div class="name">${a.s}</div><div class="muted">${a.n}</div><div class="info">${a.c}</div><div class="buttons"><button class="btn" onclick="active.push('${a.id}'); save(); render();">Bring in</button></div></div>`).join('') || '<div class="empty">All pairs are visible in the tray.</div>';
+    }
+    function togglePool() { $('pool').hidden = !$('pool').hidden; }
+    function refillTray() { active = deep.slice(0, 8).map(x => x.id); save(); render(); }
+    function updatePrices() {
+      active.forEach(id => {
+        const a = coin(id), m = price(a.cg);
+        if (!m) return;
+        const change = liveChangeForCoin(a.cg), signal = signalForChange(change);
+        $(`p-${id}`).textContent = money(Number(m.current_price));
+        $(`ch-${id}`).textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+        $(`ch-${id}`).className = `status ${signal}`;
+        $(`msg-${id}`).textContent = textForSignal(change);
+        $(`msg-${id}`).className = `status ${signal}`;
+      });
+    }
+
+    async function load() {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false');
+        market = await r.json();
+        if (Object.keys(sessionBaseline).length === 0) {
+          resetLiveSession();
+        }
+        const tickerHtml = market.map(m => {
+          const change = liveChangeForCoin(m.id), signal = signalForChange(change), label = change >= 0 ? 'Green' : 'Red';
+          return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${label}</span></span>`;
+        }).join('');
+        $('ticker').innerHTML = tickerHtml + tickerHtml;
+        render();
+      } catch (e) {
+        $('ticker').textContent = 'Live feed unavailable — retrying';
+      }
+    }
+
+    function buildDump() {
+      const rows = dumpCoins.map(item => {
+        const marketItem = market.find(m => m.id === item.cg);
+        if (!marketItem) return `<tr><td><b>${item.symbol}</b></td><td class="muted">No live feed</td><td class="muted">—</td></tr>`;
+        const change = liveChangeForCoin(item.cg), signal = signalForChange(change), label = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+        return `<tr><td><b>${item.symbol}</b></td><td>${money(marketItem.current_price)}</td><td class="${signal}">${label}</td></tr>`;
+      }).join('');
+      $('dumpRows').innerHTML = rows;
+    }
+
+    render();
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>
