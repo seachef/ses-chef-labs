@@ -70,27 +70,6 @@ const dumpCoins=[
 {symbol:'ETH',cg:'ethereum'}
 ];
 const ids=[...deep.map(x=>x.cg), ...dumpCoins.map(x=>x.cg)];
-const SOLANA_RPC='https://api.mainnet-beta.solana.com';
-const SOLANA_TOKENS={
-  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': {symbol:'USDC', decimal:6, priceKey:'usd-coin'},
-  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': {symbol:'USDT', decimal:6, priceKey:'tether'},
-  'So11111111111111111111111111111111111111112': {symbol:'SOL', decimal:9, priceKey:'solana'},
-  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8': {symbol:'BONK', decimal:5, priceKey:'bonk'},
-  'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm': {symbol:'WIF', decimal:6, priceKey:'dogwifcoin'},
-  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': {symbol:'JUP', decimal:6, priceKey:'jupiter-exchange-solana'}
-};
-const EVM_TOKENS=[
-  {symbol:'ETH', address:'0x0000000000000000000000000000000000000000', decimals:18, priceKey:'ethereum'},
-  {symbol:'USDC', address:'0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6, priceKey:'usd-coin'},
-  {symbol:'USDT', address:'0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals:6, priceKey:'tether'},
-  {symbol:'LINK', address:'0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals:18, priceKey:'chainlink'},
-  {symbol:'AAVE', address:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9', decimals:18, priceKey:'aave'},
-  {symbol:'ARB', address:'0x912CE59144191C1204E64559FE8253a0e49E6548', decimals:18, priceKey:'arbitrum'},
-  {symbol:'OP', address:'0x4200000000000000000000000000000000000042', decimals:18, priceKey:'optimism'},
-  {symbol:'AVAX', address:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', decimals:18, priceKey:'avalanche-2'},
-  {symbol:'MATIC', address:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', decimals:18, priceKey:'matic-network'}
-];
-const walletState={phantom:{address:null, total:0, list:[]}, rabby:{address:null, total:0, list:[]}};
 let market=[],active=deep.slice(0,8).map(x=>x.id),orders=JSON.parse(localStorage.getItem('seaChefOrders')||'[]'),sessionBaseline={};
 const $=id=>document.getElementById(id),money=p=>p==null?'—':'$'+(p<1?Number(p).toFixed(4):Number(p).toFixed(2));
 function coin(id){return deep.find(x=>x.id===id)}
@@ -114,120 +93,117 @@ function togglePool(){$('pool').hidden=!$('pool').hidden}
 function refillTray(){active=deep.slice(0,8).map(x=>x.id);save();render();}
 function updatePrices(){active.forEach(id=>{const a=coin(id),m=price(a.cg);if(!m)return;const change=liveChangeForCoin(a.cg),signal=signalForChange(change);$("p-"+id).textContent=money(Number(m.current_price));$("ch-"+id).textContent=(change>=0?'+':'')+change.toFixed(2)+'%';$("ch-"+id).className='change '+(signal==='red'?'red':signal==='green'?'green':'flat');$("st-"+id).innerHTML=`<i class="pin ${signal==='red'?'down':signal==='green'?'up':'flat'}"></i>${signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL'}`;$("msg-"+id).textContent=textForSignal(change);$("msg-"+id).className='status '+(signal==='red'?'down':signal==='green'?'up':'flat')})}
 
+const walletState={phantom:{address:null, total:0, list:[]}, rabby:{address:null, total:0, list:[]}};
 function shortAddr(addr){return addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Not connected';}
 function formatUsd(value){return '$'+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});}
-function renderPortfolioCard(name, stateKey, listElementId, totalElementId){
-  const address = walletState[stateKey].address || null;
-  const listEl = $(listElementId);
-  const totalEl = $(totalElementId);
-  if(!address){
+function renderWalletList(stateKey, listId, totalId){
+  const state = walletState[stateKey];
+  const listEl = $(listId);
+  const totalEl = $(totalId);
+  if(!state.address){
     listEl.innerHTML = '<li><span>Connect wallet</span><small>—</small></li>';
     totalEl.textContent = '$0.00';
     return;
   }
-  const rows = (walletState[stateKey].list || []).slice(0, 8);
-  if(rows.length===0){
+  if(state.list.length===0){
     listEl.innerHTML = '<li><span>No balances found</span><small>—</small></li>';
     totalEl.textContent = '$0.00';
     return;
   }
-  listEl.innerHTML = rows.map(item => `<li><span>${item.symbol}</span><small>${Number(item.amount).toLocaleString(undefined,{maximumFractionDigits:4)} / (item.symbol==='SOL' ? 1 : 1)}</small></li>`).join('');
-  totalEl.textContent = formatUsd(walletState[stateKey].total || 0);
+  listEl.innerHTML = state.list.slice(0,8).map(item => `<li><span>${item.symbol}</span><small>${Number(item.amount).toLocaleString(undefined,{maximumFractionDigits:4)}</small></li>`).join('');
+  totalEl.textContent = formatUsd(state.total || 0);
 }
-async function getCoinPriceMap(){
-  try {
-    const ids = ['solana','ethereum','usd-coin','tether','chainlink','aave','arbitrum','optimism','avalanche-2','matic-network','dogwifcoin','bonk','jupiter-exchange-solana'];
-    const url='https://api.coingecko.com/api/v3/simple/price?ids='+ids.join(',')+'&vs_currencies=usd';
-    const res = await fetch(url);
-    return res.ok ? await res.json() : {};
-  } catch (e) { return {}; }
-}
+async function getCoinPriceMap(){try{const ids=['solana','ethereum','usd-coin','tether','chainlink','aave','arbitrum','optimism','avalanche-2','matic-network','dogwifcoin','bonk','jupiter-exchange-solana'];const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids.join(',')+'&vs_currencies=usd');return r.ok ? await r.json() : {}; }catch{return {};}}
+const SOLANA_RPC='https://api.mainnet-beta.solana.com';
+const SOLANA_TOKENS={
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': {symbol:'USDC', decimal:6, priceKey:'usd-coin'},
+  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': {symbol:'USDT', decimal:6, priceKey:'tether'},
+  'So11111111111111111111111111111111111111112': {symbol:'SOL', decimal:9, priceKey:'solana'},
+  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8': {symbol:'BONK', decimal:5, priceKey:'bonk'},
+  'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm': {symbol:'WIF', decimal:6, priceKey:'dogwifcoin'},
+  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': {symbol:'JUP', decimal:6, priceKey:'jupiter-exchange-solana'}
+};
 function base58Encode(buffer){
   const alphabet='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  let num = BigInt(0);
-  for (let i=0;i<buffer.length;i++){ num = (num<<8n) + BigInt(buffer[i]); }
-  let output='';
-  while (num > 0n){ const mod = Number(num % 58n); num = num / 58n; output = alphabet[mod] + output; }
-  if (buffer.length && buffer[0]===0){ output = '1' + output; }
-  return output || '1';
+  let num = 0n;
+  for (let i=0;i<buffer.length;i++) { num = (num << 8n) + BigInt(buffer[i]); }
+  let out='';
+  while (num > 0n){ const mod = Number(num % 58n); num = num / 58n; out = alphabet[mod] + out; }
+  return out || '1';
 }
 function readUint64LE(buf, offset){
   const lo = buf.readUInt32LE(offset);
   const hi = buf.readUInt32LE(offset + 4);
   return (BigInt(hi) << 32n) + BigInt(lo);
 }
-function convertTokenAmount(raw, decimals){
-  return Number(raw) / (10 ** decimals);
-}
 async function fetchJson(url, payload){
-  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-  return res.ok ? await res.json() : null;
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  return r.ok ? await r.json() : null;
 }
-async function getPhantomWalletData(address){
-  const priceMap = await getCoinPriceMap();
-  const balanceRes = await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:1,method:'getBalance',params:[address]});
-  const solBalance = Number(balanceRes && balanceRes.result ? balanceRes.result.value : 0) / 1e9;
-  const tokensRes = await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:2,method:'getTokenAccountsByOwner',params:[address,{programId:'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'},{encoding:'base64'}]});
-  const tokenAccounts = (tokensRes && tokensRes.result && tokensRes.result.value) || [];
-  const map = {};
-  for (const account of tokenAccounts){
-    try {
-      const data = Buffer.from(account.account.data[0], 'base64');
-      const mint = base58Encode(data.slice(0, 32));
-      const amountRaw = readUint64LE(data, 64);
-      const decimals = SOLANA_TOKENS[mint] ? SOLANA_TOKENS[mint].decimal : 0;
-      if (SOLANA_TOKENS[mint]){
-        map[mint] = map[mint] || {symbol:SOLANA_TOKENS[mint].symbol, amount:0};
-        map[mint].amount += Number(amountRaw) / (10 ** decimals);
-      }
-    } catch (e) {}
+async function refreshPhantomPortfolio(){
+  if(!walletState.phantom.address) return;
+  const priceMap=await getCoinPriceMap();
+  const balRes=await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:1,method:'getBalance',params:[walletState.phantom.address]});
+  const solBalance = Number((balRes && balRes.result) ? balRes.result.value : 0) / 1e9;
+  const tokenRes=await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:2,method:'getTokenAccountsByOwner',params:[walletState.phantom.address,{programId:'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'},{encoding:'base64'}]});
+  const tokenAccounts = (tokenRes && tokenRes.result && tokenRes.result.value) || [];
+  const holdings={};
+  for (const acct of tokenAccounts){
+    try{
+      const data=Buffer.from(acct.account.data[0],'base64');
+      const mint = base58Encode(data.slice(0,32));
+      const amountRaw = readUint64LE(data,64);
+      const meta = SOLANA_TOKENS[mint];
+      if(!meta) continue;
+      holdings[mint] = holdings[mint] || {symbol:meta.symbol, amount:0};
+      holdings[mint].amount += Number(amountRaw) / (10 ** meta.decimal);
+    }catch(e){}
   }
-  let list = [];
-  let total = solBalance * (priceMap.solana ? priceMap.solana.usd : 0);
-  for (const mint of Object.keys(map)){
+  const rows=[{symbol:'SOL', amount:solBalance, value:solBalance*(priceMap.solana?priceMap.solana.usd:0)}];
+  let total=rows[0].value;
+  for (const mint of Object.keys(holdings)){
+    const item = holdings[mint];
     const meta = SOLANA_TOKENS[mint];
-    if(!meta) continue;
-    const amount = map[mint].amount;
-    const val = amount * (priceMap[meta.priceKey] ? priceMap[meta.priceKey].usd : 0);
-    total += val;
-    list.push({symbol:meta.symbol, amount, value:val});
+    const value = item.amount * (priceMap[meta.priceKey] ? priceMap[meta.priceKey].usd : 0);
+    total += value;
+    rows.push({symbol:item.symbol, amount:item.amount, value});
   }
-  list.unshift({symbol:'SOL', amount:solBalance, value: solBalance * (priceMap.solana ? priceMap.solana.usd : 0)});
-  walletState.phantom.list = list.slice(0,6);
+  walletState.phantom.list = rows;
   walletState.phantom.total = total;
-  renderPortfolioCard('phantom', 'phantom', 'phantomList', 'phantomTotal');
+  renderWalletList('phantom','phantomList','phantomTotal');
 }
-async function getRabbyWalletData(address){
-  const priceMap = await getCoinPriceMap();
-  const balHex = await window.ethereum.request({method:'eth_getBalance', params:[address,'latest']});
-  const ethBalance = Number(BigInt(balHex)) / 1e18;
-  let list = [{symbol:'ETH', amount:ethBalance, value:ethBalance * (priceMap.ethereum ? priceMap.ethereum.usd : 0)}];
-  let total = list[0].value;
-  for (const token of EVM_TOKENS.filter(x => x.symbol !== 'ETH')) {
-    try {
-      const param = `0x${'0'.padEnd(64,'0')}`;
-      const data = '0x70a08231';
-      const balanceHex = await window.ethereum.request({method:'eth_call', params:[{to: token.address, data: data + param.slice(2, 66) + '000000000000000000000000' + address.replace('0x','').padStart(64,'0')}, 'latest']});
-      const raw = BigInt(balanceHex || '0x0');
-      const amount = Number(raw) / (10 ** token.decimals);
+async function refreshRabbyPortfolio(){
+  if(!walletState.rabby.address) return;
+  const priceMap=await getCoinPriceMap();
+  const ethRes = await window.ethereum.request({method:'eth_getBalance',params:[walletState.rabby.address,'latest']});
+  const ethBalance = Number(BigInt(ethRes||'0x0')) / 1e18;
+  const rows=[{symbol:'ETH', amount:ethBalance, value:ethBalance*(priceMap.ethereum?priceMap.ethereum.usd:0)}];
+  let total = rows[0].value;
+  const tokens=[
+    {symbol:'USDC', address:'0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6, priceKey:'usd-coin'},
+    {symbol:'USDT', address:'0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals:6, priceKey:'tether'},
+    {symbol:'LINK', address:'0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals:18, priceKey:'chainlink'},
+    {symbol:'AAVE', address:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9', decimals:18, priceKey:'aave'},
+    {symbol:'ARB', address:'0x912CE59144191C1204E64559FE8253a0e49E6548', decimals:18, priceKey:'arbitrum'},
+    {symbol:'OP', address:'0x4200000000000000000000000000000000000042', decimals:18, priceKey:'optimism'},
+    {symbol:'AVAX', address:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', decimals:18, priceKey:'avalanche-2'},
+    {symbol:'MATIC', address:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', decimals:18, priceKey:'matic-network'}
+  ];
+  for (const token of tokens){
+    const data='0x70a08231';
+    const owner='0x000000000000000000000000'+walletState.rabby.address.replace('0x','');
+    const balanceHex = await window.ethereum.request({method:'eth_call',params:[{to: token.address, data: data + owner.slice(2).padStart(64,'0')}, 'latest']});
+    const raw = BigInt(balanceHex || '0x0');
+    const amount = Number(raw) / (10 ** token.decimals);
+    if(amount > 0){
       const value = amount * (priceMap[token.priceKey] ? priceMap[token.priceKey].usd : 0);
-      if(amount > 0){
-        list.push({symbol: token.symbol, amount, value});
-        total += value;
-      }
-    } catch (e) {}
+      total += value;
+      rows.push({symbol:token.symbol, amount, value});
+    }
   }
-  walletState.rabby.list = list.slice(0,8);
+  walletState.rabby.list = rows;
   walletState.rabby.total = total;
-  renderPortfolioCard('rabby', 'rabby', 'rabbyList', 'rabbyTotal');
-}
-async function refreshPhantom(){
-  if(!walletState.phantom.address){ return; }
-  await getPhantomWalletData(walletState.phantom.address);
-}
-async function refreshRabby(){
-  if(!walletState.rabby.address){ return; }
-  await getRabbyWalletData(walletState.rabby.address);
+  renderWalletList('rabby','rabbyList','rabbyTotal');
 }
 async function connectSolana(){
   if(!window.solana){return alert('Phantom not detected.');}
@@ -235,7 +211,7 @@ async function connectSolana(){
   walletState.phantom.address = resp.publicKey.toString();
   $('phantomAddr').textContent = shortAddr(walletState.phantom.address);
   $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.phantom.address);
-  await refreshPhantom();
+  refreshPhantomPortfolio();
 }
 async function connectEvm(){
   if(!window.ethereum){return alert('Rabby not detected.');}
@@ -243,7 +219,7 @@ async function connectEvm(){
   walletState.rabby.address = accounts[0];
   $('rabbyAddr').textContent = shortAddr(walletState.rabby.address);
   $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.rabby.address);
-  await refreshRabby();
+  refreshRabbyPortfolio();
 }
 async function load(){
   try{const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&order=market_cap_desc&per_page=250&sparkline=false');market=await r.json();if(Object.keys(sessionBaseline).length===0){resetLiveSession();}const ticker=market.map(m=>{const change=liveChangeForCoin(m.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price ${signal==='red'?'red':signal==='green'?'green':'flat'}">${money(m.current_price)}</span> <span class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</span></span>`}).join('');$('ticker').innerHTML=ticker+ticker;render();buildDump();}catch(e){$('ticker').textContent='Live feed unavailable — retrying';}}
