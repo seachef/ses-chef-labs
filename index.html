@@ -6,24 +6,15 @@
   <title>Sea Chef Labs</title>
   <style>
     * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
-    body {
-      margin:0; padding:16px; background:#0f172a; color:#f8fafc;
-    }
+    body { margin:0; padding:16px; background:#0f172a; color:#f8fafc; }
     .container { max-width:1280px; margin:auto; }
-    header {
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-      flex-wrap:wrap; border-bottom:1px solid #334155; padding-bottom:15px; margin-bottom:20px;
-    }
+    header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:1px solid #334155; padding-bottom:15px; margin-bottom:20px; }
     h1 { margin:0; color:#00f7ff; font-size:1.7rem; }
     .actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .btn {
-      border:0; border-radius:7px; padding:9px 12px; font-weight:700; background:#0d9fff; color:#06111d; cursor:pointer;
-    }
+    .btn { border:0; border-radius:7px; padding:9px 12px; font-weight:700; background:#0d9fff; color:#06111d; cursor:pointer; }
     .btn.purple { background:#a9bfff; color:#fff; }
     .btn.danger { background:#ff4757; color:#fff; }
-    .ticker {
-      overflow:hidden; background:#020617; border:2px solid #00ff88; padding:10px 0; margin:16px 0;
-    }
+    .ticker { overflow:hidden; background:#020617; border:2px solid #00ff88; padding:10px 0; margin:16px 0; }
     .track { display:flex; width:max-content; animation:scroll 45s linear infinite; }
     .item { padding:0 24px; white-space:nowrap; }
     .item b { color:#00d9ff; }
@@ -32,16 +23,12 @@
     .item .green { color:#4ade80; }
     .item .flat { color:#f8fafc; }
     @keyframes scroll { to { transform:translateX(-50%); } }
-    .section {
-      background:#111d31; border:1px solid #334155; border-radius:12px; padding:16px; margin:20px 0;
-    }
+    .section { background:#111d31; border:1px solid #334155; border-radius:12px; padding:16px; margin:20px 0; }
     .section h2 { margin:0 0 10px; }
     .section p { color:#cbd5e1; margin:0 0 14px; }
     .muted { color:#94a3b8; }
     .grid { display:grid; grid-template-columns:repeat(4,minmax(280px,1fr)); gap:12px; }
-    .card, .order {
-      background:#1e293b; border:1px solid #475569; border-radius:10px; padding:14px;
-    }
+    .card, .order { background:#1e293b; border:1px solid #475569; border-radius:10px; padding:14px; }
     .card-head, .order-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
     .name { font-size:17px; font-weight:800; }
     .chain { font-size:11px; color:#00d9ff; background:#0b2940; border-radius:4px; padding:4px 6px; }
@@ -62,10 +49,13 @@
     .empty { padding:12px; border:1px dashed #334155; border-radius:8px; color:#94a3b8; background:#0f172a; }
     .research { margin-top:10px; }
     .research table { width:100%; border-collapse:collapse; font-size:12px; }
-    .research th, .research td { border-top:1px solid #334155; padding:8px 7px; text-align:left; }
+    .research th, .research td { border-top:1px solid #334155; padding:8px 7px; text-align:left; vertical-align: top; }
     .research td.red { color:#ff4757; }
     .research td.green { color:#4ade80; }
     .research td.flat { color:#f8fafc; }
+    .dump-row { cursor: pointer; transition: background 0.2s; }
+    .dump-row:hover { background: #1e293b; }
+    .buy-setup-row { background: #1a2130; border-left: 3px solid #ff4757; }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
     @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
   </style>
@@ -75,6 +65,8 @@
     <header>
       <h1>Sea Chef Labs</h1>
       <div class="actions">
+        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
+        <button class="btn purple" onclick="connectPhantom()">Connect Phantom</button>
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
     </header>
@@ -82,6 +74,26 @@
     <div class="ticker">
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
+
+    <!-- SCL BUY SETUPS WINDOW -->
+    <section class="section" id="scl-buy-setups">
+      <h2>BUY SETUPS <span class="muted" style="font-size:14px;">(Strict 24H Price Drop Filter &gt;5%)</span></h2>
+      <p>Coins reporting a 24-hour decline of at least 5%. Data must be &lt;120s old. This is a 24H price screen only, not an AI recommendation.</p>
+      <div class="research">
+        <table>
+          <thead>
+            <tr style="color:#94a3b8; text-align:left;">
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 10%;">Rank</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">Coin</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">Live Price</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">24h Change</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 30%;">Calc. Reference Price</th>
+            </tr>
+          </thead>
+          <tbody id="buySetupRows"></tbody>
+        </table>
+      </div>
+    </section>
 
     <section class="section">
       <h2>Limit Orders</h2>
@@ -104,10 +116,17 @@
     </section>
 
     <section class="section">
-      <h2>Dump-a-Thon Coins</h2>
+      <h2>Dump-a-Thon Coins <span class="muted" style="font-size:14px;">(Click row to open exact Chart & Socials)</span></h2>
       <p>Compact research file. Use a row to inspect a market or prepare a future limit order.</p>
       <div class="research">
         <table>
+          <thead>
+            <tr style="color:#94a3b8; text-align:left;">
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 45%;">Coin / Verified Address</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 25%;">Live Price</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 30%;">24h Change</th>
+            </tr>
+          </thead>
           <tbody id="dumpRows"></tbody>
         </table>
       </div>
@@ -115,34 +134,84 @@
   </div>
 
   <script>
+    // --- WALLET CONNECTIONS ---
+    async function connectRabby() {
+      if (!window.ethereum) { alert('Rabby not detected! Please install the Rabby extension.'); return; }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        alert('Rabby Connected: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38));
+      } catch (e) { alert('Connection failed or rejected.'); }
+    }
+    async function connectPhantom() {
+      if (!window.solana) { alert('Phantom not detected! Please install the Phantom extension.'); return; }
+      try {
+        const resp = await window.solana.connect();
+        alert('Phantom Connected: ' + resp.publicKey.toString().substring(0, 6) + '...' + resp.publicKey.toString().substring(38));
+      } catch (e) { alert('Connection failed or rejected.'); }
+    }
+
+    // --- VERIFIED CATALOGS ---
     const deep = [
-      {id:'solana',s:'SOL',n:'Solana',c:'Solana',a:'Native SOL',cg:'solana',dex:'https://dexscreener.com/solana/solana'},
-      {id:'dogwifcoin',s:'WIF',n:'dogwifhat',c:'Solana',a:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',cg:'dogwifcoin',dex:'https://dexscreener.com/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-      {id:'jupiter-exchange-solana',s:'JUP',n:'Jupiter',c:'Solana',a:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',cg:'jupiter-exchange-solana',dex:'https://dexscreener.com/solana/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
-      {id:'matic-network',s:'POL',n:'POL',c:'Polygon',a:'0x0000000000000000000000000000000000001010',cg:'matic-network',dex:'https://dexscreener.com/polygon/polygon'},
-      {id:'bonk',s:'BONK',n:'Bonk',c:'Solana',a:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8',cg:'bonk',dex:'https://dexscreener.com/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8'},
-      {id:'raydium',s:'RAY',n:'Raydium',c:'Solana',a:'4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2',cg:'raydium',dex:'https://dexscreener.com/solana/4k3Dyjzvzp8e1Z5Q8E8k7jLhD5GzQ4L4C8W7Hk5P9R2'},
-      {id:'pyth-network',s:'PYTH',n:'Pyth Network',c:'Solana',a:'HhJp6gW6k8sQ9xJ9uM5Y5k1e4D7R4p3P2n8Q6t5V4C',cg:'pyth-network',dex:'https://dexscreener.com/solana'},
-      {id:'render-token',s:'RENDER',n:'Render',c:'Solana',a:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',cg:'render-token',dex:'https://dexscreener.com/solana/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof'},
-      {id:'chainlink',s:'LINK',n:'Chainlink',c:'Ethereum',a:'0x514910771AF9Ca656af840dff83E8264EcF986CA',cg:'chainlink',dex:'https://dexscreener.com/ethereum/0x514910771AF9Ca656af840dff83E8264EcF986CA'},
-      {id:'arbitrum',s:'ARB',n:'Arbitrum',c:'Arbitrum',a:'0x912CE59144191C1204E64559FE8253a0e49E6548',cg:'arbitrum',dex:'https://dexscreener.com/arbitrum/0x912CE59144191C1204E64559FE8253a0e49E6548'},
-      {id:'optimism',s:'OP',n:'Optimism',c:'Optimism',a:'0x4200000000000000000000000000000000000042',cg:'optimism',dex:'https://dexscreener.com/optimism'},
-      {id:'avalanche-2',s:'AVAX',n:'Avalanche',c:'Avalanche',a:'Native AVAX',cg:'avalanche-2',dex:'https://dexscreener.com/avalanche'},
-      {id:'aave',s:'AAVE',n:'Aave',c:'Ethereum',a:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',cg:'aave',dex:'https://dexscreener.com/ethereum/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'}
+      {id:'solana',s:'SOL',n:'Solana',c:'Solana',a:'Native SOL',cg:'solana',chain:'solana',addr:'Native',dex:'https://dexscreener.com/solana/solana'},
+      {id:'dogwifcoin',s:'WIF',n:'dogwifhat',c:'Solana',a:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',cg:'dogwifcoin',chain:'solana',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dex:'https://dexscreener.com/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
+      {id:'jupiter-exchange-solana',s:'JUP',n:'Jupiter',c:'Solana',a:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',cg:'jupiter-exchange-solana',chain:'solana',addr:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',dex:'https://dexscreener.com/solana/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
+      {id:'matic-network',s:'POL',n:'POL',c:'Polygon',a:'0x0000000000000000000000000000000000001010',cg:'matic-network',chain:'polygon',addr:'0x0000000000000000000000000000000000001010',dex:'https://dexscreener.com/polygon/polygon'},
+      {id:'bonk',s:'BONK',n:'Bonk',c:'Solana',a:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',cg:'bonk',chain:'solana',addr:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',dex:'https://dexscreener.com/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'},
+      {id:'raydium',s:'RAY',n:'Raydium',c:'Solana',a:'4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',cg:'raydium',chain:'solana',addr:'4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',dex:'https://dexscreener.com/solana/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'},
+      {id:'pyth-network',s:'PYTH',n:'Pyth Network',c:'Solana',a:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',cg:'pyth-network',chain:'solana',addr:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',dex:'https://dexscreener.com/solana/HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'},
+      {id:'render-token',s:'RENDER',n:'Render',c:'Solana',a:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',cg:'render-token',chain:'solana',addr:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',dex:'https://dexscreener.com/solana/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof'},
+      {id:'chainlink',s:'LINK',n:'Chainlink',c:'Ethereum',a:'0x514910771AF9Ca656af840dff83E8264EcF986CA',cg:'chainlink',chain:'ethereum',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',dex:'https://dexscreener.com/ethereum/0x514910771AF9Ca656af840dff83E8264EcF986CA'},
+      {id:'arbitrum',s:'ARB',n:'Arbitrum',c:'Arbitrum',a:'0x912CE59144191C1204E64559FE8253a0e49E6548',cg:'arbitrum',chain:'arbitrum',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dex:'https://dexscreener.com/arbitrum/0x912CE59144191C1204E64559FE8253a0e49E6548'},
+      {id:'optimism',s:'OP',n:'Optimism',c:'Optimism',a:'0x4200000000000000000000000000000000000042',cg:'optimism',chain:'optimism',addr:'0x4200000000000000000000000000000000000042',dex:'https://dexscreener.com/optimism'},
+      {id:'avalanche-2',s:'AVAX',n:'Avalanche',c:'Avalanche',a:'Native AVAX',cg:'avalanche-2',chain:'avalanche',addr:'Native',dex:'https://dexscreener.com/avalanche'},
+      {id:'aave',s:'AAVE',n:'Aave',c:'Ethereum',a:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',cg:'aave',chain:'ethereum',addr:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',dex:'https://dexscreener.com/ethereum/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'}
     ];
 
     const dumpCoins = [
-      {symbol:'HYPE',cg:'hyperliquid'}, {symbol:'ONDO',cg:'ondo'}, {symbol:'SUI',cg:'sui'}, {symbol:'LINK',cg:'chainlink'},
-      {symbol:'AAVE',cg:'aave'}, {symbol:'INJ',cg:'injective-protocol'}, {symbol:'PENDLE',cg:'pendle'}, {symbol:'TAO',cg:'bittensor'},
-      {symbol:'NEAR',cg:'near'}, {symbol:'TIA',cg:'celestia'}, {symbol:'SEI',cg:'sei-network'}, {symbol:'JUP',cg:'jupiter-exchange-solana'},
-      {symbol:'RUNE',cg:'thorchain'}, {symbol:'ARB',cg:'arbitrum'}, {symbol:'OP',cg:'optimism'}, {symbol:'ZRO',cg:'layerzero'},
-      {symbol:'PYTH',cg:'pyth-network'}, {symbol:'ENA',cg:'ena'}, {symbol:'WIF',cg:'dogwifcoin'}, {symbol:'BONK',cg:'bonk'},
-      {symbol:'FLOKI',cg:'floki'}, {symbol:'PEPE',cg:'pepe'}, {symbol:'JASMY',cg:'jasmy'}, {symbol:'HBAR',cg:'hedera-hashgraph'},
-      {symbol:'XLM',cg:'stellar'}, {symbol:'ADA',cg:'cardano'}, {symbol:'AVAX',cg:'avalanche-2'}, {symbol:'APT',cg:'aptos'},
-      {symbol:'ATOM',cg:'cosmos'}, {symbol:'FIL',cg:'filecoin'}, {symbol:'ICP',cg:'internet-computer'}, {symbol:'FET',cg:'fetch-ai'},
-      {symbol:'AKT',cg:'akash-network'}, {symbol:'IMX',cg:'immutable-x'}, {symbol:'GRT',cg:'the-graph'}, {symbol:'OMI',cg:'echelon'},
-      {symbol:'PLUME',cg:'plume'}, {symbol:'LTC',cg:'litecoin'}, {symbol:'ALGO',cg:'algorand'}, {symbol:'ZEN',cg:'zen'},
-      {symbol:'ROSE',cg:'oasis-network'}, {symbol:'MATIC',cg:'matic-network'}, {symbol:'BTC',cg:'bitcoin'}, {symbol:'ETH',cg:'ethereum'}
+      {symbol:'HYPE', cg:'hyperliquid', chain:'hyperliquid', addr:'Native'},
+      {symbol:'ONDO', cg:'ondo', chain:'ethereum', addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3'},
+      {symbol:'SUI', cg:'sui', chain:'sui', addr:'Native'},
+      {symbol:'LINK', cg:'chainlink', chain:'ethereum', addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA'},
+      {symbol:'AAVE', cg:'aave', chain:'ethereum', addr:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'},
+      {symbol:'INJ', cg:'injective-protocol', chain:'injective', addr:'Native'},
+      {symbol:'PENDLE', cg:'pendle', chain:'ethereum', addr:'0x808507121B80c02388fAd14726482e061B8da827'},
+      {symbol:'TAO', cg:'bittensor', chain:'bittensor', addr:'Native'},
+      {symbol:'NEAR', cg:'near', chain:'near', addr:'Native'},
+      {symbol:'TIA', cg:'celestia', chain:'celestia', addr:'Native'},
+      {symbol:'SEI', cg:'sei-network', chain:'sei', addr:'Native'},
+      {symbol:'JUP', cg:'jupiter-exchange-solana', chain:'solana', addr:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
+      {symbol:'RUNE', cg:'thorchain', chain:'thorchain', addr:'Native'},
+      {symbol:'ARB', cg:'arbitrum', chain:'arbitrum', addr:'0x912CE59144191C1204E64559FE8253a0e49E6548'},
+      {symbol:'OP', cg:'optimism', chain:'optimism', addr:'0x4200000000000000000000000000000000000042'},
+      {symbol:'ZRO', cg:'layerzero', chain:'ethereum', addr:'0x6985884C4392D348587B19cb9eAAf157F13271cd'},
+      {symbol:'PYTH', cg:'pyth-network', chain:'solana', addr:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'},
+      {symbol:'ENA', cg:'ena', chain:'ethereum', addr:'0x57e114B691Db790C35207b2e685D4A43181e6061'},
+      {symbol:'WIF', cg:'dogwifcoin', chain:'solana', addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
+      {symbol:'BONK', cg:'bonk', chain:'solana', addr:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'},
+      {symbol:'FLOKI', cg:'floki', chain:'ethereum', addr:'0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E'},
+      {symbol:'PEPE', cg:'pepe', chain:'ethereum', addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933'},
+      {symbol:'JASMY', cg:'jasmy', chain:'ethereum', addr:'0x7420B4b9a0110cdC71fB720908340C03F9Bc03EC'},
+      {symbol:'HBAR', cg:'hedera-hashgraph', chain:'hedera', addr:'Native'},
+      {symbol:'XLM', cg:'stellar', chain:'stellar', addr:'Native'},
+      {symbol:'ADA', cg:'cardano', chain:'cardano', addr:'Native'},
+      {symbol:'AVAX', cg:'avalanche-2', chain:'avalanche', addr:'Native'},
+      {symbol:'APT', cg:'aptos', chain:'aptos', addr:'Native'},
+      {symbol:'ATOM', cg:'cosmos', chain:'cosmos', addr:'Native'},
+      {symbol:'FIL', cg:'filecoin', chain:'filecoin', addr:'Native'},
+      {symbol:'ICP', cg:'internet-computer', chain:'internet-computer', addr:'Native'},
+      {symbol:'FET', cg:'fetch-ai', chain:'ethereum', addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a'},
+      {symbol:'AKT', cg:'akash-network', chain:'cosmos', addr:'Native'},
+      {symbol:'IMX', cg:'immutable-x', chain:'ethereum', addr:'0xF57e7e7C23978C3cAEC3C3548E3D615c346e79fF'},
+      {symbol:'GRT', cg:'the-graph', chain:'ethereum', addr:'0xc944E90C64B2c07662A292be6244BDf05Cda44a7'},
+      {symbol:'OMI', cg:'echelon', chain:'ethereum', addr:'0x80D6f0789e669b8C8B1171462e292d577D803b8b'},
+      {symbol:'PLUME', cg:'plume', chain:'plume', addr:'Native'},
+      {symbol:'LTC', cg:'litecoin', chain:'litecoin', addr:'Native'},
+      {symbol:'ALGO', cg:'algorand', chain:'algorand', addr:'Native'},
+      {symbol:'ZEN', cg:'zen', chain:'zen', addr:'Native'},
+      {symbol:'ROSE', cg:'oasis-network', chain:'oasis', addr:'Native'},
+      {symbol:'MATIC', cg:'matic-network', chain:'polygon', addr:'0x0000000000000000000000000000000000001010'},
+      {symbol:'BTC', cg:'bitcoin', chain:'bitcoin', addr:'Native'},
+      {symbol:'ETH', cg:'ethereum', chain:'ethereum', addr:'Native'}
     ];
 
     const ids = [...deep.map(x => x.cg), ...dumpCoins.map(x => x.cg)];
@@ -156,12 +225,14 @@
     function next() { return deep.find(x => !active.includes(x.id) && !orders.some(o => o.id === x.id)); }
     function signalForChange(change) { if (change < 0) return 'red'; if (change > 0) return 'green'; return 'flat'; }
     function textForSignal(change) { if (change < 0) return 'Red'; if (change > 0) return 'Green'; return 'Neutral'; }
+    
     function liveChangeForCoin(cg) {
       const baseline = sessionBaseline[cg];
       const current = price(cg)?.current_price;
       if (baseline === undefined || baseline === null || baseline === 0 || current === undefined || current === null || !Number.isFinite(Number(baseline)) || !Number.isFinite(Number(current))) return 0;
       return ((Number(current) - Number(baseline)) / Number(baseline)) * 100;
     }
+
     function resetLiveSession() {
       sessionBaseline = {};
       [...deep, ...dumpCoins].forEach(item => {
@@ -172,8 +243,11 @@
       });
       render();
       buildDump();
+      buildBuySetups();
     }
+
     function sliderPercentLabel(v) { return v === 0 ? '0' : `${v > 0 ? '+' : ''}${v}%`; }
+    
     function card(a) {
       const m = price(a.cg), p = m?.current_price || 0;
       const change = liveChangeForCoin(a.cg);
@@ -213,6 +287,7 @@
         </article>
       `;
     }
+
     function slide(id, v) {
       const current = Number(price(coin(id).cg)?.current_price);
       if (!Number.isFinite(current)) return;
@@ -222,6 +297,7 @@
       $(`msg-${id}`).textContent = `${pct >= 0 ? 'Up' : 'Down'} ${Math.abs(pct).toFixed(0)}% target ${money(priceTarget)}`;
       $(`msg-${id}`).className = `status ${signalForChange(pct)}`;
     }
+
     function place(id) {
       const a = coin(id), slider = $(`slider-${id}`), m = price(a.cg);
       if (!a || !slider || !m) return alert('Price unavailable right now.');
@@ -231,7 +307,9 @@
       orders.push(order); save(); render();
       window.open(a.dex || 'https://jup.ag', '_blank', 'noopener,noreferrer');
     }
+
     function cancel(i) { orders.splice(i, 1); save(); render(); }
+    
     function orderCard(o, i) {
       const a = coin(o.id);
       return `
@@ -245,6 +323,7 @@
         </article>
       `;
     }
+
     function render() {
       const ranked = active.slice().sort((a, b) => liveChangeForCoin(coin(a).cg) - liveChangeForCoin(coin(b).cg));
       $('tray').innerHTML = ranked.map(id => card(coin(id))).join('') || '<div class="empty">No active pairs.</div>';
@@ -253,12 +332,15 @@
       renderPool();
       updatePrices();
     }
+
     function renderPool() {
       const hidden = deep.filter(a => !active.includes(a.id));
       $('poolGrid').innerHTML = hidden.map(a => `<div class="card"><div class="name">${a.s}</div><div class="muted">${a.n}</div><div class="info">${a.c}</div><div class="buttons"><button class="btn" onclick="active.push('${a.id}'); save(); render();">Bring in</button></div></div>`).join('') || '<div class="empty">All pairs are visible in the tray.</div>';
     }
+
     function togglePool() { $('pool').hidden = !$('pool').hidden; }
     function refillTray() { active = deep.slice(0, 8).map(x => x.id); save(); render(); }
+    
     function updatePrices() {
       active.forEach(id => {
         const a = coin(id), m = price(a.cg);
@@ -270,6 +352,68 @@
         $(`msg-${id}`).textContent = textForSignal(change);
         $(`msg-${id}`).className = `status ${signal}`;
       });
+    }
+
+    // --- BUY SETUPS LOGIC (Strict 24H Filter) ---
+    function buildBuySetups() {
+      const now = Date.now();
+      const qualified = market.filter(m => {
+        const change = m.price_change_percentage_24h;
+        const lastUpdated = new Date(m.last_updated).getTime();
+        return (
+          change !== null && change !== undefined &&
+          change <= -5 && change > -100 &&
+          m.current_price > 0 &&
+          (now - lastUpdated) <= 120000 // 120 seconds max age
+        );
+      }).sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h); // Largest decline first
+
+      if (qualified.length === 0) {
+        $('buySetupRows').innerHTML = `<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">No coins currently meet the strict 24H >5% decline criteria with fresh data.</td></tr>`;
+        return;
+      }
+
+      const rows = qualified.map((m, index) => {
+        const change = m.price_change_percentage_24h;
+        const refPrice = m.current_price / (1 + (change / 100));
+        return `<tr class="buy-setup-row">
+                  <td style="padding:8px 7px;"><b>#${index + 1}</b></td>
+                  <td style="padding:8px 7px;"><b>${m.symbol.toUpperCase()}</b><br><span style="font-size:10px;color:#94a3b8">24H Qualification</span></td>
+                  <td style="padding:8px 7px;">${money(m.current_price)}</td>
+                  <td style="padding:8px 7px;" class="red">${change.toFixed(2)}%</td>
+                  <td style="padding:8px 7px;" class="muted">${money(refPrice)} <span style="font-size:10px;">(Calc. Ref)</span></td>
+                </tr>`;
+      }).join('');
+      $('buySetupRows').innerHTML = rows;
+    }
+
+    // --- DUMP-A-THON LOGIC (Direct Links & Visible Addresses) ---
+    function getDexLink(item) {
+      if (item.addr === 'Native') return `https://dexscreener.com/${item.chain}`;
+      return `https://dexscreener.com/${item.chain}/${item.addr}`;
+    }
+
+    function buildDump() {
+      const rows = dumpCoins.map(item => {
+        const marketItem = market.find(m => m.id === item.cg);
+        if (!marketItem) return `<tr><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">—</td></tr>`;
+        
+        const change24h = marketItem.price_change_percentage_24h || 0;
+        const signal = signalForChange(change24h);
+        const label = `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`;
+        const dexLink = getDexLink(item);
+        const displayAddr = item.addr === 'Native' ? `${item.chain} Native` : item.addr;
+
+        return `<tr class="dump-row" onclick="window.open('${dexLink}', '_blank')">
+                  <td>
+                    <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">🔗</span><br>
+                    <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${displayAddr}</span>
+                  </td>
+                  <td>${money(marketItem.current_price)}</td>
+                  <td class="${signal}">${label}</td>
+                </tr>`;
+      }).join('');
+      $('dumpRows').innerHTML = rows;
     }
 
     async function load() {
@@ -285,19 +429,11 @@
         }).join('');
         $('ticker').innerHTML = tickerHtml + tickerHtml;
         render();
+        buildDump();
+        buildBuySetups();
       } catch (e) {
         $('ticker').textContent = 'Live feed unavailable — retrying';
       }
-    }
-
-    function buildDump() {
-      const rows = dumpCoins.map(item => {
-        const marketItem = market.find(m => m.id === item.cg);
-        if (!marketItem) return `<tr><td><b>${item.symbol}</b></td><td class="muted">No live feed</td><td class="muted">—</td></tr>`;
-        const change = liveChangeForCoin(item.cg), signal = signalForChange(change), label = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
-        return `<tr><td><b>${item.symbol}</b></td><td>${money(marketItem.current_price)}</td><td class="${signal}">${label}</td></tr>`;
-      }).join('');
-      $('dumpRows').innerHTML = rows;
     }
 
     render();
