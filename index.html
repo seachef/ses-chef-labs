@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sea Chef Labs</title>
 <style>
-*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{margin:0;padding:16px;background:#0f172a;color:#f8fafc}.container{max-width:1280px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:15px}h1{color:#00ff88;margin:0;font-size:1.5rem}.actions,.buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wallet{border:1px solid #334155;border-radius:20px;padding:9px 12px;color:#cbd5e1;font-size:12px}.btn{border:0;border-radius:7px;padding:9px 12px;font-weight:700;background:#00d9ff;color:#06111d;cursor:pointer}.purple{background:#a9bfff;color:#fff}.danger{background:#ff4757;color:#fff}.muted{color:#94a3b8}.ticker{overflow:hidden;background:#020617;border:2px solid #00ff88;padding:10px 0;margin:16px 0}.track{display:flex;width:max-content;animation:scroll 45s linear infinite}.item{padding:0 24px;white-space:nowrap}.item b{color:#00d9ff}.section{background:#111d31;border:1px solid #334155;border-radius:12px;padding:16px;margin:20px 0}.section h2{margin:0 0 5px}.section>p{margin:0 0 12px;color:#cbd5e1}.grid{display:grid;grid-template-columns:repeat(4,minmax(280px,1fr));gap:12px}.card,.order{background:#1e293b;border:1px solid #475569;border-radius:10px;padding:14px}.card-head,.order-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.name{font-size:17px;font-weight:800}.chain{font-size:11px;color:#00d9ff;background:#0b2940;border-radius:4px;padding:4px 6px}.price-row{display:flex;justify-content:space-between;align-items:end;margin:15px 0 8px}.price{font-size:24px;font-weight:800}.green{color:#00ff88}.red{color:#ff4757}.flat{color:#f8fafc}.change{font-size:13px}.info{font-size:11px;line-height:1.5;color:#cbd5e1}.links,.buttons{display:flex;gap:10px;margin:10px 0 0}.links a,.research a{font-size:11px;color:#00d9ff;text-decoration:none}.label{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1;margin-top:10px}.slider{width:100%;accent-color:#00ff88;display:block;min-height:28px;touch-action:none}.sliderWrap{margin-top:10px}.sliderLabels{display:flex;justify-content:space-between;gap:4px;font-size:11px;color:#94a3b8;margin-top:4px}.sliderLabels span{min-width:19px;text-align:center}.sliderLabels .zero{color:#f8fafc;font-weight:700}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.input{width:100%;background:#0f172a;color:#fff;border:1px solid #475569;border-radius:6px;padding:9px}.status{margin-top:10px;padding:8px;border-radius:6px;background:#0f172a;color:#facc15;font-size:12px}.up{background:#064e3b;color:#86efac}.down{background:#7f1d1d;color:#fecaca}.flat{background:#1f2937;color:#e2e8f0}.research{margin-top:20px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px}.research summary{cursor:pointer;color:#00d9ff;font-weight:700}.research table{width:100%;border-collapse:collapse;font-size:12px}.research td,.research th{border-top:1px solid #334155;padding:8px 7px;text-align:left}.research th{color:#94a3b8}.empty{padding:12px;background:#0f172a;border-radius:8px;color:#94a3b8}.pin{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.pin.up{background:#00ff88}.pin.down{background:#ff4757}.pin.flat{background:#94a3b8}@keyframes scroll{to{transform:translateX(-50%)}}@media(max-width:980px){.grid{grid-template-columns:repeat(2,minmax(260px,1fr))}}@media(max-width:650px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.price{font-size:20px}}</style></head><body><div class="container">
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{margin:0;padding:16px;background:#0f172a;color:#f8fafc}.container{max-width:1280px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:15px}h1{color:#00ff88;margin:0;font-size:1.5rem}.actions,.buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wallet{border:1px solid #334155;border-radius:20px;padding:9px 12px;color:#cbd5e1;font-size:12px}.btn{border:0;border-radius:7px;padding:9px 12px;font-weight:700;background:#00d9ff;color:#06111d;cursor:pointer}.purple{background:#a9bfff;color:#fff}.danger{background:#ff4757;color:#fff}.muted{color:#94a3b8}.ticker{overflow:hidden;background:#020617;border:2px solid #00ff88;padding:10px 0;margin:16px 0}.track{display:flex;width:max-content;animation:scroll 45s linear infinite}.item{padding:0 24px;white-space:nowrap}.item b{color:#00d9ff}.section{background:#111d31;border:1px solid #334155;border-radius:12px;padding:16px;margin:20px 0}.section h2{margin:0 0 5px}.section>p{margin:0 0 12px;color:#cbd5e1}.grid{display:grid;grid-template-columns:repeat(4,minmax(280px,1fr));gap:12px}.card,.order{background:#1e293b;border:1px solid #475569;border-radius:10px;padding:14px}.card-head,.order-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.name{font-size:17px;font-weight:800}.chain{font-size:11px;color:#00d9ff;background:#0b2940;border-radius:4px;padding:4px 6px}.price-row{display:flex;justify-content:space-between;align-items:end;margin:15px 0 8px}.price{font-size:24px;font-weight:800}.green{color:#00ff88}.red{color:#ff4757}.flat{color:#f8fafc}.change{font-size:13px}.info{font-size:11px;line-height:1.5;color:#cbd5e1}.links,.buttons{display:flex;gap:10px;margin:10px 0 0}.links a,.research a{font-size:11px;color:#00d9ff;text-decoration:none}.label{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1;margin-top:10px}.slider{width:100%;accent-color:#00ff88;display:block;min-height:28px;touch-action:none}.sliderWrap{margin-top:10px}.sliderLabels{display:flex;justify-content:space-between;gap:4px;font-size:11px;color:#94a3b8;margin-top:4px}.sliderLabels span{min-width:19px;text-align:center}.sliderLabels .zero{color:#f8fafc;font-weight:700}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.input{width:100%;background:#0f172a;color:#fff;border:1px solid #475569;border-radius:6px;padding:9px}.status{margin-top:10px;padding:8px;border-radius:6px;background:#0f172a;color:#facc15;font-size:12px}.up{background:#064e3b;color:#86efac}.down{background:#7f1d1d;color:#fecaca}.flat{background:#1f2937;color:#e2e8f0}.research{margin-top:20px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px}.research summary{cursor:pointer;color:#00d9ff;font-weight:700}.research table{width:100%;border-collapse:collapse;font-size:12px}.research td,.research th{border-top:1px solid #334155;padding:8px 7px;text-align:left}.research th{color:#94a3b8}.empty{padding:12px;background:#0f172a;border-radius:8px;color:#94a3b8}.pin{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.pin.up{background:#00ff88}.pin.down{background:#ff4757}.pin.flat{background:#94a3b8}.portfolio-grid{display:grid;grid-template-columns:repeat(2,minmax(300px,1fr));gap:16px}.portfolio-box{background:#101b2d;border:1px solid #334155;border-radius:12px;padding:16px}.portfolio-box h3{margin:0 0 8px;color:#00ff88}.portfolio-box .addr{font-size:12px;color:#cbd5e1;word-break:break-all}.portfolio-stat{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #334155}.portfolio-stat strong{color:#f8fafc}.portfolio-list{margin-top:10px;padding:0;list-style:none}.portfolio-list li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px}.portfolio-list li:last-child{border-bottom:0}.portfolio-list small{color:#94a3b8}@keyframes scroll{to{transform:translateX(-50%)}}@media(max-width:980px){.grid{grid-template-columns:repeat(2,minmax(260px,1fr))}.portfolio-grid{grid-template-columns:1fr}}@media(max-width:650px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.price{font-size:20px}}</style></head><body><div class="container">
 <header><h1>Sea Chef Labs</h1><div class="actions"><span class="wallet" id="wallet">Wallet: Not connected</span><button class="btn" onclick="connectEvm()">Rabby / EVM</button><button class="btn purple" onclick="connectSolana()">Phantom</button><button class="btn" onclick="resetLiveSession()">Reset Live Session</button></div></header>
 <div class="ticker"><div class="track" id="ticker">Loading live prices...</div></div>
+<section class="section"><h2>Portfolio Tracker</h2><p>Read-only wallet balances and totals for Phantom and Rabby.</p><div class="portfolio-grid"><div class="portfolio-box"><h3>Phantom</h3><div class="addr" id="phantomAddr">Not connected</div><div class="portfolio-stat"><span>Total</span><strong id="phantomTotal">$0.00</strong></div><ul class="portfolio-list" id="phantomList"></ul></div><div class="portfolio-box"><h3>Rabby</h3><div class="addr" id="rabbyAddr">Not connected</div><div class="portfolio-stat"><span>Total</span><strong id="rabbyTotal">$0.00</strong></div><ul class="portfolio-list" id="rabbyList"></ul></div></div></section>
 <section class="section"><h2>Limit Orders</h2><p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p><h3>Deep-Liquidity Limit Orders</h3><div class="grid" id="orders"></div></section>
 <section class="section"><h2>Active Deep-Liquidity Pairs <span class="muted" id="trayCount"></span></h2><p>Eight pairs are shown at a time. They stay visible until you reset the session.</p><div class="grid" id="tray"></div><div class="buttons" style="margin-top:12px"><button class="btn" onclick="togglePool()">Deep Liquidity Pairs</button><button class="btn" onclick="refillTray()">Refresh Tray</button></div><div class="research" id="pool" hidden><b>Available pair pool</b><p class="muted" style="font-size:12px">Select a pair to bring it into the active tray.</p><div class="grid" id="poolGrid"></div></div></section>
 <section class="section"><h2>Dump-a-Thon Coins</h2><p>Compact research file. Use a row to inspect a market or prepare a future limit order.</p><details class="research"><summary>Open Dump-a-Thon list</summary><table><tbody id="dumpRows"></tbody></table></details></section>
@@ -69,6 +70,27 @@ const dumpCoins=[
 {symbol:'ETH',cg:'ethereum'}
 ];
 const ids=[...deep.map(x=>x.cg), ...dumpCoins.map(x=>x.cg)];
+const SOLANA_RPC='https://api.mainnet-beta.solana.com';
+const SOLANA_TOKENS={
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': {symbol:'USDC', decimal:6, priceKey:'usd-coin'},
+  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': {symbol:'USDT', decimal:6, priceKey:'tether'},
+  'So11111111111111111111111111111111111111112': {symbol:'SOL', decimal:9, priceKey:'solana'},
+  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6D1NnB3F9qQx7Q8': {symbol:'BONK', decimal:5, priceKey:'bonk'},
+  'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm': {symbol:'WIF', decimal:6, priceKey:'dogwifcoin'},
+  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': {symbol:'JUP', decimal:6, priceKey:'jupiter-exchange-solana'}
+};
+const EVM_TOKENS=[
+  {symbol:'ETH', address:'0x0000000000000000000000000000000000000000', decimals:18, priceKey:'ethereum'},
+  {symbol:'USDC', address:'0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6, priceKey:'usd-coin'},
+  {symbol:'USDT', address:'0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals:6, priceKey:'tether'},
+  {symbol:'LINK', address:'0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals:18, priceKey:'chainlink'},
+  {symbol:'AAVE', address:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9', decimals:18, priceKey:'aave'},
+  {symbol:'ARB', address:'0x912CE59144191C1204E64559FE8253a0e49E6548', decimals:18, priceKey:'arbitrum'},
+  {symbol:'OP', address:'0x4200000000000000000000000000000000000042', decimals:18, priceKey:'optimism'},
+  {symbol:'AVAX', address:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', decimals:18, priceKey:'avalanche-2'},
+  {symbol:'MATIC', address:'0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', decimals:18, priceKey:'matic-network'}
+];
+const walletState={phantom:{address:null, total:0, list:[]}, rabby:{address:null, total:0, list:[]}};
 let market=[],active=deep.slice(0,8).map(x=>x.id),orders=JSON.parse(localStorage.getItem('seaChefOrders')||'[]'),sessionBaseline={};
 const $=id=>document.getElementById(id),money=p=>p==null?'—':'$'+(p<1?Number(p).toFixed(4):Number(p).toFixed(2));
 function coin(id){return deep.find(x=>x.id===id)}
@@ -91,8 +113,139 @@ function renderPool(){const hidden=deep.filter(a=>!active.includes(a.id));$('poo
 function togglePool(){$('pool').hidden=!$('pool').hidden}
 function refillTray(){active=deep.slice(0,8).map(x=>x.id);save();render();}
 function updatePrices(){active.forEach(id=>{const a=coin(id),m=price(a.cg);if(!m)return;const change=liveChangeForCoin(a.cg),signal=signalForChange(change);$("p-"+id).textContent=money(Number(m.current_price));$("ch-"+id).textContent=(change>=0?'+':'')+change.toFixed(2)+'%';$("ch-"+id).className='change '+(signal==='red'?'red':signal==='green'?'green':'flat');$("st-"+id).innerHTML=`<i class="pin ${signal==='red'?'down':signal==='green'?'up':'flat'}"></i>${signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL'}`;$("msg-"+id).textContent=textForSignal(change);$("msg-"+id).className='status '+(signal==='red'?'down':signal==='green'?'up':'flat')})}
-async function load(){try{const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&order=market_cap_desc&per_page=250&sparkline=false');market=await r.json();if(Object.keys(sessionBaseline).length===0){resetLiveSession();}const ticker=market.map(m=>{const change=liveChangeForCoin(m.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price ${signal==='red'?'red':signal==='green'?'green':'flat'}">${money(m.current_price)}</span> <span class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</span></span>`}).join('');$('ticker').innerHTML=ticker+ticker;render();buildDump();}catch(e){$('ticker').textContent='Live feed unavailable — retrying';}}
+
+function shortAddr(addr){return addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Not connected';}
+function formatUsd(value){return '$'+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});}
+function renderPortfolioCard(name, stateKey, listElementId, totalElementId){
+  const address = walletState[stateKey].address || null;
+  const listEl = $(listElementId);
+  const totalEl = $(totalElementId);
+  if(!address){
+    listEl.innerHTML = '<li><span>Connect wallet</span><small>—</small></li>';
+    totalEl.textContent = '$0.00';
+    return;
+  }
+  const rows = (walletState[stateKey].list || []).slice(0, 8);
+  if(rows.length===0){
+    listEl.innerHTML = '<li><span>No balances found</span><small>—</small></li>';
+    totalEl.textContent = '$0.00';
+    return;
+  }
+  listEl.innerHTML = rows.map(item => `<li><span>${item.symbol}</span><small>${Number(item.amount).toLocaleString(undefined,{maximumFractionDigits:4)} / (item.symbol==='SOL' ? 1 : 1)}</small></li>`).join('');
+  totalEl.textContent = formatUsd(walletState[stateKey].total || 0);
+}
+async function getCoinPriceMap(){
+  try {
+    const ids = ['solana','ethereum','usd-coin','tether','chainlink','aave','arbitrum','optimism','avalanche-2','matic-network','dogwifcoin','bonk','jupiter-exchange-solana'];
+    const url='https://api.coingecko.com/api/v3/simple/price?ids='+ids.join(',')+'&vs_currencies=usd';
+    const res = await fetch(url);
+    return res.ok ? await res.json() : {};
+  } catch (e) { return {}; }
+}
+function base58Encode(buffer){
+  const alphabet='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  let num = BigInt(0);
+  for (let i=0;i<buffer.length;i++){ num = (num<<8n) + BigInt(buffer[i]); }
+  let output='';
+  while (num > 0n){ const mod = Number(num % 58n); num = num / 58n; output = alphabet[mod] + output; }
+  if (buffer.length && buffer[0]===0){ output = '1' + output; }
+  return output || '1';
+}
+function readUint64LE(buf, offset){
+  const lo = buf.readUInt32LE(offset);
+  const hi = buf.readUInt32LE(offset + 4);
+  return (BigInt(hi) << 32n) + BigInt(lo);
+}
+function convertTokenAmount(raw, decimals){
+  return Number(raw) / (10 ** decimals);
+}
+async function fetchJson(url, payload){
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+  return res.ok ? await res.json() : null;
+}
+async function getPhantomWalletData(address){
+  const priceMap = await getCoinPriceMap();
+  const balanceRes = await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:1,method:'getBalance',params:[address]});
+  const solBalance = Number(balanceRes && balanceRes.result ? balanceRes.result.value : 0) / 1e9;
+  const tokensRes = await fetchJson(SOLANA_RPC,{jsonrpc:'2.0',id:2,method:'getTokenAccountsByOwner',params:[address,{programId:'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'},{encoding:'base64'}]});
+  const tokenAccounts = (tokensRes && tokensRes.result && tokensRes.result.value) || [];
+  const map = {};
+  for (const account of tokenAccounts){
+    try {
+      const data = Buffer.from(account.account.data[0], 'base64');
+      const mint = base58Encode(data.slice(0, 32));
+      const amountRaw = readUint64LE(data, 64);
+      const decimals = SOLANA_TOKENS[mint] ? SOLANA_TOKENS[mint].decimal : 0;
+      if (SOLANA_TOKENS[mint]){
+        map[mint] = map[mint] || {symbol:SOLANA_TOKENS[mint].symbol, amount:0};
+        map[mint].amount += Number(amountRaw) / (10 ** decimals);
+      }
+    } catch (e) {}
+  }
+  let list = [];
+  let total = solBalance * (priceMap.solana ? priceMap.solana.usd : 0);
+  for (const mint of Object.keys(map)){
+    const meta = SOLANA_TOKENS[mint];
+    if(!meta) continue;
+    const amount = map[mint].amount;
+    const val = amount * (priceMap[meta.priceKey] ? priceMap[meta.priceKey].usd : 0);
+    total += val;
+    list.push({symbol:meta.symbol, amount, value:val});
+  }
+  list.unshift({symbol:'SOL', amount:solBalance, value: solBalance * (priceMap.solana ? priceMap.solana.usd : 0)});
+  walletState.phantom.list = list.slice(0,6);
+  walletState.phantom.total = total;
+  renderPortfolioCard('phantom', 'phantom', 'phantomList', 'phantomTotal');
+}
+async function getRabbyWalletData(address){
+  const priceMap = await getCoinPriceMap();
+  const balHex = await window.ethereum.request({method:'eth_getBalance', params:[address,'latest']});
+  const ethBalance = Number(BigInt(balHex)) / 1e18;
+  let list = [{symbol:'ETH', amount:ethBalance, value:ethBalance * (priceMap.ethereum ? priceMap.ethereum.usd : 0)}];
+  let total = list[0].value;
+  for (const token of EVM_TOKENS.filter(x => x.symbol !== 'ETH')) {
+    try {
+      const param = `0x${'0'.padEnd(64,'0')}`;
+      const data = '0x70a08231';
+      const balanceHex = await window.ethereum.request({method:'eth_call', params:[{to: token.address, data: data + param.slice(2, 66) + '000000000000000000000000' + address.replace('0x','').padStart(64,'0')}, 'latest']});
+      const raw = BigInt(balanceHex || '0x0');
+      const amount = Number(raw) / (10 ** token.decimals);
+      const value = amount * (priceMap[token.priceKey] ? priceMap[token.priceKey].usd : 0);
+      if(amount > 0){
+        list.push({symbol: token.symbol, amount, value});
+        total += value;
+      }
+    } catch (e) {}
+  }
+  walletState.rabby.list = list.slice(0,8);
+  walletState.rabby.total = total;
+  renderPortfolioCard('rabby', 'rabby', 'rabbyList', 'rabbyTotal');
+}
+async function refreshPhantom(){
+  if(!walletState.phantom.address){ return; }
+  await getPhantomWalletData(walletState.phantom.address);
+}
+async function refreshRabby(){
+  if(!walletState.rabby.address){ return; }
+  await getRabbyWalletData(walletState.rabby.address);
+}
+async function connectSolana(){
+  if(!window.solana){return alert('Phantom not detected.');}
+  const resp = await window.solana.connect();
+  walletState.phantom.address = resp.publicKey.toString();
+  $('phantomAddr').textContent = shortAddr(walletState.phantom.address);
+  $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.phantom.address);
+  await refreshPhantom();
+}
+async function connectEvm(){
+  if(!window.ethereum){return alert('Rabby not detected.');}
+  const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+  walletState.rabby.address = accounts[0];
+  $('rabbyAddr').textContent = shortAddr(walletState.rabby.address);
+  $('wallet').textContent = 'Wallet: ' + shortAddr(walletState.rabby.address);
+  await refreshRabby();
+}
+async function load(){
+  try{const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&order=market_cap_desc&per_page=250&sparkline=false');market=await r.json();if(Object.keys(sessionBaseline).length===0){resetLiveSession();}const ticker=market.map(m=>{const change=liveChangeForCoin(m.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price ${signal==='red'?'red':signal==='green'?'green':'flat'}">${money(m.current_price)}</span> <span class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</span></span>`}).join('');$('ticker').innerHTML=ticker+ticker;render();buildDump();}catch(e){$('ticker').textContent='Live feed unavailable — retrying';}}
 function buildDump(){const rows=dumpCoins.map(item=>{const marketItem=market.find(m=>m.id===item.cg);if(!marketItem)return `<tr><td><b>${item.symbol}</b></td><td class="muted">No live feed</td><td class="muted">NEUTRAL</td></tr>`;const change=liveChangeForCoin(marketItem.id),signal=signalForChange(change),label=signal==='red'?'RED':signal==='green'?'GREEN':'NEUTRAL';return `<tr><td><b>${item.symbol}</b></td><td class="${signal === 'red' ? 'red' : signal === 'green' ? 'green' : 'flat'}">${money(marketItem.current_price)}</td><td class="${signal==='red'?'red':signal==='green'?'green':'flat'}">${label}</td></tr>`}).join('');$('dumpRows').innerHTML=rows;}
-async function connectEvm(){if(!window.ethereum)return alert('No EVM wallet detected.');const a=await window.ethereum.request({method:'eth_requestAccounts'});$('wallet').textContent='Wallet: '+a[0].slice(0,6)+'...'+a[0].slice(-4)}
-async function connectSolana(){if(!window.solana)return alert('Phantom not detected.');const r=await window.solana.connect();$('wallet').textContent='Wallet: '+r.publicKey.toString().slice(0,6)+'...'+r.publicKey.toString().slice(-4)}
 render();load();setInterval(load,30000);</script></body></html>
