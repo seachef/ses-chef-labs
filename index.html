@@ -1,3 +1,74 @@
+
+Loading older messages…
+When I press the banner it stops do I can see a specific coin
+Exactly—tap the banner once to pause on a coin. Tap it again to continue. It also works with Enter or Space on a keyboard.
+
+
+And when I press the window it goes to the RABBY PHANTOM UNI JUPITER CORRECT
+Not fully yet.
+
+Current behaviour:
+
+Pressing a coin in the full list opens its configured chart/DEX page.
+The top Rabby and Phantom buttons connect those wallets.
+A BUY NOW candidate opens its configured venue only after the safety checks.
+It does not currently choose Rabby, Phantom, Uniswap or Jupiter automatically.
+The correct routing should be:
+
+Solana coins → Jupiter, normally with Phantom
+Ethereum/EVM coins → Uniswap, normally with Rabby
+Native non-EVM coins → their supported venue or chart page
+Unverified identity → blocked, not opened
+That routing needs to be added and tested before I call it working.
+
+Code it up
+Coded and tested.
+
+Download Sea Chef Labs Safe Routing
+
+Solana → Jupiter + Phantom
+Supported EVM tokens → Uniswap + Rabby
+Unsupported or unverified routes → safely blocked or chart-only
+Press banner → pause/resume
+No wallet approval or trade happens automatically
+SHA-256: 5caa80bc020f13f4d6a1138ab66573455d3e7b35aa0ecb580e32d531b0e6bd39
+
+The banners coins when stopped need to be able to be pressed then goes to the dex /exchange/wallets phantom/Rabby because there could be something there that looks interesting
+Done.
+
+Download Sea Chef Labs Clickable Banner
+
+How it works:
+
+Press a moving coin—banner pauses.
+Press that coin again—its verified destination opens.
+Solana → Jupiter/Phantom.
+Supported EVM → Uniswap/Rabby.
+Unsupported coins → chart only or safely blocked.
+It never connects, approves or trades automatically.
+
+can you send me the code in two parts to upload to github
+Here are the two exact code parts:
+
+In GitHub:
+
+Open index.html and select Edit.
+Delete the old code.
+Copy all of Part 1 into the empty file.
+Go to the bottom.
+Paste all of Part 2 directly underneath Part 1.
+Press Commit changes.
+The two parts were tested to rebuild the exact latest index.html.
+
+
+SEA-CHEF-LABS-index-PART-1.txt
+Document
+
+SEA-CHEF-LABS-index-PART-2.txt
+Document
+
+
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,16 +85,29 @@
     .btn { border:0; border-radius:7px; padding:9px 12px; font-weight:700; background:#0d9fff; color:#06111d; cursor:pointer; }
     .btn.purple { background:#a9bfff; color:#fff; }
     .btn.danger { background:#ff4757; color:#fff; }
-    .ticker { overflow:hidden; background:#020617; border:2px solid #00ff88; padding:10px 0; margin:16px 0; }
-    .track { display:flex; width:max-content; animation:scroll 45s linear infinite; }
-    .item { padding:0 24px; white-space:nowrap; }
+    .ticker { overflow:hidden; background:#020617; border:2px solid #00ff88; padding:10px 0; margin:16px 0; border-radius:12px; cursor:pointer; }
+    .ticker:focus-visible { outline:3px solid #00d9ff; outline-offset:3px; }
+    .ticker-status { display:flex; justify-content:space-between; gap:12px; padding:0 14px 9px; color:#94a3b8; font-size:11px; letter-spacing:.04em; }
+    .track { display:flex; width:max-content; animation:scroll 72s linear infinite; }
+    .ticker.paused .track, .ticker.paused .item.scanning { animation-play-state:paused; }
+    .item { padding:0 24px; white-space:nowrap; border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+    .item:focus-visible { outline:2px solid #00d9ff; outline-offset:-2px; }
     .item b { color:#00d9ff; }
     .item .price { color:#dbeafe; }
     .item .red { color:#ff4757; }
     .item .green { color:#4ade80; }
     .item .flat { color:#f8fafc; }
+    .item.scanning { animation:scanPulse 2.4s ease-in-out infinite; animation-delay:calc(var(--scan-order, 0) * 70ms); border-radius:8px; }
+    .item.scanning.positive { color:#4ade80; }
+    .item.scanning.negative { color:#ff6477; }
     @keyframes scroll { to { transform:translateX(-50%); } }
+    @keyframes scanPulse { 0%,82%,100% { background:transparent; } 88% { background:rgba(169,191,255,.18); box-shadow:0 0 16px rgba(0,247,255,.12); } }
     .section { background:#111d31; border:1px solid #334155; border-radius:12px; padding:16px; margin:20px 0; }
+    .limit-zone { background:linear-gradient(145deg,#151d36,#111d31); border-color:#6457a8; box-shadow:0 0 24px rgba(169,191,255,.07); }
+    .limit-zone h2 { color:#c4b5fd; }
+    .limit-zone .card, .limit-zone .order { border-color:#59658f; background:linear-gradient(145deg,#222943,#1e293b); }
+    .dump-buy-zone { background:linear-gradient(145deg,#0d2527,#111d31); border-color:#1a9e91; box-shadow:0 0 28px rgba(0,247,255,.08); }
+    .dump-buy-zone h2 { color:#63f4df; }
     .section h2 { margin:0 0 10px; }
     .section p { color:#cbd5e1; margin:0 0 14px; }
     .muted { color:#94a3b8; }
@@ -55,7 +139,10 @@
     .research td.flat { color:#f8fafc; }
     .dump-row { cursor: pointer; transition: background 0.2s; }
     .dump-row:hover { background: #1e293b; }
-    .buy-setup-row { background: #1a2130; border-left: 3px solid #ff4757; }
+    .buy-setup-row { background:#102a2b; border-left:3px solid #4ade80; }
+    .buy-setup-row:hover { background:#153738; }
+    .buy-now { background:linear-gradient(90deg,#00d9ff,#4ade80); color:#06111d; }
+    @media (prefers-reduced-motion:reduce) { .track, .item.scanning { animation:none; } }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
     @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
   </style>
@@ -71,23 +158,26 @@
       </div>
     </header>
 
-    <div class="ticker">
+    <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
+      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices…</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
 
     <!-- SCL BUY SETUPS WINDOW -->
-    <section class="section" id="scl-buy-setups">
-      <h2>BUY SETUPS <span class="muted" style="font-size:14px;">(Strict 24H Price Drop Filter &gt;5%)</span></h2>
-      <p>Coins reporting a 24-hour decline of at least 5%. Data must be &lt;120s old. This is a 24H price screen only, not an AI recommendation.</p>
+    <section class="section dump-buy-zone" id="scl-buy-setups">
+      <h2>10%+ DUMP OPPORTUNITIES <span class="muted" style="font-size:14px;">(One ranked opportunity window)</span></h2>
+      <p>Every fresh configured coin is rated. A coin enters this window only while its rolling 24-hour decline remains at least 10%. Green recovery across two checks unlocks BUY NOW; red or aqua remains WAIT.</p>
       <div class="research">
         <table>
           <thead>
             <tr style="color:#94a3b8; text-align:left;">
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 10%;">Rank</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">Coin</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">Live Price</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 20%;">24h Change</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 30%;">Calc. Reference Price</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Rank</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Rating</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Coin</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Live Price</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">24H</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Entry State</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Action</th>
             </tr>
           </thead>
           <tbody id="buySetupRows"></tbody>
@@ -95,14 +185,14 @@
       </div>
     </section>
 
-    <section class="section">
-      <h2>Limit Orders</h2>
+    <section class="section limit-zone" hidden>
+      <h2>LIMIT ORDERS — WAIT FOR YOUR PRICE</h2>
       <p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p>
       <div class="grid" id="orders"></div>
     </section>
 
-    <section class="section">
-      <h2>Active Deep-Liquidity Pairs <span class="muted" id="trayCount"></span></h2>
+    <section class="section limit-zone" hidden>
+      <h2>TOP QUALIFIED LIMIT-ORDER COINS <span class="muted" id="trayCount"></span></h2>
       <p>Eight pairs are shown at a time. They stay visible until you reset the session.</p>
       <div class="grid" id="tray"></div>
       <div class="buttons" style="margin-top:12px;">
@@ -116,15 +206,18 @@
     </section>
 
     <section class="section">
-      <h2>Dump-a-Thon Coins <span class="muted" style="font-size:14px;">(Click row to open exact Chart & Socials)</span></h2>
-      <p>Compact research file. Use a row to inspect a market or prepare a future limit order.</p>
+      <h2>ALL CONFIGURED COINS <span class="muted" style="font-size:14px;">(Highest screening rating first)</span></h2>
+      <p>The complete available checker list. Rating combines rolling 24-hour decline, current direction and freshness; it is a screen, not a win probability.</p>
       <div class="research">
         <table>
           <thead>
             <tr style="color:#94a3b8; text-align:left;">
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 45%;">Coin / Verified Address</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 25%;">Live Price</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155; width: 30%;">24h Change</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Rank</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Rating</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Coin / Verified Address</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Live Price</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">24H</th>
+              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Live Action</th>
             </tr>
           </thead>
           <tbody id="dumpRows"></tbody>
@@ -203,21 +296,50 @@
       {symbol:'AKT', cg:'akash-network', chain:'cosmos', addr:'Native'},
       {symbol:'IMX', cg:'immutable-x', chain:'ethereum', addr:'0xF57e7e7C23978C3cAEC3C3548E3D615c346e79fF'},
       {symbol:'GRT', cg:'the-graph', chain:'ethereum', addr:'0xc944E90C64B2c07662A292be6244BDf05Cda44a7'},
-      {symbol:'OMI', cg:'echelon', chain:'ethereum', addr:'0x80D6f0789e669b8C8B1171462e292d577D803b8b'},
+      {symbol:'OMI', cg:'ecomi', chain:'multichain', addr:'Identity check required', chart:'https://www.coingecko.com/en/coins/ecomi'},
       {symbol:'PLUME', cg:'plume', chain:'plume', addr:'Native'},
       {symbol:'LTC', cg:'litecoin', chain:'litecoin', addr:'Native'},
       {symbol:'ALGO', cg:'algorand', chain:'algorand', addr:'Native'},
       {symbol:'ZEN', cg:'zen', chain:'zen', addr:'Native'},
       {symbol:'ROSE', cg:'oasis-network', chain:'oasis', addr:'Native'},
       {symbol:'MATIC', cg:'matic-network', chain:'polygon', addr:'0x0000000000000000000000000000000000001010'},
+      {symbol:'XRP', cg:'ripple', chain:'xrp-ledger', addr:'Native', chart:'https://www.coingecko.com/en/coins/xrp'},
+      {symbol:'AXL', cg:'axelar', chain:'axelar', addr:'Native', chart:'https://www.coingecko.com/en/coins/axelar'},
+      {symbol:'AR', cg:'arweave', chain:'arweave', addr:'Native', chart:'https://www.coingecko.com/en/coins/arweave'},
+      {symbol:'STX', cg:'blockstack', chain:'stacks', addr:'Native', chart:'https://www.coingecko.com/en/coins/stacks'},
+      {symbol:'KAS', cg:'kaspa', chain:'kaspa', addr:'Native', chart:'https://www.coingecko.com/en/coins/kaspa'},
+      {symbol:'METIS', cg:'metis-token', chain:'metis', addr:'Native', chart:'https://www.coingecko.com/en/coins/metis-token'},
+      {symbol:'BNB', cg:'binancecoin', chain:'bnb', addr:'Native', chart:'https://www.coingecko.com/en/coins/bnb'},
+      {symbol:'DOGE', cg:'dogecoin', chain:'dogecoin', addr:'Native', chart:'https://www.coingecko.com/en/coins/dogecoin'},
+      {symbol:'TRX', cg:'tron', chain:'tron', addr:'Native', chart:'https://www.coingecko.com/en/coins/tron'},
+      {symbol:'DOT', cg:'polkadot', chain:'polkadot', addr:'Native', chart:'https://www.coingecko.com/en/coins/polkadot'},
+      {symbol:'BCH', cg:'bitcoin-cash', chain:'bitcoin-cash', addr:'Native', chart:'https://www.coingecko.com/en/coins/bitcoin-cash'},
+      {symbol:'ETC', cg:'ethereum-classic', chain:'ethereum-classic', addr:'Native', chart:'https://www.coingecko.com/en/coins/ethereum-classic'},
+      {symbol:'UNI', cg:'uniswap', chain:'ethereum', addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', chart:'https://www.coingecko.com/en/coins/uniswap'},
+      {symbol:'XMR', cg:'monero', chain:'monero', addr:'Native', chart:'https://www.coingecko.com/en/coins/monero'},
+      {symbol:'TON', cg:'the-open-network', chain:'ton', addr:'Native', chart:'https://www.coingecko.com/en/coins/toncoin'},
+      {symbol:'SHIB', cg:'shiba-inu', chain:'ethereum', addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', chart:'https://www.coingecko.com/en/coins/shiba-inu'},
       {symbol:'BTC', cg:'bitcoin', chain:'bitcoin', addr:'Native'},
       {symbol:'ETH', cg:'ethereum', chain:'ethereum', addr:'Native'}
     ];
 
-    const ids = [...deep.map(x => x.cg), ...dumpCoins.map(x => x.cg)];
-    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = JSON.parse(localStorage.getItem('seaChefOrders') || '[]'), sessionBaseline = {};
+    const checkerCoins = [...dumpCoins];
+    deep.forEach(item => {
+      if (!checkerCoins.some(existing => existing.cg === item.cg)) {
+        checkerCoins.push({symbol:item.s, cg:item.cg, chain:item.chain, addr:item.addr, chart:item.dex});
+      }
+    });
+    const ids = checkerCoins.map(x => x.cg);
+    function readSavedOrders() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem('seaChefOrders') || '[]');
+        return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object') : [];
+      } catch (_) { return []; }
+    }
+    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {};
     const $ = id => document.getElementById(id);
     const money = p => p == null ? '—' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
+    const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 
     function coin(id) { return deep.find(x => x.id === id); }
     function price(id) { return market.find(x => x.id === id); }
@@ -225,6 +347,173 @@
     function next() { return deep.find(x => !active.includes(x.id) && !orders.some(o => o.id === x.id)); }
     function signalForChange(change) { if (change < 0) return 'red'; if (change > 0) return 'green'; return 'flat'; }
     function textForSignal(change) { if (change < 0) return 'Red'; if (change > 0) return 'Green'; return 'Neutral'; }
+    function finiteChange(value) { return Number.isFinite(Number(value)) ? Number(value) : null; }
+    function freshMarketItem(m, now = Date.now()) {
+      if (!m || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
+      const observedAt = new Date(m.last_updated).getTime();
+      return Number.isFinite(observedAt) && now >= observedAt && now - observedAt <= 120000;
+    }
+    function recordPriceSamples() {
+      const recordedAt = Date.now();
+      market.forEach(m => {
+        const current = Number(m.current_price);
+        if (!Number.isFinite(current) || current <= 0) return;
+        const samples = Array.isArray(priceSamples[m.id]) ? priceSamples[m.id] : [];
+        samples.push({ price: current, recordedAt });
+        priceSamples[m.id] = samples.slice(-3);
+      });
+    }
+    function entryStateFor(cg) {
+      const samples = priceSamples[cg] || [];
+      if (samples.length < 3) return 'checking';
+      const [older, previous, current] = samples;
+      if (current.price > previous.price && previous.price >= older.price) return 'recovering';
+      if (current.price < previous.price && previous.price <= older.price) return 'falling';
+      return 'stabilising';
+    }
+    function screeningRating(m) {
+      const change = finiteChange(m?.price_change_percentage_24h);
+      if (change === null || !freshMarketItem(m)) return 0;
+      const declinePoints = change < 0 ? Math.min(70, Math.max(0, -change * 4)) : 0;
+      const state = entryStateFor(m.id);
+      const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
+      return Math.round(Math.min(100, declinePoints + directionPoints + 10));
+    }
+    function entryStateLabel(state) {
+      if (state === 'recovering') return 'BUY NOW CANDIDATE';
+      if (state === 'falling') return 'WAIT — STILL DUMPING';
+      if (state === 'stabilising') return 'WATCH CLOSELY';
+      return 'CHECKING — NEEDS 2 MOVES';
+    }
+    function entryStateSignal(state) {
+      if (state === 'recovering') return 'green';
+      if (state === 'falling') return 'red';
+      return 'flat';
+    }
+    const UNISWAP_CHAINS = Object.freeze({
+      ethereum:'mainnet',
+      arbitrum:'arbitrum',
+      optimism:'optimism',
+      polygon:'polygon',
+      avalanche:'avalanche',
+      bnb:'bnb'
+    });
+    const SOLANA_USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+    function tradeRouteFor(item) {
+      if (!item || typeof item.cg !== 'string') return null;
+      if (item.chain === 'solana') {
+        const output = item.addr === 'Native' ? 'SOL' : item.addr;
+        if (output !== 'SOL' && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(output)) return null;
+        return {venue:'JUPITER', wallet:'PHANTOM', url:`https://jup.ag/swap/${SOLANA_USDC_MINT}-${encodeURIComponent(output)}`};
+      }
+      const uniswapChain = UNISWAP_CHAINS[item.chain];
+      if (uniswapChain && /^0x[a-fA-F0-9]{40}$/.test(String(item.addr || ''))) {
+
+Loading older messages…
+When I press the banner it stops do I can see a specific coin
+Exactly—tap the banner once to pause on a coin. Tap it again to continue. It also works with Enter or Space on a keyboard.
+
+
+And when I press the window it goes to the RABBY PHANTOM UNI JUPITER CORRECT
+Not fully yet.
+
+Current behaviour:
+
+Pressing a coin in the full list opens its configured chart/DEX page.
+The top Rabby and Phantom buttons connect those wallets.
+A BUY NOW candidate opens its configured venue only after the safety checks.
+It does not currently choose Rabby, Phantom, Uniswap or Jupiter automatically.
+The correct routing should be:
+
+Solana coins → Jupiter, normally with Phantom
+Ethereum/EVM coins → Uniswap, normally with Rabby
+Native non-EVM coins → their supported venue or chart page
+Unverified identity → blocked, not opened
+That routing needs to be added and tested before I call it working.
+
+Code it up
+Coded and tested.
+
+Download Sea Chef Labs Safe Routing
+
+Solana → Jupiter + Phantom
+Supported EVM tokens → Uniswap + Rabby
+Unsupported or unverified routes → safely blocked or chart-only
+Press banner → pause/resume
+No wallet approval or trade happens automatically
+SHA-256: 5caa80bc020f13f4d6a1138ab66573455d3e7b35aa0ecb580e32d531b0e6bd39
+
+The banners coins when stopped need to be able to be pressed then goes to the dex /exchange/wallets phantom/Rabby because there could be something there that looks interesting
+Done.
+
+Download Sea Chef Labs Clickable Banner
+
+How it works:
+
+Press a moving coin—banner pauses.
+Press that coin again—its verified destination opens.
+Solana → Jupiter/Phantom.
+Supported EVM → Uniswap/Rabby.
+Unsupported coins → chart only or safely blocked.
+It never connects, approves or trades automatically.
+
+can you send me the code in two parts to upload to github
+Here are the two exact code parts:
+
+In GitHub:
+
+Open index.html and select Edit.
+Delete the old code.
+Copy all of Part 1 into the empty file.
+Go to the bottom.
+Paste all of Part 2 directly underneath Part 1.
+Press Commit changes.
+The two parts were tested to rebuild the exact latest index.html.
+
+
+SEA-CHEF-LABS-index-PART-1.txt
+Document
+
+SEA-CHEF-LABS-index-PART-2.txt
+Document
+
+
+
+        return {venue:'UNISWAP', wallet:'RABBY', url:`https://app.uniswap.org/swap?chain=${encodeURIComponent(uniswapChain)}&outputCurrency=${encodeURIComponent(item.addr)}`};
+      }
+      return null;
+    }
+    function openTradingRoute(cg) {
+      const item = checkerCoins.find(candidate => candidate.cg === cg);
+      const route = tradeRouteFor(item);
+      if (!route) return alert('A verified Jupiter or Uniswap route is not available for this coin. Nothing was opened.');
+      window.open(route.url, '_blank', 'noopener,noreferrer');
+    }
+    function openCoinWindow(cg) {
+      const item = checkerCoins.find(candidate => candidate.cg === cg);
+      const route = tradeRouteFor(item);
+      if (route) return openTradingRoute(cg);
+      const chart = item ? getDexLink(item) : null;
+      if (!chart) return alert('No verified route is available. Nothing was opened.');
+      window.open(chart, '_blank', 'noopener,noreferrer');
+    }
+    function openTickerCoin(event, cg) {
+      event.stopPropagation();
+      const shell = $('tickerShell');
+      if (!shell.classList.contains('paused')) {
+        toggleTickerPause();
+        $('tickerStatus').textContent = 'Banner paused — press the coin again to open its verified route';
+        return;
+      }
+      openCoinWindow(cg);
+    }
+    function toggleTickerPause() {
+      const shell = $('tickerShell');
+      const paused = shell.classList.toggle('paused');
+      shell.setAttribute('aria-pressed', String(paused));
+      shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
+      $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED · TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE';
+    }
     
     function liveChangeForCoin(cg) {
       const baseline = sessionBaseline[cg];
@@ -384,59 +673,101 @@
     function buildBuySetups() {
       const now = Date.now();
       const qualified = market.filter(m => {
-        const change = m.price_change_percentage_24h;
-        const lastUpdated = new Date(m.last_updated).getTime();
+        const change = finiteChange(m.price_change_percentage_24h);
         return (
-          change !== null && change !== undefined &&
-          change <= -5 && change > -100 &&
-          m.current_price > 0 &&
-          (now - lastUpdated) <= 120000 // 120 seconds max age
+          change !== null &&
+          change <= -10 && change > -100 &&
+          freshMarketItem(m, now)
         );
-      }).sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h); // Largest decline first
+      }).sort((a, b) => screeningRating(b) - screeningRating(a) || a.price_change_percentage_24h - b.price_change_percentage_24h);
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<tr><td colspan="5" class="muted" style="text-align:center; padding:20px;">No coins currently meet the strict 24H >5% decline criteria with fresh data.</td></tr>`;
+        $('buySetupRows').innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">NO QUALIFYING DUMP — no fresh configured coin is still down at least 10% over the rolling 24 hours.</td></tr>`;
         return;
       }
 
       const rows = qualified.map((m, index) => {
         const change = m.price_change_percentage_24h;
-        const refPrice = m.current_price / (1 + (change / 100));
+        const state = entryStateFor(m.id);
+        const stateSignal = entryStateSignal(state);
+        const rating = screeningRating(m);
+        const action = state === 'recovering'
+          ? `<button class="btn buy-now" onclick="prepareDumpBuy('${m.id}')">BUY NOW</button>`
+          : `<button class="btn" disabled>WAIT</button>`;
         return `<tr class="buy-setup-row">
                   <td style="padding:8px 7px;"><b>#${index + 1}</b></td>
-                  <td style="padding:8px 7px;"><b>${m.symbol.toUpperCase()}</b><br><span style="font-size:10px;color:#94a3b8">24H Qualification</span></td>
+                  <td style="padding:8px 7px;"><b>${rating}/100</b></td>
+                  <td style="padding:8px 7px;"><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b><br><span style="font-size:10px;color:#94a3b8">QUALIFIED 10%+ DUMP</span></td>
                   <td style="padding:8px 7px;">${money(m.current_price)}</td>
                   <td style="padding:8px 7px;" class="red">${change.toFixed(2)}%</td>
-                  <td style="padding:8px 7px;" class="muted">${money(refPrice)} <span style="font-size:10px;">(Calc. Ref)</span></td>
+                  <td style="padding:8px 7px;" class="${stateSignal}">${entryStateLabel(state)}</td>
+                  <td style="padding:8px 7px;">${action}</td>
                 </tr>`;
       }).join('');
       $('buySetupRows').innerHTML = rows;
     }
 
+    function prepareDumpBuy(cg) {
+      const m = price(cg);
+      const change = finiteChange(m?.price_change_percentage_24h);
+      if (!freshMarketItem(m)) return alert('Price is missing or stale. Refresh before reviewing a buy.');
+      if (change === null || change > -10 || change <= -100) return alert('This coin no longer meets the 10% rolling 24-hour dump rule. Nothing was prepared.');
+      if (entryStateFor(cg) !== 'recovering') return alert('BUY NOW remains locked until two fresh price movements confirm recovery.');
+      const amount = Number(prompt('How many USDC do you want to review for this immediate entry?', '10'));
+      if (!Number.isFinite(amount) || amount <= 0) return alert('No valid amount entered. Nothing was prepared.');
+      const maxSlippagePct = Number(prompt('Maximum price movement allowed before you refuse the entry? Enter a percentage.', '0.5'));
+      if (!Number.isFinite(maxSlippagePct) || maxSlippagePct < 0 || maxSlippagePct > 2) return alert('Choose a maximum between 0% and 2%. Nothing was prepared.');
+      const livePrice = Number(m.current_price);
+      const priceCeiling = livePrice * (1 + maxSlippagePct / 100);
+      const item = checkerCoins.find(x => x.cg === cg);
+      if (!item) return alert('Verified market identity is unavailable. Nothing was prepared.');
+      const summary = `${String(m.symbol || '').toUpperCase()} protected immediate-entry review\nAmount: ${amount.toFixed(2)} USDC\nObserved price: ${livePrice}\nMaximum price: ${priceCeiling}\nRolling 24H: ${change.toFixed(2)}%\nThis is a review note, not an order.`;
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(summary).catch(() => {});
+      alert(summary + '\n\nConfirm identity, spread, fees and the final order at the venue.');
+      openTradingRoute(cg);
+    }
+
     // --- DUMP-A-THON LOGIC (Direct Links & Visible Addresses) ---
     function getDexLink(item) {
+      if (item.chart) return item.chart;
       if (item.addr === 'Native') return `https://dexscreener.com/${item.chain}`;
       return `https://dexscreener.com/${item.chain}/${item.addr}`;
     }
 
     function buildDump() {
-      const rows = dumpCoins.map(item => {
-        const marketItem = market.find(m => m.id === item.cg);
-        if (!marketItem) return `<tr><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">—</td></tr>`;
+      const ranked = checkerCoins.map(item => ({ item, marketItem: market.find(m => m.id === item.cg) }))
+        .sort((a, b) => {
+          const ratingDifference = screeningRating(b.marketItem) - screeningRating(a.marketItem);
+          if (ratingDifference) return ratingDifference;
+          const av = finiteChange(a.marketItem?.price_change_percentage_24h);
+          const bv = finiteChange(b.marketItem?.price_change_percentage_24h);
+          if (av === null && bv === null) return a.item.symbol.localeCompare(b.item.symbol);
+          if (av === null) return 1;
+          if (bv === null) return -1;
+          return av - bv;
+        });
+      const rows = ranked.map(({ item, marketItem }, index) => {
+        if (!marketItem) return `<tr><td class="muted">—</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">—</td><td class="muted">—</td></tr>`;
         
-        const change24h = marketItem.price_change_percentage_24h || 0;
+        const change24h = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
         const signal = signalForChange(change24h);
         const label = `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`;
-        const dexLink = getDexLink(item);
+        const state = entryStateFor(item.cg);
+        const stateSignal = entryStateSignal(state);
+        const rating = screeningRating(marketItem);
+        const route = tradeRouteFor(item);
         const displayAddr = item.addr === 'Native' ? `${item.chain} Native` : item.addr;
 
-        return `<tr class="dump-row" onclick="window.open('${dexLink}', '_blank')">
+        return `<tr class="dump-row" onclick="openCoinWindow('${item.cg}')">
+                  <td><b>#${index + 1}</b></td>
+                  <td><b>${rating}/100</b></td>
                   <td>
                     <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">🔗</span><br>
                     <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${displayAddr}</span>
                   </td>
                   <td>${money(marketItem.current_price)}</td>
                   <td class="${signal}">${label}</td>
+                  <td class="${stateSignal}">${entryStateLabel(state)}<br><span style="font-size:10px;color:#94a3b8">${route ? `${route.venue} • ${route.wallet}` : 'CHART ONLY'}</span></td>
                 </tr>`;
       }).join('');
       $('dumpRows').innerHTML = rows;
@@ -445,20 +776,38 @@
     async function load() {
       try {
         const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false');
-        market = await r.json();
+        if (!r.ok) throw new Error(`Public feed returned HTTP ${r.status}`);
+        const payload = await r.json();
+        if (!Array.isArray(payload)) throw new Error('Public feed returned an invalid payload');
+        market = payload.filter(m => m && typeof m.id === 'string' && ids.includes(m.id) && typeof m.symbol === 'string');
         if (Object.keys(sessionBaseline).length === 0) {
           resetLiveSession();
         }
-        const tickerHtml = market.map(m => {
-          const change = liveChangeForCoin(m.id), signal = signalForChange(change), label = change >= 0 ? 'Green' : 'Red';
-          return `<span class="item"><b>${m.symbol.toUpperCase()}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${label}</span></span>`;
+        recordPriceSamples();
+        const sortedMarket = market.slice().sort((a, b) => {
+          const ratingDifference = screeningRating(b) - screeningRating(a);
+          if (ratingDifference) return ratingDifference;
+          const av = finiteChange(a.price_change_percentage_24h);
+          const bv = finiteChange(b.price_change_percentage_24h);
+          if (av === null && bv === null) return a.symbol.localeCompare(b.symbol);
+          if (av === null) return 1;
+          if (bv === null) return -1;
+          return av - bv;
+        });
+        const tickerHtml = sortedMarket.map((m, index) => {
+          const change = finiteChange(m.price_change_percentage_24h) ?? 0;
+          const signal = signalForChange(change);
+          const direction = change > 0 ? 'positive' : (change < 0 ? 'negative' : 'flat');
+          return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" onclick="openTickerCoin(event,'${m.id}')" aria-label="${escapeHTML(String(m.symbol || '').toUpperCase())}: ${money(m.current_price)}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)} percent. Open verified route when banner is paused."><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span></button>`;
         }).join('');
         $('ticker').innerHTML = tickerHtml + tickerHtml;
+        $('tickerStatus').textContent = `${market.length}/${ids.length} configured prices received • highest screening rating first`;
         render();
         buildDump();
         buildBuySetups();
       } catch (e) {
         $('ticker').textContent = 'Live feed unavailable — retrying';
+        $('tickerStatus').textContent = 'No ranking shown until fresh data returns';
       }
     }
 
