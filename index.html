@@ -318,16 +318,17 @@ html lang="en-AU" translate="no">
       {key:'avalanche', api:'avax', name:'AVALANCHE', gas:'AVAX', wallet:'RABBY'}
     ]);
     const CHAIN_POOL_REFRESH_MS = 10 * 60 * 1000;
+    const CHAIN_REQUEST_GAP_MS = 8000;
     const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
     const CHAIN_POOL_LIMIT = 25;
     const STABLE_SYMBOLS = new Set(['USDT','USDC','USDE','DAI','FDUSD','TUSD','USDS','FRAX','LUSD','PYUSD','EURC']);
     function readSavedOrders() {
       try {
         const parsed = JSON.parse(localStorage.getItem('seaChefOrders') || '[]');
-        return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object') : [];
+        return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object' && typeof o.id === 'string') : [];
       } catch (_) { return []; }
     }
-    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {};
+    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
     const $ = id => document.getElementById(id);
     const money = p => p == null ? 'â' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -475,13 +476,13 @@ html lang="en-AU" translate="no">
       const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : BLUE_CHIPS.has(item.symbol) ? '<span class="chain-tag blue">BLUE CHIP</span>' : '<span class="chain-tag">MOVER</span>';
       return `<button type="button" class="chain-coin" onclick="openChainCoin(event,'${laneKey}','${item.cg}')"><strong>${symbol}</strong><span>${money(marketItem.current_price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
     }
-    function dynamicChainCoinMarkup(pool, laneKey) {
+    function dynamicChainCoinMarkup(pool, laneKey, fresh) {
       const change = finiteChange(pool.change24h) ?? 0;
       const signal = signalForChange(change);
-      const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : '<span class="chain-tag">TOP LIQUIDITY</span>';
-      return `<button type="button" class="chain-coin" onclick="openDynamicPool(event,'${laneKey}','${encodeURIComponent(pool.chart)}')"><strong>${escapeHTML(pool.symbol)}</strong><span>${money(pool.price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
+      const tag = !fresh ? '<span class="chain-tag">STALE</span>' : change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : '<span class="chain-tag">TOP LIQUIDITY</span>';
+      return `<button type="button" class="chain-coin" data-chain-pool="true" data-lane="${escapeHTML(laneKey)}" data-pool-url="${escapeHTML(pool.chart)}"><strong>${escapeHTML(pool.symbol)}</strong><span>${money(pool.price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
     }
-    function openDynamicPool(event, key, encodedChart) {
+    function openDynamicPool(event, key, url) {
       event.stopPropagation();
       const lane = chainLaneElement(key);
       if (!lane) return;
@@ -489,9 +490,12 @@ html lang="en-AU" translate="no">
         setChainLanePaused(key, true);
         return;
       }
-      const url = decodeURIComponent(encodedChart);
       if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+$/.test(url)) return alert('Verified chart route unavailable. Nothing was opened.');
       window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    function validPoolAddress(lane, address) {
+      if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+      return /^0x[a-fA-F0-9]{40}$/.test(address);
     }
     function normalisePoolToken(pool, includedById, lane) {
       const attributes = pool?.attributes || {};
@@ -506,58 +510,85 @@ html lang="en-AU" translate="no">
       const selected = candidates[0];
       const liquidity = Number(attributes.reserve_in_usd);
       const volume = Number(attributes.volume_usd?.h24);
-      const change24h = Number(attributes.price_change_percentage?.h24);
+      const rawChange = attributes.price_change_percentage?.h24;
+      const baseChange24h = rawChange === null || rawChange === undefined || rawChange === '' ? NaN : Number(rawChange);
+      const selectedIsQuote = selected?.token === quote;
+      const change24h = selectedIsQuote && Number.isFinite(baseChange24h) && baseChange24h > -100 ? (-baseChange24h / (100 + baseChange24h)) * 100 : baseChange24h;
       const address = String(attributes.address || '').trim();
-      if (!selected || !address || !Number.isFinite(selected.price) || selected.price <= 0 || !Number.isFinite(liquidity) || liquidity < CHAIN_POOL_MIN_LIQUIDITY_USD || !Number.isFinite(volume) || volume <= 0 || !Number.isFinite(change24h)) return null;
+      if (!selected || !validPoolAddress(lane,address) || !Number.isFinite(selected.price) || selected.price <= 0 || !Number.isFinite(liquidity) || liquidity < CHAIN_POOL_MIN_LIQUIDITY_USD || !Number.isFinite(volume) || volume <= 0 || !Number.isFinite(change24h)) return null;
       const symbol = String(selected.token.symbol || '').toUpperCase().trim();
       if (!/^[A-Z0-9._-]{1,15}$/.test(symbol) || STABLE_SYMBOLS.has(symbol)) return null;
       return {symbol, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}`};
     }
     async function fetchChainPage(lane, page) {
+      const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
+      if (waitMs) await new Promise(resolve => setTimeout(resolve,waitMs));
       const url = `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools?page=${page}&include=base_token,quote_token`;
-      const response = await fetch(url, {cache:'no-store', headers:{Accept:'application/json'}});
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(),15000);
+      chainLastRequestAt = Date.now();
+      let response;
+      try { response = await fetch(url, {cache:'no-store', headers:{Accept:'application/json'}, signal:controller.signal}); }
+      finally { clearTimeout(timeout); }
+      if (response.status === 429) { const error = new Error(`${lane.name} pool feed rate limited`); error.rateLimited = true; throw error; }
       if (!response.ok) throw new Error(`${lane.name} pool feed HTTP ${response.status}`);
       const payload = await response.json();
       if (!Array.isArray(payload?.data) || !Array.isArray(payload?.included)) throw new Error(`${lane.name} pool feed invalid`);
       const includedById = new Map(payload.included.map(item => [item.id,item]));
       return payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean);
     }
+    function commitChainPools(lane, pages) {
+      const unique = [];
+      const seen = new Set();
+      pages.sort((a,b) => b.liquidity - a.liquidity || b.volume - a.volume).forEach(pool => {
+        if (!seen.has(pool.symbol) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.symbol); unique.push(pool); }
+      });
+      if (unique.length) { chainPools[lane.key] = unique; chainPoolsUpdatedAt[lane.key] = Date.now(); }
+      renderChainBoards();
+    }
     async function refreshChainPools() {
-      for (const lane of CHAIN_LANES) {
-        try {
-          const pages = [];
-          for (const page of [1,2]) {
-            pages.push(...await fetchChainPage(lane,page));
-            await new Promise(resolve => setTimeout(resolve,450));
+      if (chainRefreshInFlight) return;
+      chainRefreshInFlight = true;
+      const pending = Object.fromEntries(CHAIN_LANES.map(lane => [lane.key,[]]));
+      let rateLimited = false;
+      try {
+        outer: for (const page of [1,2]) {
+          for (const lane of CHAIN_LANES) {
+            try {
+              pending[lane.key].push(...await fetchChainPage(lane,page));
+              commitChainPools(lane,pending[lane.key]);
+            } catch (error) {
+              console.warn(error.message);
+              if (error.rateLimited) { rateLimited = true; break outer; }
+            }
           }
-          const unique = [];
-          const seen = new Set();
-          pages.sort((a,b) => b.liquidity - a.liquidity || b.volume - a.volume).forEach(pool => {
-            if (!seen.has(pool.symbol) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.symbol); unique.push(pool); }
-          });
-          chainPools[lane.key] = unique;
-          chainPoolsUpdatedAt[lane.key] = Date.now();
-          renderChainBoards();
-        } catch (error) {
-          console.warn(error.message);
+        }
+      } finally {
+        chainRefreshInFlight = false;
+        if (rateLimited) {
+          clearTimeout(chainRetryTimer);
+          chainRetryTimer = setTimeout(refreshChainPools,60000);
         }
       }
     }
     function renderChainBoards() {
+      const paused = new Set(CHAIN_LANES.filter(lane => chainLaneElement(lane.key)?.classList.contains('paused')).map(lane => lane.key));
       const boards = CHAIN_LANES.map(lane => {
         const named = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
         const namedSymbols = new Set(named.map(row => row.item.symbol));
         const discovered = (chainPools[lane.key] || []).filter(pool => !namedSymbols.has(pool.symbol));
         const namedContent = named.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('');
-        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key)).join('');
+        const chainFresh = Boolean(chainPoolsUpdatedAt[lane.key] && Date.now() - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
+        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key,chainFresh)).join('');
         const content = namedContent + discoveredContent || `<span class="chain-empty">LOADING TOP 25 CHAIN COINSâ¦</span>`;
         const total = named.length + discovered.length;
         const moving = total > 2 ? content + content : content;
         const animation = total > 2 ? '' : ' style="animation:none"';
-        const age = chainPoolsUpdatedAt[lane.key] ? ` Â· TOP 25 UPDATED ${localClock(chainPoolsUpdatedAt[lane.key])}` : ' Â· TOP 25 LOADING';
+        const age = chainPoolsUpdatedAt[lane.key] ? ` Â· ${chainPools[lane.key]?.length || 0}/25 FOUND Â· ${chainFresh ? 'UPDATED' : 'STALE'} ${localClock(chainPoolsUpdatedAt[lane.key])}` : ' Â· TOP 25 LOADING';
         return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas} Â· WALLET: ${lane.wallet}${age} Â· <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
       }).join('');
       $('chainBoards').innerHTML = boards;
+      paused.forEach(key => setChainLanePaused(key,true));
     }
     
     function liveChangeForCoin(cg) {
@@ -670,6 +701,7 @@ html lang="en-AU" translate="no">
     
     function orderCard(o, i) {
       const a = coin(o.id);
+      if (!a) return `<article class="order"><div class="order-head"><b>UNRECOGNIZED SAVED DRAFT</b></div><p class="muted">This older saved item is preserved but cannot be opened because its verified market identity is unavailable.</p><div class="buttons"><button class="btn danger" onclick="cancel(${i})">Remove draft</button></div></article>`;
       const expired = Number.isFinite(Number(o.expiresAt)) && Date.now() >= Number(o.expiresAt);
       const status = expired ? 'Expired â do not chase' : (o.status || 'Draft');
       return `
@@ -873,6 +905,13 @@ html lang="en-AU" translate="no">
 
     render();
     renderChainBoards();
+    $('chainBoards').addEventListener('click', event => {
+      const button = event.target.closest('[data-chain-pool="true"]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openDynamicPool(event,button.dataset.lane,button.dataset.poolUrl);
+    },true);
     load();
     setInterval(load, 60000);
     refreshChainPools();
