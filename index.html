@@ -1,5 +1,4 @@
-!doctype html>
-<html lang="en-AU" translate="no">
+html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -309,22 +308,26 @@
     const ids = checkerCoins.map(x => x.cg);
     const BLUE_CHIPS = new Set(['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX','LINK','AVAX','DOT','LTC','BCH','XMR','TON','SHIB']);
     const CHAIN_LANES = Object.freeze([
-      {key:'ethereum', name:'ETHEREUM', gas:'ETH', wallet:'RABBY'},
-      {key:'solana', name:'SOLANA', gas:'SOL', wallet:'PHANTOM'},
-      {key:'bnb', name:'BNB CHAIN', gas:'BNB', wallet:'RABBY'},
-      {key:'robinhood', name:'ROBINHOOD CHAIN', gas:'ETH', wallet:'ROBINHOOD / RABBY'},
-      {key:'arbitrum', name:'ARBITRUM', gas:'ETH', wallet:'RABBY'},
-      {key:'optimism', name:'OPTIMISM', gas:'ETH', wallet:'RABBY'},
-      {key:'polygon', name:'POLYGON', gas:'POL', wallet:'RABBY'},
-      {key:'avalanche', name:'AVALANCHE', gas:'AVAX', wallet:'RABBY'}
+      {key:'ethereum', api:'eth', name:'ETHEREUM', gas:'ETH', wallet:'RABBY'},
+      {key:'solana', api:'solana', name:'SOLANA', gas:'SOL', wallet:'PHANTOM'},
+      {key:'bnb', api:'bsc', name:'BNB CHAIN', gas:'BNB', wallet:'RABBY'},
+      {key:'robinhood', api:'robinhood', name:'ROBINHOOD CHAIN', gas:'ETH', wallet:'ROBINHOOD / RABBY'},
+      {key:'arbitrum', api:'arbitrum', name:'ARBITRUM', gas:'ETH', wallet:'RABBY'},
+      {key:'optimism', api:'optimism', name:'OPTIMISM', gas:'ETH', wallet:'RABBY'},
+      {key:'polygon', api:'polygon_pos', name:'POLYGON', gas:'POL', wallet:'RABBY'},
+      {key:'avalanche', api:'avax', name:'AVALANCHE', gas:'AVAX', wallet:'RABBY'}
     ]);
+    const CHAIN_POOL_REFRESH_MS = 10 * 60 * 1000;
+    const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
+    const CHAIN_POOL_LIMIT = 25;
+    const STABLE_SYMBOLS = new Set(['USDT','USDC','USDE','DAI','FDUSD','TUSD','USDS','FRAX','LUSD','PYUSD','EURC']);
     function readSavedOrders() {
       try {
         const parsed = JSON.parse(localStorage.getItem('seaChefOrders') || '[]');
         return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object') : [];
       } catch (_) { return []; }
     }
-    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {};
+    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {};
     const $ = id => document.getElementById(id);
     const money = p => p == null ? 'â' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -472,13 +475,87 @@
       const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : BLUE_CHIPS.has(item.symbol) ? '<span class="chain-tag blue">BLUE CHIP</span>' : '<span class="chain-tag">MOVER</span>';
       return `<button type="button" class="chain-coin" onclick="openChainCoin(event,'${laneKey}','${item.cg}')"><strong>${symbol}</strong><span>${money(marketItem.current_price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
     }
+    function dynamicChainCoinMarkup(pool, laneKey) {
+      const change = finiteChange(pool.change24h) ?? 0;
+      const signal = signalForChange(change);
+      const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : '<span class="chain-tag">TOP LIQUIDITY</span>';
+      return `<button type="button" class="chain-coin" onclick="openDynamicPool(event,'${laneKey}','${encodeURIComponent(pool.chart)}')"><strong>${escapeHTML(pool.symbol)}</strong><span>${money(pool.price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
+    }
+    function openDynamicPool(event, key, encodedChart) {
+      event.stopPropagation();
+      const lane = chainLaneElement(key);
+      if (!lane) return;
+      if (!lane.classList.contains('paused')) {
+        setChainLanePaused(key, true);
+        return;
+      }
+      const url = decodeURIComponent(encodedChart);
+      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+$/.test(url)) return alert('Verified chart route unavailable. Nothing was opened.');
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    function normalisePoolToken(pool, includedById, lane) {
+      const attributes = pool?.attributes || {};
+      const baseId = pool?.relationships?.base_token?.data?.id;
+      const quoteId = pool?.relationships?.quote_token?.data?.id;
+      const base = includedById.get(baseId)?.attributes || {};
+      const quote = includedById.get(quoteId)?.attributes || {};
+      const candidates = [
+        {token:base, price:Number(attributes.base_token_price_usd)},
+        {token:quote, price:Number(attributes.quote_token_price_usd)}
+      ].filter(candidate => candidate.token && !STABLE_SYMBOLS.has(String(candidate.token.symbol || '').toUpperCase()));
+      const selected = candidates[0];
+      const liquidity = Number(attributes.reserve_in_usd);
+      const volume = Number(attributes.volume_usd?.h24);
+      const change24h = Number(attributes.price_change_percentage?.h24);
+      const address = String(attributes.address || '').trim();
+      if (!selected || !address || !Number.isFinite(selected.price) || selected.price <= 0 || !Number.isFinite(liquidity) || liquidity < CHAIN_POOL_MIN_LIQUIDITY_USD || !Number.isFinite(volume) || volume <= 0 || !Number.isFinite(change24h)) return null;
+      const symbol = String(selected.token.symbol || '').toUpperCase().trim();
+      if (!/^[A-Z0-9._-]{1,15}$/.test(symbol) || STABLE_SYMBOLS.has(symbol)) return null;
+      return {symbol, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}`};
+    }
+    async function fetchChainPage(lane, page) {
+      const url = `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools?page=${page}&include=base_token,quote_token`;
+      const response = await fetch(url, {cache:'no-store', headers:{Accept:'application/json'}});
+      if (!response.ok) throw new Error(`${lane.name} pool feed HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!Array.isArray(payload?.data) || !Array.isArray(payload?.included)) throw new Error(`${lane.name} pool feed invalid`);
+      const includedById = new Map(payload.included.map(item => [item.id,item]));
+      return payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean);
+    }
+    async function refreshChainPools() {
+      for (const lane of CHAIN_LANES) {
+        try {
+          const pages = [];
+          for (const page of [1,2]) {
+            pages.push(...await fetchChainPage(lane,page));
+            await new Promise(resolve => setTimeout(resolve,450));
+          }
+          const unique = [];
+          const seen = new Set();
+          pages.sort((a,b) => b.liquidity - a.liquidity || b.volume - a.volume).forEach(pool => {
+            if (!seen.has(pool.symbol) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.symbol); unique.push(pool); }
+          });
+          chainPools[lane.key] = unique;
+          chainPoolsUpdatedAt[lane.key] = Date.now();
+          renderChainBoards();
+        } catch (error) {
+          console.warn(error.message);
+        }
+      }
+    }
     function renderChainBoards() {
       const boards = CHAIN_LANES.map(lane => {
-        const coins = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
-        const content = coins.length ? coins.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('') : `<span class="chain-empty">NO VERIFIED TRACKED ASSETS YET</span>`;
-        const moving = coins.length > 2 ? content + content : content;
-        const animation = coins.length > 2 ? '' : ' style="animation:none"';
-        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas} Â· WALLET: ${lane.wallet} Â· <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
+        const named = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
+        const namedSymbols = new Set(named.map(row => row.item.symbol));
+        const discovered = (chainPools[lane.key] || []).filter(pool => !namedSymbols.has(pool.symbol));
+        const namedContent = named.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('');
+        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key)).join('');
+        const content = namedContent + discoveredContent || `<span class="chain-empty">LOADING TOP 25 CHAIN COINSâ¦</span>`;
+        const total = named.length + discovered.length;
+        const moving = total > 2 ? content + content : content;
+        const animation = total > 2 ? '' : ' style="animation:none"';
+        const age = chainPoolsUpdatedAt[lane.key] ? ` Â· TOP 25 UPDATED ${localClock(chainPoolsUpdatedAt[lane.key])}` : ' Â· TOP 25 LOADING';
+        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas} Â· WALLET: ${lane.wallet}${age} Â· <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
       }).join('');
       $('chainBoards').innerHTML = boards;
     }
@@ -798,6 +875,8 @@
     renderChainBoards();
     load();
     setInterval(load, 60000);
+    refreshChainPools();
+    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
     window.addEventListener('pageshow', load);
     window.addEventListener('online', load);
