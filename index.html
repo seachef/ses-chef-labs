@@ -30,6 +30,24 @@
     .item.scanning { animation:scanPulse 2.4s ease-in-out infinite; animation-delay:calc(var(--scan-order, 0) * 70ms); border-radius:8px; }
     .item.scanning.positive { color:#4ade80; }
     .item.scanning.negative { color:#ff6477; }
+    .chain-board { display:grid; gap:10px; margin:18px 0 20px; }
+    .chain-banner { overflow:hidden; background:linear-gradient(145deg,#0b1725,#0e2030); border:1px solid #29465b; border-radius:14px; }
+    .chain-banner:focus-visible { outline:3px solid #00d9ff; outline-offset:2px; }
+    .chain-banner-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 13px; border-bottom:1px solid #1e394c; }
+    .chain-name { color:#7cebe7; font-weight:800; letter-spacing:.04em; }
+    .chain-meta { color:#9db3c2; font-size:11px; text-align:right; }
+    .chain-viewport { overflow:hidden; padding:9px 0; min-height:40px; }
+    .chain-track { display:flex; width:max-content; animation:scroll 72s linear infinite; }
+    .chain-banner.paused .chain-track { animation-play-state:paused; }
+    .chain-coin { display:flex; align-items:center; gap:8px; padding:5px 16px; white-space:nowrap; border:0; background:transparent; color:#e9f5fb; font:inherit; cursor:pointer; }
+    .chain-coin:focus-visible { outline:2px solid #00d9ff; outline-offset:-2px; }
+    .chain-coin strong { color:#eafcff; }
+    .chain-coin .red { color:#ff6477; }
+    .chain-coin .green { color:#4ade80; }
+    .chain-tag { padding:3px 6px; border-radius:999px; background:#183045; color:#aac8d8; font-size:10px; }
+    .chain-tag.dump { background:#42212b; color:#ff9bad; }
+    .chain-tag.blue { background:#163a43; color:#7cebe7; }
+    .chain-empty { padding:3px 14px; color:#94a3b8; font-size:12px; }
     @keyframes scroll { to { transform:translateX(-50%); } }
     @keyframes scanPulse { 0%,82%,100% { background:transparent; } 88% { background:rgba(169,191,255,.18); box-shadow:0 0 16px rgba(0,247,255,.12); } }
     .section { background:#111d31; border:1px solid #334155; border-radius:12px; padding:16px; margin:20px 0; }
@@ -93,6 +111,11 @@
       <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public pricesâ¦</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
+
+    <section aria-labelledby="chainBoardTitle">
+      <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
+      <div class="chain-board" id="chainBoards"></div>
+    </section>
 
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
@@ -282,6 +305,17 @@
       }
     });
     const ids = checkerCoins.map(x => x.cg);
+    const BLUE_CHIPS = new Set(['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX','LINK','AVAX','DOT','LTC','BCH','XMR','TON','SHIB']);
+    const CHAIN_LANES = Object.freeze([
+      {key:'ethereum', name:'ETHEREUM', gas:'ETH', wallet:'RABBY'},
+      {key:'solana', name:'SOLANA', gas:'SOL', wallet:'PHANTOM'},
+      {key:'bnb', name:'BNB CHAIN', gas:'BNB', wallet:'RABBY'},
+      {key:'robinhood', name:'ROBINHOOD CHAIN', gas:'ETH', wallet:'ROBINHOOD / RABBY'},
+      {key:'arbitrum', name:'ARBITRUM', gas:'ETH', wallet:'RABBY'},
+      {key:'optimism', name:'OPTIMISM', gas:'ETH', wallet:'RABBY'},
+      {key:'polygon', name:'POLYGON', gas:'POL', wallet:'RABBY'},
+      {key:'avalanche', name:'AVALANCHE', gas:'AVAX', wallet:'RABBY'}
+    ]);
     function readSavedOrders() {
       try {
         const parsed = JSON.parse(localStorage.getItem('seaChefOrders') || '[]');
@@ -401,6 +435,50 @@
       shell.setAttribute('aria-pressed', String(paused));
       shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
       $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED Â· TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE';
+    }
+    function chainLaneElement(key) { return document.getElementById(`chain-lane-${key}`); }
+    function setChainLanePaused(key, paused) {
+      const lane = chainLaneElement(key);
+      if (!lane) return;
+      lane.classList.toggle('paused', paused);
+      lane.setAttribute('aria-pressed', String(paused));
+      lane.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} ${key} coin banner`);
+      const hint = lane.querySelector('[data-chain-hint]');
+      if (hint) hint.textContent = paused ? 'PAUSED Â· TAP COIN TO OPEN' : 'TAP TO PAUSE';
+    }
+    function toggleChainLane(event, key) {
+      if (event) event.stopPropagation();
+      const lane = chainLaneElement(key);
+      if (!lane) return;
+      setChainLanePaused(key, !lane.classList.contains('paused'));
+    }
+    function openChainCoin(event, key, cg) {
+      event.stopPropagation();
+      const lane = chainLaneElement(key);
+      if (!lane) return;
+      if (!lane.classList.contains('paused')) {
+        setChainLanePaused(key, true);
+        return;
+      }
+      openCoinWindow(cg);
+    }
+    function chainCoinMarkup(item, marketItem, laneKey) {
+      const symbol = escapeHTML(item.symbol);
+      if (!marketItem) return `<span class="chain-empty">${symbol} Â· WAITING FOR LIVE FEED</span>`;
+      const change = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
+      const signal = signalForChange(change);
+      const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : BLUE_CHIPS.has(item.symbol) ? '<span class="chain-tag blue">BLUE CHIP</span>' : '<span class="chain-tag">MOVER</span>';
+      return `<button type="button" class="chain-coin" onclick="openChainCoin(event,'${laneKey}','${item.cg}')"><strong>${symbol}</strong><span>${money(marketItem.current_price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
+    }
+    function renderChainBoards() {
+      const boards = CHAIN_LANES.map(lane => {
+        const coins = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
+        const content = coins.length ? coins.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('') : `<span class="chain-empty">NO VERIFIED TRACKED ASSETS YET</span>`;
+        const moving = coins.length > 2 ? content + content : content;
+        const animation = coins.length > 2 ? '' : ' style="animation:none"';
+        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas} Â· WALLET: ${lane.wallet} Â· <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
+      }).join('');
+      $('chainBoards').innerHTML = boards;
     }
     
     function liveChangeForCoin(cg) {
@@ -702,6 +780,7 @@
         const freshCount = market.filter(item => freshMarketItem(item)).length;
         $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices â¢ feed ${localClock(feedTime)} â¢ highest rating first`;
         render();
+        renderChainBoards();
         buildDump();
         buildBuySetups();
       } catch (e) {
@@ -709,10 +788,12 @@
         $('tickerStatus').textContent = `No fresh ranking â¢ retry ${localClock(Date.now())}`;
         buildDump();
         buildBuySetups();
+        renderChainBoards();
       }
     }
 
     render();
+    renderChainBoards();
     load();
     setInterval(load, 60000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
