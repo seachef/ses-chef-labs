@@ -188,86 +188,6 @@
       {symbol:'ENA', cg:'ena', chain:'ethereum', addr:'0x57e114B691Db790C35207b2e685D4A43181e6061'},
       {symbol:'WIF', cg:'dogwifcoin', chain:'solana', addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
       {symbol:'BONK', cg:'bonk', chain:'solana', addr:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'},
-
-Loading older messages…
-now how do i get the app link to work in github the one that was briken because you told me to delete the email address. that was obviuosly the link that plays my content live.
-You’re right that the long email identified the GitHub account connection. I should not have told you to disconnect it before confirming the account.
-
-But that email did not host the webpage. GitHub Pages hosts it. Disconnecting the email likely signed ChatGPT out of the correct GitHub account, while the Pages settings or repository remained under that account.
-
-To repair the GitHub app link:
-
-Sign into GitHub as the account that owns seachef/ses-chef-labs.
-Open github.com/seachef/ses-chef-labs.
-Press Settings.
-In the left menu, press Pages.
-Under Build and deployment, select Deploy from a branch.
-Choose:
-Branch: main
-Folder: / (root)
-Press Save.
-Ensure the filename is exactly index.html in the repository’s main folder.
-Wait a few minutes, then open:
-https://seachef.github.io/ses-chef-labs/
-
-If you cannot see the repository’s Settings button, you are signed into the wrong GitHub account. Reconnect the account named tvwbgn4kz2-pixel.
-
-GitHub says Pages can publish index.html directly from a selected branch. Private repositories require a plan that supports private-repository Pages, and the published Pages website itself is generally public. 
-
-Your private working link remains available here:
-
-Open Sea Chef Labs
-
-
-Pasted markdown.md
-HTML
-so is the above sea chef labs this code from github...
-The first preview was not the exact GitHub code. I have now replaced it with the exact code from your uploaded Pasted markdown.md.
-
-Open the corrected Sea Chef Labs preview
-
-It now contains:
-
-BUY SETUPS with the strict 24-hour 5% drop filter
-Limit Orders
-Eight Active Deep-Liquidity windows
-Dump-a-Thon list
-Rabby and Phantom buttons
-Live CoinGecko price refresh every 30 seconds
-
-Sea Chef Labs Live Preview
-Only visible to you
-give me the new updated code so i can copy and paste to github
-The exact updated code is too large to paste safely without risking truncation. Download this exact GitHub-ready file, then copy everything inside it into your GitHub index.html:
-
-This is the same code used by the corrected preview. SHA-256:
-
-cb98592aac2421d588ecf62ae46221a9168cab1b847a4fdc52270466c235d360
-
-
-index.html
-HTML
-give me two to upload then
-split it 50/50
-Download both parts:
-
-In GitHub index.html:
-
-Delete the old code.
-Paste all of Part 1.
-Paste Part 2 immediately underneath.
-Press Commit changes.
-Together they reconstruct the exact updated webpage.
-
-
-SEA-CHEF-LABS-CODE-PART-1.txt
-Document
-
-SEA-CHEF-LABS-CODE-PART-2.txt
-Document
-
-
-
       {symbol:'FLOKI', cg:'floki', chain:'ethereum', addr:'0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E'},
       {symbol:'PEPE', cg:'pepe', chain:'ethereum', addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933'},
       {symbol:'JASMY', cg:'jasmy', chain:'ethereum', addr:'0x7420B4b9a0110cdC71fB720908340C03F9Bc03EC'},
@@ -381,10 +301,34 @@ Document
     function place(id) {
       const a = coin(id), slider = $(`slider-${id}`), m = price(a.cg);
       if (!a || !slider || !m) return alert('Price unavailable right now.');
+      const observedAt = new Date(m.last_updated).getTime();
+      if (!Number.isFinite(observedAt) || Date.now() - observedAt > 120000) {
+        return alert('Price is stale. Refresh before preparing a limit order.');
+      }
       const pct = Number(slider.value) || 0;
+      if (pct > 0) return alert('For a limit buy, move the slider to 0% or below. Never chase above the live price.');
       const targetPrice = Number(m.current_price) * (1 + (pct / 100));
-      const order = { id: a.id, sym: a.s, amount: 1, limit: targetPrice, status: 'Open', chain: a.c };
+      const amount = Number(prompt('How many USDC do you want to use?', '10'));
+      if (!Number.isFinite(amount) || amount <= 0) return alert('No valid amount entered. Nothing was prepared.');
+      const expiryMinutes = Number(prompt('Cancel the draft after how many minutes? Choose 5, 10 or 15.', '10'));
+      if (!Number.isFinite(targetPrice) || targetPrice <= 0) return alert('Limit price is invalid.');
+      if (![5, 10, 15].includes(expiryMinutes)) return alert('Choose a valid order expiry.');
+      const createdAt = Date.now();
+      const order = {
+        id: a.id,
+        sym: a.s,
+        amount,
+        limit: targetPrice,
+        sourcePrice: Number(m.current_price),
+        quantityEstimate: amount / targetPrice,
+        createdAt,
+        expiresAt: createdAt + expiryMinutes * 60000,
+        status: 'DRAFT — CONFIRM AT VENUE',
+        chain: a.c
+      };
       orders.push(order); save(); render();
+      const summary = `${a.s} limit-buy draft\nAmount: ${amount.toFixed(2)} USDC\nMaximum price: ${targetPrice}\nExpires: ${expiryMinutes} minutes\nConfirm spread, fees and the final order at the venue.`;
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(summary).catch(() => {});
       window.open(a.dex || 'https://jup.ag', '_blank', 'noopener,noreferrer');
     }
 
@@ -392,10 +336,12 @@ Document
     
     function orderCard(o, i) {
       const a = coin(o.id);
+      const expired = Number.isFinite(Number(o.expiresAt)) && Date.now() >= Number(o.expiresAt);
+      const status = expired ? 'Expired — do not chase' : (o.status || 'Draft');
       return `
         <article class="order">
           <div class="order-head"><b>${o.sym} — ${a.n}</b><span class="chain">${a.c}</span></div>
-          <p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${o.status}</p>
+          <p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${status}</p>
           <div class="buttons">
             <button class="btn" onclick="window.open('${a.dex}', '_blank', 'noopener,noreferrer')">Open DEX</button>
             <button class="btn danger" onclick="cancel(${i})">Cancel</button>
