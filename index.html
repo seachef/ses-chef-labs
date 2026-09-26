@@ -1,8 +1,10 @@
-<!doctype html>
-<html lang="en">
+!doctype html>
+<html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Language" content="en-AU">
+  <meta name="google" content="notranslate">
   <title>Sea Chef Labs</title>
   <style>
     * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
@@ -95,7 +97,7 @@
     @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
   </style>
 </head>
-<body>
+<body class="notranslate">
   <div class="container">
     <header>
       <h1>Sea Chef Labs</h1>
@@ -743,7 +745,7 @@
     async function load() {
       try {
         const requestStarted = Date.now();
-        const endpoint = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false&price_change_percentage=24h&precision=full&_scl=' + requestStarted;
+        const endpoint = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false&price_change_percentage=24h&precision=full&locale=en&_scl=' + requestStarted;
         const r = await fetch(endpoint, {cache:'no-store', headers:{Accept:'application/json'}});
         if (r.status === 429) {
           $('tickerStatus').textContent = 'Rate limit reached â¢ retrying in 60 seconds';
