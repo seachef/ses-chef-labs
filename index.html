@@ -88,7 +88,7 @@
     </header>
 
     <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
-      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices…</span></div>
+      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public pricesâ¦</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
 
@@ -115,7 +115,7 @@
     </section>
 
     <section class="section limit-zone" hidden>
-      <h2>LIMIT ORDERS — WAIT FOR YOUR PRICE</h2>
+      <h2>LIMIT ORDERS â WAIT FOR YOUR PRICE</h2>
       <p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p>
       <div class="grid" id="orders"></div>
     </section>
@@ -267,7 +267,7 @@
     }
     let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {};
     const $ = id => document.getElementById(id);
-    const money = p => p == null ? '—' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
+    const money = p => p == null ? 'â' : '$' + (p < 1 ? Number(p).toFixed(4) : Number(p).toFixed(2));
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 
     function coin(id) { return deep.find(x => x.id === id); }
@@ -281,6 +281,13 @@
       if (!m || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
       const observedAt = new Date(m.last_updated).getTime();
       return Number.isFinite(observedAt) && now >= observedAt && now - observedAt <= 120000;
+    }
+    function newestFeedTime(items = market) {
+      const times = items.map(item => new Date(item.last_updated).getTime()).filter(Number.isFinite);
+      return times.length ? Math.max(...times) : null;
+    }
+    function localClock(milliseconds) {
+      return Number.isFinite(milliseconds) ? new Date(milliseconds).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}) : 'unknown';
     }
     function recordPriceSamples() {
       const recordedAt = Date.now();
@@ -310,9 +317,9 @@
     }
     function entryStateLabel(state) {
       if (state === 'recovering') return 'BUY NOW CANDIDATE';
-      if (state === 'falling') return 'WAIT — STILL DUMPING';
+      if (state === 'falling') return 'WAIT â STILL DUMPING';
       if (state === 'stabilising') return 'WATCH CLOSELY';
-      return 'CHECKING — NEEDS 2 MOVES';
+      return 'CHECKING â NEEDS 2 MOVES';
     }
     function entryStateSignal(state) {
       if (state === 'recovering') return 'green';
@@ -360,7 +367,7 @@
       const shell = $('tickerShell');
       if (!shell.classList.contains('paused')) {
         toggleTickerPause();
-        $('tickerStatus').textContent = 'Banner paused — press the coin again to open its verified route';
+        $('tickerStatus').textContent = 'Banner paused â press the coin again to open its verified route';
         return;
       }
       openCoinWindow(cg);
@@ -370,7 +377,7 @@
       const paused = shell.classList.toggle('paused');
       shell.setAttribute('aria-pressed', String(paused));
       shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
-      $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED · TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE';
+      $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED Â· TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE';
     }
     
     function liveChangeForCoin(cg) {
@@ -403,7 +410,7 @@
       return `
         <article class="card">
           <div class="card-head">
-            <div class="name">${a.s} — ${a.n}</div>
+            <div class="name">${a.s} â ${a.n}</div>
             <span class="chain">${a.c}</span>
           </div>
           <div class="price-row">
@@ -470,7 +477,7 @@
         quantityEstimate: amount / targetPrice,
         createdAt,
         expiresAt: createdAt + expiryMinutes * 60000,
-        status: 'DRAFT — CONFIRM AT VENUE',
+        status: 'DRAFT â CONFIRM AT VENUE',
         chain: a.c
       };
       orders.push(order); save(); render();
@@ -484,10 +491,10 @@
     function orderCard(o, i) {
       const a = coin(o.id);
       const expired = Number.isFinite(Number(o.expiresAt)) && Date.now() >= Number(o.expiresAt);
-      const status = expired ? 'Expired — do not chase' : (o.status || 'Draft');
+      const status = expired ? 'Expired â do not chase' : (o.status || 'Draft');
       return `
         <article class="order">
-          <div class="order-head"><b>${o.sym} — ${a.n}</b><span class="chain">${a.c}</span></div>
+          <div class="order-head"><b>${o.sym} â ${a.n}</b><span class="chain">${a.c}</span></div>
           <p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${status}</p>
           <div class="buttons">
             <button class="btn" onclick="window.open('${a.dex}', '_blank', 'noopener,noreferrer')">Open DEX</button>
@@ -540,7 +547,7 @@
       }).sort((a, b) => screeningRating(b) - screeningRating(a) || a.price_change_percentage_24h - b.price_change_percentage_24h);
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">NO QUALIFYING DUMP — no fresh configured coin is still down at least 10% over the rolling 24 hours.</td></tr>`;
+        $('buySetupRows').innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">NO QUALIFYING DUMP â no fresh configured coin is still down at least 10% over the rolling 24 hours.</td></tr>`;
         return;
       }
 
@@ -605,12 +612,13 @@
           return av - bv;
         });
       const rows = ranked.map(({ item, marketItem }, index) => {
-        if (!marketItem) return `<tr><td class="muted">—</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">—</td><td class="muted">—</td></tr>`;
+        if (!marketItem) return `<tr><td class="muted">â</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">â</td><td class="muted">â</td></tr>`;
         
+        const isFresh = freshMarketItem(marketItem);
         const change24h = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
         const signal = signalForChange(change24h);
         const label = `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`;
-        const state = entryStateFor(item.cg);
+        const state = isFresh ? entryStateFor(item.cg) : 'stale';
         const stateSignal = entryStateSignal(state);
         const rating = screeningRating(marketItem);
         const route = tradeRouteFor(item);
@@ -620,12 +628,12 @@
                   <td><b>#${index + 1}</b></td>
                   <td><b>${rating}/100</b></td>
                   <td>
-                    <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">🔗</span><br>
+                    <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">ð</span><br>
                     <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${displayAddr}</span>
                   </td>
                   <td>${money(marketItem.current_price)}</td>
                   <td class="${signal}">${label}</td>
-                  <td class="${stateSignal}">${entryStateLabel(state)}<br><span style="font-size:10px;color:#94a3b8">${route ? `${route.venue} • ${route.wallet}` : 'CHART ONLY'}</span></td>
+                  <td class="${isFresh ? stateSignal : 'red'}">${isFresh ? entryStateLabel(state) : 'STALE â RETRYING'}<br><span style="font-size:10px;color:#94a3b8">${route ? `${route.venue} â¢ ${route.wallet}` : 'CHART ONLY'}</span></td>
                 </tr>`;
       }).join('');
       $('dumpRows').innerHTML = rows;
@@ -633,7 +641,9 @@
 
     async function load() {
       try {
-        const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false');
+        const requestStarted = Date.now();
+        const endpoint = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false&price_change_percentage=24h&precision=full&_scl=' + requestStarted;
+        const r = await fetch(endpoint, {cache:'no-store', headers:{Accept:'application/json'}});
         if (!r.ok) throw new Error(`Public feed returned HTTP ${r.status}`);
         const payload = await r.json();
         if (!Array.isArray(payload)) throw new Error('Public feed returned an invalid payload');
@@ -659,19 +669,26 @@
           return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" onclick="openTickerCoin(event,'${m.id}')" aria-label="${escapeHTML(String(m.symbol || '').toUpperCase())}: ${money(m.current_price)}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)} percent. Open verified route when banner is paused."><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span></button>`;
         }).join('');
         $('ticker').innerHTML = tickerHtml + tickerHtml;
-        $('tickerStatus').textContent = `${market.length}/${ids.length} configured prices received • highest screening rating first`;
+        const feedTime = newestFeedTime(market);
+        const freshCount = market.filter(item => freshMarketItem(item)).length;
+        $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices â¢ feed ${localClock(feedTime)} â¢ highest rating first`;
         render();
         buildDump();
         buildBuySetups();
       } catch (e) {
-        $('ticker').textContent = 'Live feed unavailable — retrying';
-        $('tickerStatus').textContent = 'No ranking shown until fresh data returns';
+        $('ticker').textContent = 'Live feed unavailable â retrying';
+        $('tickerStatus').textContent = `No fresh ranking â¢ retry ${localClock(Date.now())}`;
+        buildDump();
+        buildBuySetups();
       }
     }
 
     render();
     load();
     setInterval(load, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+    window.addEventListener('pageshow', load);
+    window.addEventListener('online', load);
   </script>
 </body>
 </html>
