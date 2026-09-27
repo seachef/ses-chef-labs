@@ -125,14 +125,6 @@
     @keyframes qualificationPulse { 0%,100% { opacity:1; stroke-width:4; } 50% { opacity:.5; stroke-width:5; } }
     .gauge-active .gauge-needle { animation:qualificationPulse 2.6s ease-in-out infinite; }
     .gauge-motion-paused .gauge-needle { animation-play-state:paused; }
-    .qualification-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; list-style:none; padding:0; margin:14px 0 10px; text-align:center; }
-    .qualification-steps li { min-width:0; border:1px solid #40515f; border-radius:10px; background:#192b37; padding:8px 3px; color:#a9b9c5; font-size:11px; overflow-wrap:anywhere; }
-    .qualification-steps b { display:block; font-size:14px; margin-bottom:4px; }
-    .qualification-steps span { display:block; font-size:10px; margin-top:5px; }
-    .qualification-steps .stage-done { border-color:#598879; color:#b9e8d4; background:#1b3734; }
-    .qualification-steps .stage-current { border-color:#a88b56; color:#f0d49f; background:#353127; }
-    .qualification-next { font-size:12px; line-height:1.5; color:#c2d1db; margin:8px 0; }
-    .qualification-blocker { display:block; color:#e0c395; }
     @media (prefers-reduced-motion:reduce) { .gauge-active .gauge-needle { animation:none; } }
     .gauge-label { display:block; font-size:17px; color:#e5f1f6; margin-top:2px; }
     .gauge-wait .gauge-label { color:#efadb6; } .gauge-watch .gauge-label { color:#eed197; }
@@ -861,26 +853,6 @@
       // No BUY state: executable liquidity, token security and candle-based
       // recovery checks are not connected. A screening score cannot unlock it.
     }
-    function qualificationStagesMarkup(q) {
-      const dropSeen = !['freshness','drop'].includes(q.stage);
-      const bounceSeen = q.stage === 'rising';
-      const nowText = q.stage === 'freshness' ? 'Waiting for fresh price data.'
-        : q.stage === 'drop' ? 'Waiting for a fresh 24-hour fall of 10% or more.'
-        : q.stage === 'samples' ? 'Watching price · '+q.sampleCount+'/3 distinct samples received.'
-        : q.stage === 'falling' ? 'Price is still falling. Waiting for it to settle.'
-        : q.stage === 'level' ? 'Price samples are level. Waiting for two upward moves.'
-        : q.stage === 'mixed' ? 'Price is moving both ways. Waiting for two upward moves.'
-        : 'Two upward samples seen. Full recovery still needs checking.';
-      const steps = [
-        {title:'10% DROP',state:dropSeen?'done':'current',caption:dropSeen?'SEEN':q.stage==='freshness'?'NEED DATA':'WAIT'},
-        {title:'BOUNCE',state:bounceSeen?'done':dropSeen?'current':'locked',caption:bounceSeen?'2 RISES':dropSeen?q.sampleCount+'/3 SAMPLES':'WAIT'},
-        {title:'RECOVERY',state:'locked',caption:'NOT CONNECTED'},
-        {title:'LIQUIDITY & SAFETY',state:'locked',caption:'NOT CONNECTED'},
-        {title:'BUY SETUP',state:'locked',caption:'LOCKED'}
-      ];
-      return `<ol class="qualification-steps" aria-label="Qualification stages">${steps.map((step,i)=>`<li class="stage-${step.state}" ${step.state==='current'?'aria-current="step"':''}><b>${i+1}</b>${step.title}<span>${step.caption}</span></li>`).join('')}</ol>
-        <div class="qualification-next"><strong>NOW:</strong> ${nowText}<br><strong>NEXT:</strong> ${dropSeen ? bounceSeen ? 'Recovery, executable liquidity and token safety must pass before green.' : 'Fresh upward price moves, then recovery and safety checks.' : 'A fresh 10% drop, then bounce checks.'}<span class="qualification-blocker">Steps 3–4 need app development. Waiting longer cannot unlock BUY.</span></div>`;
-    }
     function qualificationGaugeMarkup(row) {
       const q = qualificationState(row);
       return `<div class="qualification-gauge gauge-${q.tone}${q.stage !== 'freshness' && q.stage !== 'drop' ? ' gauge-active' : ''}">
@@ -896,7 +868,6 @@
           <circle cx="135" cy="135" r="8" fill="#cbdbe5"/>
         </svg>
         <strong class="gauge-label">${q.label}</strong><div class="gauge-caption">${q.note}</div>
-        ${qualificationStagesMarkup(q)}
         <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop → settling samples → recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The gentle pulse means price watching is active, not that an approval check is running. The needle only advances on evidence. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
       </div>`;
     }
