@@ -1911,3 +1911,22 @@
       if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
       window.open(url,'_blank','noopener,noreferrer');
     },true);
+    $('walletLedger').addEventListener('click',event=>{
+      const add=event.target.closest('[data-add-position]'); if(add)return addDetectedPosition(add.dataset.addPosition);
+      const dismiss=event.target.closest('[data-dismiss-wallet-record]'); if(dismiss)return dismissWalletRecord(dismiss.dataset.dismissWalletRecord);
+      const sold=event.target.closest('[data-mark-sold]'); if(sold&&confirm('Move this position into History as sold?'))return markPositionSold(sold.dataset.markSold);
+    });
+    savePumpDumpExclusions();
+    renderWalletLedger();
+    load();
+    setInterval(load, 60000);
+    setInterval(refreshQualificationGauges, 15000);
+    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
+    refreshChainPools();
+    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
+    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); checkPendingWalletBuys(); } });
+    window.addEventListener('pageshow', load);
+    window.addEventListener('online', load);
+  </script>
+</body>
+</html>
