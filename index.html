@@ -128,8 +128,14 @@
     .gauge-red { stroke:#ce7280; } .gauge-amber { stroke:#d7b56f; } .gauge-green { stroke:#659e89; }
     .gauge-checking .gauge-arc { stroke:#526170; }
     .gauge-needle { stroke:#e5f1f6; stroke-width:4; stroke-linecap:round; }
-    @keyframes qualificationPulse { 0%,100% { opacity:1; stroke-width:4; } 50% { opacity:.5; stroke-width:5; } }
-    .gauge-active .gauge-needle { animation:qualificationPulse 2.6s ease-in-out infinite; }
+    @keyframes qualificationTwitch {
+      0%,38%,72%,100% { transform:rotate(0deg); opacity:1; }
+      43%,79% { transform:rotate(2deg); opacity:.85; }
+      49%,85% { transform:rotate(-1.5deg); opacity:1; }
+      56%,91% { transform:rotate(.7deg); opacity:.95; }
+    }
+    .gauge-needle { transform-box:view-box; transform-origin:135px 135px; }
+    .gauge-active .gauge-needle { animation:qualificationTwitch 3.2s ease-in-out infinite; }
     .gauge-motion-paused .gauge-needle { animation-play-state:paused; }
     @media (prefers-reduced-motion:reduce) { .gauge-active .gauge-needle { animation:none; } }
     .gauge-label { display:block; font-size:17px; color:#e5f1f6; margin-top:2px; }
@@ -249,6 +255,19 @@
     .refresh-strip button { border:1px solid #41516c; color:#d6c8f1; background:#1b2940; border-radius:14px; min-height:44px; padding:8px 14px; font-size:14px; }
     .pull-cue { text-align:center; height:0; overflow:hidden; color:#c9bae8; font-size:13px; display:flex; align-items:center; justify-content:center; }
     .refresh-strip button:disabled { opacity:.65; }
+    /* Quiet activity frame: fresh feed only, never a qualification signal. */
+    .opportunity-card { position:relative; }
+    .opportunity-card::after {
+      content:""; position:absolute; inset:-1px; border-radius:inherit;
+      border:1px solid #b7a4e3; box-shadow:0 0 12px 1px rgba(158,132,214,.22);
+      opacity:0; pointer-events:none;
+    }
+    .opportunity-card[data-feed-active="true"]::after { animation:cardFramePulse 3.2s ease-in-out infinite; }
+    .opportunity-card:nth-child(3n+2)::after { animation-delay:-1.1s; }
+    .opportunity-card:nth-child(3n)::after { animation-delay:-2.1s; }
+    @keyframes cardFramePulse { 0%,100% { opacity:.15; } 50% { opacity:.8; } }
+    .gauge-motion-paused .opportunity-card::after { animation-play-state:paused; }
+    @media(prefers-reduced-motion:reduce) { .opportunity-card::after { animation:none!important; opacity:0; } }
   </style>
 </head>
 <body class="notranslate">
@@ -588,6 +607,7 @@
           if(latest) latest.textContent='Sampled price '+usdPrice(row.price);
         }
         const c=compactState(row);
+        host.dataset.feedActive=String(c.q.stage!=='freshness' && c.q.stage!=='drop');
         const badge=host.querySelector('[data-card-state]');
         badge.textContent=c.label;badge.dataset.tone=c.tone;
         host.querySelector('[data-card-reason]').textContent=c.q.note;
@@ -1061,11 +1081,11 @@
           <text x="135" y="15" text-anchor="middle" fill="#eed197" font-size="11">WATCH</text>
           <text x="225" y="158" text-anchor="middle" fill="#a3cabb" font-size="11">BUY SETUP</text>
           <text x="225" y="171" text-anchor="middle" fill="#a7b7c4" font-size="9">LOCKED</text>
-          <line class="gauge-needle" x1="135" y1="135" x2="48" y2="135" transform="rotate(${q.angle} 135 135)"/>
+          <g transform="rotate(${q.angle} 135 135)"><line class="gauge-needle" x1="135" y1="135" x2="48" y2="135"/></g>
           <circle cx="135" cy="135" r="8" fill="#cbdbe5"/>
         </svg>
         <strong class="gauge-label">${q.label}</strong><div class="gauge-caption">${q.note}</div>
-        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop → settling samples → recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The gentle pulse means price watching is active, not that an approval check is running. The needle only advances on evidence. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
+        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop → settling samples → recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The small twitch shows fresh-price watching, not approval progress. Its resting position only advances on evidence; motion stops when data is stale. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
       </div>`;
     }
     function refreshQualificationGauges() {
@@ -1075,6 +1095,8 @@
         if (!row) return;
         const planBox = host.closest('[data-trade-plan]');
         if (planBox) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
+        const currentStage=qualificationState(row).stage;
+        host.querySelector('.qualification-gauge')?.classList.toggle('gauge-active',currentStage!=='freshness' && currentStage!=='drop');
         if (host.contains(document.activeElement)) return;
         const expanded = Boolean(host.querySelector('details')?.open);
         const markup = qualificationGaugeMarkup(row);
@@ -1432,7 +1454,7 @@
         const chart = m.kind === 'chain' ? m.chart : `https://www.coingecko.com/en/coins/${encodeURIComponent(m.key)}`;
         const action = `<a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a>`;
         const compact=compactState(m);
-        return `<article class="opportunity-card" data-desk-key="${escapeHTML(m.key)}" aria-label="${escapeHTML(m.symbol)} trade plan">
+        return `<article class="opportunity-card" data-feed-active="${compact.q.stage!=='freshness' && compact.q.stage!=='drop'}" data-desk-key="${escapeHTML(m.key)}" aria-label="${escapeHTML(m.symbol)} trade plan">
           <div class="opportunity-head"><div><h3>${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)}</span></div>${action}</div>
           <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>24H ${change.toFixed(2)}%</span></div>
           <div data-card-chart>${sampleChartMarkup(m)}</div>
