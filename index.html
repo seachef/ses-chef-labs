@@ -694,16 +694,37 @@
       bnb:'bnb'
     });
     const SOLANA_USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+    function safeSolanaMint(value) {
+      const mint=String(value || '').trim();
+      return mint === 'SOL' || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint) ? mint : null;
+    }
+    function verifiedRouteMatchesItem(route,item) {
+      if (!route || !item) return false;
+      if (route.venue === 'JUPITER') {
+        const expected=item.addr === 'Native' ? 'SOL' : safeSolanaMint(item.addr);
+        return item.chain === 'solana' && expected !== null && route.chain === 'solana' && route.outputIdentity === expected;
+      }
+      if (route.venue === 'UNISWAP') {
+        const expected=String(item.addr || '').toLowerCase();
+        return UNISWAP_CHAINS[item.chain] === route.chain && /^0x[a-f0-9]{40}$/.test(expected) && route.outputIdentity === expected;
+      }
+      return false;
+    }
     function tradeRouteFor(item) {
       if (!item || typeof item.cg !== 'string') return null;
       if (item.chain === 'solana') {
-        const output = item.addr === 'Native' ? 'SOL' : item.addr;
-        if (output !== 'SOL' && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(output)) return null;
-        return {venue:'JUPITER', wallet:'PHANTOM', url:`https://jup.ag/swap/${SOLANA_USDC_MINT}-${encodeURIComponent(output)}`};
+        const output = item.addr === 'Native' ? 'SOL' : safeSolanaMint(item.addr);
+        if (!output) return null;
+        // Jupiter's page route uses the asset symbol USDC as the input slug.
+        // The exact output mint remains in the URL and is checked again before opening.
+        const route={venue:'JUPITER',wallet:'PHANTOM',chain:'solana',inputIdentity:SOLANA_USDC_MINT,outputIdentity:output,url:`https://jup.ag/swap/USDC-${encodeURIComponent(output)}`};
+        return verifiedRouteMatchesItem(route,item) ? route : null;
       }
       const uniswapChain = UNISWAP_CHAINS[item.chain];
       if (uniswapChain && /^0x[a-fA-F0-9]{40}$/.test(String(item.addr || ''))) {
-        return {venue:'UNISWAP', wallet:'RABBY', url:`https://app.uniswap.org/swap?chain=${encodeURIComponent(uniswapChain)}&outputCurrency=${encodeURIComponent(item.addr)}`};
+        const output=String(item.addr).toLowerCase();
+        const route={venue:'UNISWAP',wallet:'RABBY',chain:uniswapChain,outputIdentity:output,url:`https://app.uniswap.org/swap?chain=${encodeURIComponent(uniswapChain)}&outputCurrency=${encodeURIComponent(output)}`};
+        return verifiedRouteMatchesItem(route,item) ? route : null;
       }
       return null;
     }
@@ -711,6 +732,7 @@
       const item = checkerCoins.find(candidate => candidate.cg === cg);
       const route = tradeRouteFor(item);
       if (!route) return alert('A verified Jupiter or Uniswap route is not available for this coin. Nothing was opened.');
+      if (!verifiedRouteMatchesItem(route,item)) return alert('Market identity check failed. Nothing was opened.');
       window.open(route.url, '_blank', 'noopener,noreferrer');
     }
     function openCoinWindow(cg) {
@@ -1731,3 +1753,4 @@
     window.addEventListener('online', load);
   </script>
 </body>
+</html>
