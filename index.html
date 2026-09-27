@@ -214,6 +214,8 @@
     .card-reason { font-size:13px; color:#bdc9da; margin:8px 0; }
     .card-freshness { color:#a8b7cb; font-size:12px; margin:8px 0; }
     .session-chart { width:100%; height:84px; display:block; margin:9px 0; }
+    .watch-button { background:#29384d; color:#d7e6ed; border:1px solid #60778a; border-radius:9px; padding:9px 12px; font-weight:700; cursor:pointer; min-height:44px; }
+    .watch-button[aria-pressed="true"] { background:#264b49; color:#baf5de; border-color:#73baa4; }
     .qualification-line { transition:stroke .5s ease,filter .5s ease,opacity .5s ease; }
     .qualification-line.line-freshness,.qualification-line.line-drop { stroke:#66758b; opacity:.7; }
     .qualification-line.line-samples,.qualification-line.line-falling { stroke:#e28598; filter:drop-shadow(0 0 2px rgba(226,133,152,.35)); }
@@ -313,6 +315,24 @@
       .top-controls { gap:8px; }
       .top-controls #refreshButton { min-width:70px; padding:8px 10px; }
     }
+    .dump-glance { margin-top:16px; background:#172237; border:1px solid #303c52; border-radius:20px; padding:16px; }
+    .dump-glance h2 { margin:0; font-size:16px; font-weight:600; }
+    .glance-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+    .glance-columns,.glance-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(80px,1fr) 74px 12px; gap:8px; align-items:center; }
+    .glance-columns { color:#a9b9d0; font-size:11px; padding:0 8px 6px; }
+    .glance-columns span:nth-child(2),.glance-columns span:nth-child(3) { text-align:right; }
+    .glance-row { width:100%; min-height:54px; padding:9px 8px; border:0; border-top:1px solid #303c52; background:transparent; color:#e2e8f0; text-align:left; cursor:pointer; font-size:14px; }
+    .glance-row:hover,.glance-row:focus-visible { background:#202e44; border-radius:9px; outline:2px solid #8394ad; outline-offset:-2px; }
+    .glance-coin { min-width:0; overflow-wrap:anywhere; }
+    .glance-coin small { display:block; color:#a9b9d0; font-size:10px; margin-top:3px; }
+    .glance-price,.glance-change { text-align:right; font-variant-numeric:tabular-nums; }
+    .glance-up { color:#73cfa8; } .glance-down { color:#e595a8; } .glance-muted { color:#a9b9d0; }
+    .check-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9aa8ba; flex:none; }
+    .check-dot.is-checking { animation:neutralCheck 1.8s ease-in-out infinite; }
+    @keyframes neutralCheck { 0%,100% { opacity:.45; box-shadow:0 0 0 0 rgba(154,168,186,.15); } 50% { opacity:1; box-shadow:0 0 0 4px rgba(154,168,186,.09); } }
+    .opportunity-card { scroll-margin-top:18px; }
+    .opportunity-card:focus { outline:2px solid #8394ad; outline-offset:3px; }
+    @media(prefers-reduced-motion:reduce) { .check-dot.is-checking { animation:none; } }
   </style>
 </head>
 <body class="notranslate">
@@ -338,6 +358,11 @@
         <div><span class="pulse-label">Unchanged</span><strong class="pulse-number" id="pulseFlat">-</strong><div class="pulse-track flat"><span id="pulseFlatBar"></span></div></div>
       </div>
       <div class="pulse-foot" id="pulseCoverage">Waiting for fresh watchlist prices</div>
+    </section>
+    <section class="dump-glance" aria-labelledby="dumpGlanceTitle">
+      <div class="glance-head"><h2 id="dumpGlanceTitle">Dump opps at a glance</h2><span id="dumpCheckDot" class="check-dot" role="img" aria-label="No price request running" title="No price request running"></span></div>
+      <div class="glance-columns" aria-hidden="true"><span>Coin</span><span>Price</span><span>24H</span><span></span></div>
+      <div id="dumpGlanceRows"></div>
     </section>
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
@@ -684,6 +709,71 @@
     const money = p => displayCoinPrice(p);
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 
+    // WATCH pins display identity only. It never changes qualification or order checks.
+    function validatedWatchRow(row) {
+      if (!row || !['named','chain'].includes(row.kind) || typeof row.key!=='string') return null;
+      if (!/^[A-Z0-9._-]{1,20}$/.test(row.symbol || '')) return null;
+      if (!Number.isFinite(row.price) || row.price<=0) return null;
+      let chain,contract,chart;
+      if (row.kind==='named') {
+        const item=checkerCoins.find(item=>item.cg===row.key);
+        if (!item || item.symbol!==row.symbol) return null;
+        chain=String(item.chain || 'MARKET').toUpperCase(); contract=String(item.addr || '');
+        chart=`https://www.coingecko.com/en/coins/${encodeURIComponent(row.key)}`;
+      } else {
+        const lane=CHAIN_LANES.find(lane=>row.key.startsWith(lane.api+':'));
+        if (!lane || !validTokenAddress(lane,String(row.contract || ''))) return null;
+        contract=String(row.contract);
+        if (row.key!==lane.api+':'+(lane.api==='solana'?contract:contract.toLowerCase())) return null;
+        let url; try { url=new URL(row.chart); } catch (_) { return null; }
+        const parts=url.pathname.split('/');
+        if(url.origin!=='https://www.geckoterminal.com' || parts.length!==4 || parts[1]!==lane.api || parts[2]!=='pools' || !validPoolAddress(lane,parts[3])) return null;
+        chain=lane.name; chart=`https://www.geckoterminal.com/${lane.api}/pools/${parts[3]}?locale=en`;
+      }
+      return {kind:row.kind,key:row.key,symbol:row.symbol,chain,contract,chart,
+        venue:String(row.venue || '').slice(0,100),price:row.price,
+        change:typeof row.change==='number' && Number.isFinite(row.change)?row.change:null,
+        state:'checking',rating:0,
+        savedAt:Number.isFinite(row.savedAt) && row.savedAt>0 && row.savedAt<=Date.now()?row.savedAt:null};
+    }
+    function readWatchedRows() {
+      try {
+        const list=JSON.parse(localStorage.getItem('seaChefWatchedDumpOpps') || '[]');
+        return new Map((Array.isArray(list)?list:[]).map(validatedWatchRow).filter(Boolean).map(row=>[row.key,row]));
+      } catch (_) { return new Map(); }
+    }
+    const watchedDumpRows=readWatchedRows();
+    function persistWatchedRows(rows=watchedDumpRows) {
+      try { localStorage.setItem('seaChefWatchedDumpOpps',JSON.stringify([...rows.values()])); return true; }
+      catch (_) { return false; }
+    }
+    function toggleDumpWatch(key) {
+      const next=new Map(watchedDumpRows);
+      if(next.has(key)) next.delete(key);
+      else {
+        const row=validatedWatchRow({...visibleTradeRows.get(key),savedAt:Date.now()});
+        if(!row) return alert('This coin identity cannot be pinned. Nothing changed.');
+        next.set(key,row);
+      }
+      if(!persistWatchedRows(next)) return alert('Your browser could not save WATCH. Free some browser storage and try again.');
+      watchedDumpRows.clear(); next.forEach((row,key)=>watchedDumpRows.set(key,row));
+    }
+    function retainWatchedRows(currentRows) {
+      const live=new Map(currentRows.map(row=>[row.key,row]));
+      let changed=false;
+      const pinned=[...watchedDumpRows.values()].map(saved=>{
+        const current=live.get(saved.key);
+        // A symbol alone must never redirect a pin to a different token or pool.
+        const clean=current && validatedWatchRow({...current,savedAt:Date.now()});
+        if(clean && clean.contract===saved.contract && clean.chart===saved.chart) {
+          watchedDumpRows.set(saved.key,clean); changed=true; return current;
+        }
+        return {...saved};
+      });
+      if(changed) persistWatchedRows();
+      return pinned;
+    }
+
     function shortAddressMarkup(value) {
       const full=String(value || '');
       const isAddress=/^0x[a-fA-F0-9]{40}$/.test(full) || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(full);
@@ -808,10 +898,67 @@
       let at=null;
       if(row.kind==='named') at=new Date(price(row.key)?.last_updated).getTime();
       else { const lane=CHAIN_LANES.find(l=>(chainPools[l.key]||[]).some(p=>p.identity===row.key)); if(lane) at=chainPoolsUpdatedAt[lane.key]; }
-      if(!Number.isFinite(at)||Date.now()<at) return 'Observation time unavailable';
+      if(!Number.isFinite(at)||Date.now()<at) return watchedDumpRows.has(row.key)?'WATCHING | Last saved price - fresh data unavailable':'Observation time unavailable';
       const seconds=Math.floor((Date.now()-at)/1000);
       const age=seconds<60?seconds+'s':Math.floor(seconds/60)+'m';
       return (row.kind==='chain'?'Feed received ':'Price observed ')+age+' ago';
+    }
+    // The neutral dot reflects actual public-price requests, never buy qualification.
+    const activePriceChecks=new Map();
+    function priceCheckActivity(scope,delta) {
+      const count=Math.max(0,(activePriceChecks.get(scope)||0)+delta);
+      if(count) activePriceChecks.set(scope,count); else activePriceChecks.delete(scope);
+      refreshCheckDots();
+    }
+    function checkingRow(row) {
+      return (activePriceChecks.get(row.kind==='named'?'watchlist':row.key.split(':')[0])||0)>0;
+    }
+    function refreshCheckDots() {
+      const dot=$('dumpCheckDot'); if(!dot) return;
+      const busy=activePriceChecks.size>0 && !document.hidden;
+      dot.classList.toggle('is-checking',busy);
+      const label=busy?'Checking public prices':'No price request running';
+      dot.setAttribute('aria-label',label); dot.title=label;
+      document.querySelectorAll('[data-glance-dot]').forEach(el=>{
+        const row=visibleTradeRows.get(el.dataset.glanceDot);
+        const checking=Boolean(row && checkingRow(row) && !document.hidden);
+        el.classList.toggle('is-checking',checking);
+        const label=checking?'Checking public price':(row?compactFreshness(row):'Price unavailable');
+        el.setAttribute('aria-label',label);el.title=label;
+      });
+    }
+    function glancePriceTone(row) {
+      if(qualificationState(row).stage==='freshness') return 'glance-muted';
+      const samples=deskSamples.get(row.key)||[];
+      if(samples.length<2) return 'glance-muted';
+      const a=samples[samples.length-2],b=samples[samples.length-1];
+      return b.price>a.price?'glance-up':b.price<a.price?'glance-down':'glance-muted';
+    }
+    function renderDumpGlance() {
+      const host=$('dumpGlanceRows'); if(!host) return;
+      const focused=document.activeElement?.closest('[data-glance-key]')?.dataset.glanceKey;
+      const rows=[...visibleTradeRows.values()].sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key))||compareDeskRows(a,b));
+      host.innerHTML=rows.length?rows.map(row=>{
+        const fresh=qualificationState(row).stage!=='freshness';
+        const change=Number.isFinite(row.change)?row.change:null;
+        const tone=!fresh||change===null?'glance-muted':change<0?'glance-down':change>0?'glance-up':'glance-muted';
+        const label=change===null?'â':(change>0?'+':'')+change.toFixed(2)+'%';
+        const watch=watchedDumpRows.has(row.key)?' Â· WATCHING':'';
+        return `<button type="button" class="glance-row" data-glance-key="${escapeHTML(row.key)}" aria-label="Open ${escapeHTML(row.symbol)} on ${escapeHTML(row.chain)}${watch}">
+          <span class="glance-coin"><strong>${escapeHTML(row.symbol)}</strong><small>${escapeHTML(row.chain+watch)}</small></span>
+          <span class="glance-price ${glancePriceTone(row)}" title="${escapeHTML(compactFreshness(row))}">${escapeHTML(usdPrice(row.price))}</span>
+          <span class="glance-change ${tone}">${label}</span>
+          <span class="check-dot" role="img" data-glance-dot="${escapeHTML(row.key)}"></span>
+        </button>`;
+      }).join(''):'<div class="trade-note">No Dump opps to show.</div>';
+      refreshCheckDots();
+      if(focused) [...host.querySelectorAll('[data-glance-key]')].find(el=>el.dataset.glanceKey===focused)?.focus({preventScroll:true});
+    }
+    function openGlanceCard(key) {
+      const card=[...document.querySelectorAll('[data-desk-key]')].find(el=>el.dataset.deskKey===key);
+      if(!card) return;
+      card.setAttribute('tabindex','-1');card.focus({preventScroll:true});
+      card.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
     }
     function refreshCompactCards() {
       refreshMarketPulse();
@@ -836,6 +983,7 @@
         host.querySelector('[data-card-reason]').textContent=c.q.note;
         host.querySelector('[data-card-age]').textContent=compactFreshness(row);
       });
+      renderDumpGlance();
     }
     function recordPriceSamples() {
       const recordedAt = Date.now();
@@ -1041,6 +1189,8 @@
     async function fetchChainPage(lane, page) {
       const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
       if (waitMs) await new Promise(resolve => setTimeout(resolve,waitMs));
+      priceCheckActivity(lane.api,1);
+      try {
       const url = `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools?page=${page}&include=base_token,quote_token`;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(),15000);
@@ -1054,6 +1204,7 @@
       if (!Array.isArray(payload?.data) || !Array.isArray(payload?.included)) throw new Error(`${lane.name} pool feed invalid`);
       const includedById = new Map(payload.included.map(item => [item.id,item]));
       return payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean);
+      } finally { priceCheckActivity(lane.api,-1); }
     }
     function commitChainPools(lane, pages) {
       const unique = [];
@@ -1650,6 +1801,7 @@
       refreshQualificationGauges();
       if (document.activeElement?.closest('#buySetupRows')) return;
       const now = Date.now();
+      const namedAvailable = market.map(m => { const item=checkerCoins.find(c => c.cg === m.id); return {kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(item?.chain || 'MARKET').toUpperCase(),contract:String(item?.addr || ''),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:finiteChange(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}; });
       const namedQualified = market.filter(m => {
         const change = finiteChange(m.price_change_percentage_24h);
         return (
@@ -1658,18 +1810,24 @@
           freshMarketItem(m, now)
         );
       }).map(m => { const item=checkerCoins.find(c => c.cg === m.id); return {kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(item?.chain || 'MARKET').toUpperCase(),contract:String(item?.addr || ''),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}; });
+      const discoveredAvailable = [];
       const discoveredQualified = CHAIN_LANES.flatMap(lane => {
         const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
-        if (!fresh) return [];
-        return (chainPools[lane.key] || []).filter(pool => Number.isFinite(pool.change24h) && pool.change24h <= -10 && pool.change24h > -100).map(pool => {
+        const rows = (chainPools[lane.key] || []).map(pool => {
           const state = entryStateFor(pool.identity);
           const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
           const rating = Math.round(Math.min(100,Math.min(70,Math.max(0,-pool.change24h * 4)) + directionPoints + 10));
           return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,contract:pool.tokenAddress,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
         });
+        discoveredAvailable.push(...rows);
+        return fresh ? rows.filter(row=>Number.isFinite(row.change) && row.change<=-10 && row.change>-100) : [];
       });
-      const qualified = [...namedQualified,...discoveredQualified].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))).sort(compareDeskRows);
+      const pinned=retainWatchedRows([...namedAvailable,...discoveredAvailable]);
+      const merged=new Map([...namedQualified,...discoveredQualified].map(row=>[row.key,row]));
+      pinned.forEach(row=>merged.set(row.key,row));
+      const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
+      renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
@@ -1684,12 +1842,12 @@
         const stateSignal = entryStateSignal(state);
         const rating = m.rating;
         const chart = m.kind === 'chain' ? m.chart : `https://www.coingecko.com/en/coins/${encodeURIComponent(m.key)}`;
-        const action = `<div class="buttons"><a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a><button type="button" class="pnd-button" data-pump-dump-key="${escapeHTML(pumpDumpKeyForRow(m))}" data-pump-dump-symbol="${escapeHTML(m.symbol)}">PUMPNDUMP</button></div>`;
+        const action = `<div class="buttons"><button type="button" class="watch-button" data-watch-key="${escapeHTML(m.key)}" aria-pressed="${watchedDumpRows.has(m.key)}" aria-label="${watchedDumpRows.has(m.key)?'Unpin':'Watch'} ${escapeHTML(m.symbol)}">${watchedDumpRows.has(m.key)?'WATCHING':'WATCH'}</button><a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a><button type="button" class="pnd-button" data-pump-dump-key="${escapeHTML(pumpDumpKeyForRow(m))}" data-pump-dump-symbol="${escapeHTML(m.symbol)}">PUMPNDUMP</button></div>`;
         const compact=compactState(m);
         return `<article class="opportunity-card" data-feed-active="${compact.q.stage!=='freshness' && compact.q.stage!=='drop'}" data-desk-key="${escapeHTML(m.key)}" aria-label="${escapeHTML(m.symbol)} trade plan">
           <div class="opportunity-head"><div><h3>${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)}</span></div>${action}</div>
           ${contractMarkup(m)}
-          <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>24H ${change.toFixed(2)}%</span></div>
+          <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>${Number.isFinite(change)?'24H '+change.toFixed(2)+'%':'24H unavailable'}</span></div>
           <div data-card-chart>${sampleChartMarkup(m)}</div>
           <span class="card-state" data-card-state data-tone="${compact.tone}">${compact.label}</span>
           <div class="card-reason" data-card-reason>${escapeHTML(compact.q.note)}</div>
@@ -1800,6 +1958,7 @@
       return feedPromise;
     }
     async function performLoad() {
+      priceCheckActivity('watchlist',1);
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
       try {
         const requestStarted = Date.now();
@@ -1834,7 +1993,7 @@
         buildBuySetups();
         renderChainBoards();
         return 'unavailable';
-      } finally { clearTimeout(timer); }
+      } finally { clearTimeout(timer); priceCheckActivity('watchlist',-1); }
     }
     async function refreshDesk() {
       if(manualRefreshing) return;
@@ -1899,6 +2058,16 @@
       if (!confirm('Remove '+symbol+' from the Dump opps lineup as Pump & Dump?')) return;
       pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur(); setTimeout(buildBuySetups,0);
     });
+    $('buySetupRows').addEventListener('click',event=>{
+      const button=event.target.closest('[data-watch-key]'); if(!button) return;
+      event.preventDefault();event.stopPropagation();
+      toggleDumpWatch(button.dataset.watchKey); button.blur(); setTimeout(buildBuySetups,0);
+    });
+    $('dumpGlanceRows').addEventListener('click',event=>{
+      const row=event.target.closest('[data-glance-key]');
+      if(row) openGlanceCard(row.dataset.glanceKey);
+    });
+    document.addEventListener('visibilitychange',refreshCheckDots);
     $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
     $('buySetupRows').addEventListener('click',event => {
       if (!event.target.closest('[data-use-price]')) return;
