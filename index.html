@@ -98,6 +98,12 @@
     .buy-setup-row { background:#102a2b; border-left:3px solid #4ade80; }
     .buy-setup-row:hover { background:#153738; }
     .buy-now { background:linear-gradient(90deg,#00d9ff,#4ade80); color:#06111d; }
+    .pnd-button { border:1px solid #9b4254; border-radius:9px; padding:7px 10px; background:#351d28; color:#ffb3c1; font-size:11px; font-weight:800; letter-spacing:.04em; cursor:pointer; }
+    .pnd-button:hover, .pnd-button:focus-visible { background:#552637; color:#fff; outline:2px solid #e9a0b1; outline-offset:2px; }
+    .pnd-restore { margin:8px 0 14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .contract-box { margin:10px 0; padding:9px 10px; border:1px solid #46546d; border-radius:10px; background:#101a2b; }
+    .contract-box code { display:block; margin-top:4px; color:#dffbff; font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; word-break:break-all; user-select:all; }
+    .copy-contract { margin-top:7px; border:1px solid #55708d; border-radius:8px; padding:6px 9px; background:#1b3047; color:#bfeeff; font-weight:800; cursor:pointer; }
     .trade-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:8px; }
     .trade-metric { background:#132332; border:1px solid #355064; border-radius:12px; padding:10px; }
     .trade-metric small { display:block; color:#a9b9ca; margin-bottom:5px; }
@@ -330,6 +336,7 @@
         <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain</button>
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
+      <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
 
     <section aria-labelledby="chainBoardTitle">
       <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
@@ -526,6 +533,13 @@
         return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object' && typeof o.id === 'string') : [];
       } catch (_) { return []; }
     }
+    function readPumpDumpExclusions() {
+      try {
+        const values=JSON.parse(localStorage.getItem('seaChefPumpDumpExclusions') || '[]');
+        return new Set(Array.isArray(values) ? values.filter(value => typeof value === 'string' && value.length <= 180) : []);
+      } catch (_) { return new Set(); }
+    }
+    let pumpDumpExclusions=readPumpDumpExclusions();
     let market = [], marketReceivedAt = 0, active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
     const $ = id => document.getElementById(id);
     const money = p => displayCoinPrice(p);
@@ -543,6 +557,46 @@
     function signalForChange(change) { if (change < 0) return 'red'; if (change > 0) return 'green'; return 'flat'; }
     function textForSignal(change) { if (change < 0) return 'Red'; if (change > 0) return 'Green'; return 'Neutral'; }
     function finiteChange(value) { return value === null || value === undefined || value === '' ? null : Number.isFinite(Number(value)) ? Number(value) : null; }
+    function pumpDumpKeyForRow(row) {
+      if (!row || typeof row.key !== 'string') return null;
+      if (row.kind === 'chain') return 'chain:'+row.key;
+      const item=checkerCoins.find(candidate => candidate.cg === row.key);
+      if (!item) return 'named:'+row.key;
+      const address=String(item.addr || '').trim();
+      const identity=/^0x[a-fA-F0-9]{40}$/.test(address) ? address.toLowerCase() : address;
+      return 'named:'+String(item.chain || 'market').toLowerCase()+':'+identity+':'+row.key;
+    }
+    function contractIdentityForRow(row) {
+      if (!row) return null;
+      if (row.kind === 'chain') return typeof row.contract === 'string' && row.contract ? row.contract : null;
+      const item=checkerCoins.find(candidate => candidate.cg === row.key);
+      if (!item) return null;
+      const address=String(item.addr || '').trim();
+      if (!address || address === 'Native' || /^Native\b/i.test(address)) return null;
+      return /^0x[a-fA-F0-9]{40}$/.test(address) || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address) ? address : null;
+    }
+    async function copyContractAddress(address,button) {
+      if (!address || !(/^0x[a-fA-F0-9]{40}$/.test(address) || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address))) return alert('A verified contract address is unavailable.');
+      try {
+        await navigator.clipboard.writeText(address);
+        const old=button.textContent; button.textContent='COPIED'; setTimeout(()=>button.textContent=old,1200);
+      } catch (_) { window.prompt('Copy this exact contract address:',address); }
+    }
+    function contractMarkup(row) {
+      const address=contractIdentityForRow(row);
+      if (!address) return `<div class="contract-box"><span class="trade-note">CONTRACT</span><code>Native asset - no token contract</code></div>`;
+      return `<div class="contract-box"><span class="trade-note">EXACT CONTRACT / MINT</span><code>${escapeHTML(address)}</code><button type="button" class="copy-contract" data-copy-contract="${escapeHTML(address)}">COPY CONTRACT</button></div>`;
+    }
+    function savePumpDumpExclusions() {
+      localStorage.setItem('seaChefPumpDumpExclusions',JSON.stringify([...pumpDumpExclusions].sort()));
+      const count=$('pndRemovedCount');
+      if (count) count.textContent=pumpDumpExclusions.size+' removed from Dump opps';
+    }
+    function restorePumpDumpCoins() {
+      if (!pumpDumpExclusions.size) return alert('No Pump & Dump removals are saved.');
+      if (!confirm('Restore every coin you removed from Dump opps?')) return;
+      pumpDumpExclusions.clear(); savePumpDumpExclusions(); buildBuySetups();
+    }
     function freshMarketItem(m, now = Date.now()) {
       if (!m || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
       const observedAt = new Date(m.last_updated).getTime();
@@ -702,7 +756,11 @@
       if (!route || !item) return false;
       if (route.venue === 'JUPITER') {
         const expected=item.addr === 'Native' ? 'SOL' : safeSolanaMint(item.addr);
-        return item.chain === 'solana' && expected !== null && route.chain === 'solana' && route.outputIdentity === expected;
+        if (!(item.chain === 'solana' && expected !== null && route.chain === 'solana' && route.outputIdentity === expected)) return false;
+        try {
+          const url=new URL(route.url);
+          return url.protocol === 'https:' && ['jup.ag','www.jup.ag'].includes(url.hostname) && url.searchParams.get('buy') === expected && url.searchParams.get('sell') === SOLANA_USDC_MINT;
+        } catch (_) { return false; }
       }
       if (route.venue === 'UNISWAP') {
         const expected=String(item.addr || '').toLowerCase();
@@ -715,9 +773,8 @@
       if (item.chain === 'solana') {
         const output = item.addr === 'Native' ? 'SOL' : safeSolanaMint(item.addr);
         if (!output) return null;
-        // Jupiter's page route uses the asset symbol USDC as the input slug.
-        // The exact output mint remains in the URL and is checked again before opening.
-        const route={venue:'JUPITER',wallet:'PHANTOM',chain:'solana',inputIdentity:SOLANA_USDC_MINT,outputIdentity:output,url:`https://jup.ag/swap/USDC-${encodeURIComponent(output)}`};
+        // Jupiter's current page route receives both exact mint identities.
+        const route={venue:'JUPITER',wallet:'PHANTOM',chain:'solana',inputIdentity:SOLANA_USDC_MINT,outputIdentity:output,url:`https://jup.ag/?buy=${encodeURIComponent(output)}&sell=${encodeURIComponent(SOLANA_USDC_MINT)}`};
         return verifiedRouteMatchesItem(route,item) ? route : null;
       }
       const uniswapChain = UNISWAP_CHAINS[item.chain];
@@ -1272,7 +1329,11 @@
         if (!pool || !validTokenAddress(lane,pool.tokenAddress)) continue;
         const identity = lane.api+':'+(lane.api === 'solana' ? pool.tokenAddress : pool.tokenAddress.toLowerCase());
         if (identity !== row.key) return null;
-        return tradeRouteFor({cg:row.key,chain:lane.key,addr:pool.tokenAddress});
+        if (row.contract !== pool.tokenAddress) return null;
+        if (typeof row.chart !== 'string' || row.chart !== pool.chart) return null;
+        const item={cg:row.key,chain:lane.key,addr:pool.tokenAddress};
+        const route=tradeRouteFor(item);
+        return route && verifiedRouteMatchesItem(route,item) ? route : null;
       }
       return null;
     }
@@ -1477,7 +1538,7 @@
           change <= -10 && change > -100 &&
           freshMarketItem(m, now)
         );
-      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(checkerCoins.find(c => c.cg === m.id)?.chain || 'MARKET').toUpperCase(),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
+      }).map(m => { const item=checkerCoins.find(c => c.cg === m.id); return {kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(item?.chain || 'MARKET').toUpperCase(),contract:String(item?.addr || ''),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}; });
       const discoveredQualified = CHAIN_LANES.flatMap(lane => {
         const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
         if (!fresh) return [];
@@ -1485,10 +1546,10 @@
           const state = entryStateFor(pool.identity);
           const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
           const rating = Math.round(Math.min(100,Math.min(70,Math.max(0,-pool.change24h * 4)) + directionPoints + 10));
-          return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
+          return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,contract:pool.tokenAddress,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
         });
       });
-      const qualified = [...namedQualified,...discoveredQualified].sort(compareDeskRows);
+      const qualified = [...namedQualified,...discoveredQualified].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))).sort(compareDeskRows);
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
@@ -1504,10 +1565,11 @@
         const stateSignal = entryStateSignal(state);
         const rating = m.rating;
         const chart = m.kind === 'chain' ? m.chart : `https://www.coingecko.com/en/coins/${encodeURIComponent(m.key)}`;
-        const action = `<a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a>`;
+        const action = `<div class="buttons"><a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a><button type="button" class="pnd-button" data-pump-dump-key="${escapeHTML(pumpDumpKeyForRow(m))}" data-pump-dump-symbol="${escapeHTML(m.symbol)}">PUMPNDUMP</button></div>`;
         const compact=compactState(m);
         return `<article class="opportunity-card" data-feed-active="${compact.q.stage!=='freshness' && compact.q.stage!=='drop'}" data-desk-key="${escapeHTML(m.key)}" aria-label="${escapeHTML(m.symbol)} trade plan">
           <div class="opportunity-head"><div><h3>${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)}</span></div>${action}</div>
+          ${contractMarkup(m)}
           <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>24H ${change.toFixed(2)}%</span></div>
           <div data-card-chart>${sampleChartMarkup(m)}</div>
           <span class="card-state" data-card-state data-tone="${compact.tone}">${compact.label}</span>
@@ -1703,6 +1765,21 @@
     $('buySetupRows').addEventListener('input',updateTradePlan);
     $('buySetupRows').addEventListener('click',stepTradePlan);
     $('buySetupRows').addEventListener('click',openResultBuy);
+    $('buySetupRows').addEventListener('click',event => {
+      const button=event.target.closest('[data-copy-contract]');
+      if (!button) return;
+      event.preventDefault(); event.stopPropagation();
+      copyContractAddress(button.dataset.copyContract,button);
+    });
+    $('buySetupRows').addEventListener('click',event => {
+      const button=event.target.closest('[data-pump-dump-key]');
+      if (!button) return;
+      event.preventDefault(); event.stopPropagation();
+      const key=button.dataset.pumpDumpKey, symbol=button.dataset.pumpDumpSymbol || 'This coin';
+      if (!key || key.length>180) return alert('Coin identity is invalid. Nothing was removed.');
+      if (!confirm('Remove '+symbol+' from the Dump opps lineup as Pump & Dump?')) return;
+      pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur(); setTimeout(buildBuySetups,0);
+    });
     $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
     $('buySetupRows').addEventListener('click',event => {
       if (!event.target.closest('[data-use-price]')) return;
@@ -1742,6 +1819,7 @@
       if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
       window.open(url,'_blank','noopener,noreferrer');
     },true);
+    savePumpDumpExclusions();
     load();
     setInterval(load, 60000);
     setInterval(refreshQualificationGauges, 15000);
@@ -1753,4 +1831,3 @@
     window.addEventListener('online', load);
   </script>
 </body>
-</html>
