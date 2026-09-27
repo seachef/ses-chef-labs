@@ -128,6 +128,10 @@
     .qualification-gauge details { text-align:left; color:#b4c3ce; font-size:12px; line-height:1.5; margin-top:10px; }
     .qualification-gauge summary { cursor:pointer; }
     .trade-result { margin:12px 0; padding:16px; border:1px solid #506276; border-radius:18px; background:#172b36; }
+    .result-buy { width:100%; margin-top:14px; padding:13px; border:1px solid #81d9b7; border-radius:12px; background:#8bd6ba; color:#092920; font-size:17px; font-weight:800; cursor:pointer; }
+    .result-buy:disabled { background:#30464c; border-color:#52636c; color:#a7b7be; cursor:default; }
+    .result-buy:focus-visible { outline:3px solid #c5b6ee; outline-offset:3px; }
+    .result-buy-note { margin-top:8px; font-size:12px; line-height:1.45; color:#b7c9d2; }
     .trade-result h3 { margin:0 0 10px; font-size:15px; color:#d5e6f4; }
     .trade-choice { margin:12px 0; padding:12px; border:1px solid #405869; border-radius:18px; background:#14232f; }
     @media (max-width:1050px) { .opportunity-cards { grid-template-columns:1fr; } }
@@ -864,6 +868,8 @@
       document.querySelectorAll('[data-qualification-key]').forEach(host => {
         const row = visibleTradeRows.get(host.dataset.qualificationKey);
         if (!row) return;
+        const planBox = host.closest('[data-trade-plan]');
+        if (planBox) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
         const expanded = Boolean(host.querySelector('details')?.open);
         const markup = qualificationGaugeMarkup(row);
         if (host._gaugeMarkup === markup) return;
@@ -917,6 +923,56 @@
     }
     const audMoney = value => 'A$' + Number(value).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
     const usdPrice = value => 'US$' + Number(value).toLocaleString('en-AU',{maximumSignificantDigits:8});
+    function resultBuyRoute(row) {
+      if (!row) return null;
+      if (row.kind === 'named') {
+        const item = checkerCoins.find(c => c.cg === row.key);
+        return item ? tradeRouteFor(item) : null;
+      }
+      if (row.kind !== 'chain') return null;
+      for (const lane of CHAIN_LANES) {
+        const pool = (chainPools[lane.key] || []).find(p => p.identity === row.key);
+        if (!pool || !validTokenAddress(lane,pool.tokenAddress)) continue;
+        const identity = lane.api+':'+(lane.api === 'solana' ? pool.tokenAddress : pool.tokenAddress.toLowerCase());
+        if (identity !== row.key) return null;
+        return tradeRouteFor({cg:row.key,chain:lane.key,addr:pool.tokenAddress});
+      }
+      return null;
+    }
+    function resultBuyStatus(row,plan) {
+      const route = resultBuyRoute(row);
+      if (!route) return {enabled:false,note:'Trading route unavailable for this coin.'};
+      const model = tradeMath(row.price,plan);
+      if (!(model.budget > 0) || !Number.isFinite(model.entry) || !Number.isFinite(model.exit)) return {enabled:false,note:'Choose your spend and prices first.'};
+      const q = qualificationState(row);
+      if (q.tone === 'checking') return {enabled:false,note:'Waiting for a fresh price.'};
+      if (q.note === 'Outside the 10% drop rule') return {enabled:false,note:'This coin has left the 10% drop window.'};
+      return {enabled:true,route,note:'Opens '+route.venue+' for manual review. Set your amount, entry and exit there; no order is placed here.'};
+    }
+    function resultBuyMarkup(row,plan) {
+      const status = resultBuyStatus(row,plan);
+      return `<button type="button" class="result-buy" data-result-buy ${status.enabled ? '' : 'disabled'} aria-label="Buy ${escapeHTML(row.symbol || 'coin')} — open trading venue for manual review">BUY</button><div class="result-buy-note" data-result-buy-note>${escapeHTML(status.note)}</div>`;
+    }
+    function syncResultBuy(box,row,plan) {
+      const button = box.querySelector('[data-result-buy]');
+      if (!button) return;
+      const status = resultBuyStatus(row,plan);
+      button.disabled = !status.enabled;
+      box.querySelector('[data-result-buy-note]').textContent = status.note;
+    }
+    function openResultBuy(event) {
+      const button = event.target.closest('[data-result-buy]');
+      if (!button || button.disabled) return;
+      const box = button.closest('[data-trade-plan]');
+      const row = box && visibleTradeRows.get(box.dataset.tradePlan);
+      if (!row) return;
+      const plan = getTradePlan(row.key,row.price);
+      const status = resultBuyStatus(row,plan);
+      syncResultBuy(box,row,plan);
+      if (!status.enabled) return;
+      // Navigation only. No amount, target, approvals or transaction is sent.
+      window.open(status.route.url,'_blank','noopener,noreferrer');
+    }
     function tradeSummaryMarkup(row, plan) {
       const model = tradeMath(row.price,plan);
       if (!model.budget) return '<span class="trade-note">'+escapeHTML(model.status)+'</span>';
@@ -991,7 +1047,7 @@
             <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
           </section>
         </div>
-        <section class="trade-result"><h3>MY RESULT</h3><div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div></section>
+        <section class="trade-result"><h3>MY RESULT</h3><div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div>${resultBuyMarkup(row,plan)}</section>
         <details class="trade-assumptions"><summary>Fees &amp; slippage estimate</summary>
           <div class="trade-note">Live route quotes are not connected. Optional assumptions below apply only to this coin and must be refreshed for its chain and route. Blank means unknown, not free.</div>
           <div class="trade-fields">
@@ -1018,6 +1074,7 @@
       box.querySelector('[data-plan-field="budget"]').setAttribute('aria-valuetext',audMoney(Number(plan.budget)));
       box.querySelector('[data-plan-field="entryPosition"]').setAttribute('aria-valuetext',m.entry ? usdPrice(m.entry) : 'Unknown');
       box.querySelector('[data-plan-field="multiple"]').setAttribute('aria-valuetext',plan.multiple+' times entry price');
+      syncResultBuy(box,row,plan);
     }
     function updateTradePlan(event) {
       const field = event.target.dataset?.planField;
@@ -1206,6 +1263,7 @@
     renderChainBoards();
     $('buySetupRows').addEventListener('input',updateTradePlan);
     $('buySetupRows').addEventListener('click',stepTradePlan);
+    $('buySetupRows').addEventListener('click',openResultBuy);
     $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
     $('buySetupRows').addEventListener('click',event => {
       if (!event.target.closest('[data-use-price]')) return;
