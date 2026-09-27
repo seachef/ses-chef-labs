@@ -2,9 +2,11 @@
 <html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Language" content="en-AU">
   <meta name="google" content="notranslate">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="color-scheme" content="dark">
   <title>Sea Chef Labs</title>
   <style>
     * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
@@ -162,22 +164,124 @@
     @media (prefers-reduced-motion:reduce) { .track, .item.scanning { animation:none; } }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
     @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
+
+    /* Phone-first calm desk. Existing data and independent trade plans retained. */
+    body { color-scheme:dark; padding:16px; padding: max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+    .container { max-width:1240px; min-width:0; }
+    header { margin-bottom:16px; border:0; padding:8px 0; align-items:center; }
+    h1 { color:#dfd8f5; font-size:24px; font-weight:650; letter-spacing:-.7px; }
+    .brand-subtitle { font-size:12px; color:#aebbd0; margin-top:4px; }
+    .btn, button, summary, a.btn { touch-action:manipulation; }
+    .btn { min-height:44px; display:inline-flex; align-items:center; justify-content:center; border-radius:12px; background:#29354d; color:#e5eaf4; font-weight:600; padding:10px 13px; }
+    button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible { outline:2px solid #bda7ef; outline-offset:3px; }
+    .currency-switch .btn { min-width:48px; border-color:#3b4b63; }
+    .currency-switch .btn[aria-pressed="true"] { background:#a897ce; color:#10172a; }
+    .actions { width:auto; gap:7px; }
+    .currency-note { max-width:none; font-size:12px; margin:4px 0 14px; }
+    .section { border-radius:20px; padding:16px; margin:16px 0; }
+    .dump-buy-zone { border:0; padding:0; background:transparent; box-shadow:none; }
+    .dump-buy-zone h2 { color:#e4dff3; font-size:21px; margin:0; }
+    .desk-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:22px 0 12px; }
+    .desk-heading .trade-note { text-align:right; }
+    .opportunity-cards { grid-template-columns:minmax(0,1fr); gap:14px; }
+    .opportunity-card { padding:17px; background:#182338; border:1px solid #344158; border-radius:20px; }
+    .opportunity-head { align-items:start; }
+    .opportunity-head h3 { font-size:22px; color:#edf0f7; font-weight:650; }
+    .opportunity-price { align-items:end; }
+    .opportunity-price b { display:block; font-size:26px; font-weight:600; letter-spacing:-.4px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .opportunity-price .decline { color:#f4a5b4; font-size:14px; }
+    .card-state { padding:5px 9px; border-radius:8px; display:inline-block; font-size:12px; font-weight:600; color:#d1d9e7; background:#2c374b; }
+    .card-state[data-tone="falling"] { color:#f5b7c6; background:#3d2836; }
+    .card-state[data-tone="rising"],.card-state[data-tone="level"] { color:#d7c6fa; background:#312c49; }
+    .card-reason { font-size:13px; color:#bdc9da; margin:8px 0; }
+    .card-freshness { color:#a8b7cb; font-size:12px; margin:8px 0; }
+    .session-chart { width:100%; height:84px; display:block; margin:9px 0; }
+    .sample-wait { min-height:64px; display:flex; align-items:center; color:#a8b7cb; font-size:12px; }
+    .coin-plan > summary { min-height:44px; padding:11px 4px; color:#d3c4fb; font-size:15px; cursor:pointer; }
+    .coin-plan[open] > summary { border-bottom:1px solid #3e4a63; margin-bottom:10px; }
+    .coin-plan[open] { margin-top:8px; }
+    .trade-windows { grid-template-columns:minmax(0,1fr); }
+    .trade-window,.trade-window.exit { border-color:#414963; background:#202b42; padding:14px; }
+    .trade-window.exit { background:#292940; }
+    .trade-result { background:#1c3039; border-color:#3d5660; }
+    .trade-big { font-size:24px; font-weight:600; }
+    .trade-note,.trade-fields label,.result-buy-note { font-size:13px; }
+    .input { min-height:44px; font-size:16px; }
+    .trade-fields { grid-template-columns:minmax(0,1fr); }
+    .trade-choice { background:#1a293c; border-color:#3b4a61; padding:12px; }
+    .qualification-gauge { border:0; background:#162133; }
+    .qualification-gauge svg { max-width:220px; }
+    .result-buy { background:#9bd9be; border-color:#6fb899; font-weight:650; min-height:48px; }
+    .plan-ruler .slider { width:100%; margin:0; min-height:44px; accent-color:#b8a4e6; }
+    .plan-ruler .scale-scroll { padding:2px 0 4px; }
+    .plan-ruler .scale-ticks { width:max-content; }
+    .plan-ruler .scale-ticks span { min-width:48px; }
+    .market-pulse { background:#172237; border:1px solid #303c52; border-radius:20px; padding:16px; }
+    .pulse-title { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:13px; }
+    .pulse-title h2 { margin:0; font-size:16px; font-weight:600; }
+    .pulse-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .pulse-number { display:block; font-size:25px; font-weight:550; font-variant-numeric:tabular-nums; }
+    .pulse-label { color:#c1cdde; font-size:12px; }
+    .pulse-track { background:#2a3447; height:5px; border-radius:4px; margin-top:7px; overflow:hidden; }
+    .pulse-track span { display:block; height:100%; width:0; background:#73cfa8; transition:width .5s ease; }
+    .pulse-track.down span { background:#e595a8; } .pulse-track.flat span { background:#b4a2db; }
+    .pulse-foot { margin-top:12px; color:#a9b9d0; font-size:12px; }
+    .desk-menu { margin-top:20px; border-radius:18px; background:#172237; border:1px solid #354259; padding:4px 14px; }
+    .desk-menu > summary { min-height:48px; padding:12px 0; color:#d8ccf1; font-size:15px; cursor:pointer; }
+    .desk-menu .actions { display:flex; flex-wrap:wrap; padding:12px 0; }
+    .ticker { border:1px solid #3e5661; background:#121d30; }
+    .ticker-status,.chain-banner-head { flex-wrap:wrap; }
+    .chain-meta { text-align:left; font-size:12px; }
+    .chain-name { color:#c7b9e9; }
+    .chain-tag { font-size:11px; }
+    .chain-board { margin-top:12px; }
+    .research table { table-layout:fixed; overflow-wrap:anywhere; }
+    .research { min-width:0; }
+    .research td,.research th { font-size:12px; }
+    .item.scanning { animation:none; }
+    .gauge-motion-paused .track,.gauge-motion-paused .chain-track { animation-play-state:paused; }
+    @media(min-width:780px) { .opportunity-cards { grid-template-columns:repeat(2,minmax(0,1fr)); } .trade-fields { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(min-width:1120px) { .opportunity-cards { grid-template-columns:repeat(3,minmax(0,1fr)); } .opportunity-card:has(.coin-plan[open]) { grid-column:span 2; } .coin-plan[open] .trade-windows { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:600px) { .research table thead { display:none; } .research table,.research table tbody,.research table tr,.research table td { display:block; width:100%; } .research table tr { border-bottom:1px solid #354259; padding:12px 0; } .research table td { border:0; padding:3px 0; } .research td:before { content:attr(data-label); display:inline-block; min-width:76px; color:#aebad0; padding-right:8px; } .opportunity-head .btn { min-width:62px; } }
+    @media(prefers-reduced-motion:reduce) { .chain-track,.track,.gauge-active .gauge-needle { animation:none!important; } .pulse-track span { transition:none; } }
+    html { overscroll-behavior-y:contain; }
+    .refresh-strip { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; color:#acbdd1; font-size:12px; }
+    .refresh-strip button { border:1px solid #41516c; color:#d6c8f1; background:#1b2940; border-radius:14px; min-height:44px; padding:8px 14px; font-size:14px; }
+    .pull-cue { text-align:center; height:0; overflow:hidden; color:#c9bae8; font-size:13px; display:flex; align-items:center; justify-content:center; }
+    .refresh-strip button:disabled { opacity:.65; }
   </style>
 </head>
 <body class="notranslate">
   <div class="container">
     <header>
-      <h1>Sea Chef Labs</h1>
-      <div class="actions">
-        <div class="currency-switch" role="group" aria-label="Coin price display currency"><span class="trade-note">Prices</span><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
-        <span class="currency-note" id="currencyNote">Prices USD · spend and results AUD</span>
-        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
+      <div><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
+      <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
+    </header>
+    <div class="currency-note" id="currencyNote">Prices USD · spend and results AUD</div>
+    <div id="pullCue" class="pull-cue" aria-hidden="true">↓ Pull to refresh</div>
+    <div class="refresh-strip"><span id="refreshStatus" role="status" aria-live="polite">Pull down at the top to refresh</span><button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button></div>
+    <section class="market-pulse" aria-label="Configured watchlist price breadth">
+      <div class="pulse-title"><h2>Market pulse</h2><span class="trade-note">Watchlist · rolling 24H</span></div>
+      <div class="pulse-grid">
+        <div><span class="pulse-label">Rising</span><strong class="pulse-number" id="pulseUp">—</strong><div class="pulse-track"><span id="pulseUpBar"></span></div></div>
+        <div><span class="pulse-label">Falling</span><strong class="pulse-number" id="pulseDown">—</strong><div class="pulse-track down"><span id="pulseDownBar"></span></div></div>
+        <div><span class="pulse-label">Unchanged</span><strong class="pulse-number" id="pulseFlat">—</strong><div class="pulse-track flat"><span id="pulseFlatBar"></span></div></div>
+      </div>
+      <div class="pulse-foot" id="pulseCoverage">Waiting for fresh watchlist prices</div>
+    </section>
+    <!-- SCL BUY SETUPS WINDOW -->
+    <section class="section dump-buy-zone" id="scl-buy-setups">
+      <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops · sample recovery first</span></div>
+      <p class="trade-note">Tap a coin to plan. Full buy qualification and token-age checks are not connected.</p>
+      <div class="opportunity-cards" id="buySetupRows"></div>
+    </section>
+
+    <details class="desk-menu" id="deskMenu"><summary>Menu · chains, watchlist &amp; wallets</summary>
+      <div class="actions">        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
         <button class="btn purple" onclick="connectPhantom()">Connect Phantom</button>
         <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain</button>
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
-    </header>
-
     <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
       <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices…</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
@@ -186,13 +290,6 @@
     <section aria-labelledby="chainBoardTitle">
       <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
       <div class="chain-board" id="chainBoards"></div>
-    </section>
-
-    <!-- SCL BUY SETUPS WINDOW -->
-    <section class="section dump-buy-zone" id="scl-buy-setups">
-      <h2>Dump opps <span class="muted" style="font-size:14px;">(Individual coin windows)</span></h2>
-      <p>Choose your spend, entry price and exit target. These are plans to review; qualification is still pending. 1× means the same price, 2× means double.</p>
-      <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
     <section class="section limit-zone" hidden>
@@ -234,6 +331,7 @@
         </table>
       </div>
     </section>
+    </details>
   </div>
 
   <script>
@@ -407,12 +505,99 @@
     function localClock(milliseconds) {
       return Number.isFinite(milliseconds) ? new Date(milliseconds).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}) : 'unknown';
     }
+    const deskSamples = new Map();
+    function recordDeskSample(key,value,at) {
+      const now = Date.now();
+      if (typeof key !== 'string' || !Number.isFinite(value) || value <= 0 || !Number.isFinite(at) || at > now || now-at > 20*60*1000) return;
+      const list = deskSamples.get(key) || [];
+      if (list.length && at <= list[list.length-1].at) return;
+      deskSamples.set(key,[...list,{price:value,at}].slice(-32));
+    }
+    function watchlistBreadth(now=Date.now()) {
+      const unique = [...new Set(ids)];
+      let up=0,down=0,flat=0,unknown=0;
+      unique.forEach(id => {
+        const item = price(id), change = finiteChange(item?.price_change_percentage_24h);
+        if (!freshMarketItem(item,now) || change === null) unknown++;
+        else if (change>0) up++;
+        else if (change<0) down++;
+        else flat++;
+      });
+      return {up,down,flat,unknown,total:unique.length,measured:up+down+flat};
+    }
+    function refreshMarketPulse() {
+      if (!$('pulseCoverage')) return;
+      const b=watchlistBreadth();
+      [['Up',b.up],['Down',b.down],['Flat',b.flat]].forEach(([name,count])=> {
+        $('pulse'+name).textContent=b.measured ? String(count) : '—';
+        $('pulse'+name+'Bar').style.width=(b.measured ? count/b.measured*100 : 0)+'%';
+      });
+      $('pulseCoverage').textContent=`${b.measured}/${b.total} watchlist coins measured · ${b.unknown} missing or stale · chain discoveries excluded`;
+    }
+    function compactState(row,now=Date.now()) {
+      const q=qualificationState(row,now);
+      const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES'};
+      return {q,label:names[q.stage] || 'WATCHING',tone:q.stage || 'freshness'};
+    }
+    function recoveryPriority(row) {
+      const q=qualificationState(row);
+      return {rising:0,level:1,mixed:2,samples:3,falling:4,drop:5,freshness:6}[q.stage] ?? 6;
+    }
+    function compareDeskRows(a,b) {
+      return recoveryPriority(a)-recoveryPriority(b) || a.symbol.localeCompare(b.symbol) || a.key.localeCompare(b.key);
+    }
+    function sampleChartMarkup(row) {
+      const samples=(deskSamples.get(row.key)||[]).filter(s=>Date.now()-s.at<=2*60*60*1000);
+      if (samples.length<2) return '<div class="sample-wait">Price path appears after the next sample</div>';
+      const lo=Math.min(...samples.map(s=>s.price)),hi=Math.max(...samples.map(s=>s.price)),range=hi-lo || lo*.002;
+      const duration=samples[samples.length-1].at-samples[0].at;
+      const pts=samples.map((s,i)=>`${i?'L':'M'}${(8+(s.at-samples[0].at)*304/duration).toFixed(2)},${(hi===lo ? 38 : 10+(hi-s.price)/range*56).toFixed(2)}`).join(' ');
+      const direction=samples[samples.length-1].price-samples[0].price;
+      const color=direction>0?'#82d3b2':direction<0?'#e9a0b1':'#c2b1e8';
+      const label=`${row.symbol}: ${samples.length} samples observed in this tab, not candles`;
+      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path d="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab · ${samples.length} samples · ${escapeHTML(usdPrice(lo))}–${escapeHTML(usdPrice(hi))}</div>`;
+    }
+    function compactFreshness(row) {
+      let at=null;
+      if(row.kind==='named') at=new Date(price(row.key)?.last_updated).getTime();
+      else { const lane=CHAIN_LANES.find(l=>(chainPools[l.key]||[]).some(p=>p.identity===row.key)); if(lane) at=chainPoolsUpdatedAt[lane.key]; }
+      if(!Number.isFinite(at)||Date.now()<at) return 'Observation time unavailable';
+      const seconds=Math.floor((Date.now()-at)/1000);
+      const age=seconds<60?seconds+'s':Math.floor(seconds/60)+'m';
+      return (row.kind==='chain'?'Feed received ':'Price observed ')+age+' ago';
+    }
+    function refreshCompactCards() {
+      refreshMarketPulse();
+      document.querySelectorAll('[data-desk-key]').forEach(host=>{
+        const row=visibleTradeRows.get(host.dataset.deskKey); if(!row) return;
+        const current=row.kind==='named' ? price(row.key) : Object.values(chainPools).flat().find(p=>p.identity===row.key);
+        if(current) {
+          const value=Number(row.kind==='named'?current.current_price:current.price);
+          const change=finiteChange(row.kind==='named'?current.price_change_percentage_24h:current.change24h);
+          if(Number.isFinite(value)&&value>0) row.price=value;
+          row.change=change;
+          host.querySelector('[data-card-price]').textContent=usdPrice(row.price);
+          host.querySelector('[data-card-change]').textContent=change===null?'24H unavailable':'24H '+change.toFixed(2)+'%';
+          host.querySelector('[data-card-chart]').innerHTML=sampleChartMarkup(row);
+          const latest=host.querySelector('[data-plan-sampled-price]');
+          if(latest) latest.textContent='Sampled price '+usdPrice(row.price);
+        }
+        const c=compactState(row);
+        const badge=host.querySelector('[data-card-state]');
+        badge.textContent=c.label;badge.dataset.tone=c.tone;
+        host.querySelector('[data-card-reason]').textContent=c.q.note;
+        host.querySelector('[data-card-age]').textContent=compactFreshness(row);
+      });
+    }
     function recordPriceSamples() {
       const recordedAt = Date.now();
       market.forEach(m => {
         const current = Number(m.current_price);
         if (!Number.isFinite(current) || current <= 0) return;
-        if (freshMarketItem(m)) recordGaugeSample(m.id,current,new Date(m.last_updated).getTime());
+        if (freshMarketItem(m)) {
+          const at=new Date(m.last_updated).getTime();
+          recordGaugeSample(m.id,current,at); recordDeskSample(m.id,current,at);
+        }
         const samples = Array.isArray(priceSamples[m.id]) ? priceSamples[m.id] : [];
         samples.push({ price: current, recordedAt });
         priceSamples[m.id] = samples.slice(-3);
@@ -435,7 +620,7 @@
       return Math.round(Math.min(100, declinePoints + directionPoints + 10));
     }
     function entryStateLabel(state) {
-      if (state === 'recovering') return 'BUY NOW CANDIDATE';
+      if (state === 'recovering') return 'RISING SAMPLES — REVIEW';
       if (state === 'falling') return 'WAIT — STILL DUMPING';
       if (state === 'stabilising') return 'WATCH CLOSELY';
       return 'CHECKING — NEEDS 2 MOVES';
@@ -608,6 +793,7 @@
       const recordedAt = Date.now();
       unique.forEach(pool => {
         recordGaugeSample(pool.identity,pool.price,recordedAt);
+        recordDeskSample(pool.identity,pool.price,recordedAt);
         const samples = Array.isArray(priceSamples[pool.identity]) ? priceSamples[pool.identity] : [];
         samples.push({price:pool.price,recordedAt});
         priceSamples[pool.identity] = samples.slice(-3);
@@ -878,11 +1064,13 @@
       </div>`;
     }
     function refreshQualificationGauges() {
+      refreshCompactCards();
       document.querySelectorAll('[data-qualification-key]').forEach(host => {
         const row = visibleTradeRows.get(host.dataset.qualificationKey);
         if (!row) return;
         const planBox = host.closest('[data-trade-plan]');
         if (planBox) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
+        if (host.contains(document.activeElement)) return;
         const expanded = Boolean(host.querySelector('details')?.open);
         const markup = qualificationGaugeMarkup(row);
         if (host._gaugeMarkup === markup) return;
@@ -1016,7 +1204,7 @@
     }
     function resultBuyMarkup(row,plan) {
       const status = resultBuyStatus(row,plan);
-      return `<button type="button" class="result-buy" data-result-buy ${status.enabled ? '' : 'disabled'} aria-label="Buy ${escapeHTML(row.symbol || 'coin')} — open trading venue for manual review">BUY</button><div class="result-buy-note" data-result-buy-note>${escapeHTML(status.note)}</div>`;
+      return `<button type="button" class="result-buy" data-result-buy ${status.enabled ? '' : 'disabled'} aria-label="Open ${escapeHTML(row.symbol || 'coin')} market for manual review">OPEN MARKET</button><div class="result-buy-note" data-result-buy-note>${escapeHTML(status.note)}</div>`;
     }
     function syncResultBuy(box,row,plan) {
       const button = box.querySelector('[data-result-buy]');
@@ -1091,10 +1279,10 @@
       const ticks = Array.from({length:count},(_,i) => min+i*step).map(n => `<span data-scale-value="${n}" class="${Number(value) === n ? 'selected' : ''}">${label(n)}</span>`).join('');
       return `<div class="step-control" data-step-control="${field}">
         <button type="button" class="step-button" data-step-field="${field}" data-step-direction="-1" aria-label="${budget ? 'Decrease spend by A$50' : 'Decrease sell target by 1 times entry price'}" ${Number(value)<=min ? 'disabled' : ''}>−</button>
-        <div class="scale-scroll"><div class="scale-rail" style="--scale-count:${count};--scale-gap:${gap}px">
+        <div class="plan-ruler" style="--scale-count:${count};--scale-gap:${gap}px">
           <input class="slider" id="plan-${index}-${field}" type="range" min="${min}" max="${max}" step="${step}" value="${escapeHTML(value)}" data-plan-field="${field}" aria-valuetext="${label(Number(value))}">
-          <div class="scale-ticks" aria-hidden="true">${ticks}</div>
-        </div></div>
+          <div class="trade-note">Selected value highlighted · swipe numbers to browse</div><div class="scale-scroll"><div class="scale-ticks" aria-hidden="true">${ticks}</div></div>
+        </div>
         <button type="button" class="step-button" data-step-field="${field}" data-step-direction="1" aria-label="${budget ? 'Increase spend by A$50' : 'Increase sell target by 1 times entry price'}" ${Number(value)>=max ? 'disabled' : ''}>+</button>
       </div>`;
     }
@@ -1136,7 +1324,7 @@
           <section class="trade-window"><h3>ENTRY · MY BUY PRICE</h3>
             <div class="trade-big" data-entry-label>${escapeHTML(usdPrice(model.entry))}</div>
             ${entrySliderMarkup(plan,index)}
-            <div class="trade-choice"><span class="trade-note">Sampled price ${escapeHTML(usdPrice(row.price))}</span> <button type="button" data-use-price>Use latest price</button></div>
+            <div class="trade-choice"><span class="trade-note" data-plan-sampled-price>Sampled price ${escapeHTML(usdPrice(row.price))}</span> <button type="button" data-use-price>Use latest price</button></div>
             <div class="trade-total" data-entry-total>${escapeHTML(audMoney(model.budget || 0))} budget · ${model.entryCosts !== undefined ? escapeHTML(audMoney(model.entryCosts))+' estimated entry costs' : 'entry costs need a quote'}</div>
           </section>
           <section class="trade-window exit"><h3>EXIT · MY SELL TARGET</h3>
@@ -1196,7 +1384,7 @@
     function buildBuySetups() {
       // Don't discard the owner's focused field while a background feed refreshes.
       refreshQualificationGauges();
-      if (document.activeElement?.matches('[data-plan-field], [data-step-field]')) return;
+      if (document.activeElement?.closest('#buySetupRows')) return;
       const now = Date.now();
       const namedQualified = market.filter(m => {
         const change = finiteChange(m.price_change_percentage_24h);
@@ -1216,8 +1404,9 @@
           return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
         });
       });
-      const qualified = [...namedQualified,...discoveredQualified].sort((a,b) => b.rating - a.rating || a.change - b.change);
+      const qualified = [...namedQualified,...discoveredQualified].sort(compareDeskRows);
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
+      const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
@@ -1232,10 +1421,15 @@
         const rating = m.rating;
         const chart = m.kind === 'chain' ? m.chart : `https://www.coingecko.com/en/coins/${encodeURIComponent(m.key)}`;
         const action = `<a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a>`;
-        return `<article class="opportunity-card" aria-label="${escapeHTML(m.symbol)} trade plan">
-          <div class="opportunity-head"><div><h3>#${index + 1} · ${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)} · Screen score ${rating}/100</span></div>${action}</div>
-          <div class="opportunity-price"><span>Sampled price <b>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline">24H ${change.toFixed(2)}%</span></div>
-          ${tradePlanMarkup(m,index)}
+        const compact=compactState(m);
+        return `<article class="opportunity-card" data-desk-key="${escapeHTML(m.key)}" aria-label="${escapeHTML(m.symbol)} trade plan">
+          <div class="opportunity-head"><div><h3>${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)}</span></div>${action}</div>
+          <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>24H ${change.toFixed(2)}%</span></div>
+          <div data-card-chart>${sampleChartMarkup(m)}</div>
+          <span class="card-state" data-card-state data-tone="${compact.tone}">${compact.label}</span>
+          <div class="card-reason" data-card-reason>${escapeHTML(compact.q.note)}</div>
+          <div class="card-freshness" data-card-age>${escapeHTML(compactFreshness(m))}</div>
+          <details class="coin-plan" data-plan-key="${escapeHTML(m.key)}" ${expandedCards.has(m.key)?'open':''}><summary>My entry &amp; exit plan</summary>${tradePlanMarkup(m,index)}</details>
         </article>`;
       }).join('');
       $('buySetupRows').innerHTML = rows;
@@ -1295,7 +1489,7 @@
         const route = tradeRouteFor(item);
         const displayAddr = item.addr === 'Native' ? `${item.chain} Native` : item.addr;
 
-        return `<tr class="dump-row" onclick="openCoinWindow('${item.cg}')">
+        return `<tr class="dump-row" tabindex="0" role="link" aria-label="Open ${escapeHTML(item.symbol)} market or chart" onclick="openCoinWindow('${item.cg}')" onkeydown="if(event.key==='Enter'){event.preventDefault();openCoinWindow('${item.cg}');}">
                   <td><b>#${index + 1}</b></td>
                   <td><b>${rating}/100</b></td>
                   <td>
@@ -1308,6 +1502,7 @@
                 </tr>`;
       }).join('');
       $('dumpRows').innerHTML = rows;
+      $('dumpRows').querySelectorAll('tr').forEach(tr => Array.from(tr.children).forEach((td,i) => td.dataset.label = ['Rank','Screen','Coin','Price','24H','State'][i] || ''));
     }
 
     function renderTickerPrices() {
@@ -1332,16 +1527,25 @@
         const freshCount = market.filter(item => freshMarketItem(item)).length;
         $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices • feed ${localClock(feedTime)} • highest rating first`;
     }
-    async function load() {
+    let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
+    function load() {
+      if(feedPromise) return feedPromise;
+      if(Date.now()<feedRetryAt) return Promise.resolve('cooldown');
+      feedPromise=performLoad().finally(()=>{feedPromise=null;});
+      return feedPromise;
+    }
+    async function performLoad() {
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
       try {
         const requestStarted = Date.now();
         const endpoint = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&order=market_cap_desc&per_page=250&sparkline=false&price_change_percentage=24h&precision=full&locale=en&_scl=' + requestStarted;
-        const r = await fetch(endpoint, {cache:'no-store', headers:{Accept:'application/json'}});
+        const r = await fetch(endpoint, {cache:'no-store', headers:{Accept:'application/json'},signal:controller.signal});
         if (r.status === 429) {
-          $('tickerStatus').textContent = 'Rate limit reached • retrying in 60 seconds';
+          feedRetryAt=Date.now()+60000;
+          $('tickerStatus').textContent = 'Rate limit reached • cooling down; automatic retry pending';
           buildDump();
           buildBuySetups();
-          return;
+          return 'cooldown';
         }
         if (!r.ok) throw new Error(`Public feed returned HTTP ${r.status}`);
         const payload = await r.json();
@@ -1356,17 +1560,61 @@
         renderChainBoards();
         buildDump();
         buildBuySetups();
+        return market.some(m=>freshMarketItem(m))?'updated':'stale';
       } catch (e) {
         $('ticker').textContent = 'Live feed unavailable — retrying';
         $('tickerStatus').textContent = `No fresh ranking • retry ${localClock(Date.now())}`;
         buildDump();
         buildBuySetups();
         renderChainBoards();
-      }
+        return 'unavailable';
+      } finally { clearTimeout(timer); }
+    }
+    async function refreshDesk() {
+      if(manualRefreshing) return;
+      const status=$('refreshStatus');
+      if(Date.now()-manualRefreshAt<15000) { status.textContent='Please wait a few seconds between refreshes'; return; }
+      manualRefreshAt=Date.now();manualRefreshing=true;$('refreshButton').disabled=true;
+      status.textContent='Refreshing watchlist prices…';
+      try {
+        const result=await load();
+        refreshQualificationGauges();
+        status.textContent=result==='updated'?'Prices checked '+localClock(Date.now())+' · chains refresh on their schedule':result==='cooldown'?'Feed cooling down · automatic retry will follow':result==='stale'?'Feed replied with old prices · waiting for fresh data':'Could not refresh · check your connection';
+      } finally { manualRefreshing=false;$('refreshButton').disabled=false; }
+    }
+    function installPullRefresh() {
+      let start=null,distance=0,armed=false;
+      const cue=$('pullCue');
+      const reset=()=>{start=null;distance=0;armed=false;cue.style.height='0px';};
+      document.addEventListener('touchstart',event=>{
+        reset();
+        if(event.touches.length!==1 || window.scrollY>0 || manualRefreshing || event.target.closest('input,button,a,select,textarea,summary,.scale-scroll,.ticker,.chain-banner')) return;
+        start={x:event.touches[0].clientX,y:event.touches[0].clientY};
+      },{passive:true});
+      document.addEventListener('touchmove',event=>{
+        if(!start) return;
+        if(event.touches.length!==1 || window.scrollY>0) return reset();
+        const dx=event.touches[0].clientX-start.x,dy=event.touches[0].clientY-start.y;
+        if(Math.abs(dx)>20 && Math.abs(dx)>Math.abs(dy)) return reset();
+        if(dy<0) return reset();
+        if(dy<10) { armed=false;distance=0;cue.style.height='0px';return; }
+        if(event.cancelable) event.preventDefault();
+        distance=Math.min(110,dy*.55);armed=dy>=110;
+        cue.style.height=distance+'px';cue.textContent=armed?'↻ Release to refresh':'↓ Pull to refresh';
+      },{passive:false});
+      document.addEventListener('touchend',()=>{const go=armed;reset();if(go) refreshDesk();},{passive:true});
+      document.addEventListener('touchcancel',reset,{passive:true});
     }
 
     render();
     renderChainBoards();
+    installPullRefresh();
+    $('buySetupRows').addEventListener('toggle',event=>{
+      if(event.target.matches('details.coin-plan') && event.target.open) {
+        const box=event.target.querySelector('[data-trade-plan]');
+        if(box) { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); }
+      }
+    },true);
     $('buySetupRows').addEventListener('input',updateTradePlan);
     $('buySetupRows').addEventListener('click',stepTradePlan);
     $('buySetupRows').addEventListener('click',openResultBuy);
