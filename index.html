@@ -325,6 +325,8 @@
     .glance-row:hover,.glance-row:focus-visible { background:#202e44; border-radius:9px; outline:2px solid #8394ad; outline-offset:-2px; }
     .glance-coin { min-width:0; overflow-wrap:anywhere; }
     .glance-coin small { display:block; color:#a9b9d0; font-size:10px; margin-top:3px; }
+    .glance-new { display:inline-block; margin-left:6px; color:#73cfa8; font-size:10px; font-weight:800; letter-spacing:.08em; vertical-align:middle; }
+    .glance-watching { display:inline-block; margin-left:6px; color:#b4a2db; font-size:10px; font-weight:800; letter-spacing:.06em; vertical-align:middle; }
     .glance-price,.glance-change { text-align:right; font-variant-numeric:tabular-nums; }
     .glance-up { color:#73cfa8; } .glance-down { color:#e595a8; } .glance-muted { color:#a9b9d0; }
     .check-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9aa8ba; flex:none; }
@@ -743,6 +745,33 @@
       } catch (_) { return new Map(); }
     }
     const watchedDumpRows=readWatchedRows();
+    const DUMP_ENTRY_STATE_KEY='seaChefDumpEntryStateV1', DUMP_NEW_MS=24*60*60*1000;
+    function readDumpEntryState() {
+      try {
+        const parsed=JSON.parse(localStorage.getItem(DUMP_ENTRY_STATE_KEY)||'null');
+        if(!parsed || parsed.version!==1 || !Array.isArray(parsed.active) || !parsed.newUntil || typeof parsed.newUntil!=='object') return {version:1,initialised:false,active:[],newUntil:{}};
+        const active=parsed.active.filter(key=>typeof key==='string'&&key.length<=180).slice(0,500);
+        const newUntil={};
+        Object.entries(parsed.newUntil).slice(0,500).forEach(([key,value])=>{ if(typeof key==='string'&&key.length<=180&&Number.isFinite(value)&&value>0) newUntil[key]=value; });
+        return {version:1,initialised:Boolean(parsed.initialised),active:[...new Set(active)],newUntil};
+      } catch(_) { return {version:1,initialised:false,active:[],newUntil:{}}; }
+    }
+    let dumpEntryState=readDumpEntryState();
+    function updateDumpEntryState(rows,dataReady,now=Date.now()) {
+      if(!dataReady) return;
+      const keys=[...new Set(rows.map(row=>row.key).filter(key=>typeof key==='string'&&key.length<=180))];
+      if(!dumpEntryState.initialised) {
+        dumpEntryState={version:1,initialised:true,active:keys,newUntil:{}};
+      } else {
+        const previous=new Set(dumpEntryState.active);
+        const newUntil={};
+        Object.entries(dumpEntryState.newUntil).forEach(([key,until])=>{ if(Number.isFinite(until)&&until>now) newUntil[key]=until; });
+        keys.forEach(key=>{ if(!previous.has(key) && !watchedDumpRows.has(key)) newUntil[key]=now+DUMP_NEW_MS; });
+        dumpEntryState={version:1,initialised:true,active:keys,newUntil};
+      }
+      try { localStorage.setItem(DUMP_ENTRY_STATE_KEY,JSON.stringify(dumpEntryState)); } catch(_) {}
+    }
+    function isNewDumpEntry(key,now=Date.now()) { return Number(dumpEntryState.newUntil?.[key])>now; }
     function persistWatchedRows(rows=watchedDumpRows) {
       try { localStorage.setItem('seaChefWatchedDumpOpps',JSON.stringify([...rows.values()])); return true; }
       catch (_) { return false; }
@@ -937,15 +966,18 @@
     function renderDumpGlance() {
       const host=$('dumpGlanceRows'); if(!host) return;
       const focused=document.activeElement?.closest('[data-glance-key]')?.dataset.glanceKey;
-      const rows=[...visibleTradeRows.values()].sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key))||compareDeskRows(a,b));
+      const rows=[...visibleTradeRows.values()].sort((a,b)=>Number(isNewDumpEntry(b.key))-Number(isNewDumpEntry(a.key))||Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key))||compareDeskRows(a,b));
       host.innerHTML=rows.length?rows.map(row=>{
         const fresh=qualificationState(row).stage!=='freshness';
         const change=Number.isFinite(row.change)?row.change:null;
         const tone=!fresh||change===null?'glance-muted':change<0?'glance-down':change>0?'glance-up':'glance-muted';
         const label=change===null?'â':(change>0?'+':'')+change.toFixed(2)+'%';
-        const watch=watchedDumpRows.has(row.key)?' Â· WATCHING':'';
+        const watching=watchedDumpRows.has(row.key);
+        const watch=watching?' Â· WATCHING':'';
+        const newLabel=isNewDumpEntry(row.key)?'<span class="glance-new">NEW</span>':'';
+        const watchLabel=watching?'<span class="glance-watching">WATCHING</span>':'';
         return `<button type="button" class="glance-row" data-glance-key="${escapeHTML(row.key)}" aria-label="Open ${escapeHTML(row.symbol)} on ${escapeHTML(row.chain)}${watch}">
-          <span class="glance-coin"><strong>${escapeHTML(row.symbol)}</strong><small>${escapeHTML(row.chain+watch)}</small></span>
+          <span class="glance-coin"><strong>${escapeHTML(row.symbol)}</strong>${newLabel}${watchLabel}<small>${escapeHTML(row.chain)}</small></span>
           <span class="glance-price ${glancePriceTone(row)}" title="${escapeHTML(compactFreshness(row))}">${escapeHTML(usdPrice(row.price))}</span>
           <span class="glance-change ${tone}">${label}</span>
           <span class="check-dot" role="img" data-glance-dot="${escapeHTML(row.key)}"></span>
@@ -1823,6 +1855,9 @@
         return fresh ? rows.filter(row=>Number.isFinite(row.change) && row.change<=-10 && row.change>-100) : [];
       });
       const pinned=retainWatchedRows([...namedAvailable,...discoveredAvailable]);
+      const qualifyingRows=[...namedQualified,...discoveredQualified].filter(row=>!pumpDumpExclusions.has(pumpDumpKeyForRow(row)));
+      const publicDataReady=marketReceivedAt>0 || Object.values(chainPoolsUpdatedAt).some(at=>Number.isFinite(at)&&at>0);
+      updateDumpEntryState(qualifyingRows,publicDataReady,now);
       const merged=new Map([...namedQualified,...discoveredQualified].map(row=>[row.key,row]));
       pinned.forEach(row=>merged.set(row.key,row));
       const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
