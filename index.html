@@ -220,8 +220,10 @@
     .qualification-line.line-mixed { stroke:#ddb66f; filter:drop-shadow(0 0 3px rgba(221,182,111,.4)); }
     .qualification-line.line-level { stroke:#72ccd0; filter:drop-shadow(0 0 5px rgba(114,204,208,.55)); }
     .qualification-line.line-rising { stroke:#82d3b2; animation:qualificationLineGlow 2.2s ease-in-out infinite; }
+    .qualification-line.line-scanning { stroke:#72ccd0; stroke-dasharray:16 10; animation:qualificationScan 2.4s linear infinite; filter:drop-shadow(0 0 5px rgba(114,204,208,.62)); }
     @keyframes qualificationLineGlow { 0%,100% { filter:drop-shadow(0 0 3px rgba(130,211,178,.45)); opacity:.82; } 50% { filter:drop-shadow(0 0 10px rgba(130,211,178,.95)); opacity:1; } }
-    @media (prefers-reduced-motion:reduce) { .qualification-line.line-rising { animation:none; filter:drop-shadow(0 0 5px rgba(130,211,178,.65)); } }
+    @keyframes qualificationScan { to { stroke-dashoffset:-52; } }
+    @media (prefers-reduced-motion:reduce) { .qualification-line.line-rising,.qualification-line.line-scanning { animation:none; filter:drop-shadow(0 0 5px rgba(130,211,178,.65)); } }
     .sample-wait { min-height:64px; display:flex; align-items:center; color:#a8b7cb; font-size:12px; }
     .coin-plan > summary { min-height:44px; padding:11px 4px; color:#d3c4fb; font-size:15px; cursor:pointer; }
     .coin-plan[open] > summary { border-bottom:1px solid #3e4a63; margin-bottom:10px; }
@@ -351,9 +353,9 @@
     </section>
 
     <details class="desk-menu" id="deskMenu"><summary>Menu  |  chains, watchlist &amp; wallets</summary>
-      <div class="actions">        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
-        <button class="btn purple" onclick="connectPhantom()">Connect Phantom</button>
-        <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain</button>
+      <div class="actions">        <button class="btn" onclick="connectRabby()">Rabby Wallet</button>
+        <button class="btn purple" onclick="connectPhantom()">Phantom Wallet</button>
+        <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain Wallet</button>
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
       <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
@@ -408,18 +410,40 @@
 
   <script>
     // --- WALLET CONNECTIONS ---
-    const walletSession={evm:null,solana:null};
+    const walletSession={evm:null,evmProvider:null,solana:null};
+    const announcedWallets=[];
+    window.addEventListener('eip6963:announceProvider',event=>{
+      const detail=event && event.detail;
+      if(!detail?.provider || !detail?.info?.uuid || announcedWallets.some(item=>item.info.uuid===detail.info.uuid)) return;
+      announcedWallets.push(detail);
+    });
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
     async function connectRabby() {
-      if (!window.ethereum) { alert('Rabby not detected! Please install the Rabby extension.'); return; }
+      window.dispatchEvent(new Event('eip6963:requestProvider'));
+      const announced=announcedWallets.find(item=>item.info?.rdns==='io.rabby' || item.provider?.isRabby);
+      const provider=announced?.provider || (window.ethereum?.isRabby ? window.ethereum : null);
+      if (!provider) {
+        alert('Rabby is not available in this browser. On Windows, open Sea Chef Labs in the browser containing the Rabby extension. On mobile, open this page from Rabby\'s own dapp browser if your Rabby version provides one. Nothing was connected.');
+        return;
+      }
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        walletSession.evmProvider=provider;
         walletSession.evm=String(accounts[0] || '').toLowerCase();
         renderWalletLedger();
         alert('Rabby Connected: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38) + '. Public activity detection is ready.');
       } catch (e) { alert('Connection failed or rejected.'); }
     }
     async function connectPhantom() {
-      if (!window.solana) { alert('Phantom not detected! Please install the Phantom extension.'); return; }
+      if (!window.solana?.isPhantom) {
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          const here=location.href.split('#')[0],ref=location.origin;
+          location.href=`https://phantom.app/ul/browse/${encodeURIComponent(here)}?ref=${encodeURIComponent(ref)}`;
+          return;
+        }
+        alert('Phantom is not available in this browser. Open Sea Chef Labs in the browser containing the Phantom extension. Nothing was connected.');
+        return;
+      }
       try {
         const resp = await window.solana.connect();
         walletSession.solana=resp.publicKey.toString();
@@ -436,8 +460,7 @@
         blockExplorerUrls:['https://robinhoodchain.blockscout.com/']
       };
       if (!window.ethereum || typeof window.ethereum.request !== 'function') {
-        alert('No compatible EVM wallet was detected. Opening the official Robinhood Wallet page.');
-        window.open('https://robinhood.com/wallet/', '_blank', 'noopener,noreferrer');
+        alert('Robinhood Chain needs an EVM wallet browser. Open Sea Chef Labs from Robinhood Wallet\'s Web3 browser, then press this button again. Nothing was connected and the App Store was not opened.');
         return;
       }
       try {
@@ -479,8 +502,10 @@
     const EVM_USDC=Object.freeze({mainnet:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',arbitrum:'0xaf88d065e77c8cc2239327c5edb3a432268e5831',optimism:'0x0b2c639c533813f4aa9d7837caf62653d097ff85',polygon:'0x3c499c542cef5e3811e1192ce70d8cc03c5c3359c',avalanche:'0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',bnb:'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'});
     function evmBalanceCallData(wallet) { return '0x70a08231'+String(wallet).toLowerCase().replace(/^0x/,'').padStart(64,'0'); }
     async function evmTokenBalance(contract,wallet) {
-      const raw=await window.ethereum.request({method:'eth_call',params:[{to:contract,data:evmBalanceCallData(wallet)},'latest']});
-      const decimalsRaw=await window.ethereum.request({method:'eth_call',params:[{to:contract,data:'0x313ce567'},'latest']});
+      const provider=walletSession.evmProvider || window.ethereum;
+      if(!provider?.request) throw new Error('EVM wallet provider unavailable');
+      const raw=await provider.request({method:'eth_call',params:[{to:contract,data:evmBalanceCallData(wallet)},'latest']});
+      const decimalsRaw=await provider.request({method:'eth_call',params:[{to:contract,data:'0x313ce567'},'latest']});
       const decimals=Number(BigInt(decimalsRaw));
       if (!Number.isInteger(decimals)||decimals<0||decimals>36) throw new Error('Invalid token decimals');
       return Number(BigInt(raw))/10**decimals;
@@ -503,7 +528,9 @@
         if(!walletSession.evm) throw new Error('Connect Rabby first');
         const chainId=EVM_CHAIN_IDS[route.chain],usdc=EVM_USDC[route.chain];
         if(!chainId||!usdc) throw new Error('Wallet detection unsupported on this chain');
-        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId}]});
+        const provider=walletSession.evmProvider || window.ethereum;
+        if(!provider?.request) throw new Error('EVM wallet provider unavailable');
+        await provider.request({method:'wallet_switchEthereumChain',params:[{chainId}]});
         return {walletType:'RABBY',wallet:walletSession.evm,token:await evmTokenBalance(contract,walletSession.evm),usdc:await evmTokenBalance(usdc,walletSession.evm)};
       }
       throw new Error('Wallet detection unavailable');
@@ -768,7 +795,7 @@
     }
     function sampleChartMarkup(row) {
       const samples=(deskSamples.get(row.key)||[]).filter(s=>Date.now()-s.at<=2*60*60*1000);
-      if (samples.length<2) return '<div class="sample-wait">Price path appears after the next sample</div>';
+      if (samples.length<2) return '<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="Qualification sampling in progress"><path d="M8 70H312" fill="none" stroke="#34425c"/><path class="qualification-line line-scanning" d="M8 40H312" fill="none" stroke-width="3" stroke-linecap="round"/></svg><div class="card-freshness">Checking the next live price move</div>';
       const lo=Math.min(...samples.map(s=>s.price)),hi=Math.max(...samples.map(s=>s.price)),range=hi-lo || lo*.002;
       const duration=samples[samples.length-1].at-samples[0].at;
       const pts=samples.map((s,i)=>`${i?'L':'M'}${(8+(s.at-samples[0].at)*304/duration).toFixed(2)},${(hi===lo ? 38 : 10+(hi-s.price)/range*56).toFixed(2)}`).join(' ');
