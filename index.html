@@ -322,7 +322,7 @@
     const CHAIN_REQUEST_GAP_MS = 8000;
     const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
     const CHAIN_POOL_LIMIT = 25;
-    const STABLE_SYMBOLS = new Set(['USDT','USDC','USDE','DAI','FDUSD','TUSD','USDS','FRAX','LUSD','PYUSD','EURC']);
+    const STABLE_SYMBOLS = new Set(['USDT','USDC','USDE','DAI','FDUSD','TUSD','USDS','FRAX','LUSD','PYUSD','EURC','USDG','RLUSD','GHO','USDT0','USD1','USR','DEUSD','USDF','USDB','DOLA','MIM','CRVUSD','USDP','USDD']);
     function readSavedOrders() {
       try {
         const parsed = JSON.parse(localStorage.getItem('seaChefOrders') || '[]');
@@ -340,7 +340,7 @@
     function next() { return deep.find(x => !active.includes(x.id) && !orders.some(o => o.id === x.id)); }
     function signalForChange(change) { if (change < 0) return 'red'; if (change > 0) return 'green'; return 'flat'; }
     function textForSignal(change) { if (change < 0) return 'Red'; if (change > 0) return 'Green'; return 'Neutral'; }
-    function finiteChange(value) { return Number.isFinite(Number(value)) ? Number(value) : null; }
+    function finiteChange(value) { return value === null || value === undefined || value === '' ? null : Number.isFinite(Number(value)) ? Number(value) : null; }
     function freshMarketItem(m, now = Date.now()) {
       if (!m || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
       const observedAt = new Date(m.last_updated).getTime();
@@ -491,12 +491,16 @@
         setChainLanePaused(key, true);
         return;
       }
-      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+$/.test(url)) return alert('Verified chart route unavailable. Nothing was opened.');
+      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
       window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    function validTokenAddress(lane, address) {
+      if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+      return /^0x[a-fA-F0-9]{40}$/.test(address);
     }
     function validPoolAddress(lane, address) {
       if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
-      return /^0x[a-fA-F0-9]{40}$/.test(address);
+      return /^0x(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/.test(address);
     }
     function normalisePoolToken(pool, includedById, lane) {
       const attributes = pool?.attributes || {};
@@ -504,22 +508,20 @@
       const quoteId = pool?.relationships?.quote_token?.data?.id;
       const base = includedById.get(baseId)?.attributes || {};
       const quote = includedById.get(quoteId)?.attributes || {};
-      const candidates = [
-        {token:base, price:Number(attributes.base_token_price_usd)},
-        {token:quote, price:Number(attributes.quote_token_price_usd)}
-      ].filter(candidate => candidate.token && !STABLE_SYMBOLS.has(String(candidate.token.symbol || '').toUpperCase()));
-      const selected = candidates[0];
+      const selected = base && !STABLE_SYMBOLS.has(String(base.symbol || '').toUpperCase())
+        ? {token:base, price:Number(attributes.base_token_price_usd)}
+        : null;
       const liquidity = Number(attributes.reserve_in_usd);
       const volume = Number(attributes.volume_usd?.h24);
       const rawChange = attributes.price_change_percentage?.h24;
-      const baseChange24h = rawChange === null || rawChange === undefined || rawChange === '' ? NaN : Number(rawChange);
-      const selectedIsQuote = selected?.token === quote;
-      const change24h = selectedIsQuote && Number.isFinite(baseChange24h) && baseChange24h > -100 ? (-baseChange24h / (100 + baseChange24h)) * 100 : baseChange24h;
+      const change24h = rawChange === null || rawChange === undefined || rawChange === '' ? NaN : Number(rawChange);
       const address = String(attributes.address || '').trim();
       if (!selected || !validPoolAddress(lane,address) || !Number.isFinite(selected.price) || selected.price <= 0 || !Number.isFinite(liquidity) || liquidity < CHAIN_POOL_MIN_LIQUIDITY_USD || !Number.isFinite(volume) || volume <= 0 || !Number.isFinite(change24h)) return null;
       const symbol = String(selected.token.symbol || '').toUpperCase().trim();
+      const tokenAddress = String(selected.token.address || '').trim();
       if (!/^[A-Z0-9._-]{1,15}$/.test(symbol) || STABLE_SYMBOLS.has(symbol)) return null;
-      return {symbol, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}`};
+      if (!validTokenAddress(lane,tokenAddress)) return null;
+      return {symbol, tokenAddress, identity:`${lane.api}:${tokenAddress.toLowerCase()}`, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}?locale=en`};
     }
     async function fetchChainPage(lane, page) {
       const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
@@ -542,10 +544,18 @@
       const unique = [];
       const seen = new Set();
       pages.sort((a,b) => b.liquidity - a.liquidity || b.volume - a.volume).forEach(pool => {
-        if (!seen.has(pool.symbol) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.symbol); unique.push(pool); }
+        if (!seen.has(pool.identity) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.identity); unique.push(pool); }
       });
-      if (unique.length) { chainPools[lane.key] = unique; chainPoolsUpdatedAt[lane.key] = Date.now(); }
+      chainPools[lane.key] = unique;
+      chainPoolsUpdatedAt[lane.key] = Date.now();
+      const recordedAt = Date.now();
+      unique.forEach(pool => {
+        const samples = Array.isArray(priceSamples[pool.identity]) ? priceSamples[pool.identity] : [];
+        samples.push({price:pool.price,recordedAt});
+        priceSamples[pool.identity] = samples.slice(-3);
+      });
       renderChainBoards();
+      buildBuySetups();
     }
     async function refreshChainPools() {
       if (chainRefreshInFlight) return;
@@ -750,14 +760,25 @@
     // --- BUY SETUPS LOGIC (Strict 24H Filter) ---
     function buildBuySetups() {
       const now = Date.now();
-      const qualified = market.filter(m => {
+      const namedQualified = market.filter(m => {
         const change = finiteChange(m.price_change_percentage_24h);
         return (
           change !== null &&
           change <= -10 && change > -100 &&
           freshMarketItem(m, now)
         );
-      }).sort((a, b) => screeningRating(b) - screeningRating(a) || a.price_change_percentage_24h - b.price_change_percentage_24h);
+      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:'MARKET',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
+      const discoveredQualified = CHAIN_LANES.flatMap(lane => {
+        const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
+        if (!fresh) return [];
+        return (chainPools[lane.key] || []).filter(pool => Number.isFinite(pool.change24h) && pool.change24h <= -10 && pool.change24h > -100).map(pool => {
+          const state = entryStateFor(pool.identity);
+          const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
+          const rating = Math.round(Math.min(100,Math.min(70,Math.max(0,-pool.change24h * 4)) + directionPoints + 10));
+          return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
+        });
+      });
+      const qualified = [...namedQualified,...discoveredQualified].sort((a,b) => b.rating - a.rating || a.change - b.change);
 
       if (qualified.length === 0) {
         $('buySetupRows').innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">NO QUALIFYING DUMP â no fresh configured coin is still down at least 10% over the rolling 24 hours.</td></tr>`;
@@ -765,18 +786,20 @@
       }
 
       const rows = qualified.map((m, index) => {
-        const change = m.price_change_percentage_24h;
-        const state = entryStateFor(m.id);
+        const change = m.change;
+        const state = m.state;
         const stateSignal = entryStateSignal(state);
-        const rating = screeningRating(m);
-        const action = state === 'recovering'
-          ? `<button class="btn buy-now" onclick="prepareDumpBuy('${m.id}')">BUY NOW</button>`
+        const rating = m.rating;
+        const action = state === 'recovering' && m.kind === 'named'
+          ? `<button class="btn buy-now" onclick="prepareDumpBuy('${m.key}')">REVIEW NOW</button>`
+          : state === 'recovering' && m.kind === 'chain'
+          ? `<button class="btn buy-now" data-opportunity-url="${escapeHTML(m.chart)}">REVIEW CHART</button>`
           : `<button class="btn" disabled>WAIT</button>`;
         return `<tr class="buy-setup-row">
                   <td style="padding:8px 7px;"><b>#${index + 1}</b></td>
                   <td style="padding:8px 7px;"><b>${rating}/100</b></td>
-                  <td style="padding:8px 7px;"><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b><br><span style="font-size:10px;color:#94a3b8">QUALIFIED 10%+ DUMP</span></td>
-                  <td style="padding:8px 7px;">${money(m.current_price)}</td>
+                  <td style="padding:8px 7px;"><b>${escapeHTML(m.symbol)}</b><br><span style="font-size:10px;color:#94a3b8">${escapeHTML(m.chain)} Â· QUALIFIED 10%+ DUMP</span></td>
+                  <td style="padding:8px 7px;">${money(m.price)}</td>
                   <td style="padding:8px 7px;" class="red">${change.toFixed(2)}%</td>
                   <td style="padding:8px 7px;" class="${stateSignal}">${entryStateLabel(state)}</td>
                   <td style="padding:8px 7px;">${action}</td>
@@ -912,6 +935,15 @@
       event.preventDefault();
       event.stopPropagation();
       openDynamicPool(event,button.dataset.lane,button.dataset.poolUrl);
+    },true);
+    $('buySetupRows').addEventListener('click', event => {
+      const button = event.target.closest('[data-opportunity-url]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const url = button.dataset.opportunityUrl;
+      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
+      window.open(url,'_blank','noopener,noreferrer');
     },true);
     load();
     setInterval(load, 60000);
