@@ -104,6 +104,12 @@
     .contract-box { margin:10px 0; padding:9px 10px; border:1px solid #46546d; border-radius:10px; background:#101a2b; }
     .contract-box code { display:block; margin-top:4px; color:#dffbff; font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; word-break:break-all; user-select:all; }
     .copy-contract { margin-top:7px; border:1px solid #55708d; border-radius:8px; padding:6px 9px; background:#1b3047; color:#bfeeff; font-weight:800; cursor:pointer; }
+    .wallet-ledger { background:#121e30; border-color:#44536c; }
+    .wallet-ledger-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .wallet-record { padding:13px; border:1px solid #40516b; border-radius:14px; background:#18263a; }
+    .wallet-record h3 { margin:0 0 6px; color:#e5ecf6; }
+    .wallet-record code { display:block; color:#bfeeff; font:10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; word-break:break-all; }
+    .wallet-record .buttons { margin-top:9px; }
     .trade-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:8px; }
     .trade-metric { background:#132332; border:1px solid #355064; border-radius:12px; padding:10px; }
     .trade-metric small { display:block; color:#a9b9ca; margin-bottom:5px; }
@@ -175,7 +181,7 @@
     @media (max-width:520px) { .trade-windows { grid-template-columns:1fr; } }
     @media (prefers-reduced-motion:reduce) { .track, .item.scanning { animation:none; } }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
-    @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
+    @media (max-width:640px) { .grid,.wallet-ledger-grid { grid-template-columns:1fr; } .actions { width:100%; } }
 
     /* Phone-first calm desk. Existing data and independent trade plans retained. */
     body { color-scheme:dark; padding:16px; padding: max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
@@ -208,6 +214,14 @@
     .card-reason { font-size:13px; color:#bdc9da; margin:8px 0; }
     .card-freshness { color:#a8b7cb; font-size:12px; margin:8px 0; }
     .session-chart { width:100%; height:84px; display:block; margin:9px 0; }
+    .qualification-line { transition:stroke .5s ease,filter .5s ease,opacity .5s ease; }
+    .qualification-line.line-freshness,.qualification-line.line-drop { stroke:#66758b; opacity:.7; }
+    .qualification-line.line-samples,.qualification-line.line-falling { stroke:#e28598; filter:drop-shadow(0 0 2px rgba(226,133,152,.35)); }
+    .qualification-line.line-mixed { stroke:#ddb66f; filter:drop-shadow(0 0 3px rgba(221,182,111,.4)); }
+    .qualification-line.line-level { stroke:#72ccd0; filter:drop-shadow(0 0 5px rgba(114,204,208,.55)); }
+    .qualification-line.line-rising { stroke:#82d3b2; animation:qualificationLineGlow 2.2s ease-in-out infinite; }
+    @keyframes qualificationLineGlow { 0%,100% { filter:drop-shadow(0 0 3px rgba(130,211,178,.45)); opacity:.82; } 50% { filter:drop-shadow(0 0 10px rgba(130,211,178,.95)); opacity:1; } }
+    @media (prefers-reduced-motion:reduce) { .qualification-line.line-rising { animation:none; filter:drop-shadow(0 0 5px rgba(130,211,178,.65)); } }
     .sample-wait { min-height:64px; display:flex; align-items:center; color:#a8b7cb; font-size:12px; }
     .coin-plan > summary { min-height:44px; padding:11px 4px; color:#d3c4fb; font-size:15px; cursor:pointer; }
     .coin-plan[open] > summary { border-bottom:1px solid #3e4a63; margin-bottom:10px; }
@@ -330,6 +344,12 @@
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
+    <section class="section wallet-ledger" id="walletLedger">
+      <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
+      <div class="wallet-ledger-grid" id="pendingBuys"></div>
+      <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
+    </section>
+
     <details class="desk-menu" id="deskMenu"><summary>Menu  |  chains, watchlist &amp; wallets</summary>
       <div class="actions">        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
         <button class="btn purple" onclick="connectPhantom()">Connect Phantom</button>
@@ -388,18 +408,23 @@
 
   <script>
     // --- WALLET CONNECTIONS ---
+    const walletSession={evm:null,solana:null};
     async function connectRabby() {
       if (!window.ethereum) { alert('Rabby not detected! Please install the Rabby extension.'); return; }
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        alert('Rabby Connected: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38));
+        walletSession.evm=String(accounts[0] || '').toLowerCase();
+        renderWalletLedger();
+        alert('Rabby Connected: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38) + '. Public activity detection is ready.');
       } catch (e) { alert('Connection failed or rejected.'); }
     }
     async function connectPhantom() {
       if (!window.solana) { alert('Phantom not detected! Please install the Phantom extension.'); return; }
       try {
         const resp = await window.solana.connect();
-        alert('Phantom Connected: ' + resp.publicKey.toString().substring(0, 6) + '...' + resp.publicKey.toString().substring(38));
+        walletSession.solana=resp.publicKey.toString();
+        renderWalletLedger();
+        alert('Phantom Connected: ' + walletSession.solana.substring(0, 6) + '...' + walletSession.solana.slice(-4) + '. Public activity detection is ready.');
       } catch (e) { alert('Connection failed or rejected.'); }
     }
     async function connectRobinhoodChain() {
@@ -423,6 +448,93 @@
         alert('Robinhood Chain was not added or selected. Nothing was approved or traded.');
       }
     }
+
+    // Local, public-wallet activity tracking. No signing, keys or approvals.
+    function readLocalArray(name) { try { const value=JSON.parse(localStorage.getItem(name)||'[]'); return Array.isArray(value)?value:[]; } catch (_) { return []; } }
+    let pendingWalletBuys=readLocalArray('seaChefPendingWalletBuys');
+    let openWalletPositions=readLocalArray('seaChefOpenWalletPositions');
+    let walletTradeHistory=readLocalArray('seaChefWalletTradeHistory');
+    function saveWalletLedger() {
+      localStorage.setItem('seaChefPendingWalletBuys',JSON.stringify(pendingWalletBuys));
+      localStorage.setItem('seaChefOpenWalletPositions',JSON.stringify(openWalletPositions));
+      localStorage.setItem('seaChefWalletTradeHistory',JSON.stringify(walletTradeHistory));
+      renderWalletLedger();
+    }
+    function walletRecordMarkup(record,type) {
+      const detected=record.status==='detected';
+      const price=record.entryPrice>0 ? 'Entry '+Number(record.entryPrice).toPrecision(6)+' USDC' : 'Entry cost waiting';
+      const controls=type==='pending'
+        ? detected ? `<button class="btn" data-add-position="${escapeHTML(record.id)}">ADD POSITION</button><button class="pnd-button" data-dismiss-wallet-record="${escapeHTML(record.id)}">DISMISS</button>` : `<button class="pnd-button" data-dismiss-wallet-record="${escapeHTML(record.id)}">CANCEL WATCH</button>`
+        : type==='open' ? `<button class="btn danger" data-mark-sold="${escapeHTML(record.id)}">I SOLD IT</button>` : '';
+      return `<article class="wallet-record"><h3>${escapeHTML(record.symbol)}</h3><div class="trade-note">${escapeHTML(record.chain)}  |  ${type==='pending'?(detected?'PURCHASE DETECTED':'WATCHING WALLET'):type==='open'?'OPEN POSITION':'HISTORY'}</div><code>${escapeHTML(record.contract)}</code><div class="trade-note">${record.quantity>0?Number(record.quantity).toPrecision(7)+' coins  |  ':''}${escapeHTML(price)}<br>${new Date(record.detectedAt||record.openedAt||record.closedAt).toLocaleString()}</div><div class="buttons">${controls}</div></article>`;
+    }
+    function renderWalletLedger() {
+      if (!document.getElementById('pendingBuys')) return;
+      $('walletLedgerStatus').textContent=(walletSession.evm?'Rabby connected  |  ':'')+(walletSession.solana?'Phantom connected  |  ':'')+pendingWalletBuys.length+' watched';
+      $('pendingBuys').innerHTML=pendingWalletBuys.map(r=>walletRecordMarkup(r,'pending')).join('') || '<div class="empty">No wallet purchase waiting.</div>';
+      $('openPositions').innerHTML=openWalletPositions.map(r=>walletRecordMarkup(r,'open')).join('') || '<div class="empty">No open positions recorded.</div>';
+      $('tradeHistory').innerHTML=walletTradeHistory.map(r=>walletRecordMarkup(r,'history')).join('') || '<div class="empty">No completed history recorded.</div>';
+    }
+    const EVM_CHAIN_IDS=Object.freeze({mainnet:'0x1',arbitrum:'0xa4b1',optimism:'0xa',polygon:'0x89',avalanche:'0xa86a',bnb:'0x38'});
+    const EVM_USDC=Object.freeze({mainnet:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',arbitrum:'0xaf88d065e77c8cc2239327c5edb3a432268e5831',optimism:'0x0b2c639c533813f4aa9d7837caf62653d097ff85',polygon:'0x3c499c542cef5e3811e1192ce70d8cc03c5c3359c',avalanche:'0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',bnb:'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'});
+    function evmBalanceCallData(wallet) { return '0x70a08231'+String(wallet).toLowerCase().replace(/^0x/,'').padStart(64,'0'); }
+    async function evmTokenBalance(contract,wallet) {
+      const raw=await window.ethereum.request({method:'eth_call',params:[{to:contract,data:evmBalanceCallData(wallet)},'latest']});
+      const decimalsRaw=await window.ethereum.request({method:'eth_call',params:[{to:contract,data:'0x313ce567'},'latest']});
+      const decimals=Number(BigInt(decimalsRaw));
+      if (!Number.isInteger(decimals)||decimals<0||decimals>36) throw new Error('Invalid token decimals');
+      return Number(BigInt(raw))/10**decimals;
+    }
+    async function solanaRpc(method,params) {
+      const response=await fetch('https://api.mainnet-beta.solana.com',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+      if(!response.ok) throw new Error('Solana public RPC unavailable');
+      const payload=await response.json(); if(payload.error) throw new Error('Solana public RPC rejected request'); return payload.result;
+    }
+    async function solanaTokenBalance(owner,mint) {
+      const result=await solanaRpc('getTokenAccountsByOwner',[owner,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]);
+      return (result?.value||[]).reduce((sum,item)=>sum+Number(item?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString||0),0);
+    }
+    async function walletBalanceSnapshot(route,contract) {
+      if(route.wallet==='PHANTOM') {
+        if(!walletSession.solana) throw new Error('Connect Phantom first');
+        return {walletType:'PHANTOM',wallet:walletSession.solana,token:await solanaTokenBalance(walletSession.solana,contract),usdc:await solanaTokenBalance(walletSession.solana,SOLANA_USDC_MINT)};
+      }
+      if(route.wallet==='RABBY') {
+        if(!walletSession.evm) throw new Error('Connect Rabby first');
+        const chainId=EVM_CHAIN_IDS[route.chain],usdc=EVM_USDC[route.chain];
+        if(!chainId||!usdc) throw new Error('Wallet detection unsupported on this chain');
+        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId}]});
+        return {walletType:'RABBY',wallet:walletSession.evm,token:await evmTokenBalance(contract,walletSession.evm),usdc:await evmTokenBalance(usdc,walletSession.evm)};
+      }
+      throw new Error('Wallet detection unavailable');
+    }
+    async function armWalletBuyWatch(row,route) {
+      const contract=contractIdentityForRow(row);
+      if(!contract) throw new Error('Exact contract unavailable');
+      const snapshot=await walletBalanceSnapshot(route,contract);
+      const id='buy-'+Date.now()+'-'+Math.random().toString(16).slice(2);
+      pendingWalletBuys=pendingWalletBuys.filter(item=>!(item.key===row.key&&item.status==='watching'));
+      pendingWalletBuys.unshift({id,key:row.key,symbol:row.symbol,chain:row.chain,contract,routeVenue:route.venue,openedAt:Date.now(),status:'watching',...snapshot});
+      saveWalletLedger(); return id;
+    }
+    async function checkPendingWalletBuys() {
+      for(const record of pendingWalletBuys.filter(item=>item.status==='watching')) {
+        try {
+          const route=record.walletType==='PHANTOM'?{wallet:'PHANTOM'}:{wallet:'RABBY',chain:Object.keys(EVM_CHAIN_IDS).find(key=>record.chain.toLowerCase().includes(key==='mainnet'?'ethereum':key))};
+          if(record.walletType==='PHANTOM') walletSession.solana=record.wallet; else walletSession.evm=record.wallet;
+          const current=await walletBalanceSnapshot(route,record.contract);
+          const quantity=current.token-Number(record.token),spent=Number(record.usdc)-current.usdc;
+          if(quantity>0) { record.status='detected';record.quantity=quantity;record.spentUsdc=spent>0?spent:null;record.entryPrice=spent>0?spent/quantity:null;record.detectedAt=Date.now();record.lastWalletBalance=current.token; }
+        } catch (_) {}
+      }
+      saveWalletLedger();
+    }
+    function addDetectedPosition(id) {
+      const index=pendingWalletBuys.findIndex(r=>r.id===id&&r.status==='detected'); if(index<0)return;
+      openWalletPositions.unshift({...pendingWalletBuys[index],status:'open',addedAt:Date.now()}); pendingWalletBuys.splice(index,1);saveWalletLedger();
+    }
+    function dismissWalletRecord(id) { pendingWalletBuys=pendingWalletBuys.filter(r=>r.id!==id);saveWalletLedger(); }
+    function markPositionSold(id) { const index=openWalletPositions.findIndex(r=>r.id===id);if(index<0)return;walletTradeHistory.unshift({...openWalletPositions[index],status:'closed',closedAt:Date.now()});openWalletPositions.splice(index,1);saveWalletLedger(); }
 
     // --- VERIFIED CATALOGS ---
     const deep = [
@@ -660,10 +772,10 @@
       const lo=Math.min(...samples.map(s=>s.price)),hi=Math.max(...samples.map(s=>s.price)),range=hi-lo || lo*.002;
       const duration=samples[samples.length-1].at-samples[0].at;
       const pts=samples.map((s,i)=>`${i?'L':'M'}${(8+(s.at-samples[0].at)*304/duration).toFixed(2)},${(hi===lo ? 38 : 10+(hi-s.price)/range*56).toFixed(2)}`).join(' ');
-      const direction=samples[samples.length-1].price-samples[0].price;
-      const color=direction>0?'#82d3b2':direction<0?'#e9a0b1':'#c2b1e8';
+      const q=qualificationState(row);
+      const stage=/^(freshness|drop|samples|falling|mixed|level|rising)$/.test(q.stage) ? q.stage : 'freshness';
       const label=`${row.symbol}: ${samples.length} samples observed in this tab, not candles`;
-      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path d="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab  |  ${samples.length} samples  |  ${escapeHTML(usdPrice(lo))}-${escapeHTML(usdPrice(hi))}</div>`;
+      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path class="qualification-line line-${stage}" d="${pts}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab  |  ${samples.length} samples  |  ${escapeHTML(usdPrice(lo))}-${escapeHTML(usdPrice(hi))}</div>`;
     }
     function compactFreshness(row) {
       let at=null;
@@ -1179,39 +1291,11 @@
       // No BUY state: executable liquidity, token security and candle-based
       // recovery checks are not connected. A screening score cannot unlock it.
     }
-    function qualificationGaugeMarkup(row) {
-      const q = qualificationState(row);
-      return `<div class="qualification-gauge gauge-${q.tone}${q.stage !== 'freshness' && q.stage !== 'drop' ? ' gauge-active' : ''}">
-        <svg viewBox="0 0 270 173" role="img" aria-label="${escapeHTML(row.symbol || 'Coin')}: ${q.label}. ${escapeHTML(q.note)}. Buy setup locked pending liquidity, security and recovery checks.">
-          <path class="gauge-arc gauge-red" d="M30 135 A105 105 0 0 1 80 46"/>
-          <path class="gauge-arc gauge-amber" d="M88 41 A105 105 0 0 1 182 41"/>
-          <path class="gauge-arc gauge-green" d="M190 46 A105 105 0 0 1 240 135"/>
-          <text x="49" y="158" text-anchor="middle" fill="#efadb6" font-size="11">WAIT</text>
-          <text x="135" y="15" text-anchor="middle" fill="#eed197" font-size="11">WATCH</text>
-          <text x="225" y="158" text-anchor="middle" fill="#a3cabb" font-size="11">BUY SETUP</text>
-          <text x="225" y="171" text-anchor="middle" fill="#a7b7c4" font-size="9">LOCKED</text>
-          <g transform="rotate(${q.angle} 135 135)"><line class="gauge-needle" x1="135" y1="135" x2="48" y2="135"/></g>
-          <circle cx="135" cy="135" r="8" fill="#cbdbe5"/>
-        </svg>
-        <strong class="gauge-label">${q.label}</strong><div class="gauge-caption">${q.note}</div>
-        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop to settling samples to recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The small twitch shows fresh-price watching, not approval progress. Its resting position only advances on evidence; motion stops when data is stale. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
-      </div>`;
-    }
     function refreshQualificationGauges() {
       refreshCompactCards();
-      document.querySelectorAll('[data-qualification-key]').forEach(host => {
-        const row = visibleTradeRows.get(host.dataset.qualificationKey);
-        if (!row) return;
-        const planBox = host.closest('[data-trade-plan]');
-        if (planBox) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
-        const currentStage=qualificationState(row).stage;
-        host.querySelector('.qualification-gauge')?.classList.toggle('gauge-active',currentStage!=='freshness' && currentStage!=='drop');
-        if (host.contains(document.activeElement)) return;
-        const expanded = Boolean(host.querySelector('details')?.open);
-        const markup = qualificationGaugeMarkup(row);
-        if (host._gaugeMarkup === markup) return;
-        host.innerHTML = markup; host._gaugeMarkup = markup;
-        if (expanded) host.querySelector('details').open = true;
+      document.querySelectorAll('[data-trade-plan]').forEach(planBox => {
+        const row=visibleTradeRows.get(planBox.dataset.tradePlan);
+        if (row) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
       });
     }
     const tradePlans = new Map();
@@ -1358,7 +1442,7 @@
       button.disabled = !status.enabled;
       box.querySelector('[data-result-buy-note]').textContent = status.note;
     }
-    function openResultBuy(event) {
+    async function openResultBuy(event) {
       const button = event.target.closest('[data-result-buy]');
       if (!button || button.disabled) return;
       const box = button.closest('[data-trade-plan]');
@@ -1368,8 +1452,17 @@
       const status = resultBuyStatus(row,plan);
       syncResultBuy(box,row,plan);
       if (!status.enabled) return;
-      // Navigation only. No amount, target, approvals or transaction is sent.
-      window.open(status.route.url,'_blank','noopener,noreferrer');
+      // Open a blank user-initiated tab first so the wallet snapshot can finish
+      // without a mobile popup blocker losing the market navigation.
+      const marketTab=window.open('about:blank','_blank');
+      if(marketTab) marketTab.opener=null;
+      try {
+        await armWalletBuyWatch(row,status.route);
+        if(marketTab) marketTab.location.replace(status.route.url); else window.location.href=status.route.url;
+      } catch (error) {
+        if(marketTab) marketTab.location.replace(status.route.url); else window.open(status.route.url,'_blank','noopener,noreferrer');
+        setTimeout(()=>alert((error?.message||'Wallet watch unavailable')+'. Market opened, but this purchase is not being tracked.'),0);
+      }
     }
     function tradeSummaryMarkup(row, plan) {
       const model = tradeMath(row.price,plan);
@@ -1462,7 +1555,6 @@
       const field = (name,label,min,placeholder) => `<label for="plan-${index}-${name}">${label}<input class="input" id="plan-${index}-${name}" type="number" inputmode="decimal" step="any" min="${min}" placeholder="${placeholder}" data-plan-field="${name}" value="${escapeHTML(plan[name])}"></label>`;
       return `<div data-trade-plan="${escapeHTML(row.key)}">
         <div class="trade-note">${escapeHTML(row.chain)}  |  ${escapeHTML(row.venue || 'Trading route not selected')}</div>
-        <div data-qualification-key="${escapeHTML(row.key)}">${qualificationGaugeMarkup(row)}</div>
         <div class="trade-choice"><label class="label" for="plan-${index}-budget"><span>MY SPEND</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
         ${stepSliderMarkup('budget',index,plan.budget)}</div>
         <div class="trade-windows">
@@ -1819,15 +1911,3 @@
       if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
       window.open(url,'_blank','noopener,noreferrer');
     },true);
-    savePumpDumpExclusions();
-    load();
-    setInterval(load, 60000);
-    setInterval(refreshQualificationGauges, 15000);
-    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
-    refreshChainPools();
-    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
-    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); } });
-    window.addEventListener('pageshow', load);
-    window.addEventListener('online', load);
-  </script>
-</body>
