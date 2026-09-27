@@ -268,6 +268,8 @@
     @keyframes cardFramePulse { 0%,100% { opacity:.15; } 50% { opacity:.8; } }
     .gauge-motion-paused .opportunity-card::after { animation-play-state:paused; }
     @media(prefers-reduced-motion:reduce) { .opportunity-card::after { animation:none!important; opacity:0; } }
+    .all-coins > summary { min-height:48px; padding:12px; cursor:pointer; border-radius:12px; background:#26334b; color:#d9caf4; font-size:16px; }
+    .all-coins[open] > summary { margin-bottom:14px; }
   </style>
 </head>
 <body class="notranslate">
@@ -331,8 +333,8 @@
       </div>
     </section>
 
-    <section class="section">
-      <h2>ALL CONFIGURED COINS <span class="muted" style="font-size:14px;">(Highest screening rating first)</span></h2>
+    <details class="section all-coins" id="allCoins">
+      <summary>All coins <span class="muted">· tap to show or hide</span></summary>
       <p>The complete available checker list. Rating combines rolling 24-hour decline, current direction and freshness; it is a screen, not a win probability.</p>
       <div class="research">
         <table>
@@ -349,7 +351,7 @@
           <tbody id="dumpRows"></tbody>
         </table>
       </div>
-    </section>
+    </details>
     </details>
   </div>
 
