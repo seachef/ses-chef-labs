@@ -299,32 +299,32 @@
       <div class="brand"><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
-    <div id="pullCue" class="pull-cue" aria-hidden="true">â Pull to refresh</div>
+    <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
-      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD Â· spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Pull down to refresh</span></div>
+      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Pull down to refresh</span></div>
       <button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button>
     </div>
     <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
-      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public pricesâ¦</span></div>
+      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
     <section class="market-pulse" aria-label="Configured watchlist price breadth">
-      <div class="pulse-title"><h2>Market pulse</h2><span class="trade-note">Watchlist Â· rolling 24H</span></div>
+      <div class="pulse-title"><h2>Market pulse</h2><span class="trade-note">Watchlist  |  rolling 24H</span></div>
       <div class="pulse-grid">
-        <div><span class="pulse-label">Rising</span><strong class="pulse-number" id="pulseUp">â</strong><div class="pulse-track"><span id="pulseUpBar"></span></div></div>
-        <div><span class="pulse-label">Falling</span><strong class="pulse-number" id="pulseDown">â</strong><div class="pulse-track down"><span id="pulseDownBar"></span></div></div>
-        <div><span class="pulse-label">Unchanged</span><strong class="pulse-number" id="pulseFlat">â</strong><div class="pulse-track flat"><span id="pulseFlatBar"></span></div></div>
+        <div><span class="pulse-label">Rising</span><strong class="pulse-number" id="pulseUp">-</strong><div class="pulse-track"><span id="pulseUpBar"></span></div></div>
+        <div><span class="pulse-label">Falling</span><strong class="pulse-number" id="pulseDown">-</strong><div class="pulse-track down"><span id="pulseDownBar"></span></div></div>
+        <div><span class="pulse-label">Unchanged</span><strong class="pulse-number" id="pulseFlat">-</strong><div class="pulse-track flat"><span id="pulseFlatBar"></span></div></div>
       </div>
       <div class="pulse-foot" id="pulseCoverage">Waiting for fresh watchlist prices</div>
     </section>
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
-      <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops Â· sample recovery first</span></div>
+      <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops  |  sample recovery first</span></div>
       <p class="trade-note">Tap a coin to plan. Full buy qualification and token-age checks are not connected.</p>
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
-    <details class="desk-menu" id="deskMenu"><summary>Menu Â· chains, watchlist &amp; wallets</summary>
+    <details class="desk-menu" id="deskMenu"><summary>Menu  |  chains, watchlist &amp; wallets</summary>
       <div class="actions">        <button class="btn" onclick="connectRabby()">Connect Rabby</button>
         <button class="btn purple" onclick="connectPhantom()">Connect Phantom</button>
         <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain</button>
@@ -337,7 +337,7 @@
     </section>
 
     <section class="section limit-zone" hidden>
-      <h2>LIMIT ORDERS â WAIT FOR YOUR PRICE</h2>
+      <h2>LIMIT ORDERS - WAIT FOR YOUR PRICE</h2>
       <p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p>
       <div class="grid" id="orders"></div>
     </section>
@@ -359,7 +359,7 @@
     </details><!-- end Menu -->
 
     <details class="section all-coins" id="allCoins">
-      <summary>All coins <span class="muted">Â· tap to show or hide</span></summary>
+      <summary>All coins <span class="muted"> |  tap to show or hide</span></summary>
       <p>The complete available checker list. Rating combines rolling 24-hour decline, current direction and freshness; it is a screen, not a win probability.</p>
       <div class="research">
         <table>
@@ -411,7 +411,7 @@
       try {
         await window.ethereum.request({method:'wallet_addEthereumChain', params:[network]});
         await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:network.chainId}]});
-        alert('Robinhood Chain selected. Chain ID 4663 â¢ ETH gas. No trade or approval was made.');
+        alert('Robinhood Chain selected. Chain ID 4663 - ETH gas. No trade or approval was made.');
       } catch (e) {
         alert('Robinhood Chain was not added or selected. Nothing was approved or traded.');
       }
@@ -526,7 +526,7 @@
         return Array.isArray(parsed) ? parsed.filter(o => o && typeof o === 'object' && typeof o.id === 'string') : [];
       } catch (_) { return []; }
     }
-    let market = [], active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
+    let market = [], marketReceivedAt = 0, active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
     const $ = id => document.getElementById(id);
     const money = p => displayCoinPrice(p);
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -534,7 +534,7 @@
     function shortAddressMarkup(value) {
       const full=String(value || '');
       const isAddress=/^0x[a-fA-F0-9]{40}$/.test(full) || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(full);
-      return isAddress ? `<span title="${escapeHTML(full)}">${escapeHTML(full.slice(0,6))}â¦${escapeHTML(full.slice(-4))}</span>` : escapeHTML(full);
+      return isAddress ? `<span title="${escapeHTML(full)}">${escapeHTML(full.slice(0,6))}...${escapeHTML(full.slice(-4))}</span>` : escapeHTML(full);
     }
     function coin(id) { return deep.find(x => x.id === id); }
     function price(id) { return market.find(x => x.id === id); }
@@ -566,23 +566,27 @@
     function watchlistBreadth(now=Date.now()) {
       const unique = [...new Set(ids)];
       let up=0,down=0,flat=0,unknown=0;
+      const feedCurrent = Number.isFinite(marketReceivedAt) && marketReceivedAt > 0 && now >= marketReceivedAt && now-marketReceivedAt <= 120000;
       unique.forEach(id => {
         const item = price(id), change = finiteChange(item?.price_change_percentage_24h);
-        if (!freshMarketItem(item,now) || change === null) unknown++;
+        const usable = feedCurrent && item && Number.isFinite(Number(item.current_price)) && Number(item.current_price)>0 && change !== null;
+        if (!usable) unknown++;
         else if (change>0) up++;
         else if (change<0) down++;
         else flat++;
       });
-      return {up,down,flat,unknown,total:unique.length,measured:up+down+flat};
+      return {up,down,flat,unknown,total:unique.length,measured:up+down+flat,feedCurrent};
     }
     function refreshMarketPulse() {
       if (!$('pulseCoverage')) return;
       const b=watchlistBreadth();
       [['Up',b.up],['Down',b.down],['Flat',b.flat]].forEach(([name,count])=> {
-        $('pulse'+name).textContent=b.measured ? String(count) : 'â';
+        $('pulse'+name).textContent=String(count);
         $('pulse'+name+'Bar').style.width=(b.measured ? count/b.measured*100 : 0)+'%';
       });
-      $('pulseCoverage').textContent=`${b.measured}/${b.total} watchlist coins measured Â· ${b.unknown} missing or stale Â· chain discoveries excluded`;
+      $('pulseCoverage').textContent=b.feedCurrent
+        ? `${b.measured} of ${b.total} latest prices measured | ${b.unknown} waiting | chain discoveries excluded`
+        : `Waiting for a current public price feed | ${b.total} watchlist coins ready to check`;
     }
     function compactState(row,now=Date.now()) {
       const q=qualificationState(row,now);
@@ -605,7 +609,7 @@
       const direction=samples[samples.length-1].price-samples[0].price;
       const color=direction>0?'#82d3b2':direction<0?'#e9a0b1':'#c2b1e8';
       const label=`${row.symbol}: ${samples.length} samples observed in this tab, not candles`;
-      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path d="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab Â· ${samples.length} samples Â· ${escapeHTML(usdPrice(lo))}â${escapeHTML(usdPrice(hi))}</div>`;
+      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path d="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab  |  ${samples.length} samples  |  ${escapeHTML(usdPrice(lo))}-${escapeHTML(usdPrice(hi))}</div>`;
     }
     function compactFreshness(row) {
       let at=null;
@@ -671,10 +675,10 @@
       return Math.round(Math.min(100, declinePoints + directionPoints + 10));
     }
     function entryStateLabel(state) {
-      if (state === 'recovering') return 'RISING SAMPLES â REVIEW';
-      if (state === 'falling') return 'WAIT â STILL DUMPING';
+      if (state === 'recovering') return 'RISING SAMPLES - REVIEW';
+      if (state === 'falling') return 'WAIT - STILL DUMPING';
       if (state === 'stabilising') return 'WATCH CLOSELY';
-      return 'CHECKING â NEEDS 2 MOVES';
+      return 'CHECKING - NEEDS 2 MOVES';
     }
     function entryStateSignal(state) {
       if (state === 'recovering') return 'green';
@@ -722,7 +726,7 @@
       const shell = $('tickerShell');
       if (!shell.classList.contains('paused')) {
         toggleTickerPause();
-        $('tickerStatus').textContent = 'Banner paused â press the coin again to open its verified route';
+        $('tickerStatus').textContent = 'Banner paused - press the coin again to open its verified route';
         return;
       }
       openCoinWindow(cg);
@@ -732,7 +736,7 @@
       const paused = shell.classList.toggle('paused');
       shell.setAttribute('aria-pressed', String(paused));
       shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
-      $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED Â· TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE';
+      $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED  |  TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE';
     }
     function chainLaneElement(key) { return document.getElementById(`chain-lane-${key}`); }
     function setChainLanePaused(key, paused) {
@@ -742,7 +746,7 @@
       lane.setAttribute('aria-pressed', String(paused));
       lane.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} ${key} coin banner`);
       const hint = lane.querySelector('[data-chain-hint]');
-      if (hint) hint.textContent = paused ? 'PAUSED Â· TAP COIN TO OPEN' : 'TAP TO PAUSE';
+      if (hint) hint.textContent = paused ? 'PAUSED  |  TAP COIN TO OPEN' : 'TAP TO PAUSE';
     }
     function toggleChainLane(event, key) {
       if (event) event.stopPropagation();
@@ -762,7 +766,7 @@
     }
     function chainCoinMarkup(item, marketItem, laneKey) {
       const symbol = escapeHTML(item.symbol);
-      if (!marketItem) return `<span class="chain-empty">${symbol} Â· WAITING FOR LIVE FEED</span>`;
+      if (!marketItem) return `<span class="chain-empty">${symbol}  |  WAITING FOR LIVE FEED</span>`;
       const change = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
       const signal = signalForChange(change);
       const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : BLUE_CHIPS.has(item.symbol) ? '<span class="chain-tag blue">BLUE CHIP</span>' : '<span class="chain-tag">MOVER</span>';
@@ -886,12 +890,12 @@
         const namedContent = named.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('');
         const chainFresh = Boolean(chainPoolsUpdatedAt[lane.key] && Date.now() - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
         const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key,chainFresh)).join('');
-        const content = namedContent + discoveredContent || `<span class="chain-empty">LOADING TOP 25 CHAIN COINSâ¦</span>`;
+        const content = namedContent + discoveredContent || `<span class="chain-empty">LOADING TOP 25 CHAIN COINS...</span>`;
         const total = named.length + discovered.length;
         const moving = total > 2 ? content + content : content;
         const animation = total > 2 ? '' : ' style="animation:none"';
-        const age = chainPoolsUpdatedAt[lane.key] ? ` Â· ${chainPools[lane.key]?.length || 0}/25 FOUND Â· ${chainFresh ? 'UPDATED' : 'STALE'} ${localClock(chainPoolsUpdatedAt[lane.key])}` : ' Â· TOP 25 LOADING';
-        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas} Â· WALLET: ${lane.wallet}${age} Â· <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
+        const age = chainPoolsUpdatedAt[lane.key] ? `  |  ${chainPools[lane.key]?.length || 0}/25 FOUND  |  ${chainFresh ? 'UPDATED' : 'STALE'} ${localClock(chainPoolsUpdatedAt[lane.key])}` : '  |  TOP 25 LOADING';
+        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas}  |  WALLET: ${lane.wallet}${age}  |  <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
       }).join('');
       $('chainBoards').innerHTML = boards;
       paused.forEach(key => setChainLanePaused(key,true));
@@ -927,7 +931,7 @@
       return `
         <article class="card">
           <div class="card-head">
-            <div class="name">${a.s} â ${a.n}</div>
+            <div class="name">${a.s} - ${a.n}</div>
             <span class="chain">${a.c}</span>
           </div>
           <div class="price-row">
@@ -994,7 +998,7 @@
         quantityEstimate: amount / targetPrice,
         createdAt,
         expiresAt: createdAt + expiryMinutes * 60000,
-        status: 'DRAFT â CONFIRM AT VENUE',
+        status: 'DRAFT - CONFIRM AT VENUE',
         chain: a.c
       };
       orders.push(order); save(); render();
@@ -1009,10 +1013,10 @@
       const a = coin(o.id);
       if (!a) return `<article class="order"><div class="order-head"><b>UNRECOGNIZED SAVED DRAFT</b></div><p class="muted">This older saved item is preserved but cannot be opened because its verified market identity is unavailable.</p><div class="buttons"><button class="btn danger" onclick="cancel(${i})">Remove draft</button></div></article>`;
       const expired = Number.isFinite(Number(o.expiresAt)) && Date.now() >= Number(o.expiresAt);
-      const status = expired ? 'Expired â do not chase' : (o.status || 'Draft');
+      const status = expired ? 'Expired - do not chase' : (o.status || 'Draft');
       return `
         <article class="order">
-          <div class="order-head"><b>${o.sym} â ${a.n}</b><span class="chain">${a.c}</span></div>
+          <div class="order-head"><b>${o.sym} - ${a.n}</b><span class="chain">${a.c}</span></div>
           <p><span class="muted">Limit:</span> <b>${money(o.limit)}</b><br><span class="muted">Amount:</span> ${o.amount} USDC<br><span class="muted">Status:</span> ${status}</p>
           <div class="buttons">
             <button class="btn" onclick="window.open('${a.dex}', '_blank', 'noopener,noreferrer')">Open DEX</button>
@@ -1087,12 +1091,12 @@
       const recentSamples = samples.filter((s,i) => Number.isFinite(s.price) && s.price > 0 && s.at <= now && now-s.at <= maxAge*3 && (!i || s.at-samples[i-1].at >= 30000));
       const lastSample = recentSamples[recentSamples.length-1];
       const sampleCount = lastSample?.at === observedAt && lastSample?.price === current ? recentSamples.length : 0;
-      if (!valid) return {label:'WAIT',tone:'wait',angle:20,note:'10% drop seen Â· watching the next moves',stage:'samples',sampleCount};
+      if (!valid) return {label:'WAIT',tone:'wait',angle:20,note:'10% drop seen  |  watching the next moves',stage:'samples',sampleCount};
       const [a,b,c] = samples;
       if (c.price < b.price) return {label:'WAIT',tone:'wait',angle:10,note:'Latest sampled price is falling',stage:'falling',sampleCount:3};
-      if (c.price > b.price && b.price > a.price) return {label:'WATCH',tone:'watch',angle:90,note:'Two rising samples Â· more checks needed',stage:'rising',sampleCount:3};
-      if (c.price === b.price && b.price === a.price) return {label:'WATCH',tone:'watch',angle:75,note:'Samples are level Â· recovery unconfirmed',stage:'level',sampleCount:3};
-      return {label:'WAIT',tone:'wait',angle:35,note:'Mixed moves Â· waiting for stability',stage:'mixed',sampleCount:3};
+      if (c.price > b.price && b.price > a.price) return {label:'WATCH',tone:'watch',angle:90,note:'Two rising samples  |  more checks needed',stage:'rising',sampleCount:3};
+      if (c.price === b.price && b.price === a.price) return {label:'WATCH',tone:'watch',angle:75,note:'Samples are level  |  recovery unconfirmed',stage:'level',sampleCount:3};
+      return {label:'WAIT',tone:'wait',angle:35,note:'Mixed moves  |  waiting for stability',stage:'mixed',sampleCount:3};
       // No BUY state: executable liquidity, token security and candle-based
       // recovery checks are not connected. A screening score cannot unlock it.
     }
@@ -1111,7 +1115,7 @@
           <circle cx="135" cy="135" r="8" fill="#cbdbe5"/>
         </svg>
         <strong class="gauge-label">${q.label}</strong><div class="gauge-caption">${q.note}</div>
-        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop â settling samples â recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The small twitch shows fresh-price watching, not approval progress. Its resting position only advances on evidence; motion stops when data is stale. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
+        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop to settling samples to recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. The small twitch shows fresh-price watching, not approval progress. Its resting position only advances on evidence; motion stops when data is stale. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
       </div>`;
     }
     function refreshQualificationGauges() {
@@ -1142,9 +1146,9 @@
     function tradeMath(priceUSD, plan) {
       const budget = planNumber(plan.budget), position = planNumber(plan.entryPosition), multiple = planNumber(plan.multiple);
       const anchor = planNumber(plan.anchor);
-      if (budget === null || budget < 0 || budget > 1000 || budget % 50 !== 0) return {status:'Choose A$0âA$1,000 in A$50 steps'};
+      if (budget === null || budget < 0 || budget > 1000 || budget % 50 !== 0) return {status:'Choose A$0-A$1,000 in A$50 steps'};
       if (!Number.isFinite(anchor) || anchor <= 0 || position === null || position < 50 || position > 100) return {status:'Entry price unavailable'};
-      if (multiple === null || !Number.isInteger(multiple) || multiple < 1 || multiple > 100) return {status:'Choose 1Ãâ100Ã'};
+      if (multiple === null || !Number.isInteger(multiple) || multiple < 1 || multiple > 100) return {status:'Choose 1x-100x'};
       const entry = anchor * position / 100, exit = entry * multiple;
       if (!Number.isFinite(entry) || !Number.isFinite(exit)) return {status:'Price exceeds supported range'};
       const result = {status:'Costs need a quote',budget,entry,exit,multiple,grossReturn:budget*multiple,grossProfit:budget*(multiple-1)};
@@ -1184,13 +1188,13 @@
       return Number.isFinite(t) && new Date(t).toISOString().slice(0,10) === data.date && t <= now && now-t <= 7*86400000;
     }
     function displayCoinPrice(value) {
-      if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return 'â';
+      if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '-';
       const aud = priceCurrency === 'AUD' && validDisplayFx(displayFx);
       const amount = Number(value)*(aud ? displayFx.rate : 1);
       // Display rounding only; prices, plan anchors and route identities retain full precision.
       const size=Math.abs(amount);
       const short = size>0 && size<0.000001
-        ? amount.toExponential(2).replace('e-','eâ')
+        ? amount.toExponential(2).replace('e-','e-')
         : amount.toLocaleString('en-AU',size>=1 || size===0 ? {maximumFractionDigits:2} : {maximumSignificantDigits:4});
       return (aud?'A$':'US$')+short;
     }
@@ -1198,7 +1202,7 @@
       if (priceCurrency === 'AUD' && !validDisplayFx(displayFx)) priceCurrency='USD';
       $('pricesUSD').setAttribute('aria-pressed',String(priceCurrency==='USD'));
       $('pricesAUD').setAttribute('aria-pressed',String(priceCurrency==='AUD'));
-      $('currencyNote').textContent = priceCurrency==='AUD' ? 'Prices AUD Â· reference FX '+displayFx.date+' Â· not a trading quote' : 'Prices USD Â· spend and results AUD';
+      $('currencyNote').textContent = priceCurrency==='AUD' ? 'Prices AUD  |  reference FX '+displayFx.date+'  |  not a trading quote' : 'Prices USD  |  spend and results AUD';
       render(); renderChainBoards(); buildDump(); buildBuySetups(); renderTickerPrices();
     }
     async function fetchDisplayFx() {
@@ -1223,7 +1227,7 @@
       if (!['USD','AUD'].includes(currency)) return;
       requestedPriceCurrency=currency;
       if (currency==='USD') {priceCurrency='USD';repaintCurrency();return;}
-      $('currencyNote').textContent='Loading AUD reference exchange rateâ¦';
+      $('currencyNote').textContent='Loading AUD reference exchange rate...';
       try {
         await fetchDisplayFx();
         if (requestedPriceCurrency!=='AUD') return;
@@ -1231,7 +1235,7 @@
       } catch (_) {
         if (requestedPriceCurrency!=='AUD') return;
         priceCurrency='USD';repaintCurrency();
-        $('currencyNote').textContent='AUD conversion unavailable Â· prices remain USD Â· retry after 60s';
+        $('currencyNote').textContent='AUD conversion unavailable  |  prices remain USD  |  retry after 60s';
       }
     }
     function resultBuyRoute(row) {
@@ -1290,7 +1294,7 @@
       const known = model.netProfit !== undefined;
       return `<span class="trade-note">${known ? 'MODELED PROFIT AFTER ENTERED COSTS' : 'PROFIT BEFORE COSTS'}</span>
         <div class="trade-big">${escapeHTML(audMoney(known ? model.netProfit : model.grossProfit))}</div>
-        <div class="trade-note">${known ? 'Fees '+escapeHTML(audMoney(model.fees))+' Â· execution allowance '+escapeHTML(audMoney(model.execution))+' Â· network '+escapeHTML(audMoney(model.network)) : 'Net profit unavailable Â· '+escapeHTML(model.status)}<br>Assumes the chosen prices are filled and USD/AUD stays unchanged. Before tax.</div>`;
+        <div class="trade-note">${known ? 'Fees '+escapeHTML(audMoney(model.fees))+'  |  execution allowance '+escapeHTML(audMoney(model.execution))+'  |  network '+escapeHTML(audMoney(model.network)) : 'Net profit unavailable  |  '+escapeHTML(model.status)}<br>Assumes the chosen prices are filled and USD/AUD stays unchanged. Before tax.</div>`;
     }
     function entryControlConfig(plan) {
       const anchor = Number(plan.anchor);
@@ -1310,12 +1314,12 @@
       const c = entryControlConfig(plan);
       return `<label class="trade-note" for="plan-${index}-entrySteps">Reference price or lower</label>
         <div class="step-control" data-entry-control>
-          <button type="button" class="step-button" data-step-field="entrySteps" data-step-direction="-1" aria-label="Lower entry price" ${c.index===0?'disabled':''}>â</button>
+          <button type="button" class="step-button" data-step-field="entrySteps" data-step-direction="-1" aria-label="Lower entry price" ${c.index===0?'disabled':''}>-</button>
           <input class="slider" id="plan-${index}-entrySteps" type="range" min="0" max="${c.count}" step="1" value="${c.index}" data-plan-field="entrySteps" aria-valuetext="${escapeHTML(usdPrice(entryPriceFromIndex(plan,c.index)))}">
           <button type="button" class="step-button" data-step-field="entrySteps" data-step-direction="1" aria-label="Raise entry price up to reference" ${c.index===c.count?'disabled':''}>+</button>
         </div>
         <div class="slider-labels"><span data-entry-min>${escapeHTML(usdPrice(c.min))}</span><span data-entry-reference>Reference ${escapeHTML(usdPrice(c.max))}</span></div>
-        <div class="trade-note" data-entry-step>${escapeHTML(usdPrice(c.step))} per click Â· planning step</div>`;
+        <div class="trade-note" data-entry-step>${escapeHTML(usdPrice(c.step))} per click  |  planning step</div>`;
     }
     function syncEntryControl(box,plan) {
       const control = box.querySelector('[data-entry-control]');
@@ -1327,19 +1331,19 @@
       control.querySelector('[data-step-direction="1"]').disabled = c.index===c.count;
       box.querySelector('[data-entry-min]').textContent = usdPrice(c.min);
       box.querySelector('[data-entry-reference]').textContent = 'Reference '+usdPrice(c.max);
-      box.querySelector('[data-entry-step]').textContent = usdPrice(c.step)+' per click Â· planning step';
+      box.querySelector('[data-entry-step]').textContent = usdPrice(c.step)+' per click  |  planning step';
     }
     function stepSliderMarkup(field,index,value) {
       const budget = field === 'budget';
       const min = budget ? 0 : 1, max = budget ? 1000 : 100, step = budget ? 50 : 1;
       const count = (max-min)/step+1, gap = budget ? 68 : 44;
-      const label = n => budget ? 'A$'+n.toLocaleString('en-AU') : n+'Ã';
+      const label = n => budget ? 'A$'+n.toLocaleString('en-AU') : n+'x';
       const ticks = Array.from({length:count},(_,i) => min+i*step).map(n => `<span data-scale-value="${n}" class="${Number(value) === n ? 'selected' : ''}">${label(n)}</span>`).join('');
       return `<div class="step-control" data-step-control="${field}">
-        <button type="button" class="step-button" data-step-field="${field}" data-step-direction="-1" aria-label="${budget ? 'Decrease spend by A$50' : 'Decrease sell target by 1 times entry price'}" ${Number(value)<=min ? 'disabled' : ''}>â</button>
+        <button type="button" class="step-button" data-step-field="${field}" data-step-direction="-1" aria-label="${budget ? 'Decrease spend by A$50' : 'Decrease sell target by 1 times entry price'}" ${Number(value)<=min ? 'disabled' : ''}>-</button>
         <div class="plan-ruler" style="--scale-count:${count};--scale-gap:${gap}px">
           <input class="slider" id="plan-${index}-${field}" type="range" min="${min}" max="${max}" step="${step}" value="${escapeHTML(value)}" data-plan-field="${field}" aria-valuetext="${label(Number(value))}">
-          <div class="trade-note">Selected value highlighted Â· swipe numbers to browse</div><div class="scale-scroll"><div class="scale-ticks" aria-hidden="true">${ticks}</div></div>
+          <div class="trade-note">Selected value highlighted  |  swipe numbers to browse</div><div class="scale-scroll"><div class="scale-ticks" aria-hidden="true">${ticks}</div></div>
         </div>
         <button type="button" class="step-button" data-step-field="${field}" data-step-direction="1" aria-label="${budget ? 'Increase spend by A$50' : 'Increase sell target by 1 times entry price'}" ${Number(value)>=max ? 'disabled' : ''}>+</button>
       </div>`;
@@ -1374,22 +1378,22 @@
       const plan = getTradePlan(row.key,row.price), model = tradeMath(row.price,plan);
       const field = (name,label,min,placeholder) => `<label for="plan-${index}-${name}">${label}<input class="input" id="plan-${index}-${name}" type="number" inputmode="decimal" step="any" min="${min}" placeholder="${placeholder}" data-plan-field="${name}" value="${escapeHTML(plan[name])}"></label>`;
       return `<div data-trade-plan="${escapeHTML(row.key)}">
-        <div class="trade-note">${escapeHTML(row.chain)} Â· ${escapeHTML(row.venue || 'Trading route not selected')}</div>
+        <div class="trade-note">${escapeHTML(row.chain)}  |  ${escapeHTML(row.venue || 'Trading route not selected')}</div>
         <div data-qualification-key="${escapeHTML(row.key)}">${qualificationGaugeMarkup(row)}</div>
         <div class="trade-choice"><label class="label" for="plan-${index}-budget"><span>MY SPEND</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
         ${stepSliderMarkup('budget',index,plan.budget)}</div>
         <div class="trade-windows">
-          <section class="trade-window"><h3>ENTRY Â· MY BUY PRICE</h3>
+          <section class="trade-window"><h3>ENTRY  |  MY BUY PRICE</h3>
             <div class="trade-big" data-entry-label>${escapeHTML(usdPrice(model.entry))}</div>
             ${entrySliderMarkup(plan,index)}
             <div class="trade-choice"><span class="trade-note" data-plan-sampled-price>Sampled price ${escapeHTML(usdPrice(row.price))}</span> <button type="button" data-use-price>Use latest price</button></div>
-            <div class="trade-total" data-entry-total>${escapeHTML(audMoney(model.budget || 0))} budget Â· ${model.entryCosts !== undefined ? escapeHTML(audMoney(model.entryCosts))+' estimated entry costs' : 'entry costs need a quote'}</div>
+            <div class="trade-total" data-entry-total>${escapeHTML(audMoney(model.budget || 0))} budget  |  ${model.entryCosts !== undefined ? escapeHTML(audMoney(model.entryCosts))+' estimated entry costs' : 'entry costs need a quote'}</div>
           </section>
-          <section class="trade-window exit"><h3>EXIT Â· MY SELL TARGET</h3>
+          <section class="trade-window exit"><h3>EXIT  |  MY SELL TARGET</h3>
             <div class="trade-big" data-exit-label>${escapeHTML(usdPrice(model.exit))}</div>
-            <label class="label" for="plan-${index}-multiple"><span>MY MULTIPLIER</span><strong data-multiple-label>${model.multiple}Ã</strong></label>
+            <label class="label" for="plan-${index}-multiple"><span>MY MULTIPLIER</span><strong data-multiple-label>${model.multiple}x</strong></label>
             ${stepSliderMarkup('multiple',index,plan.multiple)}
-            <div class="trade-note">1Ã = same price Â· 2Ã = double Â· chosen target, not a forecast</div>
+            <div class="trade-note">1x = same price  |  2x = double  |  chosen target, not a forecast</div>
             <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
           </section>
         </div>
@@ -1413,8 +1417,8 @@
       label('[data-budget-label]',audMoney(Number(plan.budget)));
       label('[data-entry-label]',m.entry ? usdPrice(m.entry) : 'Choose entry');
       label('[data-exit-label]',m.exit ? usdPrice(m.exit) : 'Choose target');
-      label('[data-multiple-label]',plan.multiple+'Ã');
-      label('[data-entry-total]',audMoney(m.budget || 0)+' budget Â· '+(m.entryCosts !== undefined ? audMoney(m.entryCosts)+' estimated entry costs' : m.status));
+      label('[data-multiple-label]',plan.multiple+'x');
+      label('[data-entry-total]',audMoney(m.budget || 0)+' budget  |  '+(m.entryCosts !== undefined ? audMoney(m.entryCosts)+' estimated entry costs' : m.status));
       label('[data-exit-total]',m.netReturn !== undefined ? audMoney(m.netReturn)+' after entered costs' : audMoney(m.grossReturn || 0)+' at target before costs');
       box.querySelector('[data-trade-summary]').innerHTML = tradeSummaryMarkup(row,plan);
       box.querySelector('[data-plan-field="budget"]').setAttribute('aria-valuetext',audMoney(Number(plan.budget)));
@@ -1451,7 +1455,7 @@
           change <= -10 && change > -100 &&
           freshMarketItem(m, now)
         );
-      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(checkerCoins.find(c => c.cg === m.id)?.chain || 'MARKET').toUpperCase(),venue:'Reference price Â· route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
+      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(checkerCoins.find(c => c.cg === m.id)?.chain || 'MARKET').toUpperCase(),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
       const discoveredQualified = CHAIN_LANES.flatMap(lane => {
         const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
         if (!fresh) return [];
@@ -1468,7 +1472,7 @@
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<div class="empty">NO QUALIFYING DUMP â no fresh configured coin is still down at least 10% over the rolling 24 hours.</div>`;
+        $('buySetupRows').innerHTML = `<div class="empty">NO QUALIFYING DUMP - no fresh configured coin is still down at least 10% over the rolling 24 hours.</div>`;
         return;
       }
 
@@ -1535,7 +1539,7 @@
           return av - bv;
         });
       const rows = ranked.map(({ item, marketItem }, index) => {
-        if (!marketItem) return `<tr><td class="muted">â</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${shortAddressMarkup(item.addr)}</span></td><td class="muted">No live feed</td><td class="muted">â</td><td class="muted">â</td></tr>`;
+        if (!marketItem) return `<tr><td class="muted">-</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${shortAddressMarkup(item.addr)}</span></td><td class="muted">No live feed</td><td class="muted">-</td><td class="muted">-</td></tr>`;
         
         const isFresh = freshMarketItem(marketItem);
         const change24h = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
@@ -1551,12 +1555,12 @@
                   <td><b>#${index + 1}</b></td>
                   <td><b>${rating}/100</b></td>
                   <td>
-                    <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">ð</span><br>
+                    <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">LINK</span><br>
                     <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${shortAddressMarkup(displayAddr)}</span>
                   </td>
                   <td>${money(marketItem.current_price)}</td>
                   <td class="${signal}">${label}</td>
-                  <td class="${isFresh ? stateSignal : 'red'}">${isFresh ? entryStateLabel(state) : 'STALE â RETRYING'}<br><span style="font-size:10px;color:#94a3b8">${route ? `${route.venue} â¢ ${route.wallet}` : 'CHART ONLY'}</span></td>
+                  <td class="${isFresh ? stateSignal : 'red'}">${isFresh ? entryStateLabel(state) : 'STALE - RETRYING'}<br><span style="font-size:10px;color:#94a3b8">${route ? `${route.venue} - ${route.wallet}` : 'CHART ONLY'}</span></td>
                 </tr>`;
       }).join('');
       $('dumpRows').innerHTML = rows;
@@ -1583,7 +1587,7 @@
         $('ticker').innerHTML = tickerHtml + tickerHtml;
         const feedTime = newestFeedTime(market);
         const freshCount = market.filter(item => freshMarketItem(item)).length;
-        $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices â¢ feed ${localClock(feedTime)} â¢ highest rating first`;
+        $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices - feed ${localClock(feedTime)} - highest rating first`;
     }
     let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
     function load() {
@@ -1600,7 +1604,7 @@
         const r = await fetch(endpoint, {cache:'no-store', headers:{Accept:'application/json'},signal:controller.signal});
         if (r.status === 429) {
           feedRetryAt=Date.now()+60000;
-          $('tickerStatus').textContent = 'Rate limit reached â¢ cooling down; automatic retry pending';
+          $('tickerStatus').textContent = 'Rate limit reached - cooling down; automatic retry pending';
           buildDump();
           buildBuySetups();
           return 'cooldown';
@@ -1609,6 +1613,7 @@
         const payload = await r.json();
         if (!Array.isArray(payload)) throw new Error('Public feed returned an invalid payload');
         market = payload.filter(m => m && typeof m.id === 'string' && ids.includes(m.id) && typeof m.symbol === 'string');
+        marketReceivedAt = Date.now();
         if (Object.keys(sessionBaseline).length === 0) {
           resetLiveSession();
         }
@@ -1620,8 +1625,8 @@
         buildBuySetups();
         return market.some(m=>freshMarketItem(m))?'updated':'stale';
       } catch (e) {
-        $('ticker').textContent = 'Live feed unavailable â retrying';
-        $('tickerStatus').textContent = `No fresh ranking â¢ retry ${localClock(Date.now())}`;
+        $('ticker').textContent = 'Live feed unavailable - retrying';
+        $('tickerStatus').textContent = `No fresh ranking - retry ${localClock(Date.now())}`;
         buildDump();
         buildBuySetups();
         renderChainBoards();
@@ -1633,11 +1638,11 @@
       const status=$('refreshStatus');
       if(Date.now()-manualRefreshAt<15000) { status.textContent='Please wait a few seconds between refreshes'; return; }
       manualRefreshAt=Date.now();manualRefreshing=true;$('refreshButton').disabled=true;
-      status.textContent='Refreshing watchlist pricesâ¦';
+      status.textContent='Refreshing watchlist prices...';
       try {
         const result=await load();
         refreshQualificationGauges();
-        status.textContent=result==='updated'?'Prices checked '+localClock(Date.now())+' Â· chains refresh on their schedule':result==='cooldown'?'Feed cooling down Â· automatic retry will follow':result==='stale'?'Feed replied with old prices Â· waiting for fresh data':'Could not refresh Â· check your connection';
+        status.textContent=result==='updated'?'Prices checked '+localClock(Date.now())+'  |  chains refresh on their schedule':result==='cooldown'?'Feed cooling down  |  automatic retry will follow':result==='stale'?'Feed replied with old prices  |  waiting for fresh data':'Could not refresh  |  check your connection';
       } finally { manualRefreshing=false;$('refreshButton').disabled=false; }
     }
     function installPullRefresh() {
@@ -1658,7 +1663,7 @@
         if(dy<10) { armed=false;distance=0;cue.style.height='0px';return; }
         if(event.cancelable) event.preventDefault();
         distance=Math.min(110,dy*.55);armed=dy>=110;
-        cue.style.height=distance+'px';cue.textContent=armed?'â» Release to refresh':'â Pull to refresh';
+        cue.style.height=distance+'px';cue.textContent=armed?'REFRESH Release to refresh':'PULL Pull to refresh';
       },{passive:false});
       document.addEventListener('touchend',()=>{const go=armed;reset();if(go) refreshDesk();},{passive:true});
       document.addEventListener('touchcancel',reset,{passive:true});
@@ -1726,5 +1731,3 @@
     window.addEventListener('online', load);
   </script>
 </body>
-</html>
-
