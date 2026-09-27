@@ -101,6 +101,18 @@
     .trade-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin:10px 0; }
     .trade-fields label { font-size:12px; color:#cbd5e1; }
     .trade-fields input { margin-top:5px; }
+    .trade-windows { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:10px 0; }
+    .trade-window { min-width:0; border:1px solid #34665e; background:#11292b; border-radius:18px; padding:16px; }
+    .trade-window.exit { border-color:#67598e; background:#242337; }
+    .trade-window h3 { margin:0 0 8px; font-size:15px; color:#b7eadb; }
+    .trade-window.exit h3 { color:#dfd2ff; }
+    .trade-big { font-size:clamp(19px,3vw,28px); font-weight:800; overflow-wrap:anywhere; margin:8px 0; }
+    .trade-window .slider { margin:16px 0 4px; }
+    .trade-total { margin-top:12px; padding-top:12px; border-top:1px solid #445264; color:#dfedee; }
+    .trade-note { color:#acbbc8; font-size:12px; line-height:1.5; }
+    .trade-choice { margin:12px 0; padding:12px; border-radius:12px; background:#14232f; }
+    .trade-choice button { background:transparent; border:1px solid #536675; border-radius:8px; color:#d8eeee; padding:5px 9px; cursor:pointer; }
+    @media (max-width:520px) { .trade-windows { grid-template-columns:1fr; } }
     @media (prefers-reduced-motion:reduce) { .track, .item.scanning { animation:none; } }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
     @media (max-width:640px) { .grid { grid-template-columns:1fr; } .actions { width:100%; } }
@@ -131,7 +143,7 @@
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
       <h2>10%+ DUMP OPPORTUNITIES <span class="muted" style="font-size:14px;">(One ranked opportunity window)</span></h2>
-      <p>Choose A$0–A$1,000 per plan in A$50 steps. A 10% drop puts a coin on watch; security and candle-based recovery checks are still pending. Profit figures below are your scenario targets after entered costs.</p>
+      <p>Choose your spend, entry price and exit target. These are plans to review; qualification is still pending. 1× means the same price, 2× means double.</p>
       <div class="research">
         <table>
           <thead>
@@ -530,7 +542,9 @@
       const tokenAddress = String(selected.token.address || '').trim();
       if (!/^[A-Z0-9._-]{1,15}$/.test(symbol) || STABLE_SYMBOLS.has(symbol)) return null;
       if (!validTokenAddress(lane,tokenAddress)) return null;
-      return {symbol, tokenAddress, identity:`${lane.api}:${tokenAddress.toLowerCase()}`, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}?locale=en`};
+      const dexId = String(pool?.relationships?.dex?.data?.id || '');
+      const venue = /^[a-zA-Z0-9_-]{1,80}$/.test(dexId) ? dexId.replace(/-/g,' ').toUpperCase() : 'Pool venue unconfirmed';
+      return {symbol, tokenAddress, identity:`${lane.api}:${lane.api === 'solana' ? tokenAddress : tokenAddress.toLowerCase()}`, venue, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}?locale=en`};
     }
     async function fetchChainPage(lane, page) {
       const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
@@ -776,83 +790,115 @@
       return Number.isFinite(n) ? n : null;
     }
     function tradeMath(priceUSD, plan) {
-      const budget = planNumber(plan.budget);
-      const fx = planNumber(plan.fx);
-      const entryCost = planNumber(plan.entryCost);
-      const exitCost = planNumber(plan.exitCost);
-      const profit = planNumber(plan.profit);
-      const stop = planNumber(plan.stop);
+      const budget = planNumber(plan.budget), position = planNumber(plan.entryPosition), multiple = planNumber(plan.multiple);
+      const anchor = planNumber(plan.anchor);
       if (budget === null || budget < 0 || budget > 1000 || budget % 50 !== 0) return {status:'Choose A$0–A$1,000 in A$50 steps'};
-      if (budget === 0) return {status:'No allocation',budget:0};
-      if (!Number.isFinite(priceUSD) || priceUSD <= 0) return {status:'Price unavailable'};
-      if (fx === null || fx <= 0 || entryCost === null || entryCost < 0 || exitCost === null || exitCost < 0) return {status:'Enter FX and both cost estimates'};
-      if (entryCost >= budget) return {status:'Entry costs use the entire budget'};
-      const quantity = (budget - entryCost) / (priceUSD * fx);
-      const breakEven = (budget + exitCost) / (quantity * fx);
-      const result = {status:'Modeled only',budget,quantity,fees:entryCost + exitCost,breakEven};
-      if (profit !== null && profit > 0) {
-        result.profit = profit;
-        result.target = (budget + profit + exitCost) / (quantity * fx);
-        result.movePct = (result.target / priceUSD - 1) * 100;
-      }
-      if (stop !== null && stop > 0 && stop < priceUSD) {
-        result.stop = stop;
-        result.loss = budget - (quantity * stop * fx - exitCost);
-        if (result.profit) result.rewardRisk = result.profit / result.loss;
-      }
-      if ([result.quantity,result.fees,result.breakEven,result.target,result.movePct,result.loss].some(v => v !== undefined && !Number.isFinite(v))) return {status:'Values exceed the supported range'};
-      return result;
+      if (!Number.isFinite(anchor) || anchor <= 0 || position === null || position < 50 || position > 150) return {status:'Entry price unavailable'};
+      if (multiple === null || !Number.isInteger(multiple) || multiple < 1 || multiple > 100) return {status:'Choose 1×–100×'};
+      const entry = anchor * position / 100, exit = entry * multiple;
+      if (!Number.isFinite(entry) || !Number.isFinite(exit)) return {status:'Price exceeds supported range'};
+      const result = {status:'Costs need a quote',budget,entry,exit,multiple,grossReturn:budget*multiple,grossProfit:budget*(multiple-1)};
+      if (budget === 0) return {...result,status:'No allocation'};
+      const feeIn = planNumber(plan.feeIn), feeOut = planNumber(plan.feeOut);
+      const slipIn = planNumber(plan.slipIn), slipOut = planNumber(plan.slipOut);
+      const gasIn = planNumber(plan.gasIn), gasOut = planNumber(plan.gasOut);
+      if ([feeIn,feeOut,slipIn,slipOut,gasIn,gasOut].some(n => n === null)) return result;
+      if ([feeIn,feeOut,slipIn,slipOut].some(n => n < 0 || n >= 100) || gasIn < 0 || gasOut < 0) return {...result,status:'Check the cost assumptions'};
+      if (gasIn >= budget) return {...result,status:'Entry network cost uses the budget'};
+      // AUD scenario at constant USD/AUD conversion. Fees are percentages of
+      // each leg's value; execution allowances model adverse impact/slippage.
+      const capital = (budget-gasIn)/((1+feeIn/100)*(1+slipIn/100));
+      const buySlip = capital*slipIn/100;
+      const buyFee = (capital+buySlip)*feeIn/100;
+      const exitValue = capital*multiple;
+      const sellSlip = exitValue*slipOut/100;
+      const sellFee = (exitValue-sellSlip)*feeOut/100;
+      const exitProceeds = exitValue-sellSlip-sellFee-gasOut;
+      const entryCosts = buySlip+buyFee+gasIn, exitCosts = sellSlip+sellFee+gasOut;
+      return {...result,status:'Manual cost scenario',capital,entryCosts,exitCosts,fees:buyFee+sellFee,
+        execution:buySlip+sellSlip,network:gasIn+gasOut,totalCosts:entryCosts+exitCosts,
+        netReturn:exitProceeds,netProfit:exitProceeds-budget};
     }
-    function getTradePlan(key) {
-      if (!tradePlans.has(key)) tradePlans.set(key,{budget:'100',profit:'',fx:'',entryCost:'',exitCost:'',stop:''});
-      return tradePlans.get(key);
+    function getTradePlan(key,priceUSD) {
+      if (!tradePlans.has(key)) tradePlans.set(key,{budget:'100',anchor:priceUSD,entryPosition:'100',multiple:'1',feeIn:'',feeOut:'',slipIn:'',slipOut:'',gasIn:'',gasOut:''});
+      const plan = tradePlans.get(key);
+      if (!(plan.anchor > 0) && priceUSD > 0) plan.anchor = priceUSD;
+      return plan;
     }
-    const audMoney = value => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',currencyDisplay:'code',minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
+    const audMoney = value => 'A$' + Number(value).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
     const usdPrice = value => 'US$' + Number(value).toLocaleString('en-AU',{maximumSignificantDigits:8});
     function tradeSummaryMarkup(row, plan) {
       const model = tradeMath(row.price,plan);
-      const metric = (label,value) => `<div class="trade-metric"><small>${label}</small><strong>${escapeHTML(value)}</strong></div>`;
-      const bounce = row.state === 'recovering' ? 'Sampled rise · unconfirmed' : row.state === 'falling' ? 'Still falling' : row.state === 'stabilising' ? 'Settling · unconfirmed' : 'Waiting for evidence';
-      return metric('QUALIFICATION','NOT QUALIFIED YET') + metric('BOUNCE',bounce)
-        + metric('TOTAL BUDGET',model.budget !== undefined ? audMoney(model.budget) : audMoney(planNumber(plan.budget) ?? 0))
-        + metric('EST. ROUND-TRIP COSTS',model.fees !== undefined ? audMoney(model.fees) : 'Enter both costs')
-        + metric('NET PROFIT TARGET',model.profit ? audMoney(model.profit) + ' · chosen target' : 'Choose your minimum')
-        + metric('SELL PRICE NEEDED',model.target ? usdPrice(model.target) + ' (+' + model.movePct.toFixed(2) + '%)' : 'Waiting for inputs')
-        + metric('BREAK-EVEN PRICE',model.breakEven ? usdPrice(model.breakEven) : model.status)
-        + metric('EXIT IF WRONG',model.stop ? usdPrice(model.stop) + ' · modeled loss ' + audMoney(model.loss) : 'Choose an invalidation price');
+      if (!model.budget) return '<span class="trade-note">'+escapeHTML(model.status)+'</span>';
+      const known = model.netProfit !== undefined;
+      return `<span class="trade-note">${known ? 'MODELED PROFIT AFTER ENTERED COSTS' : 'PROFIT BEFORE COSTS'}</span>
+        <div class="trade-big">${escapeHTML(audMoney(known ? model.netProfit : model.grossProfit))}</div>
+        <div class="trade-note">${known ? 'Fees '+escapeHTML(audMoney(model.fees))+' · execution allowance '+escapeHTML(audMoney(model.execution))+' · network '+escapeHTML(audMoney(model.network)) : 'Net profit unavailable · '+escapeHTML(model.status)}<br>Assumes the chosen prices are filled and USD/AUD stays unchanged. Before tax.</div>`;
     }
     function tradePlanMarkup(row,index) {
-      const plan = getTradePlan(row.key);
+      const plan = getTradePlan(row.key,row.price), model = tradeMath(row.price,plan);
       const field = (name,label,min,placeholder) => `<label for="plan-${index}-${name}">${label}<input class="input" id="plan-${index}-${name}" type="number" inputmode="decimal" step="any" min="${min}" placeholder="${placeholder}" data-plan-field="${name}" value="${escapeHTML(plan[name])}"></label>`;
       return `<tr><td colspan="7"><div data-trade-plan="${escapeHTML(row.key)}">
-        <div class="trade-summary" data-trade-summary>${tradeSummaryMarkup(row,plan)}</div>
-        <label class="label" for="plan-${index}-budget"><span>TRADE BUDGET · AUD</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
+        <div class="trade-note">${escapeHTML(row.chain)} · ${escapeHTML(row.venue || 'Trading route not selected')} · NOT QUALIFIED YET</div>
+        <div class="trade-choice"><label class="label" for="plan-${index}-budget"><span>MY SPEND</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
         <input class="slider" id="plan-${index}-budget" type="range" min="0" max="1000" step="50" value="${escapeHTML(plan.budget)}" data-plan-field="budget" aria-valuetext="${escapeHTML(audMoney(Number(plan.budget)))}">
-        <div class="slider-labels"><span>A$0</span><span>A$250</span><span>A$500</span><span>A$750</span><span>A$1,000</span></div>
-        <details class="trade-assumptions"><summary>Set budget, costs &amp; profit target</summary><div class="trade-fields">
-        ${field('profit','Minimum net profit target (AUD)',0,'Choose your target')}
-        ${field('fx','AUD per 1 USD — your FX assumption',0,'Enter current conversion')}
-        ${field('entryCost','All entry costs (AUD)',0,'Fee + gas + tax + impact')}
-        ${field('exitCost','All exit costs at target (AUD)',0,'Fee + gas + tax + impact')}
-        ${field('stop','Invalidation price (USD)',0,'Below the reference price')}
-        </div><small>Manual scenario only, based on the displayed reference price. Costs and FX are not verified quotes; exit costs are assumed constant. Net means after these costs, before tax. A target is not a forecast or a placed sell order. Settings last for this tab session.</small></details>
+        <div class="slider-labels"><span>A$0</span><span>A$500</span><span>A$1,000</span></div></div>
+        <div class="trade-windows">
+          <section class="trade-window"><h3>ENTRY · MY BUY PRICE</h3>
+            <div class="trade-big" data-entry-label>${escapeHTML(usdPrice(model.entry))}</div>
+            <label class="trade-note" for="plan-${index}-entryPosition">Slide to choose your entry</label>
+            <input class="slider" id="plan-${index}-entryPosition" type="range" min="50" max="150" step="0.1" value="${escapeHTML(plan.entryPosition)}" data-plan-field="entryPosition" aria-valuetext="${escapeHTML(usdPrice(model.entry))}">
+            <div class="slider-labels"><span>50% lower</span><span>Reference</span><span>50% higher</span></div>
+            <div class="trade-choice"><span class="trade-note">Sampled price ${escapeHTML(usdPrice(row.price))}</span> <button type="button" data-use-price>Use latest price</button></div>
+            <div class="trade-total" data-entry-total>${escapeHTML(audMoney(model.budget || 0))} budget · ${model.entryCosts !== undefined ? escapeHTML(audMoney(model.entryCosts))+' estimated entry costs' : 'entry costs need a quote'}</div>
+          </section>
+          <section class="trade-window exit"><h3>EXIT · MY SELL TARGET</h3>
+            <div class="trade-big" data-exit-label>${escapeHTML(usdPrice(model.exit))}</div>
+            <label class="label" for="plan-${index}-multiple"><span>MY MULTIPLIER</span><strong data-multiple-label>${model.multiple}×</strong></label>
+            <input class="slider" id="plan-${index}-multiple" type="range" min="1" max="100" step="1" value="${escapeHTML(plan.multiple)}" data-plan-field="multiple" aria-valuetext="${model.multiple} times entry price">
+            <div class="slider-labels"><span>1×</span><span>25×</span><span>50×</span><span>75×</span><span>100×</span></div>
+            <div class="trade-note">1× = same price · 2× = double · chosen target, not a forecast</div>
+            <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
+          </section>
+        </div>
+        <div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div>
+        <details class="trade-assumptions"><summary>Fees &amp; slippage estimate</summary>
+          <div class="trade-note">Live route quotes are not connected. Optional assumptions below apply only to this coin and must be refreshed for its chain and route. Blank means unknown, not free.</div>
+          <div class="trade-fields">
+          ${field('feeIn','Entry fees / token tax (%)',0,'From your venue')}
+          ${field('feeOut','Exit fees / token tax (%)',0,'At the chosen exit value')}
+          ${field('slipIn','Entry execution allowance (%)',0,'Impact + adverse slippage')}
+          ${field('slipOut','Exit execution allowance (%)',0,'Impact + adverse slippage')}
+          ${field('gasIn','Entry gas + approval / wallet costs (AUD)',0,'From the selected route')}
+          ${field('gasOut','Exit gas + wallet costs (AUD)',0,'Scenario estimate')}
+          </div><small>These are manual estimates, not measured chain averages. Entry costs fit within your budget; sell fees scale with the exit value. Future liquidity and exit costs are unknown. No order is placed. Selections last for this tab session.</small>
+        </details>
       </div></td></tr>`;
+    }
+    function redrawTradePlan(box,row,plan) {
+      const m = tradeMath(row.price,plan);
+      const label = (selector,value) => { box.querySelector(selector).textContent = value; };
+      label('[data-budget-label]',audMoney(Number(plan.budget)));
+      label('[data-entry-label]',m.entry ? usdPrice(m.entry) : 'Choose entry');
+      label('[data-exit-label]',m.exit ? usdPrice(m.exit) : 'Choose target');
+      label('[data-multiple-label]',plan.multiple+'×');
+      label('[data-entry-total]',audMoney(m.budget || 0)+' budget · '+(m.entryCosts !== undefined ? audMoney(m.entryCosts)+' estimated entry costs' : m.status));
+      label('[data-exit-total]',m.netReturn !== undefined ? audMoney(m.netReturn)+' after entered costs' : audMoney(m.grossReturn || 0)+' at target before costs');
+      box.querySelector('[data-trade-summary]').innerHTML = tradeSummaryMarkup(row,plan);
+      box.querySelector('[data-plan-field="budget"]').setAttribute('aria-valuetext',audMoney(Number(plan.budget)));
+      box.querySelector('[data-plan-field="entryPosition"]').setAttribute('aria-valuetext',m.entry ? usdPrice(m.entry) : 'Unknown');
+      box.querySelector('[data-plan-field="multiple"]').setAttribute('aria-valuetext',plan.multiple+' times entry price');
     }
     function updateTradePlan(event) {
       const field = event.target.dataset?.planField;
-      if (!['budget','profit','fx','entryCost','exitCost','stop'].includes(field)) return;
+      if (!['budget','entryPosition','multiple','feeIn','feeOut','slipIn','slipOut','gasIn','gasOut'].includes(field)) return;
       const box = event.target.closest('[data-trade-plan]');
       if (!box) return;
       const row = visibleTradeRows.get(box.dataset.tradePlan);
       if (!row) return;
-      const plan = getTradePlan(row.key);
+      const plan = getTradePlan(row.key,row.price);
       plan[field] = event.target.value;
-      if (field === 'budget') {
-        const label = audMoney(Number(plan.budget));
-        box.querySelector('[data-budget-label]').textContent = label;
-        event.target.setAttribute('aria-valuetext',label);
-      }
-      box.querySelector('[data-trade-summary]').innerHTML = tradeSummaryMarkup(row,plan);
+      redrawTradePlan(box,row,plan);
     }
 
     // --- BUY SETUPS LOGIC (Strict 24H Filter) ---
@@ -867,7 +913,7 @@
           change <= -10 && change > -100 &&
           freshMarketItem(m, now)
         );
-      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:'MARKET',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
+      }).map(m => ({kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(checkerCoins.find(c => c.cg === m.id)?.chain || 'MARKET').toUpperCase(),venue:'Reference price · route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}));
       const discoveredQualified = CHAIN_LANES.flatMap(lane => {
         const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
         if (!fresh) return [];
@@ -875,7 +921,7 @@
           const state = entryStateFor(pool.identity);
           const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
           const rating = Math.round(Math.min(100,Math.min(70,Math.max(0,-pool.change24h * 4)) + directionPoints + 10));
-          return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
+          return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
         });
       });
       const qualified = [...namedQualified,...discoveredQualified].sort((a,b) => b.rating - a.rating || a.change - b.change);
@@ -1031,6 +1077,29 @@
     renderChainBoards();
     $('buySetupRows').addEventListener('input',updateTradePlan);
     $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
+    $('buySetupRows').addEventListener('click',event => {
+      if (!event.target.closest('[data-use-price]')) return;
+      const box = event.target.closest('[data-trade-plan]');
+      const row = box && visibleTradeRows.get(box.dataset.tradePlan);
+      if (!row) return;
+      let sample;
+      if (row.kind === 'named') {
+        const m = price(row.key);
+        if (freshMarketItem(m)) sample = Number(m.current_price);
+      } else {
+        for (const lane of CHAIN_LANES) {
+          if (Date.now() - (chainPoolsUpdatedAt[lane.key] || 0) > 20*60*1000) continue;
+          sample = (chainPools[lane.key] || []).find(p => p.identity === row.key)?.price;
+          if (sample > 0) break;
+        }
+      }
+      if (!(sample > 0)) return alert('A fresh price is unavailable. Your chosen entry is unchanged.');
+      const plan = getTradePlan(row.key,sample);
+      plan.anchor = sample;
+      plan.entryPosition = '100';
+      box.querySelector('[data-plan-field="entryPosition"]').value = '100';
+      redrawTradePlan(box,row,plan);
+    });
     $('chainBoards').addEventListener('click', event => {
       const button = event.target.closest('[data-chain-pool="true"]');
       if (!button) return;
