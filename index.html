@@ -270,17 +270,40 @@
     @media(prefers-reduced-motion:reduce) { .opportunity-card::after { animation:none!important; opacity:0; } }
     .all-coins > summary { min-height:48px; padding:12px; cursor:pointer; border-radius:12px; background:#26334b; color:#d9caf4; font-size:16px; }
     .all-coins[open] > summary { margin-bottom:14px; }
+
+    /* Clean compact top bar for iPhone first, desktop second. */
+    .topbar { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; margin:0; padding:6px 0 12px; border-bottom:1px solid #2f3b52; }
+    .brand { min-width:0; }
+    .topbar h1 { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar .currency-switch { flex-wrap:nowrap; }
+    .top-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 0 6px; }
+    .top-copy { min-width:0; display:grid; gap:3px; color:#9faec4; font-size:12px; line-height:1.3; }
+    .top-copy .currency-note { margin:0; color:#c0cada; white-space:normal; }
+    .top-controls #refreshButton { min-width:78px; min-height:42px; margin:0; padding:8px 13px; border:1px solid #41516c; color:#e0d4f4; background:#1b2940; border-radius:13px; font-size:14px; }
+    .ticker { margin:10px 0 14px; }
+    .ticker-status { display:grid; grid-template-columns:minmax(0,1fr); gap:4px; padding:0 12px 8px; }
+    #tickerControlLabel { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    #tickerStatus { overflow-wrap:anywhere; }
+    @media(max-width:380px) {
+      .topbar h1 { font-size:21px; }
+      .brand-subtitle { font-size:11px; }
+      .currency-switch .btn { min-width:44px; padding:8px; }
+      .top-controls { gap:8px; }
+      .top-controls #refreshButton { min-width:70px; padding:8px 10px; }
+    }
   </style>
 </head>
 <body class="notranslate">
   <div class="container">
-    <header>
-      <div><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
+    <header class="topbar">
+      <div class="brand"><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
-    <div class="currency-note" id="currencyNote">Prices USD Â· spend and results AUD</div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">â Pull to refresh</div>
-    <div class="refresh-strip"><span id="refreshStatus" role="status" aria-live="polite">Pull down at the top to refresh</span><button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button></div>
+    <div class="top-controls">
+      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD Â· spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Pull down to refresh</span></div>
+      <button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button>
+    </div>
     <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
       <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN Â· TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public pricesâ¦</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
@@ -333,6 +356,8 @@
       </div>
     </section>
 
+    </details><!-- end Menu -->
+
     <details class="section all-coins" id="allCoins">
       <summary>All coins <span class="muted">Â· tap to show or hide</span></summary>
       <p>The complete available checker list. Rating combines rolling 24-hour decline, current direction and freshness; it is a screen, not a win probability.</p>
@@ -351,8 +376,7 @@
           <tbody id="dumpRows"></tbody>
         </table>
       </div>
-    </details>
-    </details>
+    </details><!-- end All coins -->
   </div>
 
   <script>
@@ -1699,4 +1723,8 @@
     setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
     document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); } });
     window.addEventListener('pageshow', load);
-    window.addEventListene
+    window.addEventListener('online', load);
+  </script>
+</body>
+</html>
+
