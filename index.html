@@ -116,6 +116,17 @@
     .opportunity-head h3 { margin:0 0 4px; color:#c7f5e4; font-size:22px; overflow-wrap:anywhere; }
     .opportunity-price { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
     .opportunity-price .decline { color:#ff94a3; }
+    .qualification-gauge { margin:12px 0; padding:12px; border:1px solid #3c5262; border-radius:18px; background:#122330; text-align:center; }
+    .qualification-gauge svg { display:block; width:100%; max-width:290px; height:auto; margin:auto; }
+    .gauge-arc { fill:none; stroke-width:15; stroke-linecap:round; }
+    .gauge-red { stroke:#ce7280; } .gauge-amber { stroke:#d7b56f; } .gauge-green { stroke:#659e89; }
+    .gauge-checking .gauge-arc { stroke:#526170; }
+    .gauge-needle { stroke:#e5f1f6; stroke-width:4; stroke-linecap:round; }
+    .gauge-label { display:block; font-size:17px; color:#e5f1f6; margin-top:2px; }
+    .gauge-wait .gauge-label { color:#efadb6; } .gauge-watch .gauge-label { color:#eed197; }
+    .gauge-caption { margin:5px 0; font-size:12px; color:#b4c3ce; }
+    .qualification-gauge details { text-align:left; color:#b4c3ce; font-size:12px; line-height:1.5; margin-top:10px; }
+    .qualification-gauge summary { cursor:pointer; }
     .trade-result { margin:12px 0; padding:16px; border:1px solid #506276; border-radius:18px; background:#172b36; }
     .trade-result h3 { margin:0 0 10px; font-size:15px; color:#d5e6f4; }
     .trade-choice { margin:12px 0; padding:12px; border:1px solid #405869; border-radius:18px; background:#14232f; }
@@ -387,6 +398,7 @@
       market.forEach(m => {
         const current = Number(m.current_price);
         if (!Number.isFinite(current) || current <= 0) return;
+        if (freshMarketItem(m)) recordGaugeSample(m.id,current,new Date(m.last_updated).getTime());
         const samples = Array.isArray(priceSamples[m.id]) ? priceSamples[m.id] : [];
         samples.push({ price: current, recordedAt });
         priceSamples[m.id] = samples.slice(-3);
@@ -581,6 +593,7 @@
       chainPoolsUpdatedAt[lane.key] = Date.now();
       const recordedAt = Date.now();
       unique.forEach(pool => {
+        recordGaugeSample(pool.identity,pool.price,recordedAt);
         const samples = Array.isArray(priceSamples[pool.identity]) ? priceSamples[pool.identity] : [];
         samples.push({price:pool.price,recordedAt});
         priceSamples[pool.identity] = samples.slice(-3);
@@ -789,6 +802,75 @@
     }
 
     // Scenario inputs are private to this tab and never submit or authorize an order.
+    const gaugeSamples = new Map();
+    function recordGaugeSample(key, priceValue, observedAt, now = Date.now()) {
+      if (typeof key !== 'string' || !Number.isFinite(priceValue) || priceValue <= 0 || !Number.isFinite(observedAt) || observedAt > now) return;
+      const samples = gaugeSamples.get(key) || [];
+      const last = samples[samples.length-1];
+      // Repeated provider observations and closely repeated pool-page reads
+      // are not independent evidence of a recovery.
+      if (last && observedAt-last.at < 30000) return;
+      gaugeSamples.set(key,[...samples,{price:priceValue,at:observedAt}].slice(-3));
+    }
+    function qualificationState(row, now = Date.now()) {
+      const checking = {label:'CHECKING',tone:'checking',angle:0,note:'Fresh price evidence needed'};
+      if (!row) return checking;
+      let current, change, observedAt, maxAge;
+      if (row.kind === 'named') {
+        const m = price(row.key);
+        if (!freshMarketItem(m,now)) return checking;
+        current = Number(m.current_price); change = finiteChange(m.price_change_percentage_24h);
+        observedAt = new Date(m.last_updated).getTime(); maxAge = 120000;
+      } else if (row.kind === 'chain') {
+        const lane = CHAIN_LANES.find(l => (chainPools[l.key] || []).some(p => p.identity === row.key));
+        if (!lane) return checking;
+        const pool = chainPools[lane.key].find(p => p.identity === row.key);
+        observedAt = chainPoolsUpdatedAt[lane.key]; maxAge = 20*60*1000;
+        if (!Number.isFinite(observedAt) || now < observedAt || now-observedAt > maxAge) return checking;
+        current = pool.price; change = finiteChange(pool.change24h);
+      } else return checking;
+      if (!Number.isFinite(current) || current <= 0 || change === null || change <= -100) return checking;
+      if (change > -10) return {label:'WAIT',tone:'wait',angle:0,note:'Outside the 10% drop rule'};
+      const samples = gaugeSamples.get(row.key) || [];
+      const valid = samples.length === 3 && samples.every((s,i) => Number.isFinite(s.price) && s.price > 0 && s.at <= now && now-s.at <= maxAge*3 && (!i || s.at-samples[i-1].at >= 30000)) && samples[2].at === observedAt && samples[2].price === current;
+      if (!valid) return {label:'WAIT',tone:'wait',angle:20,note:'10% drop seen · watching the next moves'};
+      const [a,b,c] = samples;
+      if (c.price < b.price) return {label:'WAIT',tone:'wait',angle:10,note:'Latest sampled price is falling'};
+      if (c.price > b.price && b.price > a.price) return {label:'WATCH',tone:'watch',angle:90,note:'Two rising samples · more checks needed'};
+      if (c.price === b.price && b.price === a.price) return {label:'WATCH',tone:'watch',angle:75,note:'Samples are level · recovery unconfirmed'};
+      return {label:'WAIT',tone:'wait',angle:35,note:'Mixed moves · waiting for stability'};
+      // No BUY state: executable liquidity, token security and candle-based
+      // recovery checks are not connected. A screening score cannot unlock it.
+    }
+    function qualificationGaugeMarkup(row) {
+      const q = qualificationState(row);
+      return `<div class="qualification-gauge gauge-${q.tone}">
+        <svg viewBox="0 0 270 173" role="img" aria-label="${escapeHTML(row.symbol || 'Coin')}: ${q.label}. ${escapeHTML(q.note)}. Buy setup locked pending liquidity, security and recovery checks.">
+          <path class="gauge-arc gauge-red" d="M30 135 A105 105 0 0 1 80 46"/>
+          <path class="gauge-arc gauge-amber" d="M88 41 A105 105 0 0 1 182 41"/>
+          <path class="gauge-arc gauge-green" d="M190 46 A105 105 0 0 1 240 135"/>
+          <text x="49" y="158" text-anchor="middle" fill="#efadb6" font-size="11">WAIT</text>
+          <text x="135" y="15" text-anchor="middle" fill="#eed197" font-size="11">WATCH</text>
+          <text x="225" y="158" text-anchor="middle" fill="#a3cabb" font-size="11">BUY SETUP</text>
+          <text x="225" y="171" text-anchor="middle" fill="#a7b7c4" font-size="9">LOCKED</text>
+          <line class="gauge-needle" x1="135" y1="135" x2="48" y2="135" transform="rotate(${q.angle} 135 135)"/>
+          <circle cx="135" cy="135" r="8" fill="#cbdbe5"/>
+        </svg>
+        <strong class="gauge-label">${q.label}</strong><div class="gauge-caption">${q.note}</div>
+        <details data-gauge-details><summary>What moves the hand?</summary>Fresh 10% drop → settling samples → recovery, liquidity and safety checks. The green zone stays locked until those final checks are connected and pass. This hand shows stages, not a probability or a countdown. Chain samples use feed receipt time; named prices use the provider timestamp.</details>
+      </div>`;
+    }
+    function refreshQualificationGauges() {
+      document.querySelectorAll('[data-qualification-key]').forEach(host => {
+        const row = visibleTradeRows.get(host.dataset.qualificationKey);
+        if (!row) return;
+        const expanded = Boolean(host.querySelector('details')?.open);
+        const markup = qualificationGaugeMarkup(row);
+        if (host._gaugeMarkup === markup) return;
+        host.innerHTML = markup; host._gaugeMarkup = markup;
+        if (expanded) host.querySelector('details').open = true;
+      });
+    }
     const tradePlans = new Map();
     let visibleTradeRows = new Map();
     function planNumber(value) {
@@ -888,7 +970,8 @@
       const plan = getTradePlan(row.key,row.price), model = tradeMath(row.price,plan);
       const field = (name,label,min,placeholder) => `<label for="plan-${index}-${name}">${label}<input class="input" id="plan-${index}-${name}" type="number" inputmode="decimal" step="any" min="${min}" placeholder="${placeholder}" data-plan-field="${name}" value="${escapeHTML(plan[name])}"></label>`;
       return `<div data-trade-plan="${escapeHTML(row.key)}">
-        <div class="trade-note">${escapeHTML(row.chain)} · ${escapeHTML(row.venue || 'Trading route not selected')} · NOT QUALIFIED YET</div>
+        <div class="trade-note">${escapeHTML(row.chain)} · ${escapeHTML(row.venue || 'Trading route not selected')}</div>
+        <div data-qualification-key="${escapeHTML(row.key)}">${qualificationGaugeMarkup(row)}</div>
         <div class="trade-choice"><label class="label" for="plan-${index}-budget"><span>MY SPEND</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
         ${stepSliderMarkup('budget',index,plan.budget)}</div>
         <div class="trade-windows">
@@ -952,6 +1035,7 @@
     // --- BUY SETUPS LOGIC (Strict 24H Filter) ---
     function buildBuySetups() {
       // Don't discard the owner's focused field while a background feed refreshes.
+      refreshQualificationGauges();
       if (document.activeElement?.matches('[data-plan-field], [data-step-field]')) return;
       const now = Date.now();
       const namedQualified = market.filter(m => {
@@ -974,7 +1058,7 @@
       });
       const qualified = [...namedQualified,...discoveredQualified].sort((a,b) => b.rating - a.rating || a.change - b.change);
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
-      const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
+      const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
         $('buySetupRows').innerHTML = `<div class="empty">NO QUALIFYING DUMP — no fresh configured coin is still down at least 10% over the rolling 24 hours.</div>`;
@@ -995,7 +1079,7 @@
         </article>`;
       }).join('');
       $('buySetupRows').innerHTML = rows;
-      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details').open = true; });
+      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details.trade-assumptions').open = true; });
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); });
     }
 
@@ -1164,9 +1248,10 @@
     },true);
     load();
     setInterval(load, 60000);
+    setInterval(refreshQualificationGauges, 15000);
     refreshChainPools();
     setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshQualificationGauges(); load(); } });
     window.addEventListener('pageshow', load);
     window.addEventListener('online', load);
   </script>
