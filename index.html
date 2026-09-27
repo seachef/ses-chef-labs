@@ -260,6 +260,10 @@
     <div class="currency-note" id="currencyNote">Prices USD · spend and results AUD</div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">↓ Pull to refresh</div>
     <div class="refresh-strip"><span id="refreshStatus" role="status" aria-live="polite">Pull down at the top to refresh</span><button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button></div>
+    <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
+      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices…</span></div>
+      <div class="track" id="ticker">Loading live prices...</div>
+    </div>
     <section class="market-pulse" aria-label="Configured watchlist price breadth">
       <div class="pulse-title"><h2>Market pulse</h2><span class="trade-note">Watchlist · rolling 24H</span></div>
       <div class="pulse-grid">
@@ -282,10 +286,6 @@
         <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain</button>
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
-    <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
-      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN · TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices…</span></div>
-      <div class="track" id="ticker">Loading live prices...</div>
-    </div>
 
     <section aria-labelledby="chainBoardTitle">
       <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
@@ -486,6 +486,11 @@
     const money = p => displayCoinPrice(p);
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 
+    function shortAddressMarkup(value) {
+      const full=String(value || '');
+      const isAddress=/^0x[a-fA-F0-9]{40}$/.test(full) || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(full);
+      return isAddress ? `<span title="${escapeHTML(full)}">${escapeHTML(full.slice(0,6))}…${escapeHTML(full.slice(-4))}</span>` : escapeHTML(full);
+    }
     function coin(id) { return deep.find(x => x.id === id); }
     function price(id) { return market.find(x => x.id === id); }
     function save() { localStorage.setItem('seaChefOrders', JSON.stringify(orders)); }
@@ -890,7 +895,7 @@
             <span class="status ${signal}" id="ch-${a.id}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
           </div>
           <div class="info">
-            <strong>Address:</strong> ${a.a}<br>
+            <strong>Address:</strong> ${shortAddressMarkup(a.a)}<br>
             <strong>Dex:</strong> <a href="${a.dex}" target="_blank" rel="noopener noreferrer">Open DEX</a>
           </div>
           <div class="slider-wrap">
@@ -1122,7 +1127,7 @@
       if (!(plan.anchor > 0) && priceUSD > 0) plan.anchor = priceUSD;
       return plan;
     }
-    const audMoney = value => 'A$' + Number(value).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const audMoney = value => 'A$' + Number(value).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2});
     const usdPrice = value => displayCoinPrice(value);
     let priceCurrency = 'USD', requestedPriceCurrency = 'USD', displayFx = null, fxPromise = null, fxLastAttempt = 0;
     function validDisplayFx(data,now=Date.now()) {
@@ -1134,7 +1139,12 @@
       if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '—';
       const aud = priceCurrency === 'AUD' && validDisplayFx(displayFx);
       const amount = Number(value)*(aud ? displayFx.rate : 1);
-      return (aud?'A$':'US$')+amount.toLocaleString('en-AU',{maximumSignificantDigits:12});
+      // Display rounding only; prices, plan anchors and route identities retain full precision.
+      const size=Math.abs(amount);
+      const short = size>0 && size<0.000001
+        ? amount.toExponential(2).replace('e-','e−')
+        : amount.toLocaleString('en-AU',size>=1 || size===0 ? {maximumFractionDigits:2} : {maximumSignificantDigits:4});
+      return (aud?'A$':'US$')+short;
     }
     function repaintCurrency() {
       if (priceCurrency === 'AUD' && !validDisplayFx(displayFx)) priceCurrency='USD';
@@ -1477,7 +1487,7 @@
           return av - bv;
         });
       const rows = ranked.map(({ item, marketItem }, index) => {
-        if (!marketItem) return `<tr><td class="muted">—</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${item.addr}</span></td><td class="muted">No live feed</td><td class="muted">—</td><td class="muted">—</td></tr>`;
+        if (!marketItem) return `<tr><td class="muted">—</td><td class="muted">0/100</td><td><b>${item.symbol}</b><br><span style="font-size:10px;color:#94a3b8">${shortAddressMarkup(item.addr)}</span></td><td class="muted">No live feed</td><td class="muted">—</td><td class="muted">—</td></tr>`;
         
         const isFresh = freshMarketItem(marketItem);
         const change24h = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
@@ -1494,7 +1504,7 @@
                   <td><b>${rating}/100</b></td>
                   <td>
                     <b>${item.symbol}</b> <span style="font-size:10px; color:#00d9ff;">🔗</span><br>
-                    <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${displayAddr}</span>
+                    <span style="font-size:10px; color:#94a3b8; word-break:break-all;">${shortAddressMarkup(displayAddr)}</span>
                   </td>
                   <td>${money(marketItem.current_price)}</td>
                   <td class="${signal}">${label}</td>
