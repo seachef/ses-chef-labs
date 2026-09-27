@@ -110,8 +110,31 @@
     .trade-window .slider { margin:16px 0 4px; }
     .trade-total { margin-top:12px; padding-top:12px; border-top:1px solid #445264; color:#dfedee; }
     .trade-note { color:#acbbc8; font-size:12px; line-height:1.5; }
-    .trade-choice { margin:12px 0; padding:12px; border-radius:12px; background:#14232f; }
+    .opportunity-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:start; }
+    .opportunity-card { min-width:0; padding:16px; border:1px solid #37665f; border-radius:22px; background:#101f2d; }
+    .opportunity-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+    .opportunity-head h3 { margin:0 0 4px; color:#c7f5e4; font-size:22px; overflow-wrap:anywhere; }
+    .opportunity-price { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .opportunity-price .decline { color:#ff94a3; }
+    .trade-result { margin:12px 0; padding:16px; border:1px solid #506276; border-radius:18px; background:#172b36; }
+    .trade-result h3 { margin:0 0 10px; font-size:15px; color:#d5e6f4; }
+    .trade-choice { margin:12px 0; padding:12px; border:1px solid #405869; border-radius:18px; background:#14232f; }
+    @media (max-width:1050px) { .opportunity-cards { grid-template-columns:1fr; } }
     .trade-choice button { background:transparent; border:1px solid #536675; border-radius:8px; color:#d8eeee; padding:5px 9px; cursor:pointer; }
+    .step-control { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:8px; align-items:center; margin-top:12px; }
+    .step-control .step-button { width:44px; height:44px; padding:0; border:1px solid #617889; border-radius:12px; background:#233b45; color:#e0fff0; font-size:26px; cursor:pointer; touch-action:manipulation; }
+    .step-control .step-button:disabled { opacity:.35; cursor:default; }
+    .step-button:focus-visible { outline:2px solid #a9bfff; outline-offset:2px; }
+    .scale-scroll { min-width:0; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; padding:10px 0 4px; }
+    .scale-rail { width:calc(var(--scale-count) * var(--scale-gap)); }
+    .scale-rail .slider { appearance:none; -webkit-appearance:none; display:block; height:28px; min-height:28px; padding:0; width:calc(100% - var(--scale-gap) + 20px); margin:0 calc((var(--scale-gap) - 20px) / 2); background:transparent; }
+    .scale-rail .slider::-webkit-slider-runnable-track { height:6px; border-radius:6px; background:#496472; }
+    .scale-rail .slider::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:20px; height:20px; margin-top:-7px; border:2px solid #defaeb; border-radius:50%; background:#74d8bd; }
+    .scale-rail .slider::-moz-range-track { height:6px; border-radius:6px; background:#496472; }
+    .scale-rail .slider::-moz-range-thumb { box-sizing:border-box; width:20px; height:20px; border:2px solid #defaeb; border-radius:50%; background:#74d8bd; }
+    .scale-ticks { display:grid; grid-template-columns:repeat(var(--scale-count),var(--scale-gap)); margin-top:3px; }
+    .scale-ticks span { text-align:center; font-size:12px; color:#a7bcc7; padding:5px 0; white-space:nowrap; }
+    .scale-ticks span.selected { color:#d9ffef; background:#244b43; border-radius:8px; font-weight:800; }
     @media (max-width:520px) { .trade-windows { grid-template-columns:1fr; } }
     @media (prefers-reduced-motion:reduce) { .track, .item.scanning { animation:none; } }
     @media (max-width:980px) { .grid { grid-template-columns:repeat(2,minmax(240px,1fr)); } }
@@ -142,24 +165,9 @@
 
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
-      <h2>10%+ DUMP OPPORTUNITIES <span class="muted" style="font-size:14px;">(One ranked opportunity window)</span></h2>
+      <h2>10%+ DUMP OPPORTUNITIES <span class="muted" style="font-size:14px;">(Individual coin windows)</span></h2>
       <p>Choose your spend, entry price and exit target. These are plans to review; qualification is still pending. 1× means the same price, 2× means double.</p>
-      <div class="research">
-        <table>
-          <thead>
-            <tr style="color:#94a3b8; text-align:left;">
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Rank</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Screen score</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Coin</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Live Price</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">24H</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Entry State</th>
-              <th style="padding:8px 7px; border-bottom:1px solid #334155;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="buySetupRows"></tbody>
-        </table>
-      </div>
+      <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
     <section class="section limit-zone" hidden>
@@ -835,14 +843,54 @@
         <div class="trade-big">${escapeHTML(audMoney(known ? model.netProfit : model.grossProfit))}</div>
         <div class="trade-note">${known ? 'Fees '+escapeHTML(audMoney(model.fees))+' · execution allowance '+escapeHTML(audMoney(model.execution))+' · network '+escapeHTML(audMoney(model.network)) : 'Net profit unavailable · '+escapeHTML(model.status)}<br>Assumes the chosen prices are filled and USD/AUD stays unchanged. Before tax.</div>`;
     }
+    function stepSliderMarkup(field,index,value) {
+      const budget = field === 'budget';
+      const min = budget ? 0 : 1, max = budget ? 1000 : 100, step = budget ? 50 : 1;
+      const count = (max-min)/step+1, gap = budget ? 68 : 44;
+      const label = n => budget ? 'A$'+n.toLocaleString('en-AU') : n+'×';
+      const ticks = Array.from({length:count},(_,i) => min+i*step).map(n => `<span data-scale-value="${n}" class="${Number(value) === n ? 'selected' : ''}">${label(n)}</span>`).join('');
+      return `<div class="step-control" data-step-control="${field}">
+        <button type="button" class="step-button" data-step-field="${field}" data-step-direction="-1" aria-label="${budget ? 'Decrease spend by A$50' : 'Decrease sell target by 1 times entry price'}" ${Number(value)<=min ? 'disabled' : ''}>−</button>
+        <div class="scale-scroll"><div class="scale-rail" style="--scale-count:${count};--scale-gap:${gap}px">
+          <input class="slider" id="plan-${index}-${field}" type="range" min="${min}" max="${max}" step="${step}" value="${escapeHTML(value)}" data-plan-field="${field}" aria-valuetext="${label(Number(value))}">
+          <div class="scale-ticks" aria-hidden="true">${ticks}</div>
+        </div></div>
+        <button type="button" class="step-button" data-step-field="${field}" data-step-direction="1" aria-label="${budget ? 'Increase spend by A$50' : 'Increase sell target by 1 times entry price'}" ${Number(value)>=max ? 'disabled' : ''}>+</button>
+      </div>`;
+    }
+    function syncStepControl(box,field,center) {
+      const control = box.querySelector(`[data-step-control="${field}"]`);
+      if (!control) return;
+      const slider = control.querySelector('input'), value = Number(slider.value);
+      control.querySelector('[data-step-direction="-1"]').disabled = value <= Number(slider.min);
+      control.querySelector('[data-step-direction="1"]').disabled = value >= Number(slider.max);
+      const ticks = Array.from(control.querySelectorAll('[data-scale-value]'));
+      ticks.forEach(tick => tick.classList.toggle('selected',Number(tick.dataset.scaleValue) === value));
+      if (center) {
+        const scroll = control.querySelector('.scale-scroll'), gap = field === 'budget' ? 68 : 44;
+        const index = (value-Number(slider.min))/Number(slider.step);
+        scroll.scrollLeft = Math.max(0,(index+.5)*gap-scroll.clientWidth/2);
+      }
+    }
+    function stepTradePlan(event) {
+      const button = event.target.closest('[data-step-field]');
+      if (!button || button.disabled) return;
+      const field = button.dataset.stepField, direction = Number(button.dataset.stepDirection);
+      if (!['budget','multiple'].includes(field) || ![-1,1].includes(direction)) return;
+      const box = button.closest('[data-trade-plan]');
+      const slider = box?.querySelector(`[data-plan-field="${field}"]`);
+      if (!slider) return;
+      slider.value = String(Math.min(Number(slider.max),Math.max(Number(slider.min),Number(slider.value)+direction*Number(slider.step))));
+      updateTradePlan({target:slider});
+      syncStepControl(box,field,true);
+    }
     function tradePlanMarkup(row,index) {
       const plan = getTradePlan(row.key,row.price), model = tradeMath(row.price,plan);
       const field = (name,label,min,placeholder) => `<label for="plan-${index}-${name}">${label}<input class="input" id="plan-${index}-${name}" type="number" inputmode="decimal" step="any" min="${min}" placeholder="${placeholder}" data-plan-field="${name}" value="${escapeHTML(plan[name])}"></label>`;
-      return `<tr><td colspan="7"><div data-trade-plan="${escapeHTML(row.key)}">
+      return `<div data-trade-plan="${escapeHTML(row.key)}">
         <div class="trade-note">${escapeHTML(row.chain)} · ${escapeHTML(row.venue || 'Trading route not selected')} · NOT QUALIFIED YET</div>
         <div class="trade-choice"><label class="label" for="plan-${index}-budget"><span>MY SPEND</span><strong data-budget-label>${escapeHTML(audMoney(Number(plan.budget)))}</strong></label>
-        <input class="slider" id="plan-${index}-budget" type="range" min="0" max="1000" step="50" value="${escapeHTML(plan.budget)}" data-plan-field="budget" aria-valuetext="${escapeHTML(audMoney(Number(plan.budget)))}">
-        <div class="slider-labels"><span>A$0</span><span>A$500</span><span>A$1,000</span></div></div>
+        ${stepSliderMarkup('budget',index,plan.budget)}</div>
         <div class="trade-windows">
           <section class="trade-window"><h3>ENTRY · MY BUY PRICE</h3>
             <div class="trade-big" data-entry-label>${escapeHTML(usdPrice(model.entry))}</div>
@@ -855,13 +903,12 @@
           <section class="trade-window exit"><h3>EXIT · MY SELL TARGET</h3>
             <div class="trade-big" data-exit-label>${escapeHTML(usdPrice(model.exit))}</div>
             <label class="label" for="plan-${index}-multiple"><span>MY MULTIPLIER</span><strong data-multiple-label>${model.multiple}×</strong></label>
-            <input class="slider" id="plan-${index}-multiple" type="range" min="1" max="100" step="1" value="${escapeHTML(plan.multiple)}" data-plan-field="multiple" aria-valuetext="${model.multiple} times entry price">
-            <div class="slider-labels"><span>1×</span><span>25×</span><span>50×</span><span>75×</span><span>100×</span></div>
+            ${stepSliderMarkup('multiple',index,plan.multiple)}
             <div class="trade-note">1× = same price · 2× = double · chosen target, not a forecast</div>
             <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
           </section>
         </div>
-        <div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div>
+        <section class="trade-result"><h3>MY RESULT</h3><div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div></section>
         <details class="trade-assumptions"><summary>Fees &amp; slippage estimate</summary>
           <div class="trade-note">Live route quotes are not connected. Optional assumptions below apply only to this coin and must be refreshed for its chain and route. Blank means unknown, not free.</div>
           <div class="trade-fields">
@@ -873,7 +920,7 @@
           ${field('gasOut','Exit gas + wallet costs (AUD)',0,'Scenario estimate')}
           </div><small>These are manual estimates, not measured chain averages. Entry costs fit within your budget; sell fees scale with the exit value. Future liquidity and exit costs are unknown. No order is placed. Selections last for this tab session.</small>
         </details>
-      </div></td></tr>`;
+      </div>`;
     }
     function redrawTradePlan(box,row,plan) {
       const m = tradeMath(row.price,plan);
@@ -899,12 +946,13 @@
       const plan = getTradePlan(row.key,row.price);
       plan[field] = event.target.value;
       redrawTradePlan(box,row,plan);
+      if (field === 'budget' || field === 'multiple') syncStepControl(box,field,false);
     }
 
     // --- BUY SETUPS LOGIC (Strict 24H Filter) ---
     function buildBuySetups() {
       // Don't discard the owner's focused field while a background feed refreshes.
-      if (document.activeElement?.matches('[data-plan-field]')) return;
+      if (document.activeElement?.matches('[data-plan-field], [data-step-field]')) return;
       const now = Date.now();
       const namedQualified = market.filter(m => {
         const change = finiteChange(m.price_change_percentage_24h);
@@ -929,7 +977,7 @@
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:20px;">NO QUALIFYING DUMP — no fresh configured coin is still down at least 10% over the rolling 24 hours.</td></tr>`;
+        $('buySetupRows').innerHTML = `<div class="empty">NO QUALIFYING DUMP — no fresh configured coin is still down at least 10% over the rolling 24 hours.</div>`;
         return;
       }
 
@@ -940,18 +988,15 @@
         const rating = m.rating;
         const chart = m.kind === 'chain' ? m.chart : `https://www.coingecko.com/en/coins/${encodeURIComponent(m.key)}`;
         const action = `<a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a>`;
-        return `<tr class="buy-setup-row">
-                  <td style="padding:8px 7px;"><b>#${index + 1}</b></td>
-                  <td style="padding:8px 7px;"><b>${rating}/100</b></td>
-                  <td style="padding:8px 7px;"><b>${escapeHTML(m.symbol)}</b><br><span style="font-size:10px;color:#94a3b8">${escapeHTML(m.chain)} · 10%+ DROP ON WATCH</span></td>
-                  <td style="padding:8px 7px;">${money(m.price)}</td>
-                  <td style="padding:8px 7px;" class="red">${change.toFixed(2)}%</td>
-                  <td style="padding:8px 7px;" class="muted">REVIEW PENDING</td>
-                  <td style="padding:8px 7px;">${action}</td>
-                </tr>` + tradePlanMarkup(m,index);
+        return `<article class="opportunity-card" aria-label="${escapeHTML(m.symbol)} trade plan">
+          <div class="opportunity-head"><div><h3>#${index + 1} · ${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)} · Screen score ${rating}/100</span></div>${action}</div>
+          <div class="opportunity-price"><span>Sampled price <b>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline">24H ${change.toFixed(2)}%</span></div>
+          ${tradePlanMarkup(m,index)}
+        </article>`;
       }).join('');
       $('buySetupRows').innerHTML = rows;
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details').open = true; });
+      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); });
     }
 
     function prepareDumpBuy(cg) {
@@ -1076,6 +1121,7 @@
     render();
     renderChainBoards();
     $('buySetupRows').addEventListener('input',updateTradePlan);
+    $('buySetupRows').addEventListener('click',stepTradePlan);
     $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
     $('buySetupRows').addEventListener('click',event => {
       if (!event.target.closest('[data-use-price]')) return;
