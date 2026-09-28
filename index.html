@@ -477,7 +477,7 @@
     </section>
 
 
-    <details class="desk-menu" id="deskMenu"><summary>Menu  |  chains, watchlist &amp; wallets</summary>
+    <details class="desk-menu" id="deskMenu"><summary>Menu  |  wallets &amp; settings</summary>
       <div class="actions">        <button class="btn" onclick="connectRabby()">Rabby Wallet</button>
         <button class="btn purple" onclick="connectPhantom()">Phantom Wallet</button>
         <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain Wallet</button>
@@ -494,12 +494,7 @@
         <p class="trade-note">Build check, 28 September: public GoPlus reports responded for Ethereum and Solana. Quote endpoints returned HTTP 403 in the build environment; successful live quote validation remains pending. Browser access may differ; errors stay unverified. No overnight shortlist is automatically imported.</p>
       </details>
 
-    <section aria-labelledby="chainBoardTitle">
-      <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
-      <div class="chain-board" id="chainBoards"></div>
-      <p class="trade-note">No 25-token display cap. Discovery walks up to ten accessible public pool pages per chain, twenty pools per page, and keeps each eligible exact token identity plus your configured watchlist. This is the provider's ranked pool coverage, not every token on a chain. Duplicates, stablecoins, invalid identities and pools below US$25,000 in reported reserves stay filtered; reserves are not executable depth. Prices retain their individual observation times. A full sweep can take over ten minutes. Access errors and page limits are shown above. Chain discovery pauses when this page is hidden; ChatGPT does not keep the phone app awake.</p>
-      <div class="links"><a href="https://docs.coingecko.com/reference/top-pools-network" target="_blank" rel="noopener noreferrer">Public pool coverage limits</a></div>
-    </section>
+
 
     <section class="section limit-zone" hidden>
       <h2>LIMIT ORDERS - WAIT FOR YOUR PRICE</h2>
@@ -1372,57 +1367,6 @@
       shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
       $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED  |  TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE';
     }
-    function chainLaneElement(key) { return document.getElementById(`chain-lane-${key}`); }
-    function setChainLanePaused(key, paused) {
-      const lane = chainLaneElement(key);
-      if (!lane) return;
-      lane.classList.toggle('paused', paused);
-      lane.setAttribute('aria-pressed', String(paused));
-      lane.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} ${key} coin banner`);
-      const hint = lane.querySelector('[data-chain-hint]');
-      if (hint) hint.textContent = paused ? 'PAUSED  |  TAP COIN TO OPEN' : 'TAP TO PAUSE';
-    }
-    function toggleChainLane(event, key) {
-      if (event) event.stopPropagation();
-      const lane = chainLaneElement(key);
-      if (!lane) return;
-      setChainLanePaused(key, !lane.classList.contains('paused'));
-    }
-    function openChainCoin(event, key, cg) {
-      event.stopPropagation();
-      const lane = chainLaneElement(key);
-      if (!lane) return;
-      if (!lane.classList.contains('paused')) {
-        setChainLanePaused(key, true);
-        return;
-      }
-      openCoinWindow(cg);
-    }
-    function chainCoinMarkup(item, marketItem, laneKey) {
-      const symbol = escapeHTML(item.symbol);
-      if (!marketItem) return `<span class="chain-empty">${symbol}  |  WAITING FOR LIVE FEED</span>`;
-      const change = finiteChange(marketItem.price_change_percentage_24h) ?? 0;
-      const signal = signalForChange(change);
-      const tag = change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : BLUE_CHIPS.has(item.symbol) ? '<span class="chain-tag blue">BLUE CHIP</span>' : '<span class="chain-tag">MOVER</span>';
-      return `<button type="button" class="chain-coin" onclick="openChainCoin(event,'${laneKey}','${item.cg}')"><strong>${symbol}</strong><span>${money(marketItem.current_price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
-    }
-    function dynamicChainCoinMarkup(pool, laneKey, fresh) {
-      const change = finiteChange(pool.change24h) ?? 0;
-      const signal = signalForChange(change);
-      const tag = !fresh ? '<span class="chain-tag">STALE</span>' : change <= -10 ? '<span class="chain-tag dump">10%+ DUMP</span>' : '<span class="chain-tag">TOP LIQUIDITY</span>';
-      return `<button type="button" class="chain-coin" data-chain-pool="true" data-lane="${escapeHTML(laneKey)}" data-pool-url="${escapeHTML(pool.chart)}"><strong>${escapeHTML(pool.symbol)}</strong><span>${money(pool.price)}</span><span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>${tag}</button>`;
-    }
-    function openDynamicPool(event, key, url) {
-      event.stopPropagation();
-      const lane = chainLaneElement(key);
-      if (!lane) return;
-      if (!lane.classList.contains('paused')) {
-        setChainLanePaused(key, true);
-        return;
-      }
-      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
     function validTokenAddress(lane, address) {
       if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
       return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -1900,7 +1844,7 @@
         state.status=ended?'END OF AVAILABLE PAGES':'PUBLIC PAGE LIMIT';
       } else {state.nextPage=page+1;state.nextAt=0;state.status='SCANNING';}
       commitChainPools(lane,[...state.pages.values()].flatMap(result=>result.rows));
-      if(result.rows.some(p=>freshChainPool(p))) sonarFresh(lane.api,['chainBoards','marketSnapshot','scl-buy-setups']);
+      if(result.rows.some(p=>freshChainPool(p))) sonarFresh(lane.api,['marketSnapshot','scl-buy-setups']);
     }
     function commitChainPools(lane, pages) {
       const unique = [];
@@ -1920,7 +1864,7 @@
         if(!samples.length || recordedAt>samples[samples.length-1].recordedAt) samples.push({price:pool.price,recordedAt});
         priceSamples[pool.identity] = samples.slice(-3);
       });
-      renderChainBoards();
+      
       buildBuySetups();
     }
     async function refreshChainPools() {
@@ -1952,7 +1896,7 @@
               if(error.paused)break;
               state.status=error.rateLimited?'FEED COOLING DOWN':error.status===404?'PUBLIC MARKET FEED UNAVAILABLE':error.status===401||error.status===403?'PUBLIC ACCESS UNAVAILABLE':'FEED RETRY PENDING';
               state.nextAt=Date.now()+(error.rateLimited?60000:300000);
-              renderChainBoards();
+              
               if(error.rateLimited) {chainDiscoveryBackoffUntil=Date.now()+Math.max(60000,Number.isFinite(error.retryMs)?error.retryMs:0);break;}
             }
         }
@@ -1963,33 +1907,6 @@
         if(!document.hidden) chainRetryTimer=setTimeout(refreshChainPools,Math.min(2147483647,delay));
       }
     }
-    function renderChainBoards() {
-      const paused = new Set(CHAIN_LANES.filter(lane => chainLaneElement(lane.key)?.classList.contains('paused')).map(lane => lane.key));
-      const motion = new Map(CHAIN_LANES.map(lane=>[lane.key,chainLaneElement(lane.key)?.querySelector('.chain-track')?.getAnimations?.()[0]?.currentTime]));
-      const boards = CHAIN_LANES.map(lane => {
-        const named = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
-        const namedAddresses = new Set(named.filter(row=>validTokenAddress(lane,row.item.addr)).map(row=>lane.api==='solana'?row.item.addr:row.item.addr.toLowerCase()));
-        const discovered = (chainPools[lane.key] || []).filter(pool => !namedAddresses.has(lane.api==='solana'?pool.tokenAddress:pool.tokenAddress.toLowerCase()));
-        const namedContent = named.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('');
-        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key,freshChainPool(pool))).join('');
-        const content = namedContent + discoveredContent || `<span class="chain-empty">NO PUBLIC COINS LOADED YET</span>`;
-        const total = named.length + discovered.length;
-        const moving = total > 2 ? content + content : content;
-        // More discovered coins must not make the banner race across the phone.
-        const animation = total > 2 ? ` style="animation-duration:${Math.max(72,total*8)}s"` : ' style="animation:none"';
-        const coverage=discoveryState(lane), freshCount=(chainPools[lane.key]||[]).filter(pool=>freshChainPool(pool)).length;
-        const age = `  |  ${chainPools[lane.key]?.length || 0} POOL TOKENS (${freshCount} RECENT)  |  ${coverage.checked.size} PAGES CHECKED  |  ${coverage.status}`;
-        return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas}  |  WALLET: ${lane.wallet}${age}  |  <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
-      }).join('');
-      $('chainBoards').innerHTML = boards;
-      paused.forEach(key => setChainLanePaused(key,true));
-      // Page arrivals must not restart every long banner at its first coin.
-      CHAIN_LANES.forEach(lane=>{
-        const time=motion.get(lane.key), animation=chainLaneElement(lane.key)?.querySelector('.chain-track')?.getAnimations?.()[0];
-        if(animation&&Number.isFinite(time))animation.currentTime=time;
-      });
-    }
-    
     function liveChangeForCoin(cg) {
       const baseline = sessionBaseline[cg];
       const current = price(cg)?.current_price;
@@ -2304,7 +2221,7 @@
       $('pricesUSD').setAttribute('aria-pressed',String(priceCurrency==='USD'));
       $('pricesAUD').setAttribute('aria-pressed',String(priceCurrency==='AUD'));
       $('currencyNote').textContent = priceCurrency==='AUD' ? 'Prices AUD  |  reference FX '+displayFx.date+'  |  not a trading quote' : 'Prices USD  |  spend and results AUD';
-      render(); renderChainBoards();  buildBuySetups(); renderTickerPrices();
+      render();   buildBuySetups(); renderTickerPrices();
     }
     async function fetchDisplayFx() {
       if (validDisplayFx(displayFx)) return displayFx;
@@ -2718,7 +2635,7 @@
         recordPriceSamples();
         renderTickerPrices();
         render();
-        renderChainBoards();
+        
         
         buildBuySetups();
         const fresh=market.some(m=>freshMarketItem(m));
@@ -2729,7 +2646,7 @@
         $('tickerStatus').textContent = `No fresh ranking - retry ${localClock(Date.now())}`;
         
         buildBuySetups();
-        renderChainBoards();
+        
         return 'unavailable';
       } finally { clearTimeout(timer); priceCheckActivity('watchlist',-1); }
     }
@@ -2779,7 +2696,7 @@
     });
     $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
-    renderChainBoards();
+    
     installPullRefresh();
     $('buySetupRows').addEventListener('toggle',event=>{
       if(event.target.matches('details.coin-plan') && event.target.open) {
@@ -2839,13 +2756,7 @@
       plan.entryPosition = '100';
       redrawTradePlan(box,row,plan);
     });
-    $('chainBoards').addEventListener('click', event => {
-      const button = event.target.closest('[data-chain-pool="true"]');
-      if (!button) return;
-      event.preventDefault();
-      event.stopPropagation();
-      openDynamicPool(event,button.dataset.lane,button.dataset.poolUrl);
-    },true);
+
     $('buySetupRows').addEventListener('click', event => {
       const quoteButton=event.target.closest('[data-check-route]');
       if(quoteButton) {event.preventDefault();if(!quoteButton.disabled)requestRouteCheck(quoteButton.dataset.checkRoute);return;}
@@ -2885,5 +2796,6 @@ Display interval does not alter qualification timeframes. iPhone/provider accept
 exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
 Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
 <!-- Owner cleanup 2026-09-28: removed All coins table and EARN panel, styles, renderer, calculations and listeners. Discovery, watchlist scanning, Dump opps, charts and wallet history retained. -->
+<!-- Owner cleanup: lower chain market banners and their repeated rendering removed; top ticker and chain discovery retained. -->
 </body>
 </html>
