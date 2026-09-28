@@ -443,7 +443,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
 <body class="notranslate">
   <div class="container">
     <header class="topbar">
-      <div class="brand"><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
+      <div class="brand"><h1>Sea Chef Labs</h1></div>
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
     <div class="sonar-dock">
@@ -451,7 +451,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
-      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Auto-refresh on | phone: pull down | laptop: Ctrl+R</span></div>
+      <div class="top-copy" hidden aria-hidden="true"><span class="currency-note" id="currencyNote"></span><span id="refreshStatus"></span></div>
 
     </div>
     <div class="ticker paused" id="tickerShell" role="button" tabindex="0" aria-pressed="true" aria-label="Start moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
@@ -461,13 +461,11 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
       <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">Pick of the Day</h2></div></div>
       <p class="daily-empty">No pick loaded</p>
-      <p class="daily-note">One researched coin, with an entry and two exit levels.</p>
       <dl class="daily-preview" aria-label="No researched trade levels loaded">
         <div><dt>Buy near</dt><dd id="dailyEntry" aria-label="Entry not loaded">Pending</dd></div>
         <div><dt>Take profit at</dt><dd id="dailyTarget" aria-label="Profit target not loaded">Pending</dd></div>
         <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">Pending</dd></div>
       </dl>
-      <details class="coin-plan"><summary>Why this pick?</summary><p class="daily-note">Your morning brief arrives in ChatGPT. It does not load into this window automatically yet. No pick loaded is different from a completed search finding no suitable trade.</p></details>
     </section>
     <section class="market-pulse" id="marketSnapshot" aria-labelledby="snapshotTitle">
       <div class="pulse-title"><h2 id="snapshotTitle">My Market 24hr Snapshot<br><span class="snapshot-sub">Your Dump opps</span></h2></div>
@@ -477,7 +475,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         <div><span class="pulse-label">Static</span><strong class="pulse-number snapshot-static" id="snapshotStatic">0</strong></div>
       </div>
       <div class="pulse-foot" id="pulseCoverage">Only the coins in your Dump opps windows.</div>
-      <details class="coin-plan"><summary>What does this mean?</summary><p class="trade-note">Failed: a rule failed or selling continues. Qualifying: closed candles show recovery, but remaining checks must still pass. It does not mean buy. Static: four recent 15-minute candles stayed within a 0.5% range; not a buy signal. Incomplete checks are not counted in any box. This is a current snapshot of your 24-hour drop list, not a history of the last day. NEW means first added less than 24 hours ago.</p></details>
     </section>
     <section class="dump-glance" aria-labelledby="dumpGlanceTitle">
       <div class="glance-head"><h2 id="dumpGlanceTitle">Dump opps at a glance</h2><span id="dumpCheckDot" class="check-dot" role="img" aria-label="No price request running" title="No price request running"></span></div>
@@ -486,8 +483,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     </section>
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
-      <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops  |  sample recovery first</span></div>
-      <p class="trade-note">Watch the recovery. Check the exit. Choose your own trade.</p>
+      <div class="desk-heading"><h2>Dump opps</h2></div>
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
@@ -495,7 +491,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
       <button type="button" class="btn" id="trackWalletButton" aria-expanded="false" aria-controls="trackWalletChoices" onclick="toggleWalletTracking()">Track my wallet</button>
       <div id="trackWalletChoices" hidden>
-        <p class="trade-note">Optional: connect to help detect purchases you start from this desk. This does not import every wallet trade or place an order.</p>
         <div class="actions"><button type="button" class="btn" onclick="connectRabby()">Rabby</button><button type="button" class="btn purple" onclick="connectPhantom()">Phantom</button></div>
       </div>
       <div class="wallet-ledger-grid" id="pendingBuys"></div>
@@ -512,7 +507,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
 
   <dialog class="chart-dialog" id="poolChartDialog" aria-labelledby="poolChartTitle">
     <header><strong id="poolChartTitle">Pool chart</strong><button type="button" class="btn" onclick="closePoolChart()">Close</button></header>
-    <p class="trade-note">GeckoTerminal chart. Choose the candle interval inside the chart. Its display does not complete our buy checks.</p>
     <iframe id="poolChartFrame" title="Exact pool chart from GeckoTerminal" referrerpolicy="no-referrer" allow="fullscreen" allowfullscreen></iframe>
     <p class="trade-note">If the chart stays blank, <a id="poolChartExternal" target="_blank" rel="noopener noreferrer">open this same pool directly</a>.</p>
   </dialog>
@@ -2462,7 +2456,6 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
             <div class="trade-big" data-exit-label>${escapeHTML(usdPrice(model.exit))}</div>
             <label class="label" for="plan-${index}-multiple"><span>MY MULTIPLIER</span><strong data-multiple-label>${model.multiple}x</strong></label>
             ${stepSliderMarkup('multiple',index,plan.multiple)}
-            <div class="trade-note">1x = same price  |  2x = double  |  chosen target, not a forecast</div>
             <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
           </section>
         </div>
@@ -2558,7 +2551,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details[data-manual-costs][open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<div class="empty">No fresh setups pass yet. We need a 10% to under 50% drop and seven verified days of trading. Your WATCH pins stay visible.</div>`;
+        $('buySetupRows').innerHTML = `<div class="empty">No qualifying coins.</div>`;
         return;
       }
 
@@ -2617,7 +2610,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const tickerRows=paused?qualified.slice(0,12):qualified;
       if(!tickerRows.length) {
         $('ticker').innerHTML='<span class="item"><b>NO QUALIFYING COINS RIGHT NOW</b></span>';
-        $('tickerStatus').textContent='0 qualified - tap Sonar or pull down when you want fresh data';
+        $('tickerStatus').textContent='0 qualified';
         return;
       }
       const tickerHtml=tickerRows.map((row,index)=>{
