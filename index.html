@@ -426,7 +426,6 @@
     </header>
     <div class="sonar-dock">
       <button type="button" class="sonar-control" id="sonarWake" onclick="refreshDesk()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
-      <details class="sonar-details"><summary aria-label="Show feed status">Feed status</summary><div id="sonarFeeds">No requests yet.</div></details>
     </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
@@ -484,38 +483,6 @@
 
     <details class="desk-menu" id="deskMenu"><summary>Menu  |  settings</summary>
       <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
-      <details class="coin-plan"><summary>Morning research | 28 September 2026</summary>
-        <p class="trade-note">Research rules, not frozen prices or a list of approved buys. Public market figures load when this page is open. The separate morning brief does not automatically import here.</p>
-        <p class="trade-note">Count trades and distinct buying/selling addresses separately. Addresses are not people. No universal 100-buyer rule. Buy-versus-sell dollar pressure is shown only if the source supplies both dollar amounts; trade counts never substitute for dollars.</p>
-        <p class="trade-note">At least seven days of actual trading must be evidenced. Pool creation alone does not prove token age. Closed 15-minute and hourly candles are used for a cautious recovery screen, never a profit prediction. Up to three pool candidates are deep-checked per ten-minute evidence sweep; other candidates wait their turn. Up to eight exact-identity public security reports are checked per security sweep, covering reported restrictions and concentration. No order-book or complete security pass is claimed.</p>
-        <p class="trade-note">CHECK MY COSTS compares current buy and reverse-sell route quotes plus a smaller-size probe, where the public quote provider allows access. Quotes are comparisons, not executable orders or wallet-specific sell tests. No account, transaction, signing or private key is used by these new checks. Pool reserves and turnover are context, not guaranteed low slippage. A WATCH or NEW label only keeps a coin visible.</p>
-        <div class="links"><a href="https://docs.coingecko.com/reference/pool-address" target="_blank" rel="noopener noreferrer">Pool activity fields</a><a href="https://docs.coingecko.com/reference/pool-ohlcv-contract-address" target="_blank" rel="noopener noreferrer">Closed-candle source</a><a href="https://support.uniswap.org/hc/en-us/articles/8643794102669-Price-Impact-vs-Price-Slippage" target="_blank" rel="noopener noreferrer">Impact versus slippage</a></div>
-        <div class="links"><a href="https://docs.gopluslabs.io/reference/response-details" target="_blank" rel="noopener noreferrer">EVM risk fields</a><a href="https://docs.gopluslabs.io/reference/response-detail-1" target="_blank" rel="noopener noreferrer">Solana risk fields</a><a href="https://docs.kyberswap.com/developer-guide/aggregator-api/aggregator-api-specification/evm-swaps" target="_blank" rel="noopener noreferrer">Kyber quote API</a><a href="https://docs.raydium.io/sdk-api/trade-api" target="_blank" rel="noopener noreferrer">Raydium quote API</a><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses" target="_blank" rel="noopener noreferrer">Quote-token identities</a></div>
-        <p class="trade-note">Build check, 28 September: public GoPlus reports responded for Ethereum and Solana. Quote endpoints returned HTTP 403 in the build environment; successful live quote validation remains pending. Browser access may differ; errors stay unverified. No overnight shortlist is automatically imported.</p>
-      </details>
-
-
-
-    <section class="section limit-zone" hidden>
-      <h2>LIMIT ORDERS - WAIT FOR YOUR PRICE</h2>
-      <p>Orders leave the active pair tray and remain here. Reopen an order to return its pair to the tray. A draft is not an on-chain order until the wallet and protocol confirm it.</p>
-      <div class="grid" id="orders"></div>
-    </section>
-
-    <section class="section limit-zone" hidden>
-      <h2>TOP QUALIFIED LIMIT-ORDER COINS <span class="muted" id="trayCount"></span></h2>
-      <p>Eight pairs are shown at a time. They stay visible until you reset the session.</p>
-      <div class="grid" id="tray"></div>
-      <div class="buttons" style="margin-top:12px;">
-        <button class="btn" onclick="togglePool()">Deep Liquidity Pairs</button>
-        <button class="btn" onclick="refillTray()">Refresh Tray</button>
-      </div>
-      <div class="research" id="pool" hidden>
-        <div class="muted" style="font-size:12px; margin-bottom:8px;">Select a pair to bring it into the active tray.</div>
-        <div class="grid" id="poolGrid"></div>
-      </div>
-    </section>
-
     </details><!-- end Menu -->
 
 
@@ -791,6 +758,7 @@
       } catch (_) { return new Set(); }
     }
     let pumpDumpExclusions=readPumpDumpExclusions();
+    const MARKET_SNAPSHOT_KEY='seaChefLastMarketSnapshotV1', MARKET_SNAPSHOT_MAX_AGE=6*60*60*1000;
     let market = [], marketReceivedAt = 0, active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
     const $ = id => document.getElementById(id);
     const money = p => displayCoinPrice(p);
@@ -941,9 +909,28 @@
       pumpDumpExclusions.clear(); savePumpDumpExclusions(); buildBuySetups();
     }
     function freshMarketItem(m, now = Date.now()) {
-      if (!m || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
+      if (!m || m._scl_cached===true || !Number.isFinite(Number(m.current_price)) || Number(m.current_price) <= 0) return false;
       const observedAt = new Date(m.last_updated).getTime();
       return Number.isFinite(observedAt) && now >= observedAt && now - observedAt <= 120000;
+    }
+    function validMarketRows(rows,cached=false) {
+      if(!Array.isArray(rows))return [];
+      const allowed=new Set(ids);
+      return rows.filter(m=>m&&typeof m.id==='string'&&allowed.has(m.id)&&typeof m.symbol==='string'&&/^[a-z0-9._-]{1,30}$/i.test(m.symbol)&&Number.isFinite(Number(m.current_price))&&Number(m.current_price)>0)
+        .slice(0,ids.length).map(m=>({...m,_scl_cached:cached}));
+    }
+    function saveMarketSnapshot(rows) {
+      try {localStorage.setItem(MARKET_SNAPSHOT_KEY,JSON.stringify({version:1,savedAt:Date.now(),rows:rows.map(({_scl_cached,...m})=>m)}));} catch(_) {}
+    }
+    function restoreMarketSnapshot() {
+      try {
+        const saved=JSON.parse(localStorage.getItem(MARKET_SNAPSHOT_KEY)||'null');
+        if(!saved||saved.version!==1||!Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||Date.now()-saved.savedAt>MARKET_SNAPSHOT_MAX_AGE)return false;
+        const rows=validMarketRows(saved.rows,true);if(!rows.length)return false;
+        market=rows;marketReceivedAt=0;renderTickerPrices();render();buildBuySetups();
+        $('tickerStatus').textContent=`Last saved prices ${localClock(saved.savedAt)} - refreshing now`;
+        return true;
+      } catch(_) {return false;}
     }
     function newestFeedTime(items = market) {
       const times = items.map(item => new Date(item.last_updated).getTime()).filter(Number.isFinite);
@@ -1142,7 +1129,9 @@
       $('refreshStatus').textContent='Waking your market | fresh checks first';
       wakePromise=(async()=>{
         // Existing locks and provider backoffs are retained. No duplicate scans.
-        await Promise.allSettled([(async()=>{await load();if(marketReceivedAt<marketWakeAt && !document.hidden)await load();})(),refreshChainPools(),refreshSecuritySweep(),checkPendingWalletBuys()]);
+        await Promise.allSettled([(async()=>{await load();if(marketReceivedAt<marketWakeAt && !document.hidden&&Date.now()>=feedRetryAt)await load();})()]);
+        // Slower chain/security checks continue without holding the visible refresh.
+        setTimeout(()=>{if(!document.hidden)void refreshChainPools();},500);
         buildBuySetups();refreshQualificationGauges();
         $('refreshStatus').textContent='Refresh cycle finished | see Sonar feed status';
       })().finally(()=>{wakePromise=null;refreshSonar();});
@@ -1676,7 +1665,7 @@
       const wait=Math.max(0,CHAIN_REQUEST_GAP_MS-(Date.now()-chainLastRequestAt));
       if(wait) await new Promise(resolve=>setTimeout(resolve,wait));
       if(document.hidden) throw Error('Evidence check paused while page hidden');
-      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
       const candleStarted=Date.now();
       priceCheckActivity('candles:'+lane.api,1); chainLastRequestAt=candleStarted;
       try {
@@ -2022,12 +2011,7 @@
     }
 
     function render() {
-      const ranked = active.slice().sort((a, b) => liveChangeForCoin(coin(a).cg) - liveChangeForCoin(coin(b).cg));
-      $('tray').innerHTML = ranked.map(id => card(coin(id))).join('') || '<div class="empty">No active pairs.</div>';
-      $('orders').innerHTML = orders.map(orderCard).join('') || '<div class="empty">No deep-liquidity limit orders.</div>';
-      $('trayCount').textContent = `(${ranked.length} visible / ${deep.length} total)`;
-      renderPool();
-      updatePrices();
+      // Legacy limit-order tray removed. Current desk renders through Dump opps.
     }
 
     function renderPool() {
@@ -2505,7 +2489,6 @@
       const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))&&(!currentSecurity(row)?.critical||watchedDumpRows.has(row.key))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
       refreshMarketPulse();
-      void refreshSecuritySweep();
       renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openEvidence=new Set(Array.from($('buySetupRows').querySelectorAll('details.market-evidence[open]')).map(d=>d.dataset.evidenceKey));
@@ -2616,8 +2599,10 @@
         const payload = await r.json();
         if (!Array.isArray(payload)) throw new Error('Public feed returned an invalid payload');
         if(requestStarted<marketWakeAt)return 'superseded';
-        market = payload.filter(m => m && typeof m.id === 'string' && ids.includes(m.id) && typeof m.symbol === 'string');
+        market = validMarketRows(payload,false);
+        if(!market.length)throw new Error('Public feed returned no usable prices');
         marketReceivedAt = Date.now();
+        feedRetryAt=0;saveMarketSnapshot(market);
         if (Object.keys(sessionBaseline).length === 0) {
           resetLiveSession();
         }
@@ -2631,8 +2616,9 @@
         if(fresh)sonarFresh('watchlist',['tickerShell']);
         return fresh?'updated':'stale';
       } catch (e) {
-        $('ticker').textContent = 'Live feed unavailable - retrying';
-        $('tickerStatus').textContent = `No fresh ranking - retry ${localClock(Date.now())}`;
+        feedRetryAt=Date.now()+60000;
+        if(!market.length)$('ticker').textContent = 'Public prices unavailable';
+        $('tickerStatus').textContent = market.length?'Showing last saved prices - automatic retry pending':'Price feed unavailable - automatic retry pending';
         
         buildBuySetups();
         
@@ -2685,9 +2671,14 @@
     });
     $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
+    restoreMarketSnapshot();
     
     installPullRefresh();
     $('buySetupRows').addEventListener('toggle',event=>{
+      if(event.target.matches('details.market-evidence') && event.target.open) {
+        const row=visibleTradeRows.get(event.target.dataset.evidenceKey),asset=row&&assetContext(row);
+        if(asset)void checkAssetSecurity(asset).then(()=>{refreshCompactCards();buildBuySetups();});
+      }
       if(event.target.matches('details.coin-plan') && event.target.open) {
         const box=event.target.querySelector('[data-trade-plan]');
         if(box) { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); }
@@ -2753,4 +2744,37 @@
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      const 
+      const url = button.dataset.opportunityUrl;
+      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
+      window.open(url,'_blank','noopener,noreferrer');
+    },true);
+    $('walletLedger').addEventListener('click',event=>{
+      const add=event.target.closest('[data-add-position]'); if(add)return addDetectedPosition(add.dataset.addPosition);
+      const dismiss=event.target.closest('[data-dismiss-wallet-record]'); if(dismiss)return dismissWalletRecord(dismiss.dataset.dismissWalletRecord);
+      const sold=event.target.closest('[data-mark-sold]'); if(sold&&confirm('Move this position into History as sold?'))return markPositionSold(sold.dataset.markSold);
+    });
+    savePumpDumpExclusions();
+    renderWalletLedger();
+    load().finally(()=>setTimeout(()=>{if(!document.hidden)void refreshChainPools();},1500));
+    setInterval(load, 60000);
+    setInterval(refreshQualificationGauges, 15000);
+    setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
+    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
+    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
+    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if(document.hidden){lastHiddenAt=Date.now();refreshSonar();}else{if(wakePromise){marketWakeAt=Date.now();wakePromise.finally(()=>{lastWakeAttempt=0;void wakeMarket();});}else{void wakeMarket();}} });
+    window.addEventListener('pageshow', event=>{if(event.persisted)void wakeMarket();});
+    window.addEventListener('online', ()=>{void wakeMarket();});
+  </script>
+<!-- Candle selector 2026-09-28: per-card 15m, 4h, 3-day closed hollow candles.
+4h and 3-day bars aggregate complete hourly OHLCV in fixed UTC epoch buckets.
+Source gaps, partial buckets and open bars are omitted; insufficient history has an exact chart fallback.
+Selections survive card redraws in this session. Uses up to 1000 hourly bars, same bounded request count.
+Display interval does not alter qualification timeframes. iPhone/provider acceptance pending. -->
+<!-- Chart loading repair 2026-09-28: bounded interleaved pool/candle queue; independent 15m/hour errors;
+exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
+Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
+<!-- Owner cleanup 2026-09-28: removed All coins table and EARN panel, styles, renderer, calculations and listeners. Discovery, watchlist scanning, Dump opps, charts and wallet history retained. -->
+<!-- Owner cleanup: lower chain market banners and their repeated rendering removed; top ticker and chain discovery retained. -->
+<!-- Wallet menu cleanup: one optional Track my wallet disclosure in My buys; Rabby/Phantom are explicit tracking choices. Removed Menu wallet buttons and unused chain-switch shortcut. -->
+</body>
+</html>
