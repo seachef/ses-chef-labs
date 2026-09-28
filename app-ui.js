@@ -1,3 +1,4 @@
+// Sea Chef Labs deployment sync 2026-09-29
 async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const wait=Math.max(0,CHAIN_REQUEST_GAP_MS-(Date.now()-chainLastRequestAt));
       if(wait) await new Promise(resolve=>setTimeout(resolve,wait));
