@@ -462,7 +462,38 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
         if (row) syncResultBuy(planBox,row,getTradePlan(row.key,row.price));
       });
     }
-    const tradePlans = new Map();
+    const LAST_DESK_ROWS_KEY='seaChefLastDeskRowsV1', TRADE_PLANS_KEY='seaChefTradePlansV1', LAST_VIEW_KEY='seaChefLastViewV1';
+    function validLastDeskRow(row) {
+      if(!row||!['named','chain'].includes(row.kind)||typeof row.key!=='string'||row.key.length<1||row.key.length>180) return null;
+      const symbol=String(row.symbol||'').toUpperCase(),chain=String(row.chain||''),contract=String(row.contract||''),venue=String(row.venue||'');
+      const price=Number(row.price),change=Number(row.change),rating=Number(row.rating);
+      if(!/^[A-Z0-9._-]{1,20}$/.test(symbol)||chain.length>40||contract.length>180||venue.length>120||!Number.isFinite(price)||price<=0||!Number.isFinite(change)||change<=-100||change>1000) return null;
+      const clean={kind:row.kind,key:row.key,symbol,chain,contract,venue,price,change,state:String(row.state||'checking').slice(0,30),rating:Number.isFinite(rating)?Math.max(0,Math.min(100,rating)):0,lastOpen:true};
+      if(row.kind==='chain'&&typeof row.chart==='string'&&/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(row.chart)) clean.chart=row.chart;
+      return clean;
+    }
+    function readLastDeskRows() {
+      try {
+        const saved=JSON.parse(localStorage.getItem(LAST_DESK_ROWS_KEY)||'null');
+        if(!saved||saved.version!==1||!Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||Date.now()-saved.savedAt>7*86400000||!Array.isArray(saved.rows)) return new Map();
+        return new Map(saved.rows.map(validLastDeskRow).filter(Boolean).slice(0,100).map(row=>[row.key,row]));
+      } catch(_) { return new Map(); }
+    }
+    function persistLastDeskRows(rows) {
+      try { localStorage.setItem(LAST_DESK_ROWS_KEY,JSON.stringify({version:1,savedAt:Date.now(),rows:[...rows].slice(0,100)})); } catch(_) {}
+    }
+    function readTradePlans() {
+      try {
+        const saved=JSON.parse(localStorage.getItem(TRADE_PLANS_KEY)||'[]');
+        if(!Array.isArray(saved)) return new Map();
+        return new Map(saved.filter(item=>Array.isArray(item)&&typeof item[0]==='string'&&item[0].length<=180&&item[1]&&typeof item[1]==='object').slice(0,100));
+      } catch(_) { return new Map(); }
+    }
+    function persistTradePlans() {
+      try { localStorage.setItem(TRADE_PLANS_KEY,JSON.stringify([...tradePlans].slice(-100))); } catch(_) {}
+    }
+    let lastDeskRows=readLastDeskRows();
+    const tradePlans = readTradePlans();
     let visibleTradeRows = new Map();
     function planNumber(value) {
       if (typeof value !== 'number' && typeof value !== 'string') return null;
@@ -786,6 +817,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
         if (!Number.isFinite(Number(event.target.value))) return;
         plan.entryPosition = String(Math.min(100,entryPriceFromIndex(plan,event.target.value)/plan.anchor*100));
       } else plan[field] = event.target.value;
+      persistTradePlans();
       redrawTradePlan(box,row,plan);
       if (field === 'budget' || field === 'multiple') syncStepControl(box,field,false);
     }
@@ -823,8 +855,10 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       updateDumpEntryState(qualifyingRows,publicDataReady,now);
       const merged=new Map(qualifyingRows.map(row=>[row.key,row]));
       pinned.forEach(row=>merged.set(row.key,row));
+      if(!publicDataReady) lastDeskRows.forEach((row,key)=>{if(!merged.has(key))merged.set(key,row);});
       const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))&&(!currentSecurity(row)?.critical||watchedDumpRows.has(row.key))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
+      if(publicDataReady){lastDeskRows=new Map(qualified.map(row=>[row.key,{...row,lastOpen:false}]));persistLastDeskRows(lastDeskRows.values());}
       refreshMarketPulse();
       renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
@@ -891,10 +925,10 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
         $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices - feed ${localClock(feedTime)} - highest rating first`;
     }
     let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
-    function load() {
+    function load(force=false) {
       if(document.hidden)return Promise.resolve('paused');
       if(feedPromise) return feedPromise;
-      if(Date.now()<feedRetryAt) return Promise.resolve('cooldown');
+      if(!force&&Date.now()<feedRetryAt) return Promise.resolve('cooldown');
       feedPromise=performLoad().finally(()=>{feedPromise=null;});
       return feedPromise;
     }
@@ -947,7 +981,12 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const status=$('refreshStatus');
       if(Date.now()-manualRefreshAt<15000){status.textContent='Please wait a few seconds between refreshes';return;}
       manualRefreshAt=Date.now();manualRefreshing=true;
-      try {await wakeMarket();} finally {manualRefreshing=false;}
+      try {
+        status.textContent='Refreshing prices only | your desk stays in place';
+        feedRetryAt=0;
+        await load(true);
+        status.textContent='Prices refreshed | other checks update only when opened';
+      } finally {manualRefreshing=false;}
     }
     function installPullRefresh() {
       let start=null,distance=0,armed=false;
@@ -988,7 +1027,8 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     });
     $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
-    restoreMarketSnapshot();
+    const restoredLastDesk=restoreMarketSnapshot();
+    if(restoredLastDesk) $('refreshStatus').textContent='Last open restored | tap Sonar or pull down to refresh prices';
     
     installPullRefresh();
     $('buySetupRows').addEventListener('toggle',event=>{
@@ -1051,6 +1091,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const plan = getTradePlan(row.key,sample);
       plan.anchor = sample;
       plan.entryPosition = '100';
+      persistTradePlans();
       redrawTradePlan(box,row,plan);
     });
 
@@ -1072,14 +1113,30 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     });
     savePumpDumpExclusions();
     renderWalletLedger();
-    // Fast phone start: load the main price board only. Full chain discovery starts
-    // when Craig taps Sea Chef Sonar or pulls down to refresh.
-    load();
-    setInterval(load, 60000);
+    function saveLastView() {
+      try {
+        const open=[...document.querySelectorAll('details[open]')].map(node=>node.id||node.dataset.planKey||node.dataset.evidenceKey).filter(value=>typeof value==='string'&&value.length<=180).slice(0,100);
+        localStorage.setItem(LAST_VIEW_KEY,JSON.stringify({version:1,scrollY:Math.max(0,Math.round(window.scrollY)),tickerPaused:$('tickerShell').classList.contains('paused'),open}));
+      } catch(_) {}
+    }
+    function restoreLastView() {
+      try {
+        const saved=JSON.parse(localStorage.getItem(LAST_VIEW_KEY)||'null');if(!saved||saved.version!==1)return;
+        if(saved.tickerPaused===false&&$('tickerShell').classList.contains('paused'))toggleTickerPause();
+        const wanted=new Set(Array.isArray(saved.open)?saved.open:[]);
+        document.querySelectorAll('details').forEach(node=>{const key=node.id||node.dataset.planKey||node.dataset.evidenceKey;if(key&&wanted.has(key))node.open=true;});
+        if(Number.isFinite(saved.scrollY))requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,saved.scrollY),behavior:'instant'}));
+      } catch(_) {}
+    }
+    restoreLastView();
+    // Reopen exactly where Craig left off. No automatic network request or timed full refresh.
+    if(!restoredLastDesk) $('refreshStatus').textContent='No saved desk yet | tap Sonar or pull down for prices';
     setInterval(refreshQualificationGauges, 15000);
     setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
-    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
-    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if(document.hidden){lastHiddenAt=Date.now();refreshSonar();}else{if(wakePromise){marketWakeAt=Date.now();wakePromise.finally(()=>{lastWakeAttempt=0;void wakeMarket();});}else{void wakeMarket();}} });
-    window.addEventListener('pageshow', event=>{if(event.persisted)void wakeMarket();});
-    window.addEventListener('online', ()=>{void wakeMarket();});
+    document.addEventListener('visibilitychange', () => {
+      document.body.classList.toggle('gauge-motion-paused',document.hidden);
+      if(document.hidden){lastHiddenAt=Date.now();saveLastView();refreshSonar();}
+      else refreshSonar();
+    });
+    window.addEventListener('pagehide',saveLastView);
   
