@@ -903,29 +903,40 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       return `https://dexscreener.com/${item.chain}/${item.addr}`;
     }
 
+    function openQualifiedTicker(event,key) {
+      event.stopPropagation();
+      const row=visibleTradeRows.get(key);
+      if(!row)return;
+      const shell=$('tickerShell');
+      if(!shell.classList.contains('paused')) {
+        toggleTickerPause();
+        $('tickerStatus').textContent='Banner paused - tap a qualified coin again to open its verified chart';
+        return;
+      }
+      if(row.kind==='named')return openCoinWindow(row.key);
+      const url=String(row.chart||'');
+      if(!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url))return alert('Verified English chart route unavailable. Nothing was opened.');
+      window.open(url,'_blank','noopener,noreferrer');
+    }
     function renderTickerPrices() {
-        const sortedMarket = market.slice().sort((a, b) => {
-          const ratingDifference = screeningRating(b) - screeningRating(a);
-          if (ratingDifference) return ratingDifference;
-          const av = finiteChange(a.price_change_percentage_24h);
-          const bv = finiteChange(b.price_change_percentage_24h);
-          if (av === null && bv === null) return a.symbol.localeCompare(b.symbol);
-          if (av === null) return 1;
-          if (bv === null) return -1;
-          return av - bv;
-        });
-        const paused=$('tickerShell').classList.contains('paused');
-        const tickerRows=paused?sortedMarket.slice(0,12):sortedMarket;
-        const tickerHtml = tickerRows.map((m, index) => {
-          const change = finiteChange(m.price_change_percentage_24h) ?? 0;
-          const signal = signalForChange(change);
-          const direction = change > 0 ? 'positive' : (change < 0 ? 'negative' : 'flat');
-          return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" onclick="openTickerCoin(event,'${m.id}')" aria-label="${escapeHTML(String(m.symbol || '').toUpperCase())}: ${money(m.current_price)}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)} percent. Open verified route when banner is paused."><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span></button>`;
-        }).join('');
-        $('ticker').innerHTML = paused ? tickerHtml : tickerHtml + tickerHtml;
-        const feedTime = newestFeedTime(market);
-        const freshCount = market.filter(item => freshMarketItem(item)).length;
-        $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices - feed ${localClock(feedTime)} - highest rating first`;
+      const qualified=[...visibleTradeRows.values()]
+        .filter(row=>snapshotBucket(row)==='qualified')
+        .sort(compareDeskRows);
+      const paused=$('tickerShell').classList.contains('paused');
+      const tickerRows=paused?qualified.slice(0,12):qualified;
+      if(!tickerRows.length) {
+        $('ticker').innerHTML='<span class="item"><b>NO QUALIFYING COINS RIGHT NOW</b></span>';
+        $('tickerStatus').textContent='0 qualified - tap Sonar or pull down when you want fresh data';
+        return;
+      }
+      const tickerHtml=tickerRows.map((row,index)=>{
+        const change=finiteChange(row.change)??0;
+        const signal=signalForChange(change);
+        const direction=change>0?'positive':(change<0?'negative':'flat');
+        return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" data-qualified-ticker-key="${escapeHTML(row.key)}" onclick="openQualifiedTicker(event,this.dataset.qualifiedTickerKey)" aria-label="${escapeHTML(row.symbol)}: ${money(row.price)}, 24 hour change ${change.toFixed(2)} percent. Qualified recovery evidence."><b>${escapeHTML(row.symbol)}</b> <span class="price">${money(row.price)}</span> <span class="${signal}">${change>=0?'+':''}${change.toFixed(2)}%</span></button>`;
+      }).join('');
+      $('ticker').innerHTML=paused?tickerHtml:tickerHtml+tickerHtml;
+      $('tickerStatus').textContent=`${qualified.length} qualified - saved desk only; refresh when you choose`;
     }
     let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
     function load(force=false) {
@@ -961,11 +972,9 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
           resetLiveSession();
         }
         recordPriceSamples();
-        renderTickerPrices();
         render();
-        
-        
         buildBuySetups();
+        renderTickerPrices();
         const fresh=market.some(m=>freshMarketItem(m));
         if(fresh)sonarFresh('watchlist',['tickerShell']);
         return fresh?'updated':'stale';
@@ -1040,6 +1049,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
     const restoredLastDesk=restoreMarketSnapshot();
+    if(market.length) renderTickerPrices();
     if(restoredLastDesk) $('refreshStatus').textContent='Last open restored | tap Sonar or pull down to refresh prices';
     
     installPullRefresh();
