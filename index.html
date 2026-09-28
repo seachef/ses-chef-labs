@@ -1004,6 +1004,24 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       const uncounted=rows.length-counts.failed-counts.qualified-counts.static;
       $('pulseCoverage').textContent=rows.length+' coins in your windows'+(uncounted?' | '+uncounted+' not counted yet':'');
     }
+    function renderDailyPick() {
+      const title=$('dailyPickTitle'),summary=document.querySelector('#tradeOfTheDay .daily-empty');
+      const entry=$('dailyEntry'),target=$('dailyTarget'),invalidation=$('dailyInvalidation');
+      if(!title||!summary||!entry||!target||!invalidation)return;
+      const row=[...visibleTradeRows.values()].filter(item=>snapshotBucket(item)==='qualified').sort(compareDeskRows)[0];
+      if(!row) {
+        title.textContent='Pick of the Day';summary.textContent='No qualified pick';
+        entry.textContent=target.textContent=invalidation.textContent='—';
+        return;
+      }
+      const plan=getTradePlan(row.key,row.price),model=tradeMath(row.price,plan);
+      const buy=Number.isFinite(model.entry)&&model.entry>0?model.entry:row.price;
+      title.textContent=row.symbol+' · '+row.chain;
+      summary.textContent='24H '+row.change.toFixed(2)+'%';
+      entry.textContent=usdPrice(buy);
+      target.textContent=model.multiple>1?usdPrice(model.exit):'Set in plan';
+      invalidation.textContent=usdPrice(buy*.9);
+    }
     function compactState(row,now=Date.now()) {
       const q=qualificationState(row,now);
       const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES',evidence:'WATCH | CHECKS NEEDED',inactive:'WAIT | QUIET MARKET',recovery:'WATCH | RECOVERY SEEN',risk:'AVOID | REPORTED RESTRICTION',excluded:'EXCLUDED'};
@@ -2545,6 +2563,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
       if(publicDataReady){lastDeskRows=new Map(qualified.map(row=>[row.key,{...row,lastOpen:false}]));persistLastDeskRows(lastDeskRows.values());}
       refreshMarketPulse();
+      renderDailyPick();
       renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openEvidence=new Set(Array.from($('buySetupRows').querySelectorAll('details.market-evidence[open]')).map(d=>d.dataset.evidenceKey));
