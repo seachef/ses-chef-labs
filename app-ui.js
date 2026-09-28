@@ -1152,7 +1152,10 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     }
     restoreLastView();
     // Reopen exactly where Craig left off. No automatic network request or timed full refresh.
-    if(!restoredLastDesk) $('refreshStatus').textContent='No saved desk yet | tap Sonar or pull down for prices';
+    if(!restoredLastDesk) {
+      $('refreshStatus').textContent='First opening | loading one lightweight price update';
+      setTimeout(()=>load(true),0);
+    }
     setInterval(refreshQualificationGauges, 15000);
     setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
     document.addEventListener('visibilitychange', () => {
