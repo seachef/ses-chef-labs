@@ -472,17 +472,17 @@
 
     <section class="section wallet-ledger" id="walletLedger">
       <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
+      <button type="button" class="btn" id="trackWalletButton" aria-expanded="false" aria-controls="trackWalletChoices" onclick="toggleWalletTracking()">Track my wallet</button>
+      <div id="trackWalletChoices" hidden>
+        <p class="trade-note">Optional: connect to help detect purchases you start from this desk. This does not import every wallet trade or place an order.</p>
+        <div class="actions"><button type="button" class="btn" onclick="connectRabby()">Rabby</button><button type="button" class="btn purple" onclick="connectPhantom()">Phantom</button></div>
+      </div>
       <div class="wallet-ledger-grid" id="pendingBuys"></div>
       <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
     </section>
 
 
-    <details class="desk-menu" id="deskMenu"><summary>Menu  |  wallets &amp; settings</summary>
-      <div class="actions">        <button class="btn" onclick="connectRabby()">Rabby Wallet</button>
-        <button class="btn purple" onclick="connectPhantom()">Phantom Wallet</button>
-        <button class="btn robinhood" onclick="connectRobinhoodChain()">Robinhood Chain Wallet</button>
-        <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
-      </div>
+    <details class="desk-menu" id="deskMenu"><summary>Menu  |  settings</summary>
       <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
       <details class="coin-plan"><summary>Morning research | 28 September 2026</summary>
         <p class="trade-note">Research rules, not frozen prices or a list of approved buys. Public market figures load when this page is open. The separate morning brief does not automatically import here.</p>
@@ -537,6 +537,14 @@
       announcedWallets.push(detail);
     });
     window.dispatchEvent(new Event('eip6963:requestProvider'));
+    function toggleWalletTracking() {
+      const choices=$('trackWalletChoices'),button=$('trackWalletButton');
+      choices.hidden=!choices.hidden;button.setAttribute('aria-expanded',String(!choices.hidden));
+    }
+    function closeWalletTracking() {
+      $('trackWalletChoices').hidden=true;$('trackWalletButton').setAttribute('aria-expanded','false');
+      $('trackWalletButton').focus({preventScroll:true});
+    }
     async function connectRabby() {
       window.dispatchEvent(new Event('eip6963:requestProvider'));
       const announced=announcedWallets.find(item=>item.info?.rdns==='io.rabby' || item.provider?.isRabby);
@@ -549,7 +557,7 @@
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         walletSession.evmProvider=provider;
         walletSession.evm=String(accounts[0] || '').toLowerCase();
-        renderWalletLedger();
+        renderWalletLedger();closeWalletTracking();
         alert('Rabby Connected: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38) + '. Public activity detection is ready.');
       } catch (e) { alert('Connection failed or rejected.'); }
     }
@@ -566,30 +574,11 @@
       try {
         const resp = await window.solana.connect();
         walletSession.solana=resp.publicKey.toString();
-        renderWalletLedger();
+        renderWalletLedger();closeWalletTracking();
         alert('Phantom Connected: ' + walletSession.solana.substring(0, 6) + '...' + walletSession.solana.slice(-4) + '. Public activity detection is ready.');
       } catch (e) { alert('Connection failed or rejected.'); }
     }
-    async function connectRobinhoodChain() {
-      const network = {
-        chainId:'0x1237',
-        chainName:'Robinhood Chain',
-        nativeCurrency:{name:'Ether', symbol:'ETH', decimals:18},
-        rpcUrls:['https://rpc.mainnet.chain.robinhood.com/'],
-        blockExplorerUrls:['https://robinhoodchain.blockscout.com/']
-      };
-      if (!window.ethereum || typeof window.ethereum.request !== 'function') {
-        alert('Robinhood Chain needs an EVM wallet browser. Open Sea Chef Labs from Robinhood Wallet\'s Web3 browser, then press this button again. Nothing was connected and the App Store was not opened.');
-        return;
-      }
-      try {
-        await window.ethereum.request({method:'wallet_addEthereumChain', params:[network]});
-        await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:network.chainId}]});
-        alert('Robinhood Chain selected. Chain ID 4663 - ETH gas. No trade or approval was made.');
-      } catch (e) {
-        alert('Robinhood Chain was not added or selected. Nothing was approved or traded.');
-      }
-    }
+
 
     // Local, public-wallet activity tracking. No signing, keys or approvals.
     function readLocalArray(name) { try { const value=JSON.parse(localStorage.getItem(name)||'[]'); return Array.isArray(value)?value:[]; } catch (_) { return []; } }
@@ -2764,38 +2753,4 @@
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      const url = button.dataset.opportunityUrl;
-      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
-      window.open(url,'_blank','noopener,noreferrer');
-    },true);
-    $('walletLedger').addEventListener('click',event=>{
-      const add=event.target.closest('[data-add-position]'); if(add)return addDetectedPosition(add.dataset.addPosition);
-      const dismiss=event.target.closest('[data-dismiss-wallet-record]'); if(dismiss)return dismissWalletRecord(dismiss.dataset.dismissWalletRecord);
-      const sold=event.target.closest('[data-mark-sold]'); if(sold&&confirm('Move this position into History as sold?'))return markPositionSold(sold.dataset.markSold);
-    });
-    savePumpDumpExclusions();
-    renderWalletLedger();
-    load();
-    setInterval(load, 60000);
-    setInterval(refreshQualificationGauges, 15000);
-    setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
-    setInterval(refreshSecuritySweep,120000);
-    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
-    refreshChainPools();
-    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
-    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if(document.hidden){lastHiddenAt=Date.now();refreshSonar();}else{if(wakePromise){marketWakeAt=Date.now();wakePromise.finally(()=>{lastWakeAttempt=0;void wakeMarket();});}else{void wakeMarket();}} });
-    window.addEventListener('pageshow', event=>{if(event.persisted)void wakeMarket();});
-    window.addEventListener('online', ()=>{void wakeMarket();});
-  </script>
-<!-- Candle selector 2026-09-28: per-card 15m, 4h, 3-day closed hollow candles.
-4h and 3-day bars aggregate complete hourly OHLCV in fixed UTC epoch buckets.
-Source gaps, partial buckets and open bars are omitted; insufficient history has an exact chart fallback.
-Selections survive card redraws in this session. Uses up to 1000 hourly bars, same bounded request count.
-Display interval does not alter qualification timeframes. iPhone/provider acceptance pending. -->
-<!-- Chart loading repair 2026-09-28: bounded interleaved pool/candle queue; independent 15m/hour errors;
-exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
-Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
-<!-- Owner cleanup 2026-09-28: removed All coins table and EARN panel, styles, renderer, calculations and listeners. Discovery, watchlist scanning, Dump opps, charts and wallet history retained. -->
-<!-- Owner cleanup: lower chain market banners and their repeated rendering removed; top ticker and chain discovery retained. -->
-</body>
-</html>
+      const 
