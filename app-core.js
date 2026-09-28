@@ -261,7 +261,7 @@
       } catch (_) { return new Set(); }
     }
     let pumpDumpExclusions=readPumpDumpExclusions();
-    const MARKET_SNAPSHOT_KEY='seaChefLastMarketSnapshotV1', MARKET_SNAPSHOT_MAX_AGE=6*60*60*1000;
+    const MARKET_SNAPSHOT_KEY='seaChefLastMarketSnapshotV1', MARKET_SNAPSHOT_MAX_AGE=7*24*60*60*1000;
     let market = [], marketReceivedAt = 0, active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
     const $ = id => document.getElementById(id);
     const money = p => displayCoinPrice(p);
@@ -431,7 +431,7 @@
         if(!saved||saved.version!==1||!Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||Date.now()-saved.savedAt>MARKET_SNAPSHOT_MAX_AGE)return false;
         const rows=validMarketRows(saved.rows,true);if(!rows.length)return false;
         market=rows;marketReceivedAt=0;renderTickerPrices();render();buildBuySetups();
-        $('tickerStatus').textContent=`Last saved prices ${localClock(saved.savedAt)} - refreshing now`;
+        $('tickerStatus').textContent=`Last open ${localClock(saved.savedAt)} - tap Sea Chef Sonar when you want fresh prices`;
         return true;
       } catch(_) {return false;}
     }
