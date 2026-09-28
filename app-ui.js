@@ -862,7 +862,6 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       if(publicDataReady){lastDeskRows=new Map(qualified.map(row=>[row.key,{...row,lastOpen:false}]));persistLastDeskRows(lastDeskRows.values());}
       refreshMarketPulse();
       renderDumpGlance();
-      renderTickerPrices();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
       const openEvidence=new Set(Array.from($('buySetupRows').querySelectorAll('details.market-evidence[open]')).map(d=>d.dataset.evidenceKey));
       const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details[data-manual-costs][open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
@@ -904,34 +903,29 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       return `https://dexscreener.com/${item.chain}/${item.addr}`;
     }
 
-    function openQualifiedTicker(event,key) {
-      event.stopPropagation();
-      const shell=$('tickerShell');
-      if(!shell.classList.contains('paused')){
-        toggleTickerPause();
-        $('tickerStatus').textContent='Banner paused - press the coin again to open its Dump opp';
-        return;
-      }
-      openGlanceCard(key);
-    }
     function renderTickerPrices() {
-        const now=Date.now();
-        const tickerRows=[...visibleTradeRows.values()]
-          .filter(row=>snapshotBucket(row,now)==='qualified')
-          .sort(compareDeskRows);
-        if(!tickerRows.length){
-          $('ticker').innerHTML='<span class="item flat"><b>NO QUALIFYING COINS RIGHT NOW</b></span>';
-          $('tickerStatus').textContent='0 qualifying | tap Sonar when you want fresh prices';
-          return;
-        }
+        const sortedMarket = market.slice().sort((a, b) => {
+          const ratingDifference = screeningRating(b) - screeningRating(a);
+          if (ratingDifference) return ratingDifference;
+          const av = finiteChange(a.price_change_percentage_24h);
+          const bv = finiteChange(b.price_change_percentage_24h);
+          if (av === null && bv === null) return a.symbol.localeCompare(b.symbol);
+          if (av === null) return 1;
+          if (bv === null) return -1;
+          return av - bv;
+        });
         const paused=$('tickerShell').classList.contains('paused');
-        const shown=paused?tickerRows.slice(0,12):tickerRows;
-        const tickerHtml=shown.map((row,index)=>{
-          const change=Number(row.change),signal=signalForChange(change);
-          return `<button type="button" class="item scanning negative" style="--scan-order:${index}" onclick="openQualifiedTicker(event,'${escapeHTML(row.key)}')" aria-label="${escapeHTML(row.symbol)}: ${money(row.price)}, down ${Math.abs(change).toFixed(2)} percent. Open its qualifying window when the banner is paused."><b>${escapeHTML(row.symbol)}</b> <span class="price">${money(row.price)}</span> <span class="${signal}">${change.toFixed(2)}%</span></button>`;
+        const tickerRows=paused?sortedMarket.slice(0,12):sortedMarket;
+        const tickerHtml = tickerRows.map((m, index) => {
+          const change = finiteChange(m.price_change_percentage_24h) ?? 0;
+          const signal = signalForChange(change);
+          const direction = change > 0 ? 'positive' : (change < 0 ? 'negative' : 'flat');
+          return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" onclick="openTickerCoin(event,'${m.id}')" aria-label="${escapeHTML(String(m.symbol || '').toUpperCase())}: ${money(m.current_price)}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)} percent. Open verified route when banner is paused."><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span></button>`;
         }).join('');
-        $('ticker').innerHTML=paused?tickerHtml:tickerHtml+tickerHtml;
-        $('tickerStatus').textContent=`${tickerRows.length} qualifying | same coins as your Dump opps snapshot`;
+        $('ticker').innerHTML = paused ? tickerHtml : tickerHtml + tickerHtml;
+        const feedTime = newestFeedTime(market);
+        const freshCount = market.filter(item => freshMarketItem(item)).length;
+        $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices - feed ${localClock(feedTime)} - highest rating first`;
     }
     let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
     function load(force=false) {
