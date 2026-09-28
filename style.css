@@ -1,5 +1,4 @@
-
-    * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
+ * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
     body { margin:0; padding:16px; background:#0f172a; color:#f8fafc; }
     .container { max-width:1280px; margin:auto; }
     header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:1px solid #334155; padding-bottom:15px; margin-bottom:20px; }
@@ -407,4 +406,11 @@
     .candle-intervals .btn {min-height:44px;background:#292232;color:#cdc2da;}
     .candle-intervals .btn[aria-pressed="true"] {background:#6b4fa1;color:#fff;box-shadow:0 0 0 1px #ac94d0;}
     .candle-actions {display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  
+    /* Fast iPhone paint: one GPU ticker motion, no per-coin pulse storm. */
+    .track {will-change:transform;transform:translate3d(0,0,0);}
+    #scl-buy-setups,.wallet-ledger,.desk-menu {content-visibility:auto;contain-intrinsic-size:auto 760px;}
+    @media (max-width:700px) {
+      .item.scanning {animation:none!important;}
+      .opportunity-card::after {animation:none!important;opacity:0!important;}
+      .section,.daily-spotlight,.market-pulse,.dump-glance,.wallet-ledger {box-shadow:none;}
+    }
