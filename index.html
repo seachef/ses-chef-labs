@@ -383,9 +383,9 @@
     .daily-spotlight .daily-empty { margin:20px 0 8px; color:#eee7f4; font-size:18px; font-weight:600; }
     .daily-spotlight .daily-note { margin:0; max-width:54ch; color:#bcb2c7; font-size:13px; line-height:1.5; }
     .daily-preview { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:18px; }
-    .daily-preview div { padding:12px; border-radius:12px; border:1px solid #38303f; background:rgba(0,0,0,.18); }
+    .daily-preview div { min-width:0; padding:14px 12px; border-radius:18px; border:1px solid #38303f; background:rgba(0,0,0,.18); }
     .daily-preview dt { color:#bcafca; font-size:12px; }
-    .daily-preview dd { margin:7px 0 0; color:#dfc9f6; font-size:18px; }
+    .daily-preview dd { margin:7px 0 0; color:#dfc9f6; font-size:16px; line-height:1.4; overflow-wrap:anywhere; }
     @media(max-width:420px) { .daily-spotlight { padding:17px; } .daily-spotlight h2 { font-size:22px; } .daily-preview div { padding:10px; } }
 
     /* Decorative glow only: never represents research activity or qualification. */
@@ -421,9 +421,9 @@
       <p class="daily-empty">No pick loaded</p>
       <p class="daily-note">One researched coin, with an entry and two exit levels.</p>
       <dl class="daily-preview" aria-label="No researched trade levels loaded">
-        <div><dt>Buy near</dt><dd id="dailyEntry" aria-label="Entry not loaded">â</dd></div>
-        <div><dt>Take profit at</dt><dd id="dailyTarget" aria-label="Profit target not loaded">â</dd></div>
-        <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">â</dd></div>
+        <div><dt>Buy near</dt><dd id="dailyEntry" aria-label="Entry not loaded">Pending</dd></div>
+        <div><dt>Take profit at</dt><dd id="dailyTarget" aria-label="Profit target not loaded">Pending</dd></div>
+        <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">Pending</dd></div>
       </dl>
       <details class="coin-plan"><summary>Why this pick?</summary><p class="daily-note">Your morning brief arrives in ChatGPT. It does not load into this window automatically yet. No pick loaded is different from a completed search finding no suitable trade.</p></details>
     </section>
