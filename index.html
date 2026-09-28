@@ -447,7 +447,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
     <div class="sonar-dock">
-      <button type="button" class="sonar-control" id="sonarWake" onclick="refreshDesk()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
+      <button type="button" class="sonar-control" id="sonarWake" onclick="wakeMarket()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
     </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
@@ -2839,11 +2839,9 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       } catch(_) {}
     }
     restoreLastView();
-    // Reopen exactly where Craig left off. No automatic network request or timed full refresh.
-    if(!restoredLastDesk) {
-      $('refreshStatus').textContent='First opening | loading one lightweight price update';
-      setTimeout(()=>load(true),0);
-    }
+    // Reopen exactly where Craig left off, then refresh without clearing the saved desk.
+    $('refreshStatus').textContent=restoredLastDesk?'Last open restored | refreshing in background':'First opening | refreshing in background';
+    setTimeout(()=>{void wakeMarket();},0);
     setInterval(refreshQualificationGauges, 15000);
     setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
     document.addEventListener('visibilitychange', () => {
