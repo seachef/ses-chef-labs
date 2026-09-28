@@ -37,8 +37,8 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Auto-refresh on | phone: pull down | laptop: Ctrl+R</span></div>
 
     </div>
-    <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
-      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
+    <div class="ticker paused" id="tickerShell" role="button" tabindex="0" aria-pressed="true" aria-label="Start moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
+      <div class="ticker-status"><strong id="tickerControlLabel">BANNER PAUSED  |  TAP TO START</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
     <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
