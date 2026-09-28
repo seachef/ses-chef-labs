@@ -1,18 +1,4 @@
-<!doctype html>
-<!-- SEA CHEF LABS SONAR UPDATE — 28 SEPTEMBER 2026
-My Market counts the currently visible Dump opps only: Failed / Qualifying / Static.
-Qualifying = measured closed-candle recovery, NOT full approval or a buy instruction.
-NEW is a separate first-appearance badge lasting 24 hours. Watched rows may have both badges.
-Candles: up to 48 closed 15-minute OHLCV candles for the exact recorded pool; no invented bars.
-If data is missing, old or mismatched, only the existing safe chart link is offered.
-Named watchlist coin links are coin pages, not a claim of an exact executable pool.
-Sonar reflects real requests; section outlines acknowledge validated data arrival, not qualification.
-Wake refresh preserves owner state and rate limits; previous positive data must be refreshed.
-Pick of the Day automatic import remains unconnected. It is an honest empty slot until integrated.
-Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded trading session.
--->
-
-<html lang="en-AU" translate="no">
+html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -435,6 +421,15 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     @media(prefers-reduced-motion:reduce) { .sonar-busy .sonar-ring::after {animation:none;} }
     .gauge-motion-paused .sonar-ring::after {animation-play-state:paused;}
 
+    .chart-dialog {width:min(980px,96vw);max-height:94dvh;padding:14px;background:#100d18;color:#f3eefb;border:1px solid #635078;border-radius:18px;}
+    .chart-dialog::backdrop {background:rgba(0,0,0,.8);}
+    .chart-dialog header {margin:0 0 8px;padding:0 0 8px;}
+    .chart-dialog iframe {display:block;width:100%;height:min(66dvh,580px);min-height:300px;border:0;border-radius:12px;background:#100d18;}
+    .chart-dialog .trade-note {margin:8px 0;}
+    .candle-intervals {margin:8px 0;}
+    .candle-intervals .btn {min-height:44px;background:#292232;color:#cdc2da;}
+    .candle-intervals .btn[aria-pressed="true"] {background:#6b4fa1;color:#fff;box-shadow:0 0 0 1px #ac94d0;}
+    .candle-actions {display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   </style>
 </head>
 <body class="notranslate">
@@ -581,6 +576,12 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     </details><!-- end All coins -->
   </div>
 
+  <dialog class="chart-dialog" id="poolChartDialog" aria-labelledby="poolChartTitle">
+    <header><strong id="poolChartTitle">Pool chart</strong><button type="button" class="btn" onclick="closePoolChart()">Close</button></header>
+    <p class="trade-note">GeckoTerminal chart. Choose the candle interval inside the chart. Its display does not complete our buy checks.</p>
+    <iframe id="poolChartFrame" title="Exact pool chart from GeckoTerminal" referrerpolicy="no-referrer" allow="fullscreen" allowfullscreen></iframe>
+    <p class="trade-note">If the chart stays blank, <a id="poolChartExternal" target="_blank" rel="noopener noreferrer">open this same pool directly</a>.</p>
+  </dialog>
   <script>
     // --- WALLET CONNECTIONS ---
     const walletSession={evm:null,evmProvider:null,solana:null};
@@ -1082,25 +1083,72 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       if(row.kind==='named' && checkerCoins.some(c=>c.cg===row.key)) return {url:'https://www.coingecko.com/en/coins/'+encodeURIComponent(row.key),label:'Open coin chart'};
       return null;
     }
-    function chartCandles(row,now=Date.now()) {
+    const candleIntervals=Object.freeze({'15m':{step:900000,label:'15-minute'},'4h':{step:14400000,label:'4-hour'},'3d':{step:259200000,label:'3-day'}});
+    const selectedCandleIntervals=new Map();
+    function validChartBars(rows,step,now) {
+      return Array.isArray(rows) && rows.length<=1000 && rows.every((c,i)=>c&&[c.at,c.open,c.high,c.low,c.close,c.volume].every(Number.isFinite)&&Number.isSafeInteger(c.at)&&c.at>0&&c.at%step===0&&c.at+step<=now&&c.volume>=0&&Math.min(c.open,c.high,c.low,c.close)>0&&c.high>=Math.max(c.open,c.close,c.low)&&c.low<=Math.min(c.open,c.close,c.high)&&(!i||c.at>rows[i-1].at));
+    }
+    function aggregateChartHours(hours,step,now=Date.now()) {
+      if(![14400000,259200000].includes(step)||!validChartBars(hours,3600000,now))return [];
+      const groups=new Map(),count=step/3600000,result=[];
+      // Fixed UTC buckets anchored to 1970-01-01. Missing hours never become invented candles.
+      for(const c of hours){const at=Math.floor(c.at/step)*step;if(!groups.has(at))groups.set(at,[]);groups.get(at).push(c);}
+      for(const [at,bars] of groups){
+        if(at+step>now||bars.length!==count||!bars.every((c,i)=>c.at===at+i*3600000))continue;
+        const volume=bars.reduce((n,c)=>n+c.volume,0);if(!Number.isFinite(volume))continue;
+        result.push({at,open:bars[0].open,high:Math.max(...bars.map(c=>c.high)),low:Math.min(...bars.map(c=>c.low)),close:bars[bars.length-1].close,volume});
+      }
+      return result;
+    }
+    function chartCandles(row,now=Date.now(),interval='15m') {
+      const settings=candleIntervals[interval];if(!settings)return null;
       const match=evidencePool(row);if(!match) return null;
       const e=poolCandleEvidence.get(candleEvidenceKey(match.lane,match.pool));
-      if(!e || e.observedAt<marketWakeAt || now<e.observedAt || now-e.observedAt>20*60000 || !Array.isArray(e.quarter))return null;
-      const rows=e.quarter.slice(-48);
-      if(rows.length<2 || !rows.every((c,i)=>[c.at,c.open,c.high,c.low,c.close,c.volume].every(Number.isFinite)&&c.at>0&&c.at%900000===0&&c.at+900000<=now&&c.volume>=0&&Math.min(c.open,c.high,c.low,c.close)>0&&c.high>=Math.max(c.open,c.close,c.low)&&c.low<=Math.min(c.open,c.close,c.high)&&(!i||c.at>rows[i-1].at)))return null;
-      if(now-(rows[rows.length-1].at+900000)>900000)return null;
-      return {rows,observedAt:e.observedAt,match};
+      if(!e || e.observedAt<marketWakeAt || now<e.observedAt || now-e.observedAt>20*60000)return null;
+      const source=interval==='15m'?e.quarter:aggregateChartHours(e.hour,settings.step,now);
+      if(!validChartBars(source,settings.step,now))return null;
+      const rows=source.slice(-48);
+      if(rows.length<2||now-(rows[rows.length-1].at+settings.step)>settings.step)return null;
+      return {rows,observedAt:e.observedAt,match,step:settings.step,interval,label:settings.label};
+    }
+    function chartIntervalControls(row,interval) {
+      return `<div class="candle-actions candle-intervals" role="group" aria-label="${escapeHTML(row.symbol)} candle length">${Object.keys(candleIntervals).map(key=>`<button type="button" class="btn" data-candle-key="${escapeHTML(row.key)}" data-candle-interval="${key}" aria-pressed="${key===interval}">${key==='3d'?'3 days':key}</button>`).join('')}</div>`;
+    }
+    // Official embed route: https://about.geckoterminal.com/embed-charts
+    // One on-demand frame, outside card rerenders. No iframe load event qualifies a coin.
+    function poolEmbedURL(row) {
+      const match=evidencePool(row),link=chartLink(row);
+      if(!match || !link || link.url!==match.pool.chart)return null;
+      const url=new URL(link.url);
+      url.searchParams.set('embed','1');url.searchParams.set('info','0');url.searchParams.set('swaps','0');
+      url.searchParams.set('light_chart','0');url.searchParams.set('chart_type','price');url.searchParams.set('bg_color','100d18');
+      return url.href;
+    }
+    function openPoolChart(key) {
+      const row=visibleTradeRows.get(key),url=row&&poolEmbedURL(row);
+      if(!url)return;
+      const dialog=$('poolChartDialog'),link=chartLink(row);
+      if(typeof dialog.showModal!=='function'){window.open(link.url,'_blank','noopener,noreferrer');return;}
+      $('poolChartTitle').textContent=row.symbol+' | '+row.chain+' | Pool chart';
+      $('poolChartExternal').href=link.url;
+      if($('poolChartFrame').getAttribute('src')!==url)$('poolChartFrame').src=url;
+      if(!dialog.open)dialog.showModal();
+    }
+    function closePoolChart() {
+      const dialog=$('poolChartDialog');if(dialog.open)dialog.close();
+      $('poolChartFrame').removeAttribute('src');
     }
     function sampleChartMarkup(row) {
-      const data=chartCandles(row),link=chartLink(row);
-      const action=link?`<a class="btn candle-link" href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>`:'<span class="trade-note">Exact chart link unavailable</span>';
-      if(!data)return `<div class="candle-empty">${action}</div>`;
+      const interval=selectedCandleIntervals.get(row.key)||'15m';
+      const controls=chartIntervalControls(row,interval),data=chartCandles(row,Date.now(),interval),link=chartLink(row);
+      const action=link?`<span class="candle-actions">${poolEmbedURL(row)?`<button type="button" class="btn candle-link" data-pool-chart="${escapeHTML(row.key)}">View chart</button>`:''}<a class="btn candle-link" href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a></span>`:'<span class="trade-note">Exact chart link unavailable</span>';
+      if(!data)return `${controls}<div class="candle-empty"><span class="trade-note">${candleIntervals[interval].label} candles need fresh, complete history.</span>${action}</div>`;
       const rows=data.rows,low=Math.min(...rows.map(c=>c.low)),high=Math.max(...rows.map(c=>c.high));
       const padding=Math.max((high-low)*.08,high*.0001),lo=low-padding,hi=high+padding;
       const y=v=>12+(hi-v)/(hi-lo)*100,first=rows[0].at,last=rows[rows.length-1].at;
-      const x=t=>10+(t-first)/(last-first)*296,width=Math.max(1,Math.min(7,296*900000/(last-first)*.65));
+      const x=t=>10+(t-first)/(last-first)*296,width=Math.max(1,Math.min(7,296*data.step/(last-first)*.65));
       const bodies=rows.map(c=>{const top=y(Math.max(c.open,c.close)),bottom=y(Math.min(c.open,c.close)),colour=c.close>=c.open?'#8ddbd5':'#e7a0af';return `<g stroke="${colour}" stroke-width="1.25"><line x1="${x(c.at)}" x2="${x(c.at)}" y1="${y(c.high)}" y2="${y(c.low)}"/><rect x="${x(c.at)-width/2}" y="${top}" width="${width}" height="${Math.max(.8,bottom-top)}" fill="none"/></g>`;}).join('');
-      return `<svg class="hollow-chart" viewBox="0 0 320 124" role="img" aria-label="${escapeHTML(row.symbol)}: exact pool, closed 15-minute candles in USD"><path d="M6 114H314" stroke="#39323f"/>${bodies}</svg><div class="candle-caption"><span>15m closed | USD | ${escapeHTML(localClock(first))} - ${escapeHTML(localClock(last+900000))}</span>${action}</div><div class="trade-note candle-key">Hollow candles: aqua closed higher, rose lower. Chart colours are price direction, not buy approval.</div>`;
+      return `${controls}<svg class="hollow-chart" viewBox="0 0 320 124" role="img" aria-label="${escapeHTML(row.symbol)}: exact pool, closed ${data.label} candles in USD"><path d="M6 114H314" stroke="#39323f"/>${bodies}</svg><div class="candle-caption"><span>${interval==='3d'?'3-day':interval} closed | USD | ${escapeHTML(new Date(first).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))} - ${escapeHTML(new Date(last+data.step).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</span>${action}</div><div class="trade-note candle-key">Hollow candles: aqua closed higher, rose lower. Chart colours are price direction, not buy approval.</div>`;
     }
     function compactFreshness(row) {
       let at=null;
@@ -1239,7 +1287,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
           row.change=change;
           host.querySelector('[data-card-price]').textContent=usdPrice(row.price);
           host.querySelector('[data-card-change]').textContent=change===null?'24H unavailable':'24H '+change.toFixed(2)+'%';
-          host.querySelector('[data-card-chart]').innerHTML=sampleChartMarkup(row);
           const latest=host.querySelector('[data-plan-sampled-price]');
           if(latest) latest.textContent='Sampled price '+usdPrice(row.price);
         }
@@ -1753,30 +1800,42 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         const url=`https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools/${encodeURIComponent(pool.poolAddress)}/ohlcv/${timeframe}?aggregate=${aggregate}&limit=${limit}&currency=usd&token=base&include_empty_intervals=false`;
         const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
         if(response.status===429) {const e=Error('Evidence feed rate limited');e.rateLimited=true;throw e;}
-        if(!response.ok) throw Error('Evidence feed unavailable');
+        if(!response.ok) throw Error('Candle feed HTTP '+response.status);
         const payload=await response.json();
         if(candleStarted<marketWakeAt)throw Error('Refresh required after reopening');
         return parseClosedCandles(payload,lane,pool,timeframe==='hour'?3600:900);
       } finally {clearTimeout(timer);priceCheckActivity('candles:'+lane.api,-1);}
     }
-    async function refreshPoolEvidence() {
+    async function refreshPoolEvidence(maxPools=3) {
       // Called under the existing shared refresh lock. At most six extra GETs per cycle.
-      if(document.hidden) return;
+      if(document.hidden) return 0;
       const now=Date.now();
       const queue=CHAIN_LANES.flatMap(lane=>(chainPools[lane.key]||[]).filter(pool=>pool.change24h<=-10 && pool.change24h>-50 && now>=pool.observedAt && now-pool.observedAt<=20*60000).map(pool=>({lane,pool,key:candleEvidenceKey(lane,pool)})))
         .filter(x=>now-(poolCandleAttempts.get(x.key)||0)>=CHAIN_POOL_REFRESH_MS)
-        .sort((a,b)=>(poolCandleAttempts.get(a.key)||0)-(poolCandleAttempts.get(b.key)||0)||b.pool.liquidity-a.pool.liquidity).slice(0,3);
+        .sort((a,b)=>(poolCandleAttempts.get(a.key)||0)-(poolCandleAttempts.get(b.key)||0)||b.pool.liquidity-a.pool.liquidity).slice(0,Math.min(3,Math.max(0,maxPools)));
       for(const {lane,pool,key} of queue) {
         if(document.hidden) break;
         poolCandleAttempts.set(key,Date.now());
-        try {
-          const hour=await fetchEvidenceCandles(lane,pool,'hour',1,200);
-          const quarter=await fetchEvidenceCandles(lane,pool,'minute',15,100);
-          poolCandleEvidence.set(key,{hour,quarter,observedAt:Date.now()});
-          if(hour.length&&quarter.length)sonarFresh('candles:'+lane.api,['marketSnapshot','scl-buy-setups']);
-        } catch(error) {
-          poolCandleEvidence.delete(key);
-          if(error.rateLimited) throw error;
+        // Publish short candles first; a failed age-history request must not erase a valid chart.
+        // Never carry old bars into a newly stamped evidence object.
+        const attemptStarted=Date.now();
+        const evidence={hour:[],quarter:[],observedAt:attemptStarted,errors:{}};
+        poolCandleEvidence.delete(key);
+        for(const [field,timeframe,aggregate,limit] of [['quarter','minute',15,100],['hour','hour',1,1000]]) {
+          if(document.hidden)break;
+          if(attemptStarted<marketWakeAt){poolCandleEvidence.delete(key);break;}
+          try {
+            evidence[field]=await fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit);
+            if(attemptStarted<marketWakeAt){poolCandleEvidence.delete(key);break;}
+            evidence.observedAt=attemptStarted;
+            poolCandleEvidence.set(key,evidence);
+            if(evidence[field].length)sonarFresh('candles:'+lane.api,['marketSnapshot','scl-buy-setups']);
+            refreshCompactCards();
+          } catch(error) {
+            evidence.errors[field]=String(error.message||'Candle request failed');
+            poolCandleEvidence.set(key,evidence);
+            if(error.rateLimited)throw error;
+          }
         }
         refreshCompactCards();
       }
@@ -1784,6 +1843,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       if(poolCandleAttempts.size>500) {const keep=[...poolCandleAttempts].sort((a,b)=>b[1]-a[1]).slice(0,400);poolCandleAttempts.clear();keep.forEach(([k,v])=>poolCandleAttempts.set(k,v));}
       for(const [key,value] of poolCandleEvidence) if(Date.now()-value.observedAt>60*60000) poolCandleEvidence.delete(key);
       buildBuySetups();
+      return queue.length;
     }
     function marketTakeaway(row,now=Date.now()) {
       const q=qualificationState(row,now);
@@ -1918,15 +1978,25 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       clearTimeout(chainRetryTimer);
       if(Date.now()<chainDiscoveryBackoffUntil) {chainRetryTimer=setTimeout(refreshChainPools,Math.min(2147483647,chainDiscoveryBackoffUntil-Date.now()));return;}
       chainRefreshInFlight = true;
+      let candleBudget=Date.now()>=chainEvidenceDueAt?3:0;
+      if(candleBudget)chainEvidenceDueAt=Date.now()+CHAIN_POOL_REFRESH_MS;
+      async function checkOneChart() {
+        if(!candleBudget||document.hidden||Date.now()<chainDiscoveryBackoffUntil)return;
+        try {candleBudget-=await refreshPoolEvidence(1);}
+        catch(error){if(error.rateLimited){chainDiscoveryBackoffUntil=Date.now()+60000;candleBudget=0;}}
+      }
       try {
+        // A known pool gets its chart before another full eight-chain sweep.
+        await checkOneChart();
         // One round per batch, then yield. Each chain retains its own page cursor.
-        for(let visit=0;visit<CHAIN_LANES.length&&!document.hidden;visit++) {
+        for(let visit=0;visit<CHAIN_LANES.length&&!document.hidden&&Date.now()>=chainDiscoveryBackoffUntil;visit++) {
           const lane=CHAIN_LANES[chainDiscoveryCursor++ % CHAIN_LANES.length];
           const state=discoveryState(lane);
           if(Date.now()<state.nextAt)continue;
           const page=state.nextPage;
             try {
               acceptDiscoveryPage(lane,page,await fetchChainPage(lane,page));
+              await checkOneChart();
             } catch (error) {
               console.warn(error.message);
               if(error.paused)break;
@@ -1935,10 +2005,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
               renderChainBoards();
               if(error.rateLimited) {chainDiscoveryBackoffUntil=Date.now()+Math.max(60000,Number.isFinite(error.retryMs)?error.retryMs:0);break;}
             }
-        }
-        if(!document.hidden&&Date.now()>=chainDiscoveryBackoffUntil&&Date.now()>=chainEvidenceDueAt) {
-          chainEvidenceDueAt=Date.now()+CHAIN_POOL_REFRESH_MS;
-          try {await refreshPoolEvidence();} catch(error) {if(error.rateLimited)chainDiscoveryBackoffUntil=Date.now()+60000;}
         }
       } finally {
         chainRefreshInFlight = false;
@@ -2826,6 +2892,20 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       }).join('');
     }
 
+    $('buySetupRows').addEventListener('click',event=>{
+      const intervalButton=event.target.closest('[data-candle-interval]');
+      if(intervalButton){
+        event.preventDefault();const key=intervalButton.dataset.candleKey,interval=intervalButton.dataset.candleInterval;
+        const row=visibleTradeRows.get(key),host=intervalButton.closest('[data-card-chart]');
+        if(!row||!host||!Object.hasOwn(candleIntervals,interval))return;
+        if(selectedCandleIntervals.size>=500&&!selectedCandleIntervals.has(key))selectedCandleIntervals.delete(selectedCandleIntervals.keys().next().value);
+        selectedCandleIntervals.set(key,interval);host.innerHTML=sampleChartMarkup(row);
+        host.querySelector(`[data-candle-interval="${interval}"]`)?.focus({preventScroll:true});return;
+      }
+      const button=event.target.closest('[data-pool-chart]');
+      if(button){event.preventDefault();openPoolChart(button.dataset.poolChart);}
+    });
+    $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
     renderChainBoards();
     installPullRefresh();
@@ -2927,5 +3007,13 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     window.addEventListener('pageshow', event=>{if(event.persisted)void wakeMarket();});
     window.addEventListener('online', ()=>{void wakeMarket();});
   </script>
+<!-- Candle selector 2026-09-28: per-card 15m, 4h, 3-day closed hollow candles.
+4h and 3-day bars aggregate complete hourly OHLCV in fixed UTC epoch buckets.
+Source gaps, partial buckets and open bars are omitted; insufficient history has an exact chart fallback.
+Selections survive card redraws in this session. Uses up to 1000 hourly bars, same bounded request count.
+Display interval does not alter qualification timeframes. iPhone/provider acceptance pending. -->
+<!-- Chart loading repair 2026-09-28: bounded interleaved pool/candle queue; independent 15m/hour errors;
+exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
+Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
 </body>
 </html>
