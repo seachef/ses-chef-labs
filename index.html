@@ -749,9 +749,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     const ids = checkerCoins.map(x => x.cg);
     const BLUE_CHIPS = new Set(['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX','LINK','AVAX','DOT','LTC','BCH','XMR','TON','SHIB']);
     const CHAIN_LANES = Object.freeze([
-      {key:'ethereum', api:'eth', name:'ETHEREUM', gas:'ETH', wallet:'RABBY'},
       {key:'solana', api:'solana', name:'SOLANA', gas:'SOL', wallet:'PHANTOM'},
       {key:'bnb', api:'bsc', name:'BNB CHAIN', gas:'BNB', wallet:'RABBY'},
+      {key:'ethereum', api:'eth', name:'ETHEREUM', gas:'ETH', wallet:'RABBY'},
       {key:'robinhood', api:'robinhood', name:'ROBINHOOD CHAIN', gas:'ETH', wallet:'ROBINHOOD / RABBY'},
       {key:'arbitrum', api:'arbitrum', name:'ARBITRUM', gas:'ETH', wallet:'RABBY'},
       {key:'optimism', api:'optimism', name:'OPTIMISM', gas:'ETH', wallet:'RABBY'},
@@ -763,8 +763,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     // margin while avoiding the previous multi-minute first scan.
     const CHAIN_REQUEST_GAP_MS = 2200;
     const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
-    // Public network-pool pagination is bounded by the provider, not a 25-token UI cap.
-    const CHAIN_PUBLIC_PAGES = 10;
+    // Phone-first scan: two liquid pages per chain. Deeper research does not
+    // belong in the opening path of a three-window desk.
+    const CHAIN_PUBLIC_PAGES = 2;
     const CHAIN_PAGE_SIZE = 20;
     const chainDiscovery = new Map();
     let chainDiscoveryCursor = 0, chainDiscoveryBackoffUntil = 0, chainEvidenceDueAt = 0;
