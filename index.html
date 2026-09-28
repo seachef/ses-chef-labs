@@ -2528,4 +2528,87 @@
       const button=event.target.closest('[data-copy-contract]');
       if (!button) return;
       event.preventDefault(); event.stopPropagation();
-      
+      copyContractAddress(button.dataset.copyContract,button);
+    });
+    $('buySetupRows').addEventListener('click',event => {
+      const button=event.target.closest('[data-pump-dump-key]');
+      if (!button) return;
+      event.preventDefault(); event.stopPropagation();
+      const key=button.dataset.pumpDumpKey, symbol=button.dataset.pumpDumpSymbol || 'This coin';
+      if (!key || key.length>180) return alert('Coin identity is invalid. Nothing was removed.');
+      if (!confirm('Remove '+symbol+' from the Dump opps lineup as Pump & Dump?')) return;
+      pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur(); setTimeout(buildBuySetups,0);
+    });
+    $('buySetupRows').addEventListener('click',event=>{
+      const button=event.target.closest('[data-watch-key]'); if(!button) return;
+      event.preventDefault();event.stopPropagation();
+      toggleDumpWatch(button.dataset.watchKey); button.blur(); setTimeout(buildBuySetups,0);
+    });
+    $('dumpGlanceRows').addEventListener('click',event=>{
+      const row=event.target.closest('[data-glance-key]');
+      if(row) openGlanceCard(row.dataset.glanceKey);
+    });
+    document.addEventListener('visibilitychange',refreshCheckDots);
+    $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
+    $('buySetupRows').addEventListener('click',event => {
+      if (!event.target.closest('[data-use-price]')) return;
+      const box = event.target.closest('[data-trade-plan]');
+      const row = box && visibleTradeRows.get(box.dataset.tradePlan);
+      if (!row) return;
+      let sample;
+      if (row.kind === 'named') {
+        const m = price(row.key);
+        if (freshMarketItem(m)) sample = Number(m.current_price);
+      } else {
+        for (const lane of CHAIN_LANES) {
+          const pool = (chainPools[lane.key] || []).find(p => p.identity === row.key);
+          if(!freshChainPool(pool))continue;
+          sample = pool.price;
+          if (sample > 0) break;
+        }
+      }
+      if (!(sample > 0)) return alert('A fresh price is unavailable. Your chosen entry is unchanged.');
+      const plan = getTradePlan(row.key,sample);
+      plan.anchor = sample;
+      plan.entryPosition = '100';
+      redrawTradePlan(box,row,plan);
+    });
+    $('chainBoards').addEventListener('click', event => {
+      const button = event.target.closest('[data-chain-pool="true"]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openDynamicPool(event,button.dataset.lane,button.dataset.poolUrl);
+    },true);
+    $('buySetupRows').addEventListener('click', event => {
+      const quoteButton=event.target.closest('[data-check-route]');
+      if(quoteButton) {event.preventDefault();if(!quoteButton.disabled)requestRouteCheck(quoteButton.dataset.checkRoute);return;}
+      const button = event.target.closest('[data-opportunity-url]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const url = button.dataset.opportunityUrl;
+      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
+      window.open(url,'_blank','noopener,noreferrer');
+    },true);
+    $('walletLedger').addEventListener('click',event=>{
+      const add=event.target.closest('[data-add-position]'); if(add)return addDetectedPosition(add.dataset.addPosition);
+      const dismiss=event.target.closest('[data-dismiss-wallet-record]'); if(dismiss)return dismissWalletRecord(dismiss.dataset.dismissWalletRecord);
+      const sold=event.target.closest('[data-mark-sold]'); if(sold&&confirm('Move this position into History as sold?'))return markPositionSold(sold.dataset.markSold);
+    });
+    savePumpDumpExclusions();
+    renderWalletLedger();
+    load();
+    setInterval(load, 60000);
+    setInterval(refreshQualificationGauges, 15000);
+    setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
+    setInterval(refreshSecuritySweep,120000);
+    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
+    refreshChainPools();
+    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
+    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); refreshChainPools(); checkPendingWalletBuys(); } });
+    window.addEventListener('pageshow', load);
+    window.addEventListener('online', load);
+  </script>
+</body>
+</html>
