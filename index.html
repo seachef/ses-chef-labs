@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Language" content="en-AU">
   <meta name="google" content="notranslate">
-  <meta name="theme-color" content="#08080b">
+  <meta name="theme-color" content="#0f172a">
   <meta name="color-scheme" content="dark">
   <title>Sea Chef Labs</title>
   <style>
@@ -336,43 +336,6 @@
     .opportunity-card { scroll-margin-top:18px; }
     .opportunity-card:focus { outline:2px solid #8394ad; outline-offset:3px; }
     @media(prefers-reduced-motion:reduce) { .check-dot.is-checking { animation:none; } }
-
-    /* 28 September night desk: layout retained, black / charcoal surfaces. */
-    :root { --night:#08080b; --panel:#131317; --raised:#1c1b22; --edge:#36313f; --violet:#c7afea; --ink:#f0edf5; }
-    body { background:var(--night); color:var(--ink); }
-    .section,.market-pulse,.dump-glance,.desk-menu,.opportunity-card,.wallet-record { background:var(--panel); border-color:var(--edge); box-shadow:none; }
-    .dump-buy-zone { background:transparent; }
-    .ticker,.chain-banner,.sample-wait,.empty { background:#101014; border-color:#393041; }
-    .chain-banner-head,.topbar,.glance-row { border-color:#302b37; }
-    .btn,.currency-switch .btn,.watch-button,.all-coins > summary,.trade-choice { background:#26212e; color:#e6dcf4; border-color:#4b3b5e; }
-    .currency-switch .btn[aria-pressed="true"] { background:#c0a3e1; color:#17101f; }
-    .trade-window,.trade-window.exit,.trade-result,.input,.status,.status.flat { background:var(--raised); border-color:#44394f; }
-    .opportunity-card::after { border-color:#ad85d1; box-shadow:0 0 10px rgba(148,94,194,.13); }
-    .card-reason,.trade-note,.currency-note,.pulse-foot,.glance-columns { color:#bab3c6; }
-    .chain-name,.desk-menu > summary,.coin-plan > summary,h1,.dump-buy-zone h2 { color:var(--violet); }
-    .top-controls { grid-template-columns:1fr; }
-    .pulse-track { background:#2b2631; }
-    .glance-row:hover,.glance-row:focus-visible { background:#251f2e; }
-    .earn-desk { background:var(--panel); border:1px solid var(--edge); border-radius:20px; padding:5px 16px; margin:18px 0; }
-    .earn-desk > summary { cursor:pointer; min-height:56px; padding:16px 0; color:var(--violet); font-weight:600; }
-    .earn-fields,.decision-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .earn-fields label { font-size:13px; color:#c6bed2; }
-    .earn-fields .input { margin-top:6px; }
-    .earn-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0; }
-    .earn-card { background:#1a171f; border:1px solid #3c3049; border-radius:16px; padding:15px; min-width:0; }
-    .earn-card h3 { margin:0 0 8px; font-size:17px; }
-    .earn-card p { font-size:13px; color:#c6bed2; line-height:1.5; }
-    .earn-rate { color:#cfb8ef; font-size:23px; }
-    .earn-result { font-size:18px; margin:12px 0 4px; color:#ede6f7; }
-    .earn-card a { color:#d5bdf4; }
-    .decision-grid { margin:12px 0; }
-    .decision-cell { padding:12px; border:1px solid #3b3445; border-radius:12px; background:#141218; }
-    .decision-cell small { display:block; color:#bcb0c9; font-size:11px; margin-bottom:7px; }
-    .decision-cell strong { font-size:16px; overflow-wrap:anywhere; }
-    .check-takeaway { padding:12px; background:#211b29; border:1px solid #44354f; border-radius:12px; line-height:1.5; margin-bottom:8px; }
-    .check-takeaway strong { display:block; color:#d9c4f0; font-size:14px; }
-    .research-log-row { padding:10px 0; border-bottom:1px solid #36303d; font-size:13px; overflow-wrap:anywhere; }
-    @media(max-width:600px) { .earn-cards { grid-template-columns:1fr; } .earn-fields { grid-template-columns:1fr; } }
   </style>
 </head>
 <body class="notranslate">
@@ -383,8 +346,8 @@
     </header>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
-      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Auto-refresh on | phone: pull down | laptop: Ctrl+R</span></div>
-
+      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Pull down to refresh</span></div>
+      <button type="button" id="refreshButton" onclick="refreshDesk()">Refresh</button>
     </div>
     <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
       <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
@@ -407,7 +370,7 @@
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
       <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops  |  sample recovery first</span></div>
-      <p class="trade-note">Watch the recovery. Check the exit. Choose your own trade.</p>
+      <p class="trade-note">Watch candidates, not buy approvals. Activity, history and public risk reports are checked where available. Use your plan to compare current entry and exit costs.</p>
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
@@ -416,25 +379,6 @@
       <div class="wallet-ledger-grid" id="pendingBuys"></div>
       <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
     </section>
-
-
-    <details class="earn-desk" id="earnDesk">
-      <summary>EARN <span class="trade-note"> | explore returns on parked stablecoins</span></summary>
-      <p class="trade-note">Research snapshot: 28 September 2026. These are comparison ideas, not live offers. Open the source to check the rate and your eligibility.</p>
-      <div class="earn-fields">
-        <label>Amount already invested (USD)<input class="input" id="earnAmount" type="number" inputmode="decimal" min="0" max="1000000" value="1000"></label>
-        <label>Days to compare<input class="input" id="earnDays" type="number" inputmode="numeric" min="1" max="365" value="30"></label>
-        <label>Total extra costs (USD)<input class="input" id="earnCosts" type="number" inputmode="decimal" min="0" placeholder="Blank = unknown, not free"></label>
-        <label>Kraken plan<select class="input" id="earnTier"><option value="base">Standard (no subscription assumed)</option><option value="plus">Kraken+ (include subscription cost above)</option></select></label>
-      </div>
-      <p class="trade-note">USD, not AUD. Costs include deposit, withdrawal, gas, conversion and any subscription. No deposit is made here. Rates, USD pegs and your capital can change.</p>
-      <div class="earn-cards" id="earnCards"></div>
-      <details class="coin-plan"><summary>TITANX ecosystem | what we found</summary>
-        <p class="trade-note"><strong>DRAGONX:</strong> protocol buybacks are different from interest paid to you. Direct holder staking yield has not been verified. <a href="https://dragonx.win/" target="_blank" rel="noopener noreferrer">Official site</a></p>
-        <p class="trade-note"><strong>Titan Farms:</strong> liquidity farming adds token-price and pool risk. An active DRAGONX pool, its rate and withdrawal terms still need verification. <a href="https://docs.titanfarms.win/" target="_blank" rel="noopener noreferrer">Read the docs</a></p>
-        <p class="trade-note"><strong>HORIZON:</strong> researching only. The site says in development, and the supplied preview was Sepolia testnet. No verified mainnet yield or DRAGONX earning market. <a href="https://horizon.win/" target="_blank" rel="noopener noreferrer">Official site</a> Â· <a href="https://docs.horizon.win/" target="_blank" rel="noopener noreferrer">Whitepaper</a></p>
-      </details>
-    </details>
 
     <details class="desk-menu" id="deskMenu"><summary>Menu  |  chains, watchlist &amp; wallets</summary>
       <div class="actions">        <button class="btn" onclick="connectRabby()">Rabby Wallet</button>
@@ -824,7 +768,7 @@
         if(!parsed || parsed.version!==1 || !Array.isArray(parsed.active) || !parsed.newUntil || typeof parsed.newUntil!=='object') return {version:1,initialised:false,active:[],newUntil:{}};
         const active=parsed.active.filter(key=>typeof key==='string'&&key.length<=180).slice(0,500);
         const newUntil={};
-        Object.entries(parsed.newUntil).slice(0,2500).forEach(([key,value])=>{ if(typeof key==='string'&&key.length<=180&&Number.isFinite(value)&&value>0) newUntil[key]=value; });
+        Object.entries(parsed.newUntil).slice(0,500).forEach(([key,value])=>{ if(typeof key==='string'&&key.length<=180&&Number.isFinite(value)&&value>0) newUntil[key]=value; });
         return {version:1,initialised:Boolean(parsed.initialised),active:[...new Set(active)],newUntil};
       } catch(_) { return {version:1,initialised:false,active:[],newUntil:{}}; }
     }
@@ -833,12 +777,12 @@
       if(!dataReady) return;
       const keys=[...new Set(rows.map(row=>row.key).filter(key=>typeof key==='string'&&key.length<=180))];
       if(!dumpEntryState.initialised) {
-        dumpEntryState={version:1,initialised:true,active:keys,newUntil:Object.fromEntries(keys.map(key=>[key,now]))};
+        dumpEntryState={version:1,initialised:true,active:keys,newUntil:{}};
       } else {
         const previous=new Set(dumpEntryState.active);
         const newUntil={};
-        Object.entries(dumpEntryState.newUntil).forEach(([key,until])=>{ if(Number.isFinite(until)&&until>0) newUntil[key]=until; });
-        keys.forEach(key=>{ if(!previous.has(key) && !watchedDumpRows.has(key) && !Object.prototype.hasOwnProperty.call(newUntil,key)) newUntil[key]=now+DUMP_NEW_MS; });
+        Object.entries(dumpEntryState.newUntil).forEach(([key,until])=>{ if(Number.isFinite(until)&&until>now) newUntil[key]=until; });
+        keys.forEach(key=>{ if(!previous.has(key) && !watchedDumpRows.has(key)) newUntil[key]=now+DUMP_NEW_MS; });
         dumpEntryState={version:1,initialised:true,active:keys,newUntil};
       }
       try { localStorage.setItem(DUMP_ENTRY_STATE_KEY,JSON.stringify(dumpEntryState)); } catch(_) {}
@@ -1038,7 +982,7 @@
     function renderDumpGlance() {
       const host=$('dumpGlanceRows'); if(!host) return;
       const focused=document.activeElement?.closest('[data-glance-key]')?.dataset.glanceKey;
-      const rows=[...visibleTradeRows.values()].sort((a,b)=>Number(!watchedDumpRows.has(b.key)&&isNewDumpEntry(b.key))-Number(!watchedDumpRows.has(a.key)&&isNewDumpEntry(a.key))||Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key))||compareDeskRows(a,b));
+      const rows=[...visibleTradeRows.values()].sort((a,b)=>Number(isNewDumpEntry(b.key))-Number(isNewDumpEntry(a.key))||Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key))||compareDeskRows(a,b));
       host.innerHTML=rows.length?rows.map(row=>{
         const fresh=qualificationState(row).stage!=='freshness';
         const change=Number.isFinite(row.change)?row.change:null;
@@ -1046,7 +990,7 @@
         const label=change===null?'â':(change>0?'+':'')+change.toFixed(2)+'%';
         const watching=watchedDumpRows.has(row.key);
         const watch=watching?' Â· WATCHING':'';
-        const newLabel=!watching&&isNewDumpEntry(row.key)?'<span class="glance-new">NEW</span>':'';
+        const newLabel=isNewDumpEntry(row.key)?'<span class="glance-new">NEW</span>':'';
         const watchLabel=watching?'<span class="glance-watching">WATCHING</span>':'';
         return `<button type="button" class="glance-row" data-glance-key="${escapeHTML(row.key)}" aria-label="Open ${escapeHTML(row.symbol)} on ${escapeHTML(row.chain)}${watch}">
           <span class="glance-coin"><strong>${escapeHTML(row.symbol)}</strong>${newLabel}${watchLabel}<small>${escapeHTML(row.chain)}</small></span>
@@ -1499,10 +1443,7 @@
     function paintRouteChecks() {
       document.querySelectorAll('[data-route-check]').forEach(host=>{
         const row=visibleTradeRows.get(host.dataset.routeCheck);if(!row)return;
-        const plan=getTradePlan(row.key,row.price);
-        const summary=host.closest('[data-trade-plan]')?.querySelector('[data-trade-summary]');
-        if(summary) summary.innerHTML=tradeSummaryMarkup(row,plan);
-        const markup=routeCheckMarkup(row,plan);
+        const markup=routeCheckMarkup(row,getTradePlan(row.key,row.price));
         if(host.dataset.renderedQuote===markup)return;
         const open=Boolean(host.querySelector('details[open]')),focused=host.contains(document.activeElement);
         host.innerHTML=markup;host.dataset.renderedQuote=markup;
@@ -1612,25 +1553,7 @@
       if(poolCandleAttempts.size>500) {const keep=[...poolCandleAttempts].sort((a,b)=>b[1]-a[1]).slice(0,400);poolCandleAttempts.clear();keep.forEach(([k,v])=>poolCandleAttempts.set(k,v));}
       for(const [key,value] of poolCandleEvidence) if(Date.now()-value.observedAt>60*60000) poolCandleEvidence.delete(key);
     }
-    function marketTakeaway(row,now=Date.now()) {
-      const q=qualificationState(row,now);
-      const messages={
-        risk:["DOESN'T PASS","A public risk check found a serious restriction. Keep it out of a buy plan."],
-        inactive:["DOESN'T PASS","Too little two-way trading was observed. Getting out could be difficult."],
-        falling:["STILL FALLING","Selling is continuing. A cheaper price alone is not a recovery."],
-        drop:["OUTSIDE DUMP OPPS","It is no longer down 10% over 24 hours. A watch pin can keep it here."],
-        freshness:["STILL CHECKING","We need a recent price before judging this coin."],
-        recovery:["LOOKING PROMISING","The chart has shown recovery. The sell route, costs and remaining risks still need checking."],
-        mixed:["STILL CHECKING","The price has not settled into a clear recovery yet."]
-      };
-      const [title,reason]=messages[q.stage]||["STILL CHECKING","The drop is visible. We still need enough trading history, buyer and seller activity, and recovery evidence."];
-      return {title,reason};
-    }
     function marketEvidenceMarkup(row,now=Date.now()) {
-      const hot=marketTakeaway(row,now);
-      return `<div class="check-takeaway"><strong>${escapeHTML(hot.title)}</strong>${escapeHTML(hot.reason)}</div><details class="coin-plan"><summary>Show the evidence</summary>${marketEvidenceDetailsMarkup(row,now)}</details>`;
-    }
-    function marketEvidenceDetailsMarkup(row,now=Date.now()) {
       const match=evidencePool(row);
       if(!match) return '<div class="trade-note">Reference price only. Exact pool activity and trading age are unverified. This is WATCH, not an approved buy.</div>'+securityMarkup(row);
       const {lane,pool}=match,flow=pool.flow||{};
@@ -2061,9 +1984,7 @@
       const entryCosts = buySlip+buyFee+gasIn, exitCosts = sellSlip+sellFee+gasOut;
       return {...result,status:'Manual cost scenario',capital,entryCosts,exitCosts,fees:buyFee+sellFee,
         execution:buySlip+sellSlip,network:gasIn+gasOut,totalCosts:entryCosts+exitCosts,
-        netReturn:exitProceeds,netProfit:exitProceeds-budget,
-        breakEven:entry*(budget+gasOut)/(capital*(1-slipOut/100)*(1-feeOut/100)),
-        downsideProfit:capital*.9*(1-slipOut/100)*(1-feeOut/100)-gasOut-budget};
+        netReturn:exitProceeds,netProfit:exitProceeds-budget};
     }
     function getTradePlan(key,priceUSD) {
       if (!tradePlans.has(key)) tradePlans.set(key,{budget:'100',anchor:priceUSD,entryPosition:'100',multiple:'1',feeIn:'',feeOut:'',slipIn:'',slipOut:'',gasIn:'',gasOut:''});
@@ -2195,14 +2116,12 @@
       }
     }
     function tradeSummaryMarkup(row, plan) {
-      const m=tradeMath(row.price,plan);
-      if(!m.budget) return '<span class="trade-note">'+escapeHTML(m.status)+'</span>';
-      const known=m.netProfit!==undefined;
-      const cell=(label,value)=>`<div class="decision-cell"><small>${label}</small><strong>${escapeHTML(value)}</strong></div>`;
-      const exit=freshRouteEvidence(row,plan);
-      return `<div class="decision-grid">${cell('BUY COST',known?audMoney(m.entryCosts):'Needs your costs')}${cell('BREAK-EVEN PRICE',known?usdPrice(m.breakEven):'Needs your costs')}${cell('TARGET PROFIT',known?audMoney(m.netProfit):'Net unknown')}${cell('EXIT CHECK',exit?'Two-way quote seen':'Not checked / needs update')}</div>
-        <div class="trade-note">${known?'If price falls 10% below your entry: '+escapeHTML(audMoney(m.downsideProfit))+' modeled profit/loss.':'Target before costs: '+escapeHTML(audMoney(m.grossProfit))+' profit. '+escapeHTML(m.status)+'. Enter costs below to see break-even.'}</div>
-        <div class="trade-note">${known?'Uses your fee, slippage and network estimates. ':''}Future fills and liquidity are unknown; unchanged USD/AUD assumed. Before tax. This does not place a stop or sell order.</div>`;
+      const model = tradeMath(row.price,plan);
+      if (!model.budget) return '<span class="trade-note">'+escapeHTML(model.status)+'</span>';
+      const known = model.netProfit !== undefined;
+      return `<span class="trade-note">${known ? 'MODELED PROFIT AFTER ENTERED COSTS' : 'PROFIT BEFORE COSTS'}</span>
+        <div class="trade-big">${escapeHTML(audMoney(known ? model.netProfit : model.grossProfit))}</div>
+        <div class="trade-note">${known ? 'Fees '+escapeHTML(audMoney(model.fees))+'  |  execution allowance '+escapeHTML(audMoney(model.execution))+'  |  network '+escapeHTML(audMoney(model.network)) : 'Net profit unavailable  |  '+escapeHTML(model.status)}<br>Assumes the chosen prices are filled and USD/AUD stays unchanged. Before tax.</div>`;
     }
     function entryControlConfig(plan) {
       const anchor = Number(plan.anchor);
@@ -2561,13 +2480,13 @@
       if(manualRefreshing) return;
       const status=$('refreshStatus');
       if(Date.now()-manualRefreshAt<15000) { status.textContent='Please wait a few seconds between refreshes'; return; }
-      manualRefreshAt=Date.now();manualRefreshing=true;
+      manualRefreshAt=Date.now();manualRefreshing=true;$('refreshButton').disabled=true;
       status.textContent='Refreshing watchlist prices...';
       try {
         const result=await load();
         refreshQualificationGauges();
         status.textContent=result==='updated'?'Prices checked '+localClock(Date.now())+'  |  chains refresh on their schedule':result==='cooldown'?'Feed cooling down  |  automatic retry will follow':result==='stale'?'Feed replied with old prices  |  waiting for fresh data':'Could not refresh  |  check your connection';
-      } finally { manualRefreshing=false; }
+      } finally { manualRefreshing=false;$('refreshButton').disabled=false; }
     }
     function installPullRefresh() {
       let start=null,distance=0,armed=false;
@@ -2593,49 +2512,9 @@
       document.addEventListener('touchcancel',reset,{passive:true});
     }
 
-    // Dated public research, NOT a live rate feed, ranked recommendation or deposit route.
-    const EARN_RESEARCH_DATE='2026-09-28';
-    const earnResearch=Object.freeze([
-      {id:'sky',name:'Sky Â· sUSDS',rate:3.6,kind:'APY',source:'https://sky.money/susds',
-        access:'No protocol lockup advertised; network access still matters.',risk:'Protocol, collateral and USD-peg risk.',why:'Variable return funded by protocol surplus.'},
-      {id:'maple',name:'Maple Â· syrupUSDC',rate:5.2,kind:'APY',source:'https://maple.finance/',
-        access:'Withdrawals can queue. Check current liquidity and terms.',risk:'Borrower, smart-contract and USD-peg risk.',why:'Variable lending yield. Global access is not proof of your eligibility.',terms:'https://docs.maple.finance/syrupusdc-usdt-for-lenders/faq'},
-      {id:'kraken',name:'Kraken Â· USDC',rate:2,plusRate:4,kind:'APY',source:'https://support.kraken.com/au/articles/stablecoin-rewards',
-        access:'No product lockup advertised; platform restrictions can apply.',risk:'Exchange custody and USD-peg risk.',why:'Up to 2% standard or 4% with paid Kraken+. Eligibility and rates vary.'},
-      {id:'binance',name:'Binance Â· USDT promotion',rate:7,kind:'APR',source:'https://www.binance.com/en/support/announcement/detail/20ffd754d7414596aa065a23e23eabbd',
-        starts:Date.parse('2026-09-25T00:00:00Z'),ends:Date.parse('2026-10-09T00:00:00Z'),cap:1000,
-        access:'Flexible product; redemptions can be delayed.',risk:'Exchange custody and USD-peg risk.',why:'Up to 7% on the first 1,000 USDT, through 8 Oct UTC. Bonus conditions apply; later rates unknown.'}
-    ]);
-    function earnScenario(offer,amount,days,costs,tier='base',now=Date.now()) {
-      amount=planNumber(amount);days=planNumber(days);costs=planNumber(costs);
-      if(amount===null||amount<0||amount>1000000||days===null||!Number.isInteger(days)||days<1||days>365||costs!==null&&costs<0) return {message:'Check your amount, days and costs.'};
-      if(offer.ends && (now<offer.starts||now>=offer.ends||now+days*86400000>offer.ends))return {message:'This period extends outside the promotion. No return projected.'};
-      if(offer.cap && amount>offer.cap)return {message:'Above the promotion cap. No blended return assumed.'};
-      const rate=tier==='plus'&&offer.plusRate?offer.plusRate:offer.rate;
-      const gross=amount*(offer.kind==='APR'?rate/100*days/365:Math.expm1(Math.log1p(rate/100)*days/365));
-      return {gross,net:costs===null?null:gross-costs,rate,message:costs===null?'Before costs â enter your total costs.':'After your entered costs â estimate only.'};
-    }
-    function renderEarn() {
-      const host=$('earnCards');if(!host)return;
-      const amount=$('earnAmount').value,days=$('earnDays').value,costs=$('earnCosts').value,tier=$('earnTier').value;
-      const usd=n=>'US$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      host.innerHTML=earnResearch.map(offer=>{
-        const scenario=earnScenario(offer,amount,days,costs,tier);
-        const rate=tier==='plus'&&offer.plusRate?offer.plusRate:offer.rate;
-        return `<article class="earn-card"><h3>${escapeHTML(offer.name)}</h3><div class="earn-rate">${rate}% ${offer.kind}<span class="trade-note"> Â· researched rate</span></div>
-          <div class="earn-result">${scenario.gross===undefined?'Check terms first':usd(scenario.net===null?scenario.gross:scenario.net)+' over '+Number(days)+' days'}</div>
-          <p>${escapeHTML(scenario.message)}</p><p>${escapeHTML(offer.access)}<br>${escapeHTML(offer.risk)}</p>
-          <a class="btn" href="${offer.source}" target="_blank" rel="noopener noreferrer">LOOK INTO IT</a>
-          <details class="coin-plan"><summary>Rate &amp; assumptions</summary><p>${escapeHTML(offer.why)} Snapshot ${EARN_RESEARCH_DATE}, not a live quote. The model holds the rate and USD peg constant, assumes USD1 per stablecoin and excludes tax. These are not insured bank savings. A negative result means entered costs exceed modeled yield.</p>${offer.terms?`<a href="${offer.terms}" target="_blank" rel="noopener noreferrer">Withdrawal terms</a>`:''}</details></article>`;
-      }).join('');
-    }
-
     render();
     renderChainBoards();
     installPullRefresh();
-    renderEarn();
-    $("earnDesk").addEventListener("input",renderEarn);
-    $("earnDesk").addEventListener("change",renderEarn);
     $('buySetupRows').addEventListener('toggle',event=>{
       if(event.target.matches('details.coin-plan') && event.target.open) {
         const box=event.target.querySelector('[data-trade-plan]');
