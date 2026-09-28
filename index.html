@@ -222,6 +222,7 @@
     .qualification-line.line-mixed { stroke:#ddb66f; filter:drop-shadow(0 0 3px rgba(221,182,111,.4)); }
     .qualification-line.line-level { stroke:#72ccd0; filter:drop-shadow(0 0 5px rgba(114,204,208,.55)); }
     .qualification-line.line-rising { stroke:#82d3b2; animation:qualificationLineGlow 2.2s ease-in-out infinite; }
+    .card-state[data-tone="risk"] { color:#ef9baa; border-color:#a45261; }
     .qualification-line.line-scanning { stroke:#72ccd0; stroke-dasharray:16 10; animation:qualificationScan 2.4s linear infinite; filter:drop-shadow(0 0 5px rgba(114,204,208,.62)); }
     @keyframes qualificationLineGlow { 0%,100% { filter:drop-shadow(0 0 3px rgba(130,211,178,.45)); opacity:.82; } 50% { filter:drop-shadow(0 0 10px rgba(130,211,178,.95)); opacity:1; } }
     @keyframes qualificationScan { to { stroke-dashoffset:-52; } }
@@ -369,7 +370,7 @@
     <!-- SCL BUY SETUPS WINDOW -->
     <section class="section dump-buy-zone" id="scl-buy-setups">
       <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops  |  sample recovery first</span></div>
-      <p class="trade-note">Tap a coin to plan. Full buy qualification and token-age checks are not connected.</p>
+      <p class="trade-note">Watch candidates, not buy approvals. Activity, history and public risk reports are checked where available. Use your plan to compare current entry and exit costs.</p>
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
@@ -386,10 +387,21 @@
         <button class="btn" onclick="resetLiveSession()">Reset Live Session</button>
       </div>
       <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
+      <details class="coin-plan"><summary>Morning research | 28 September 2026</summary>
+        <p class="trade-note">Research rules, not frozen prices or a list of approved buys. Public market figures load when this page is open. The separate morning brief does not automatically import here.</p>
+        <p class="trade-note">Count trades and distinct buying/selling addresses separately. Addresses are not people. No universal 100-buyer rule. Buy-versus-sell dollar pressure is shown only if the source supplies both dollar amounts; trade counts never substitute for dollars.</p>
+        <p class="trade-note">At least seven days of actual trading must be evidenced. Pool creation alone does not prove token age. Closed 15-minute and hourly candles are used for a cautious recovery screen, never a profit prediction. Up to three pool candidates are deep-checked per ten-minute evidence sweep; other candidates wait their turn. Up to eight exact-identity public security reports are checked per security sweep, covering reported restrictions and concentration. No order-book or complete security pass is claimed.</p>
+        <p class="trade-note">CHECK MY COSTS compares current buy and reverse-sell route quotes plus a smaller-size probe, where the public quote provider allows access. Quotes are comparisons, not executable orders or wallet-specific sell tests. No account, transaction, signing or private key is used by these new checks. Pool reserves and turnover are context, not guaranteed low slippage. A WATCH or NEW label only keeps a coin visible.</p>
+        <div class="links"><a href="https://docs.coingecko.com/reference/pool-address" target="_blank" rel="noopener noreferrer">Pool activity fields</a><a href="https://docs.coingecko.com/reference/pool-ohlcv-contract-address" target="_blank" rel="noopener noreferrer">Closed-candle source</a><a href="https://support.uniswap.org/hc/en-us/articles/8643794102669-Price-Impact-vs-Price-Slippage" target="_blank" rel="noopener noreferrer">Impact versus slippage</a></div>
+        <div class="links"><a href="https://docs.gopluslabs.io/reference/response-details" target="_blank" rel="noopener noreferrer">EVM risk fields</a><a href="https://docs.gopluslabs.io/reference/response-detail-1" target="_blank" rel="noopener noreferrer">Solana risk fields</a><a href="https://docs.kyberswap.com/developer-guide/aggregator-api/aggregator-api-specification/evm-swaps" target="_blank" rel="noopener noreferrer">Kyber quote API</a><a href="https://docs.raydium.io/sdk-api/trade-api" target="_blank" rel="noopener noreferrer">Raydium quote API</a><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses" target="_blank" rel="noopener noreferrer">Quote-token identities</a></div>
+        <p class="trade-note">Build check, 28 September: public GoPlus reports responded for Ethereum and Solana. Quote endpoints returned HTTP 403 in the build environment; successful live quote validation remains pending. Browser access may differ; errors stay unverified. No overnight shortlist is automatically imported.</p>
+      </details>
 
     <section aria-labelledby="chainBoardTitle">
       <h2 id="chainBoardTitle" style="font-size:16px;margin:0 0 8px;color:#dffbff;">CHAIN MARKET BANNERS</h2>
       <div class="chain-board" id="chainBoards"></div>
+      <p class="trade-note">No 25-token display cap. Discovery walks up to ten accessible public pool pages per chain, twenty pools per page, and keeps each eligible exact token identity plus your configured watchlist. This is the provider's ranked pool coverage, not every token on a chain. Duplicates, stablecoins, invalid identities and pools below US$25,000 in reported reserves stay filtered; reserves are not executable depth. Prices retain their individual observation times. A full sweep can take over ten minutes. Access errors and page limits are shown above. Chain discovery pauses when this page is hidden; ChatGPT does not keep the phone app awake.</p>
+      <div class="links"><a href="https://docs.coingecko.com/reference/top-pools-network" target="_blank" rel="noopener noreferrer">Public pool coverage limits</a></div>
     </section>
 
     <section class="section limit-zone" hidden>
@@ -691,7 +703,11 @@
     const CHAIN_POOL_REFRESH_MS = 10 * 60 * 1000;
     const CHAIN_REQUEST_GAP_MS = 8000;
     const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
-    const CHAIN_POOL_LIMIT = 25;
+    // Public network-pool pagination is bounded by the provider, not a 25-token UI cap.
+    const CHAIN_PUBLIC_PAGES = 10;
+    const CHAIN_PAGE_SIZE = 20;
+    const chainDiscovery = new Map();
+    let chainDiscoveryCursor = 0, chainDiscoveryBackoffUntil = 0, chainEvidenceDueAt = 0;
     const STABLE_SYMBOLS = new Set(['USDT','USDC','USDE','DAI','FDUSD','TUSD','USDS','FRAX','LUSD','PYUSD','EURC','USDG','RLUSD','GHO','USDT0','USD1','USR','DEUSD','USDF','USDB','DOLA','MIM','CRVUSD','USDP','USDD']);
     function readSavedOrders() {
       try {
@@ -902,12 +918,12 @@
     }
     function compactState(row,now=Date.now()) {
       const q=qualificationState(row,now);
-      const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES'};
+      const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES',evidence:'WATCH | CHECKS NEEDED',inactive:'WAIT | QUIET MARKET',recovery:'WATCH | RECOVERY SEEN',risk:'AVOID | REPORTED RESTRICTION'};
       return {q,label:names[q.stage] || 'WATCHING',tone:q.stage || 'freshness'};
     }
     function recoveryPriority(row) {
       const q=qualificationState(row);
-      return {rising:0,level:1,mixed:2,samples:3,falling:4,drop:5,freshness:6}[q.stage] ?? 6;
+      return {recovery:0,rising:1,level:2,mixed:3,samples:4,evidence:4,falling:5,inactive:6,drop:7,freshness:8}[q.stage] ?? 8;
     }
     function compareDeskRows(a,b) {
       return recoveryPriority(a)-recoveryPriority(b) || a.symbol.localeCompare(b.symbol) || a.key.localeCompare(b.key);
@@ -918,15 +934,15 @@
       const lo=Math.min(...samples.map(s=>s.price)),hi=Math.max(...samples.map(s=>s.price)),range=hi-lo || lo*.002;
       const duration=samples[samples.length-1].at-samples[0].at;
       const pts=samples.map((s,i)=>`${i?'L':'M'}${(8+(s.at-samples[0].at)*304/duration).toFixed(2)},${(hi===lo ? 38 : 10+(hi-s.price)/range*56).toFixed(2)}`).join(' ');
-      const q=qualificationState(row);
-      const stage=/^(freshness|drop|samples|falling|mixed|level|rising)$/.test(q.stage) ? q.stage : 'freshness';
+      const q=sampleQualificationState(row);
+      const stage=qualificationState(row).stage==='risk'?'falling':/^(freshness|drop|samples|falling|mixed|level|rising)$/.test(q.stage) ? q.stage : 'freshness';
       const label=`${row.symbol}: ${samples.length} samples observed in this tab, not candles`;
       return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path class="qualification-line line-${stage}" d="${pts}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab  |  ${samples.length} samples  |  ${escapeHTML(usdPrice(lo))}-${escapeHTML(usdPrice(hi))}</div>`;
     }
     function compactFreshness(row) {
       let at=null;
       if(row.kind==='named') at=new Date(price(row.key)?.last_updated).getTime();
-      else { const lane=CHAIN_LANES.find(l=>(chainPools[l.key]||[]).some(p=>p.identity===row.key)); if(lane) at=chainPoolsUpdatedAt[lane.key]; }
+      else { const lane=CHAIN_LANES.find(l=>(chainPools[l.key]||[]).some(p=>p.identity===row.key)); if(lane) at=chainPools[lane.key].find(p=>p.identity===row.key)?.observedAt; }
       if(!Number.isFinite(at)||Date.now()<at) return watchedDumpRows.has(row.key)?'WATCHING | Last saved price - fresh data unavailable':'Observation time unavailable';
       const seconds=Math.floor((Date.now()-at)/1000);
       const age=seconds<60?seconds+'s':Math.floor(seconds/60)+'m';
@@ -1014,6 +1030,8 @@
         badge.textContent=c.label;badge.dataset.tone=c.tone;
         host.querySelector('[data-card-reason]').textContent=c.q.note;
         host.querySelector('[data-card-age]').textContent=compactFreshness(row);
+        const evidence=host.querySelector('[data-market-evidence]');
+        if(evidence) evidence.innerHTML=marketEvidenceMarkup(row);
       });
       renderDumpGlance();
     }
@@ -1195,6 +1213,361 @@
       if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
       return /^0x(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/.test(address);
     }
+    // Evidence is session-only and bound to the exact chain, pool and base token.
+    // Neither imported watch pins nor research text can grant a qualification.
+    const poolCandleEvidence = new Map();
+    const poolCandleAttempts = new Map();
+    // Read-only risk and route evidence. No transaction building, wallet address,
+    // API key, approval, signature or account-dependent simulation is used here.
+    const securityEvidence = new Map(), securityAttempts = new Map(), securityPending = new Map();
+    const routeEvidence = new Map(), routeCheckPending = new Set(), routeLastAttempt = new Map();
+    const publicServiceCooldown = new Map();
+    let securitySweepRunning=false, routeQueue=Promise.resolve();
+    const PUBLIC_CHAIN_IDS=Object.freeze({ethereum:'1',bnb:'56',arbitrum:'42161',optimism:'10',polygon:'137',avalanche:'43114'});
+    // Circle-issued USDC addresses, checked against Circle documentation 2026-09-28.
+    // BNB and Robinhood are deliberately not assigned a guessed USDC contract.
+    const QUOTE_NETWORKS=Object.freeze({
+      ethereum:{provider:'KyberSwap',slug:'ethereum',usdc:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'},
+      arbitrum:{provider:'KyberSwap',slug:'arbitrum',usdc:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831'},
+      optimism:{provider:'KyberSwap',slug:'optimism',usdc:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'},
+      polygon:{provider:'KyberSwap',slug:'polygon',usdc:'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359'},
+      avalanche:{provider:'KyberSwap',slug:'avalanche',usdc:'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'},
+      solana:{provider:'Raydium',slug:'solana',usdc:'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'}
+    });
+    function assetContext(row) {
+      if(!row) return null;
+      const match=evidencePool(row);
+      if(match) return {chain:match.lane.key,address:match.pool.tokenAddress,symbol:match.pool.symbol,pool:match.pool.poolAddress};
+      if(row.kind!=='named') return null;
+      const item=checkerCoins.find(c=>c.cg===row.key && c.symbol===row.symbol);
+      const lane=item && CHAIN_LANES.find(l=>l.key===item.chain);
+      // Native balances are not silently replaced with a wrapped-token contract.
+      if(!lane || !validTokenAddress(lane,String(item.addr||'')) || row.contract!==item.addr) return null;
+      return {chain:lane.key,address:item.addr,symbol:item.symbol,pool:null};
+    }
+    function assetKey(asset) { return asset.chain+':'+(asset.chain==='solana'?asset.address:asset.address.toLowerCase()); }
+    function sameQuoteToken(a,b,chain) {return typeof a==='string' && typeof b==='string' && (chain==='solana'?a===b:a.toLowerCase()===b.toLowerCase());}
+    async function publicEvidenceGET(url) {
+      const u=new URL(url);
+      const permitted=u.protocol==='https:' && !u.username && !u.password && (
+        (u.hostname==='api.gopluslabs.io' && /^\/api\/v1\/(?:solana\/token_security|token_security\/(?:1|56|42161|10|137|43114))$/.test(u.pathname)) ||
+        (u.hostname==='aggregator-api.kyberswap.com' && /^\/(?:ethereum|arbitrum|optimism|polygon|avalanche)\/api\/v1\/routes$/.test(u.pathname)) ||
+        (u.hostname==='transaction-v1.raydium.io' && u.pathname==='/compute/swap-base-in'));
+      if(!permitted) throw Error('Unsupported public evidence endpoint');
+      if(document.hidden) throw Error('Checks pause while the page is hidden');
+      if(Date.now()<(publicServiceCooldown.get(u.hostname)||0)) throw Error('Provider cooling down; retry later');
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+      try {
+        const response=await fetch(u.href,{method:'GET',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
+        if([401,403,429].includes(response.status)) {
+          const seconds=Number(response.headers?.get('Retry-After'));
+          publicServiceCooldown.set(u.hostname,Date.now()+(response.status===429?Math.max(60000,Math.min(900000,(Number.isFinite(seconds)?seconds:60)*1000)):900000));
+        }
+        if(!response.ok) throw Error('Public provider unavailable (HTTP '+response.status+')');
+        const body=await response.text();
+        if(body.length>1500000) throw Error('Public response too large');
+        return JSON.parse(body);
+      } finally {clearTimeout(timer);}
+    }
+    function securityBit(value) {return value===1||value==='1'?true:value===0||value==='0'?false:null;}
+    function securityFraction(value) {const n=evidenceNumber(value);return n!==null&&n<=1?n:null;}
+    function parseSecurity(payload,asset,now=Date.now()) {
+      if(payload?.code!==1||!payload.result||typeof payload.result!=='object') throw Error('Security provider returned no evidence');
+      const entries=Object.entries(payload.result).filter(([address])=>sameQuoteToken(address,asset.address,asset.chain));
+      if(entries.length!==1 || !entries[0][1] || typeof entries[0][1]!=='object') throw Error('Security token identity mismatch');
+      const r=entries[0][1],sol=asset.chain==='solana';
+      const symbol=sol?r.metadata?.symbol:r.token_symbol;
+      if(typeof symbol!=='string'||symbol.toUpperCase()!==asset.symbol.toUpperCase()) throw Error('Security symbol and selected contract disagree');
+      const flags=[],missing=[];
+      const check=(value,label,critical=false)=>{const b=securityBit(value);if(b===true)flags.push({label,critical});else if(b===null)missing.push(label);};
+      if(sol) {
+        check(r.non_transferable,'Non-transferable token',true);
+        if(r.default_account_state==='2'||r.default_account_state===2) flags.push({label:'New token accounts are frozen',critical:true});
+        else if(r.default_account_state!=='1'&&r.default_account_state!==1) missing.push('Account transfer state');
+        for(const [key,label] of [['freezable','Freeze authority'],['mintable','Mint authority'],['balance_mutable_authority','Balance-changing authority'],['closable','Token close authority'],['transfer_fee_upgradable','Changeable transfer fee'],['transfer_hook_upgradable','Changeable transfer hook']]) check(r[key]?.status,label);
+        if(Array.isArray(r.transfer_hook)) {if(r.transfer_hook.length) flags.push({label:'Transfer hook needs review',critical:false});} else missing.push('Transfer hook');
+      } else {
+        for(const [key,label,critical] of [['is_honeypot','Provider reports honeypot risk',true],['cannot_buy','Provider reports buy restriction',true],['cannot_sell_all','Provider reports full-sale restriction',true],['is_blacklisted','Blacklist capability',false],['is_whitelisted','Whitelist capability',false],['transfer_pausable','Transfer pause capability',false],['owner_change_balance','Balance-changing owner',true],['slippage_modifiable','Changeable token tax',false],['personal_slippage_modifiable','Address-specific token tax',false],['is_mintable','Mint capability',false],['is_proxy','Upgradeable proxy',false],['hidden_owner','Hidden ownership reported',false],['selfdestruct','Self-destruct capability',true],['trading_cooldown','Trading cooldown',false]]) check(r[key],label,critical);
+        if(securityBit(r.is_open_source)!==true) missing.push('Verified contract source');
+      }
+      let buyTax=sol?null:securityFraction(r.buy_tax),sellTax=sol?null:securityFraction(r.sell_tax);
+      if(!sol) for(const [tax,label] of [[buyTax,'Buy tax'],[sellTax,'Sell tax']]) {if(tax===null)missing.push(label);else if(tax>0)flags.push({label:label+' '+(tax*100).toFixed(2)+'%',critical:tax>=1});}
+      let transferBps=null;
+      if(sol) {
+        transferBps=evidenceNumber(r.transfer_fee?.current_fee_rate?.fee_rate);
+        if(transferBps===null || transferBps>10000) {transferBps=null;missing.push('Current transfer fee');}
+        else if(transferBps>0) flags.push({label:'Transfer fee '+(transferBps/100).toFixed(2)+'% (cap may apply)',critical:transferBps>=10000});
+        if(r.transfer_fee?.scheduled_fee_rate) flags.push({label:'Scheduled transfer fee change',critical:false});
+      }
+      // Holdings include exchanges, pools and contracts: do not label them insiders.
+      let topShare=null,holderRows=0;
+      if(Array.isArray(r.holders)&&r.holders.length>0&&r.holders.length<=100) {
+        const seen=new Set();let total=0,valid=true;
+        for(const h of r.holders) {const address=sol?(h.token_account||h.account):h.address;const pct=securityFraction(h.percent);if(typeof address!=='string'||seen.has(address)||pct===null){valid=false;break;}seen.add(address);total+=pct;}
+        if(valid&&total<=1.001) {topShare=Math.min(1,total);holderRows=r.holders.length;}
+      }
+      if(topShare===null) missing.push('Holder concentration');
+      const holders=evidenceNumber(r.holder_count);
+      return {asset:assetKey(asset),context:{...asset},at:now,flags,missing,buyTax,sellTax,transferBps,topShare,holderRows,holders:Number.isSafeInteger(holders)?holders:null,critical:flags.some(f=>f.critical),source:'GoPlus public token report'};
+    }
+    function currentSecurity(row,now=Date.now()) {
+      const asset=assetContext(row);if(!asset)return null;
+      const s=securityEvidence.get(assetKey(asset));
+      // An old adverse finding remains unresolved until a new valid report supersedes it.
+      return s&&s.asset===assetKey(asset)&&now>=s.at&&(s.critical||now-s.at<=15*60000)?s:null;
+    }
+    async function checkAssetSecurity(asset) {
+      const key=assetKey(asset),cached=securityEvidence.get(key);
+      if(cached&&Date.now()>=cached.at&&Date.now()-cached.at<10*60000)return cached;
+      if(securityPending.has(key))return securityPending.get(key);
+      if(Date.now()-(securityAttempts.get(key)||0)<60000)return null;
+      const chainId=PUBLIC_CHAIN_IDS[asset.chain];
+      if(asset.chain!=='solana'&&!chainId)return null;
+      securityAttempts.set(key,Date.now());
+      const work=(async()=>{try {
+        const endpoint=asset.chain==='solana'?'solana/token_security':'token_security/'+chainId;
+        const data=await publicEvidenceGET('https://api.gopluslabs.io/api/v1/'+endpoint+'?contract_addresses='+encodeURIComponent(asset.address));
+        const result=parseSecurity(data,asset);securityEvidence.set(key,result);return result;
+      } catch(_) {if(!securityEvidence.get(key)?.critical)securityEvidence.delete(key);return null;}finally{securityPending.delete(key);}})();
+      securityPending.set(key,work);return work;
+    }
+    async function refreshSecuritySweep() {
+      if(securitySweepRunning||document.hidden)return;
+      securitySweepRunning=true;
+      try {
+        const unique=new Map();
+        for(const row of visibleTradeRows.values()) {const a=assetContext(row);if(a&&(a.chain==='solana'||PUBLIC_CHAIN_IDS[a.chain]))unique.set(assetKey(a),a);}
+        for(const s of securityEvidence.values())if(s.critical&&s.context)unique.set(s.asset,s.context);
+        const queue=[...unique.values()].filter(a=>Date.now()-(securityAttempts.get(assetKey(a))||0)>=10*60000).sort((a,b)=>(securityAttempts.get(assetKey(a))||0)-(securityAttempts.get(assetKey(b))||0)).slice(0,8);
+        for(const asset of queue) {if(document.hidden||Date.now()<(publicServiceCooldown.get('api.gopluslabs.io')||0))break;await checkAssetSecurity(asset);refreshCompactCards();await new Promise(resolve=>setTimeout(resolve,1500));}
+        for(const [key,s] of securityEvidence)if(!s.critical&&Date.now()-s.at>60*60000)securityEvidence.delete(key);
+        if(securityAttempts.size>500) {const keep=[...securityAttempts].sort((a,b)=>b[1]-a[1]).slice(0,400);securityAttempts.clear();keep.forEach(([k,v])=>securityAttempts.set(k,v));}
+        if(queue.length) buildBuySetups();
+      } finally {securitySweepRunning=false;}
+    }
+    function securityMarkup(row) {
+      const s=currentSecurity(row);
+      if(!s)return '<div class="trade-note">Security report waiting or unavailable. Nothing is assumed safe.</div>';
+      const top=s.topShare===null?'Concentration unavailable':`Reported top ${s.holderRows} holdings: ${(s.topShare*100).toFixed(1)}% of supply; custody and pool accounts included, ownership not resolved.`;
+      const warnings=(Date.now()-s.at>15*60000?'Earlier adverse finding still unresolved; current recheck needed. ':'')+(s.flags.length?s.flags.map(f=>escapeHTML(f.label)).join(' | '):'No listed flag reported; not a safety guarantee.');
+      return `<div class="trade-note"><strong>${s.critical?'AVOID | provider restriction reported':'Security report | manual review'}</strong><br>${warnings}<br>${escapeHTML(top)}<br>${s.holders===null?'Holder count unavailable':s.holders.toLocaleString('en-US')+' reported holding addresses'} | ${escapeHTML(new Date(s.at).toISOString())}<br>${s.missing.length?'Missing: '+escapeHTML(s.missing.join(', '))+'. ':''}Liquidity locks, linked ownership and future unlocks are not verified. A public report cannot prove your wallet can sell.</div>`;
+    }
+    function positiveAtomic(value) {return typeof value==='string'&&/^[1-9][0-9]{0,77}$/.test(value)?value:null;}
+    function parseRouteQuote(payload,asset,tokenIn,tokenOut,amount,startedAt,now=Date.now()) {
+      const config=QUOTE_NETWORKS[asset.chain];if(!config||!positiveAtomic(amount))throw Error('Quote request invalid');
+      let data,out,gasUSD=null,at=startedAt;
+      if(config.provider==='KyberSwap') {
+        data=payload?.data?.routeSummary;
+        if(payload?.code!==0||!data||!sameQuoteToken(data.tokenIn,tokenIn,asset.chain)||!sameQuoteToken(data.tokenOut,tokenOut,asset.chain)||data.amountIn!==amount||!Array.isArray(data.route)||!data.route.length)throw Error('Quote identity or amount mismatch');
+        if(data.route.length>20 || data.route.some(path=>!Array.isArray(path)||!path.length||path.length>10||!sameQuoteToken(path[0]?.tokenIn,tokenIn,asset.chain)||!sameQuoteToken(path[path.length-1]?.tokenOut,tokenOut,asset.chain)||path.some((leg,i)=>!leg||!/^0x[a-fA-F0-9]{40}$/.test(leg.tokenIn)||!/^0x[a-fA-F0-9]{40}$/.test(leg.tokenOut)||(i&&!sameQuoteToken(path[i-1].tokenOut,leg.tokenIn,asset.chain)))))throw Error('Quote route path mismatch');
+        const stamp=Number(data.timestamp)*1000;
+        if(!Number.isFinite(stamp)||stamp>now+2000||now-stamp>10000)throw Error('Quote time is not current');
+        at=Math.min(startedAt,stamp);out=positiveAtomic(data.amountOut);
+        const gas=evidenceNumber(data.gasUsd),l1=evidenceNumber(data.l1FeeUsd);
+        if(gas!==null&&l1!==null)gasUSD=gas+l1;
+      } else {
+        data=payload?.data;
+        if(payload?.success!==true||!data||data.swapType!=='BaseIn'||data.inputMint!==tokenIn||data.outputMint!==tokenOut||data.inputAmount!==amount||data.slippageBps!==50||!Array.isArray(data.routePlan)||!data.routePlan.length)throw Error('Quote identity or amount mismatch');
+        if(data.routePlan.length>10||data.routePlan[0]?.inputMint!==tokenIn||data.routePlan[data.routePlan.length-1]?.outputMint!==tokenOut||data.routePlan.some((leg,i)=>!leg||typeof leg.poolId!=='string'||!leg.poolId||(i&&data.routePlan[i-1].outputMint!==leg.inputMint)))throw Error('Quote route path mismatch');
+        out=positiveAtomic(data.outputAmount);
+      }
+      if(!out||now<startedAt||now-startedAt>10000)throw Error('Quote missing or expired');
+      return {amountIn:amount,amountOut:out,gasUSD,at,provider:config.provider,tokenIn,tokenOut};
+    }
+    async function fetchRouteQuote(asset,tokenIn,tokenOut,amount) {
+      const c=QUOTE_NETWORKS[asset.chain];if(!c||!positiveAtomic(amount))throw Error('Quote coverage unavailable');
+      const start=Date.now();
+      const url=c.provider==='KyberSwap'
+        ? `https://aggregator-api.kyberswap.com/${c.slug}/api/v1/routes?tokenIn=${encodeURIComponent(tokenIn)}&tokenOut=${encodeURIComponent(tokenOut)}&amountIn=${amount}&gasInclude=true&excludeRFQSources=true`
+        : `https://transaction-v1.raydium.io/compute/swap-base-in?inputMint=${encodeURIComponent(tokenIn)}&outputMint=${encodeURIComponent(tokenOut)}&amount=${amount}&slippageBps=50&txVersion=V0`;
+      return parseRouteQuote(await publicEvidenceGET(url),asset,tokenIn,tokenOut,amount,start);
+    }
+    function routeFingerprint(row,plan) {
+      const asset=assetContext(row);return asset?JSON.stringify([assetKey(asset),asset.pool,plan.budget,plan.anchor,plan.entryPosition,plan.multiple]):null;
+    }
+    function calculateRoundTrip(smallBuy,smallSell,buy,sell) {
+      if(smallSell.amountIn!==smallBuy.amountOut||sell.amountIn!==buy.amountOut)throw Error('Sell quantity mismatch');
+      const ratio=q=>Number(q.amountOut)/Number(q.amountIn);
+      const buyImpact=(1-ratio(buy)/ratio(smallBuy))*100,sellImpact=(1-ratio(sell)/ratio(smallSell))*100;
+      const inputUSDC=Number(buy.amountIn)/1e6,returnedUSDC=Number(sell.amountOut)/1e6;
+      if(![buyImpact,sellImpact,inputUSDC,returnedUSDC].every(Number.isFinite)||inputUSDC<=0)throw Error('Quote math invalid');
+      return {inputUSDC,returnedUSDC,dragPct:(inputUSDC-returnedUSDC)/inputUSDC*100,buyImpact,sellImpact,gasUSD:buy.gasUSD!==null&&sell.gasUSD!==null?buy.gasUSD+sell.gasUSD:null};
+    }
+    function freshRouteEvidence(row,plan,now=Date.now()) {
+      const e=routeEvidence.get(row.key);
+      return e?.status==='observed'&&e.fingerprint===routeFingerprint(row,plan)&&now>=e.at&&now-e.at<=10000?e:null;
+    }
+    async function runRouteCheck(key) {
+      const row=visibleTradeRows.get(key);if(!row)return;
+      const asset=assetContext(row),plan=getTradePlan(key,row.price),fingerprint=routeFingerprint(row,plan);
+      if(!asset||!QUOTE_NETWORKS[asset.chain]) {routeEvidence.set(key,{status:'unavailable',message:'Exact supported quote route unavailable for this asset.'});return;}
+      const budget=Number(plan.budget);
+      if(!Number.isFinite(budget)||budget<=0||budget>1000||budget%50!==0){routeEvidence.set(key,{status:'unavailable',message:'Choose your AUD spend first.'});return;}
+      routeEvidence.set(key,{status:'checking',fingerprint});paintRouteChecks();
+      try {
+        const fx=await fetchDisplayFx();
+        if(!validDisplayFx(fx))throw Error('AUD reference conversion unavailable');
+        const amount=String(Math.floor(budget/fx.rate*1e6));
+        if(!positiveAtomic(amount))throw Error('Quote amount invalid');
+        const probe=(BigInt(amount)/10n).toString(),usdc=QUOTE_NETWORKS[asset.chain].usdc;
+        if(sameQuoteToken(usdc,asset.address,asset.chain))throw Error('Stablecoins are not dump candidates');
+        // Smaller-size comparisons first; full-size entry and exit quotes last.
+        const smallBuy=await fetchRouteQuote(asset,usdc,asset.address,probe);
+        const smallSell=await fetchRouteQuote(asset,asset.address,usdc,smallBuy.amountOut);
+        const buy=await fetchRouteQuote(asset,usdc,asset.address,amount);
+        const sell=await fetchRouteQuote(asset,asset.address,usdc,buy.amountOut);
+        if(Date.now()-Math.min(smallBuy.at,smallSell.at,buy.at,sell.at)>10000)throw Error('Quotes aged during comparison; refresh at the venue');
+        const current=visibleTradeRows.get(key);
+        if(!current||fingerprint!==routeFingerprint(current,getTradePlan(key,current.price)))throw Error('Selection changed; check the new spend');
+        routeEvidence.set(key,{status:'observed',fingerprint,at:Math.min(smallBuy.at,smallSell.at,buy.at,sell.at),provider:buy.provider,fx:{rate:fx.rate,date:fx.date},budget,...calculateRoundTrip(smallBuy,smallSell,buy,sell)});
+      } catch(error) {routeEvidence.set(key,{status:'unavailable',fingerprint,message:error.name==='AbortError'?'Quote request timed out.':String(error.message||'Quote unavailable').slice(0,160)});}
+    }
+    function requestRouteCheck(key) {
+      if(routeCheckPending.size || Date.now()-(routeLastAttempt.get(key)||0)<15000)return;
+      routeLastAttempt.set(key,Date.now());routeCheckPending.add(key);
+      routeQueue=routeQueue.then(()=>runRouteCheck(key)).catch(()=>routeEvidence.set(key,{status:'unavailable',message:'Quote unavailable.'})).finally(()=>{routeCheckPending.delete(key);paintRouteChecks();refreshCompactCards();});
+      paintRouteChecks();
+    }
+    function routeCheckMarkup(row,plan) {
+      const e=routeEvidence.get(row.key),fresh=freshRouteEvidence(row,plan),asset=assetContext(row);
+      let message='Compare current buy and sell quotes at your selected spend. No wallet needed.';
+      if(!asset||!QUOTE_NETWORKS[asset.chain])message='No supported exact quote route for this coin/chain. No substitute token is used.';
+      else if(routeCheckPending.has(row.key))message='Checking both directions...';
+      else if(e?.status==='unavailable')message=e.message;
+      else if(e?.status==='observed'&&!fresh)message='Quote needs refreshing for the current selection.';
+      const button=`<button type="button" class="btn" data-check-route="${escapeHTML(row.key)}" ${routeCheckPending.size||!asset||!QUOTE_NETWORKS[asset.chain]?'disabled':''}>CHECK MY COSTS</button>`;
+      if(!fresh)return button+`<div class="trade-note">${escapeHTML(message)}</div>`;
+      const number=v=>Number(v).toLocaleString('en-US',{maximumFractionDigits:4});
+      return button+`<div class="trade-note"><strong>${escapeHTML(fresh.provider)} comparison | not an order</strong><br>${number(fresh.inputUSDC)} USDC in â ${number(fresh.returnedUSDC)} USDC back now, before unquoted costs. Difference ${fresh.dragPct.toFixed(2)}%.</div><details class="trade-assumptions"><summary>Quote details &amp; remaining costs</summary><div class="trade-note">Size-related deterioration versus a 10%-size probe: buy ${fresh.buyImpact.toFixed(2)}%, sell ${fresh.sellImpact.toFixed(2)}%. Independent snapshots, not realized slippage.<br>Network estimate: ${fresh.gasUSD===null?'not supplied':'US$'+number(fresh.gasUSD)+' for both swaps; approval costs extra'}. Token-tax coverage and wallet/setup charges are not verified.<br>Uses A$${fresh.budget} as swap input, gas extra; reference USD/AUD ${fresh.fx.rate} (${escapeHTML(fresh.fx.date)}), assumes 1 USDC = US$1. Quotes are for current market prices, not your future entry/target. Do not add these costs to the manual model twice.<br>OPEN MARKET may use another provider; check its final quote. A reverse quote is not proof your wallet can sell. ${escapeHTML(new Date(fresh.at).toISOString())}</div></details>`;
+    }
+    function paintRouteChecks() {
+      document.querySelectorAll('[data-route-check]').forEach(host=>{
+        const row=visibleTradeRows.get(host.dataset.routeCheck);if(!row)return;
+        const markup=routeCheckMarkup(row,getTradePlan(row.key,row.price));
+        if(host.dataset.renderedQuote===markup)return;
+        const open=Boolean(host.querySelector('details[open]')),focused=host.contains(document.activeElement);
+        host.innerHTML=markup;host.dataset.renderedQuote=markup;
+        if(open&&host.querySelector('details'))host.querySelector('details').open=true;
+        if(focused)host.querySelector('[data-check-route]')?.focus({preventScroll:true});
+      });
+    }
+    function evidenceNumber(value) {
+      if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim()==='') return null;
+      const n=Number(value); return Number.isFinite(n) && n>=0 ? n : null;
+    }
+    function normalisePoolFlow(attributes) {
+      const windows={};
+      for(const period of ['m15','h1','h24']) {
+        const t=attributes.transactions?.[period] || {};
+        const count=k=>{const n=evidenceNumber(t[k]);return Number.isSafeInteger(n)?n:null;};
+        const buys=count('buys'),sells=count('sells');
+        let buyers=count('buyers'),sellers=count('sellers');
+        if(buys===null || buyers>buys) buyers=null;
+        if(sells===null || sellers>sells) sellers=null;
+        const volume=evidenceNumber(attributes.volume_usd?.[period]);
+        let buyUSD=evidenceNumber(attributes.buy_volume_usd?.[period]),sellUSD=evidenceNumber(attributes.sell_volume_usd?.[period]);
+        // Reject internally inconsistent optional side volumes; never invent them.
+        if(volume!==null && buyUSD!==null && sellUSD!==null && Math.abs(buyUSD+sellUSD-volume)>Math.max(.01,volume*.01)) buyUSD=sellUSD=null;
+        const dollarShare=buyUSD!==null && sellUSD!==null && buyUSD+sellUSD>0 ? buyUSD/(buyUSD+sellUSD)*100 : null;
+        windows[period]={buys,sells,buyers,sellers,volume,buyUSD,sellUSD,dollarShare};
+      }
+      return windows;
+    }
+    function evidencePool(row) {
+      if(row?.kind!=='chain') return null;
+      for(const lane of CHAIN_LANES) {
+        const pool=(chainPools[lane.key]||[]).find(p=>p.identity===row.key && p.tokenAddress===row.contract && p.chart===row.chart);
+        if(pool) return {lane,pool};
+      }
+      return null;
+    }
+    function candleEvidenceKey(lane,pool) { return lane.api+'|'+pool.poolAddress+'|'+pool.tokenAddress; }
+    function parseClosedCandles(payload,lane,pool,seconds,now=Date.now()) {
+      const sameAddress=(a,b)=>typeof a==='string' && typeof b==='string' && (lane.api==='solana'?a===b:a.toLowerCase()===b.toLowerCase());
+      if(!sameAddress(payload?.meta?.base?.address,pool.tokenAddress) || !sameAddress(payload?.meta?.quote?.address,pool.quoteAddress)) throw Error('Candle token identity mismatch');
+      const input=payload?.data?.attributes?.ohlcv_list;
+      if(!Array.isArray(input) || input.length>1000 || ![900,3600].includes(seconds)) throw Error('Candle data invalid');
+      const seen=new Set(),rows=[];
+      for(const r of input) {
+        if(!Array.isArray(r)||r.length!==6||!r.every(v=>typeof v==='number'&&Number.isFinite(v))) throw Error('Candle values invalid');
+        const [t,o,h,l,c,v]=r;
+        if(!Number.isSafeInteger(t)||t<=0||t%seconds!==0||Math.min(o,h,l,c)<=0||h<Math.max(o,c,l)||l>Math.min(o,c,h)||v<0||seen.has(t)) throw Error('Candle consistency invalid');
+        seen.add(t);
+        // An open bar is not recovery or trading-age evidence.
+        if((t+seconds)*1000<=now) rows.push({at:t*1000,open:o,high:h,low:l,close:c,volume:v});
+      }
+      return rows.sort((a,b)=>a.at-b.at);
+    }
+    function closedCandleSummary(hour,quarter,now=Date.now()) {
+      const traded=hour.filter(c=>c.volume>0);
+      // Closing boundary is conservative: a trade somewhere in the candle occurred no later than this.
+      const oldestTradeBy=traded.length ? traded[0].at+3600000 : null;
+      const ageDays=oldestTradeBy===null ? null : (now-oldestTradeBy)/86400000;
+      const usable=(rows,step)=> {
+        const last=rows.slice(-4);
+        return last.length===4 && last.every((c,i)=>c.volume>0 && (!i||c.at-last[i-1].at===step)) && now>=last[3].at+step && now-(last[3].at+step)<=step;
+      };
+      const ready=usable(hour,3600000)&&usable(quarter,900000);
+      const h=hour.slice(-4),q=quarter.slice(-4);
+      const recovery=ready && q[3].low>q[2].low && q[2].low>=q[1].low && q[3].close>q[2].close && q[2].close>q[1].close && h[3].low>=h[2].low && h[3].close>h[2].close;
+      const previous=hour.slice(-25,-1),last=hour[hour.length-1];
+      const baselineValid=previous.length===24 && last && [...previous,last].every((c,i,all)=>!i||c.at-all[i-1].at===3600000);
+      const mean=baselineValid ? previous.reduce((s,c)=>s+c.volume,0)/24 : 0;
+      return {oldestTradeBy,ageDays,sevenDays:ageDays!==null&&ageDays>=7,ready,recovery,hourVolumeRatio:mean>0?last.volume/mean:null};
+    }
+    async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
+      const wait=Math.max(0,CHAIN_REQUEST_GAP_MS-(Date.now()-chainLastRequestAt));
+      if(wait) await new Promise(resolve=>setTimeout(resolve,wait));
+      if(document.hidden) throw Error('Evidence check paused while page hidden');
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+      priceCheckActivity(lane.api,1); chainLastRequestAt=Date.now();
+      try {
+        const url=`https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools/${encodeURIComponent(pool.poolAddress)}/ohlcv/${timeframe}?aggregate=${aggregate}&limit=${limit}&currency=usd&token=base&include_empty_intervals=false`;
+        const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
+        if(response.status===429) {const e=Error('Evidence feed rate limited');e.rateLimited=true;throw e;}
+        if(!response.ok) throw Error('Evidence feed unavailable');
+        return parseClosedCandles(await response.json(),lane,pool,timeframe==='hour'?3600:900);
+      } finally {clearTimeout(timer);priceCheckActivity(lane.api,-1);}
+    }
+    async function refreshPoolEvidence() {
+      // Called under the existing shared refresh lock. At most six extra GETs per cycle.
+      if(document.hidden) return;
+      const now=Date.now();
+      const queue=CHAIN_LANES.flatMap(lane=>(chainPools[lane.key]||[]).filter(pool=>pool.change24h<=-10 && pool.change24h>-100 && now>=pool.observedAt && now-pool.observedAt<=20*60000).map(pool=>({lane,pool,key:candleEvidenceKey(lane,pool)})))
+        .filter(x=>now-(poolCandleAttempts.get(x.key)||0)>=CHAIN_POOL_REFRESH_MS)
+        .sort((a,b)=>(poolCandleAttempts.get(a.key)||0)-(poolCandleAttempts.get(b.key)||0)||b.pool.liquidity-a.pool.liquidity).slice(0,3);
+      for(const {lane,pool,key} of queue) {
+        if(document.hidden) break;
+        poolCandleAttempts.set(key,Date.now());
+        try {
+          const hour=await fetchEvidenceCandles(lane,pool,'hour',1,200);
+          const quarter=await fetchEvidenceCandles(lane,pool,'minute',15,100);
+          poolCandleEvidence.set(key,{hour,quarter,observedAt:Date.now()});
+        } catch(error) {
+          poolCandleEvidence.delete(key);
+          if(error.rateLimited) throw error;
+        }
+        refreshCompactCards();
+      }
+      // Bound session memory without changing owner history.
+      if(poolCandleAttempts.size>500) {const keep=[...poolCandleAttempts].sort((a,b)=>b[1]-a[1]).slice(0,400);poolCandleAttempts.clear();keep.forEach(([k,v])=>poolCandleAttempts.set(k,v));}
+      for(const [key,value] of poolCandleEvidence) if(Date.now()-value.observedAt>60*60000) poolCandleEvidence.delete(key);
+    }
+    function marketEvidenceMarkup(row,now=Date.now()) {
+      const match=evidencePool(row);
+      if(!match) return '<div class="trade-note">Reference price only. Exact pool activity and trading age are unverified. This is WATCH, not an approved buy.</div>'+securityMarkup(row);
+      const {lane,pool}=match,flow=pool.flow||{};
+      const fmt=n=>n===null||n===undefined?'not supplied':Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+      const usd=n=>n===null||n===undefined?'not supplied':'US$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+      const rows=['m15','h1','h24'].map((p,i)=>{const f=flow[p]||{};return `<tr><td>${['15m','1h','24h'][i]}</td><td>${fmt(f.buys)} / ${fmt(f.sells)}</td><td>${fmt(f.buyers)} / ${fmt(f.sellers)}</td><td>${f.dollarShare===null||f.dollarShare===undefined?'not supplied':f.dollarShare.toFixed(1)+'% buy USD'}</td></tr>`;}).join('');
+      const e=poolCandleEvidence.get(candleEvidenceKey(lane,pool));
+      const fresh=e && now>=e.observedAt && now-e.observedAt<=20*60000;
+      const s=fresh?closedCandleSummary(e.hour,e.quarter,now):null;
+      const history=s?.sevenDays ? `At least ${Math.floor(s.ageDays)} days of traded history evidenced in this pool; not a launch date.` : 'Seven-day trading history not yet evidenced. A young pool does not prove a young token.';
+      const recovery=!s?'Closed candles waiting for the bounded research queue.':!s.ready?'Recent closed 15m/1h candles incomplete.':s.recovery?'Closed candles meet the simple higher-low recovery screen; not a buy approval.':'Closed candles have not met the higher-low recovery screen.';
+      const current=Number.isFinite(pool.observedAt)&&now>=pool.observedAt&&now-pool.observedAt<=20*60000;
+      return `<div class="trade-note">${current?'Public pool snapshot':'Older snapshot - refresh needed'}: ${escapeHTML(new Date(pool.observedAt).toISOString())}. Exact base-token side; provider-reported addresses are not people.</div><div class="research" style="overflow-x:auto"><table><thead><tr><th>Period</th><th>Buy / sell trades</th><th>Buying / selling addresses</th><th>Dollar pressure</th></tr></thead><tbody>${rows}</tbody></table></div><div class="trade-note">Reported pool reserves ${usd(pool.liquidity)}; 24h turnover ${usd(pool.volume)}. Neither proves your sell price. Missing dollar splits are never calculated from trade counts.</div><div class="trade-note">${history} ${recovery}${s?.hourVolumeRatio!==null&&s?.hourVolumeRatio!==undefined?' Last closed-hour volume: '+s.hourVolumeRatio.toFixed(2)+'x the prior 24 closed-hour average.':''}</div>${securityMarkup(row)}<div class="trade-note">Use CHECK MY COSTS in your plan for current two-way route comparisons. Total wallet-specific costs, liquidity ownership/locks and unlock schedules remain unverified. No 100% qualification or automatic buy. Feed coverage is partial; no wash-trading diagnosis.</div>`;
+    }
     function normalisePoolToken(pool, includedById, lane) {
       const attributes = pool?.attributes || {};
       const baseId = pool?.relationships?.base_token?.data?.id;
@@ -1216,90 +1589,135 @@
       if (!validTokenAddress(lane,tokenAddress)) return null;
       const dexId = String(pool?.relationships?.dex?.data?.id || '');
       const venue = /^[a-zA-Z0-9_-]{1,80}$/.test(dexId) ? dexId.replace(/-/g,' ').toUpperCase() : 'Pool venue unconfirmed';
-      return {symbol, tokenAddress, identity:`${lane.api}:${lane.api === 'solana' ? tokenAddress : tokenAddress.toLowerCase()}`, venue, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}?locale=en`};
+      const quoteAddress=String(quote.address || '').trim();
+      if(!validTokenAddress(lane,quoteAddress)) return null;
+      return {symbol, tokenAddress, quoteAddress, poolAddress:address, observedAt:Date.now(), flow:normalisePoolFlow(attributes), identity:`${lane.api}:${lane.api === 'solana' ? tokenAddress : tokenAddress.toLowerCase()}`, venue, price:selected.price, change24h, liquidity, volume, chart:`https://www.geckoterminal.com/${lane.api}/pools/${address}?locale=en`};
     }
     async function fetchChainPage(lane, page) {
+      if (!Number.isInteger(page) || page < 1 || page > CHAIN_PUBLIC_PAGES) throw new Error('Page outside public coverage');
       const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
       if (waitMs) await new Promise(resolve => setTimeout(resolve,waitMs));
+      if (document.hidden) { const error=new Error('Page paused'); error.paused=true; throw error; }
       priceCheckActivity(lane.api,1);
-      try {
-      const url = `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools?page=${page}&include=base_token,quote_token`;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(),15000);
+      try {
+      const url = `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools?page=${page}&include=base_token,quote_token`;
       chainLastRequestAt = Date.now();
-      let response;
-      try { response = await fetch(url, {cache:'no-store', headers:{Accept:'application/json'}, signal:controller.signal}); }
-      finally { clearTimeout(timeout); }
-      if (response.status === 429) { const error = new Error(`${lane.name} pool feed rate limited`); error.rateLimited = true; throw error; }
-      if (!response.ok) throw new Error(`${lane.name} pool feed HTTP ${response.status}`);
+      const response = await fetch(url, {cache:'no-store', credentials:'omit', redirect:'error', headers:{Accept:'application/json'}, signal:controller.signal});
+      if (!response.ok) {
+        const error = new Error(`${lane.name} pool feed HTTP ${response.status}`);
+        error.status=response.status; error.rateLimited=response.status===429;
+        const retry=response.headers?.get('Retry-After');
+        error.retryMs=/^\d+$/.test(retry||'') ? Number(retry)*1000 : Math.max(0,Date.parse(retry||'')-Date.now());
+        throw error;
+      }
       const payload = await response.json();
-      if (!Array.isArray(payload?.data) || !Array.isArray(payload?.included)) throw new Error(`${lane.name} pool feed invalid`);
-      const includedById = new Map(payload.included.map(item => [item.id,item]));
-      return payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean);
-      } finally { priceCheckActivity(lane.api,-1); }
+      if (!Array.isArray(payload?.data) || payload.data.length>CHAIN_PAGE_SIZE || (payload.data.length && !Array.isArray(payload?.included))) throw new Error(`${lane.name} pool feed invalid`);
+      const includedById = new Map((payload.included||[]).filter(item=>item&&typeof item.id==='string').map(item => [item.id,item]));
+      return {rows:payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean),rawCount:payload.data.length};
+      } finally { clearTimeout(timeout); priceCheckActivity(lane.api,-1); }
+    }
+    function freshChainPool(pool,now=Date.now()) {
+      return Boolean(pool && Number.isFinite(pool.observedAt) && pool.observedAt>0 && now>=pool.observedAt && now-pool.observedAt<=20*60000);
+    }
+    function discoveryState(lane) {
+      if(!chainDiscovery.has(lane.key)) chainDiscovery.set(lane.key,{pages:new Map(),nextPage:1,checked:new Set(),startedAt:0,nextAt:0,status:'WAITING',lastCheckedAt:0});
+      return chainDiscovery.get(lane.key);
+    }
+    function acceptDiscoveryPage(lane,page,result,now=Date.now()) {
+      const state=discoveryState(lane);
+      if(page===1) {state.checked.clear();state.startedAt=now;}
+      state.pages.set(page,result);state.checked.add(page);state.lastCheckedAt=now;
+      const ended=result.rawCount<CHAIN_PAGE_SIZE;
+      const capped=page===CHAIN_PUBLIC_PAGES;
+      if(ended||capped) {
+        for(const cachedPage of state.pages.keys()) if(cachedPage>page)state.pages.delete(cachedPage);
+        state.nextPage=1;state.nextAt=Math.max(now+60000,state.startedAt+CHAIN_POOL_REFRESH_MS);
+        state.status=ended?'END OF AVAILABLE PAGES':'PUBLIC PAGE LIMIT';
+      } else {state.nextPage=page+1;state.nextAt=0;state.status='SCANNING';}
+      commitChainPools(lane,[...state.pages.values()].flatMap(result=>result.rows));
     }
     function commitChainPools(lane, pages) {
       const unique = [];
       const seen = new Set();
-      pages.sort((a,b) => b.liquidity - a.liquidity || b.volume - a.volume).forEach(pool => {
-        if (!seen.has(pool.identity) && unique.length < CHAIN_POOL_LIMIT) { seen.add(pool.identity); unique.push(pool); }
+      // Prefer the newly read exact identity; never relabel an older page as fresh.
+      pages.slice().sort((a,b) => b.observedAt-a.observedAt || b.liquidity-a.liquidity || b.volume-a.volume).forEach(pool => {
+        if (!seen.has(pool.identity)) { seen.add(pool.identity); unique.push(pool); }
       });
+      unique.sort((a,b)=>b.liquidity-a.liquidity||b.volume-a.volume);
       chainPools[lane.key] = unique;
       chainPoolsUpdatedAt[lane.key] = Date.now();
-      const recordedAt = Date.now();
       unique.forEach(pool => {
+        const recordedAt=pool.observedAt;
         recordGaugeSample(pool.identity,pool.price,recordedAt);
         recordDeskSample(pool.identity,pool.price,recordedAt);
         const samples = Array.isArray(priceSamples[pool.identity]) ? priceSamples[pool.identity] : [];
-        samples.push({price:pool.price,recordedAt});
+        if(!samples.length || recordedAt>samples[samples.length-1].recordedAt) samples.push({price:pool.price,recordedAt});
         priceSamples[pool.identity] = samples.slice(-3);
       });
       renderChainBoards();
       buildBuySetups();
     }
     async function refreshChainPools() {
-      if (chainRefreshInFlight) return;
+      if (chainRefreshInFlight || document.hidden) return;
+      clearTimeout(chainRetryTimer);
+      if(Date.now()<chainDiscoveryBackoffUntil) {chainRetryTimer=setTimeout(refreshChainPools,Math.min(2147483647,chainDiscoveryBackoffUntil-Date.now()));return;}
       chainRefreshInFlight = true;
-      const pending = Object.fromEntries(CHAIN_LANES.map(lane => [lane.key,[]]));
-      let rateLimited = false;
       try {
-        outer: for (const page of [1,2]) {
-          for (const lane of CHAIN_LANES) {
+        // One round per batch, then yield. Each chain retains its own page cursor.
+        for(let visit=0;visit<CHAIN_LANES.length&&!document.hidden;visit++) {
+          const lane=CHAIN_LANES[chainDiscoveryCursor++ % CHAIN_LANES.length];
+          const state=discoveryState(lane);
+          if(Date.now()<state.nextAt)continue;
+          const page=state.nextPage;
             try {
-              pending[lane.key].push(...await fetchChainPage(lane,page));
-              commitChainPools(lane,pending[lane.key]);
+              acceptDiscoveryPage(lane,page,await fetchChainPage(lane,page));
             } catch (error) {
               console.warn(error.message);
-              if (error.rateLimited) { rateLimited = true; break outer; }
+              if(error.paused)break;
+              state.status=error.rateLimited?'FEED COOLING DOWN':error.status===404?'PUBLIC MARKET FEED UNAVAILABLE':error.status===401||error.status===403?'PUBLIC ACCESS UNAVAILABLE':'FEED RETRY PENDING';
+              state.nextAt=Date.now()+(error.rateLimited?60000:300000);
+              renderChainBoards();
+              if(error.rateLimited) {chainDiscoveryBackoffUntil=Date.now()+Math.max(60000,Number.isFinite(error.retryMs)?error.retryMs:0);break;}
             }
-          }
+        }
+        if(!document.hidden&&Date.now()>=chainDiscoveryBackoffUntil&&Date.now()>=chainEvidenceDueAt) {
+          chainEvidenceDueAt=Date.now()+CHAIN_POOL_REFRESH_MS;
+          try {await refreshPoolEvidence();} catch(error) {if(error.rateLimited)chainDiscoveryBackoffUntil=Date.now()+60000;}
         }
       } finally {
         chainRefreshInFlight = false;
-        if (rateLimited) {
-          clearTimeout(chainRetryTimer);
-          chainRetryTimer = setTimeout(refreshChainPools,60000);
-        }
+        const soonest=Math.min(...CHAIN_LANES.map(lane=>discoveryState(lane).nextAt));
+        const delay=Math.max(1000,chainDiscoveryBackoffUntil-Date.now(),soonest-Date.now());
+        if(!document.hidden) chainRetryTimer=setTimeout(refreshChainPools,Math.min(2147483647,delay));
       }
     }
     function renderChainBoards() {
       const paused = new Set(CHAIN_LANES.filter(lane => chainLaneElement(lane.key)?.classList.contains('paused')).map(lane => lane.key));
+      const motion = new Map(CHAIN_LANES.map(lane=>[lane.key,chainLaneElement(lane.key)?.querySelector('.chain-track')?.getAnimations?.()[0]?.currentTime]));
       const boards = CHAIN_LANES.map(lane => {
         const named = checkerCoins.filter(item => item.chain === lane.key).map(item => ({item, marketItem:market.find(m => m.id === item.cg)})).sort((a,b) => screeningRating(b.marketItem) - screeningRating(a.marketItem) || (finiteChange(a.marketItem?.price_change_percentage_24h) ?? 999) - (finiteChange(b.marketItem?.price_change_percentage_24h) ?? 999));
-        const namedSymbols = new Set(named.map(row => row.item.symbol));
-        const discovered = (chainPools[lane.key] || []).filter(pool => !namedSymbols.has(pool.symbol));
+        const namedAddresses = new Set(named.filter(row=>validTokenAddress(lane,row.item.addr)).map(row=>lane.api==='solana'?row.item.addr:row.item.addr.toLowerCase()));
+        const discovered = (chainPools[lane.key] || []).filter(pool => !namedAddresses.has(lane.api==='solana'?pool.tokenAddress:pool.tokenAddress.toLowerCase()));
         const namedContent = named.map(({item,marketItem}) => chainCoinMarkup(item,marketItem,lane.key)).join('');
-        const chainFresh = Boolean(chainPoolsUpdatedAt[lane.key] && Date.now() - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
-        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key,chainFresh)).join('');
-        const content = namedContent + discoveredContent || `<span class="chain-empty">LOADING TOP 25 CHAIN COINS...</span>`;
+        const discoveredContent = discovered.map(pool => dynamicChainCoinMarkup(pool,lane.key,freshChainPool(pool))).join('');
+        const content = namedContent + discoveredContent || `<span class="chain-empty">NO PUBLIC COINS LOADED YET</span>`;
         const total = named.length + discovered.length;
         const moving = total > 2 ? content + content : content;
-        const animation = total > 2 ? '' : ' style="animation:none"';
-        const age = chainPoolsUpdatedAt[lane.key] ? `  |  ${chainPools[lane.key]?.length || 0}/25 FOUND  |  ${chainFresh ? 'UPDATED' : 'STALE'} ${localClock(chainPoolsUpdatedAt[lane.key])}` : '  |  TOP 25 LOADING';
+        // More discovered coins must not make the banner race across the phone.
+        const animation = total > 2 ? ` style="animation-duration:${Math.max(72,total*8)}s"` : ' style="animation:none"';
+        const coverage=discoveryState(lane), freshCount=(chainPools[lane.key]||[]).filter(pool=>freshChainPool(pool)).length;
+        const age = `  |  ${chainPools[lane.key]?.length || 0} POOL TOKENS (${freshCount} RECENT)  |  ${coverage.checked.size} PAGES CHECKED  |  ${coverage.status}`;
         return `<div class="chain-banner" id="chain-lane-${lane.key}" role="button" tabindex="0" aria-pressed="false" aria-label="Pause ${lane.name} coin banner" onclick="toggleChainLane(event,'${lane.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChainLane(event,'${lane.key}');}"><div class="chain-banner-head"><span class="chain-name">${lane.name}</span><span class="chain-meta">GAS: ${lane.gas}  |  WALLET: ${lane.wallet}${age}  |  <b data-chain-hint>TAP TO PAUSE</b></span></div><div class="chain-viewport"><div class="chain-track"${animation}>${moving}</div></div></div>`;
       }).join('');
       $('chainBoards').innerHTML = boards;
       paused.forEach(key => setChainLanePaused(key,true));
+      // Page arrivals must not restart every long banner at its first coin.
+      CHAIN_LANES.forEach(lane=>{
+        const time=motion.get(lane.key), animation=chainLaneElement(lane.key)?.querySelector('.chain-track')?.getAnimations?.()[0];
+        if(animation&&Number.isFinite(time))animation.currentTime=time;
+      });
     }
     
     function liveChangeForCoin(cg) {
@@ -1468,7 +1886,7 @@
       if (last && observedAt-last.at < 30000) return;
       gaugeSamples.set(key,[...samples,{price:priceValue,at:observedAt}].slice(-3));
     }
-    function qualificationState(row, now = Date.now()) {
+    function sampleQualificationState(row, now = Date.now()) {
       const checking = {label:'CHECKING',tone:'checking',angle:0,note:'Fresh price evidence needed',stage:'freshness',sampleCount:0};
       if (!row) return checking;
       let current, change, observedAt, maxAge;
@@ -1481,7 +1899,7 @@
         const lane = CHAIN_LANES.find(l => (chainPools[l.key] || []).some(p => p.identity === row.key));
         if (!lane) return checking;
         const pool = chainPools[lane.key].find(p => p.identity === row.key);
-        observedAt = chainPoolsUpdatedAt[lane.key]; maxAge = 20*60*1000;
+        observedAt = pool.observedAt; maxAge = 20*60*1000;
         if (!Number.isFinite(observedAt) || now < observedAt || now-observedAt > maxAge) return checking;
         current = pool.price; change = finiteChange(pool.change24h);
       } else return checking;
@@ -1498,8 +1916,30 @@
       if (c.price > b.price && b.price > a.price) return {label:'WATCH',tone:'watch',angle:90,note:'Two rising samples  |  more checks needed',stage:'rising',sampleCount:3};
       if (c.price === b.price && b.price === a.price) return {label:'WATCH',tone:'watch',angle:75,note:'Samples are level  |  recovery unconfirmed',stage:'level',sampleCount:3};
       return {label:'WAIT',tone:'wait',angle:35,note:'Mixed moves  |  waiting for stability',stage:'mixed',sampleCount:3};
-      // No BUY state: executable liquidity, token security and candle-based
-      // recovery checks are not connected. A screening score cannot unlock it.
+      // These in-tab samples are not closed candles. The evidence wrapper below
+      // adds candle checks; executable exit and security still cannot pass here.
+    }
+    function qualificationState(row,now=Date.now()) {
+      const sampled=sampleQualificationState(row,now);
+      const security=currentSecurity(row,now);
+      if(security?.critical)return {...sampled,label:'AVOID',tone:'wait',stage:'risk',note:security.flags.find(f=>f.critical).label+' | public provider finding, not a scam verdict'};
+      if(['freshness','drop'].includes(sampled.stage)) return sampled;
+      const watch=(stage,note)=>({...sampled,label:'WATCH',tone:'watch',stage,note,angle:35});
+      const match=evidencePool(row);
+      if(!match) return watch('evidence','Price screen only | pool, exit and security checks needed');
+      const {lane,pool}=match;
+      if(!Number.isFinite(pool.observedAt)||now<pool.observedAt||now-pool.observedAt>20*60000) return {...sampled,label:'CHECKING',tone:'checking',stage:'freshness',note:'Current pool evidence needed'};
+      const f=pool.flow?.h1;
+      if(f?.buys===0||f?.sells===0) return watch('inactive','No two-way trading observed in the last hour');
+      if(!f||f.buys===null||f.sells===null||f.buyers===null||f.sellers===null) return watch('evidence','Buyer and seller evidence incomplete');
+      const e=poolCandleEvidence.get(candleEvidenceKey(lane,pool));
+      if(!e||now<e.observedAt||now-e.observedAt>20*60000) return watch('evidence','Activity seen | checking trading history and closed candles');
+      const summary=closedCandleSummary(e.hour,e.quarter,now);
+      if(!summary.sevenDays) return watch('evidence','Seven days of traded history not yet evidenced');
+      if(!summary.ready) return watch('evidence','Recent closed 15m and 1h candles needed');
+      if(sampled.stage==='falling') return watch('falling','Latest sampled price is falling | recovery needs rechecking');
+      if(!summary.recovery) return watch('mixed','Activity seen | waiting for closed-candle recovery');
+      return watch('recovery','Recovery screen met | exit and security still unverified');
     }
     function refreshQualificationGauges() {
       refreshCompactCards();
@@ -1632,6 +2072,7 @@
       return null;
     }
     function resultBuyStatus(row,plan) {
+      if(currentSecurity(row)?.critical) return {enabled:false,note:'Public provider reports a serious token restriction. Review Market checks before proceeding elsewhere.'};
       const route = resultBuyRoute(row);
       if (!route) return {enabled:false,note:'Trading route unavailable for this coin.'};
       const model = tradeMath(row.price,plan);
@@ -1782,9 +2223,9 @@
             <div class="trade-total" data-exit-total>${model.netReturn !== undefined ? escapeHTML(audMoney(model.netReturn))+' after entered costs' : escapeHTML(audMoney(model.grossReturn || 0))+' at target before costs'}</div>
           </section>
         </div>
-        <section class="trade-result"><h3>MY RESULT</h3><div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div>${resultBuyMarkup(row,plan)}</section>
-        <details class="trade-assumptions"><summary>Fees &amp; slippage estimate</summary>
-          <div class="trade-note">Live route quotes are not connected. Optional assumptions below apply only to this coin and must be refreshed for its chain and route. Blank means unknown, not free.</div>
+        <section class="trade-result"><h3>MY RESULT</h3><div data-trade-summary>${tradeSummaryMarkup(row,plan)}</div><div data-route-check="${escapeHTML(row.key)}">${routeCheckMarkup(row,plan)}</div>${resultBuyMarkup(row,plan)}</section>
+        <details class="trade-assumptions" data-manual-costs><summary>Fees &amp; slippage estimate</summary>
+          <div class="trade-note">CHECK MY COSTS shows a separate current-route comparison where available. These optional future-price assumptions are not auto-filled from quotes. Blank means unknown, not free; do not count the same fee or price impact twice.</div>
           <div class="trade-fields">
           ${field('feeIn','Entry fees / token tax (%)',0,'From your venue')}
           ${field('feeOut','Exit fees / token tax (%)',0,'At the chosen exit value')}
@@ -1810,6 +2251,8 @@
       syncEntryControl(box,plan);
       box.querySelector('[data-plan-field="multiple"]').setAttribute('aria-valuetext',plan.multiple+' times entry price');
       syncResultBuy(box,row,plan);
+      const quoteBox=box.querySelector('[data-route-check]');
+      if(quoteBox)quoteBox.innerHTML=routeCheckMarkup(row,plan);
     }
     function updateTradePlan(event) {
       const field = event.target.dataset?.planField;
@@ -1844,7 +2287,6 @@
       }).map(m => { const item=checkerCoins.find(c => c.cg === m.id); return {kind:'named',key:m.id,symbol:String(m.symbol || '').toUpperCase(),chain:String(item?.chain || 'MARKET').toUpperCase(),contract:String(item?.addr || ''),venue:'Reference price  |  route not selected',price:Number(m.current_price),change:Number(m.price_change_percentage_24h),state:entryStateFor(m.id),rating:screeningRating(m)}; });
       const discoveredAvailable = [];
       const discoveredQualified = CHAIN_LANES.flatMap(lane => {
-        const fresh = Boolean(chainPoolsUpdatedAt[lane.key] && now - chainPoolsUpdatedAt[lane.key] <= 20 * 60 * 1000);
         const rows = (chainPools[lane.key] || []).map(pool => {
           const state = entryStateFor(pool.identity);
           const directionPoints = state === 'recovering' ? 20 : state === 'stabilising' ? 10 : state === 'checking' ? 5 : 0;
@@ -1852,22 +2294,25 @@
           return {kind:'chain',key:pool.identity,symbol:pool.symbol,chain:lane.name,contract:pool.tokenAddress,venue:pool.venue,price:pool.price,change:pool.change24h,state,rating,chart:pool.chart};
         });
         discoveredAvailable.push(...rows);
-        return fresh ? rows.filter(row=>Number.isFinite(row.change) && row.change<=-10 && row.change>-100) : [];
+        const recentIds=new Set((chainPools[lane.key]||[]).filter(pool=>freshChainPool(pool,now)).map(pool=>pool.identity));
+        return rows.filter(row=>recentIds.has(row.key)&&Number.isFinite(row.change)&&row.change<=-10&&row.change>-100);
       });
       const pinned=retainWatchedRows([...namedAvailable,...discoveredAvailable]);
-      const qualifyingRows=[...namedQualified,...discoveredQualified].filter(row=>!pumpDumpExclusions.has(pumpDumpKeyForRow(row)));
+      const qualifyingRows=[...namedQualified,...discoveredQualified].filter(row=>!pumpDumpExclusions.has(pumpDumpKeyForRow(row))&&!currentSecurity(row)?.critical);
       const publicDataReady=marketReceivedAt>0 || Object.values(chainPoolsUpdatedAt).some(at=>Number.isFinite(at)&&at>0);
       updateDumpEntryState(qualifyingRows,publicDataReady,now);
       const merged=new Map([...namedQualified,...discoveredQualified].map(row=>[row.key,row]));
       pinned.forEach(row=>merged.set(row.key,row));
-      const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
+      const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))&&(!currentSecurity(row)?.critical||watchedDumpRows.has(row.key))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
+      void refreshSecuritySweep();
       renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
-      const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details.trade-assumptions[open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
+      const openEvidence=new Set(Array.from($('buySetupRows').querySelectorAll('details.market-evidence[open]')).map(d=>d.dataset.evidenceKey));
+      const openPlans = new Set(Array.from($('buySetupRows').querySelectorAll('details[data-manual-costs][open]')).map(details => details.closest('[data-trade-plan]')?.dataset.tradePlan));
 
       if (qualified.length === 0) {
-        $('buySetupRows').innerHTML = `<div class="empty">NO QUALIFYING DUMP - no fresh configured coin is still down at least 10% over the rolling 24 hours.</div>`;
+        $('buySetupRows').innerHTML = `<div class="empty">No fresh 10%+ drops remain after available filters. Reported critical restrictions are excluded; WATCH pins stay visible.</div>`;
         return;
       }
 
@@ -1887,11 +2332,12 @@
           <span class="card-state" data-card-state data-tone="${compact.tone}">${compact.label}</span>
           <div class="card-reason" data-card-reason>${escapeHTML(compact.q.note)}</div>
           <div class="card-freshness" data-card-age>${escapeHTML(compactFreshness(m))}</div>
+          <details class="coin-plan market-evidence" data-evidence-key="${escapeHTML(m.key)}" ${openEvidence.has(m.key)?'open':''}><summary>Market checks</summary><div data-market-evidence>${marketEvidenceMarkup(m)}</div></details>
           <details class="coin-plan" data-plan-key="${escapeHTML(m.key)}" ${expandedCards.has(m.key)?'open':''}><summary>My entry &amp; exit plan</summary>${tradePlanMarkup(m,index)}</details>
         </article>`;
       }).join('');
       $('buySetupRows').innerHTML = rows;
-      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details.trade-assumptions').open = true; });
+      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details[data-manual-costs]').open = true; });
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); });
     }
 
@@ -2082,82 +2528,4 @@
       const button=event.target.closest('[data-copy-contract]');
       if (!button) return;
       event.preventDefault(); event.stopPropagation();
-      copyContractAddress(button.dataset.copyContract,button);
-    });
-    $('buySetupRows').addEventListener('click',event => {
-      const button=event.target.closest('[data-pump-dump-key]');
-      if (!button) return;
-      event.preventDefault(); event.stopPropagation();
-      const key=button.dataset.pumpDumpKey, symbol=button.dataset.pumpDumpSymbol || 'This coin';
-      if (!key || key.length>180) return alert('Coin identity is invalid. Nothing was removed.');
-      if (!confirm('Remove '+symbol+' from the Dump opps lineup as Pump & Dump?')) return;
-      pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur(); setTimeout(buildBuySetups,0);
-    });
-    $('buySetupRows').addEventListener('click',event=>{
-      const button=event.target.closest('[data-watch-key]'); if(!button) return;
-      event.preventDefault();event.stopPropagation();
-      toggleDumpWatch(button.dataset.watchKey); button.blur(); setTimeout(buildBuySetups,0);
-    });
-    $('dumpGlanceRows').addEventListener('click',event=>{
-      const row=event.target.closest('[data-glance-key]');
-      if(row) openGlanceCard(row.dataset.glanceKey);
-    });
-    document.addEventListener('visibilitychange',refreshCheckDots);
-    $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
-    $('buySetupRows').addEventListener('click',event => {
-      if (!event.target.closest('[data-use-price]')) return;
-      const box = event.target.closest('[data-trade-plan]');
-      const row = box && visibleTradeRows.get(box.dataset.tradePlan);
-      if (!row) return;
-      let sample;
-      if (row.kind === 'named') {
-        const m = price(row.key);
-        if (freshMarketItem(m)) sample = Number(m.current_price);
-      } else {
-        for (const lane of CHAIN_LANES) {
-          if (Date.now() - (chainPoolsUpdatedAt[lane.key] || 0) > 20*60*1000) continue;
-          sample = (chainPools[lane.key] || []).find(p => p.identity === row.key)?.price;
-          if (sample > 0) break;
-        }
-      }
-      if (!(sample > 0)) return alert('A fresh price is unavailable. Your chosen entry is unchanged.');
-      const plan = getTradePlan(row.key,sample);
-      plan.anchor = sample;
-      plan.entryPosition = '100';
-      redrawTradePlan(box,row,plan);
-    });
-    $('chainBoards').addEventListener('click', event => {
-      const button = event.target.closest('[data-chain-pool="true"]');
-      if (!button) return;
-      event.preventDefault();
-      event.stopPropagation();
-      openDynamicPool(event,button.dataset.lane,button.dataset.poolUrl);
-    },true);
-    $('buySetupRows').addEventListener('click', event => {
-      const button = event.target.closest('[data-opportunity-url]');
-      if (!button) return;
-      event.preventDefault();
-      event.stopPropagation();
-      const url = button.dataset.opportunityUrl;
-      if (!/^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(url)) return alert('Verified English chart route unavailable. Nothing was opened.');
-      window.open(url,'_blank','noopener,noreferrer');
-    },true);
-    $('walletLedger').addEventListener('click',event=>{
-      const add=event.target.closest('[data-add-position]'); if(add)return addDetectedPosition(add.dataset.addPosition);
-      const dismiss=event.target.closest('[data-dismiss-wallet-record]'); if(dismiss)return dismissWalletRecord(dismiss.dataset.dismissWalletRecord);
-      const sold=event.target.closest('[data-mark-sold]'); if(sold&&confirm('Move this position into History as sold?'))return markPositionSold(sold.dataset.markSold);
-    });
-    savePumpDumpExclusions();
-    renderWalletLedger();
-    load();
-    setInterval(load, 60000);
-    setInterval(refreshQualificationGauges, 15000);
-    setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
-    refreshChainPools();
-    setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
-    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); checkPendingWalletBuys(); } });
-    window.addEventListener('pageshow', load);
-    window.addEventListener('online', load);
-  </script>
-</body>
-</html>
+      
