@@ -759,7 +759,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       {key:'avalanche', api:'avax', name:'AVALANCHE', gas:'AVAX', wallet:'RABBY'}
     ]);
     const CHAIN_POOL_REFRESH_MS = 10 * 60 * 1000;
-    const CHAIN_REQUEST_GAP_MS = 8000;
+    // GeckoTerminal Public API allows 30 calls/minute. Keep a small safety
+    // margin while avoiding the previous multi-minute first scan.
+    const CHAIN_REQUEST_GAP_MS = 2200;
     const CHAIN_POOL_MIN_LIQUIDITY_USD = 25000;
     // Public network-pool pagination is bounded by the provider, not a 25-token UI cap.
     const CHAIN_PUBLIC_PAGES = 10;
@@ -1155,7 +1157,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         // Slower chain/security checks continue without holding the visible refresh.
         setTimeout(()=>{if(!document.hidden)void refreshChainPools();},500);
         buildBuySetups();refreshQualificationGauges();
-        $('refreshStatus').textContent='Refresh cycle finished | see Sonar feed status';
+        $('refreshStatus').textContent='Prices loaded | market scan continues in background';
       })().finally(()=>{wakePromise=null;refreshSonar();});
       return wakePromise;
     }
