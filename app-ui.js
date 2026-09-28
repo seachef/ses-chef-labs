@@ -494,6 +494,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     }
     let lastDeskRows=readLastDeskRows();
     const tradePlans = readTradePlans();
+    const loadedCardCharts = new Set();
     let visibleTradeRows = new Map();
     function planNumber(value) {
       if (typeof value !== 'number' && typeof value !== 'string') return null;
@@ -882,7 +883,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
           <div class="opportunity-head"><div><h3>${escapeHTML(m.symbol)}</h3><span class="trade-note">${escapeHTML(m.chain)}</span></div>${action}</div>
           ${contractMarkup(m)}
           <div class="opportunity-price"><span><span class="trade-note">Sampled price</span><b data-card-price>${escapeHTML(usdPrice(m.price))}</b></span><span class="decline" data-card-change>${Number.isFinite(change)?'24H '+change.toFixed(2)+'%':'24H unavailable'}</span></div>
-          <div data-card-chart>${sampleChartMarkup(m)}</div>
+          <div data-card-chart>${loadedCardCharts.has(m.key)?sampleChartMarkup(m):`<button type="button" class="btn" data-load-card-chart="${escapeHTML(m.key)}">LOAD CHART</button>`}</div>
           <span class="card-state" data-card-state data-tone="${compact.tone}">${compact.label}</span>
           <div class="card-reason" data-card-reason>${escapeHTML(compact.q.note)}</div>
           <div class="card-freshness" data-card-age>${escapeHTML(compactFreshness(m))}</div>
@@ -913,13 +914,15 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
           if (bv === null) return -1;
           return av - bv;
         });
-        const tickerHtml = sortedMarket.map((m, index) => {
+        const paused=$('tickerShell').classList.contains('paused');
+        const tickerRows=paused?sortedMarket.slice(0,12):sortedMarket;
+        const tickerHtml = tickerRows.map((m, index) => {
           const change = finiteChange(m.price_change_percentage_24h) ?? 0;
           const signal = signalForChange(change);
           const direction = change > 0 ? 'positive' : (change < 0 ? 'negative' : 'flat');
           return `<button type="button" class="item scanning ${direction}" style="--scan-order:${index}" onclick="openTickerCoin(event,'${m.id}')" aria-label="${escapeHTML(String(m.symbol || '').toUpperCase())}: ${money(m.current_price)}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(2)} percent. Open verified route when banner is paused."><b>${escapeHTML(String(m.symbol || '').toUpperCase())}</b> <span class="price">${money(m.current_price)}</span> <span class="${signal}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span></button>`;
         }).join('');
-        $('ticker').innerHTML = tickerHtml + tickerHtml;
+        $('ticker').innerHTML = paused ? tickerHtml : tickerHtml + tickerHtml;
         const feedTime = newestFeedTime(market);
         const freshCount = market.filter(item => freshMarketItem(item)).length;
         $('tickerStatus').textContent = `${freshCount}/${ids.length} fresh prices - feed ${localClock(feedTime)} - highest rating first`;
@@ -1013,6 +1016,15 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     }
 
     $('buySetupRows').addEventListener('click',event=>{
+      const loadChartButton=event.target.closest('[data-load-card-chart]');
+      if(loadChartButton){
+        event.preventDefault();
+        const key=loadChartButton.dataset.loadCardChart,row=visibleTradeRows.get(key),host=loadChartButton.closest('[data-card-chart]');
+        if(!row||!host)return;
+        loadedCardCharts.add(key);
+        host.innerHTML=sampleChartMarkup(row);
+        return;
+      }
       const intervalButton=event.target.closest('[data-candle-interval]');
       if(intervalButton){
         event.preventDefault();const key=intervalButton.dataset.candleKey,interval=intervalButton.dataset.candleInterval;
