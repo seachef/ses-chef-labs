@@ -1,47 +1,116 @@
-Sea Chef Labs
+<!doctype html>
+<!-- SEA CHEF LABS SONAR UPDATE — 28 SEPTEMBER 2026
+My Market counts the currently visible Dump opps only: Failed / Qualifying / Static.
+Qualifying = measured closed-candle recovery, NOT full approval or a buy instruction.
+NEW is a separate first-appearance badge lasting 24 hours. Watched rows may have both badges.
+Candles: up to 48 closed 15-minute OHLCV candles for the exact recorded pool; no invented bars.
+If data is missing, old or mismatched, only the existing safe chart link is offered.
+Named watchlist coin links are coin pages, not a claim of an exact executable pool.
+Sonar reflects real requests; section outlines acknowledge validated data arrival, not qualification.
+Wake refresh preserves owner state and rate limits; previous positive data must be refreshed.
+Pick of the Day automatic import remains unconnected. It is an honest empty slot until integrated.
+Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded trading session.
+-->
 
-Your calm crypto desk
-USDAUD
-Sea Chef SonarWake my market
-PULL Pull to refresh
-Prices USD | spend and results AUDAuto-refresh on | phone: pull down | laptop: Ctrl+R
-CHECKING EVERY CONFIGURED COIN | TAP TO PAUSEWaiting for fresh public prices...
-Loading live prices...
-Your daily spotlight
-Pick of the Day
+<html lang="en-AU" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Content-Language" content="en-AU">
+  <meta name="google" content="notranslate">
+  <meta name="theme-color" content="#08080b">
+  <meta name="color-scheme" content="dark">
+  <title>Sea Chef Labs</title>
+  <link rel="stylesheet" href="style.css?v=20260928-1">
+</head>
+<body class="notranslate">
+  <div class="container">
+    <header class="topbar">
+      <div class="brand"><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
+      <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
+    </header>
+    <div class="sonar-dock">
+      <button type="button" class="sonar-control" id="sonarWake" onclick="refreshDesk()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
+    </div>
+    <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
+    <div class="top-controls">
+      <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Auto-refresh on | phone: pull down | laptop: Ctrl+R</span></div>
 
-No pick loaded
+    </div>
+    <div class="ticker" id="tickerShell" role="button" tabindex="0" aria-pressed="false" aria-label="Pause moving coin banner" onclick="toggleTickerPause()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTickerPause();}">
+      <div class="ticker-status"><strong id="tickerControlLabel">CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
+      <div class="track" id="ticker">Loading live prices...</div>
+    </div>
+    <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
+      <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">Pick of the Day</h2></div></div>
+      <p class="daily-empty">No pick loaded</p>
+      <p class="daily-note">One researched coin, with an entry and two exit levels.</p>
+      <dl class="daily-preview" aria-label="No researched trade levels loaded">
+        <div><dt>Buy near</dt><dd id="dailyEntry" aria-label="Entry not loaded">Pending</dd></div>
+        <div><dt>Take profit at</dt><dd id="dailyTarget" aria-label="Profit target not loaded">Pending</dd></div>
+        <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">Pending</dd></div>
+      </dl>
+      <details class="coin-plan"><summary>Why this pick?</summary><p class="daily-note">Your morning brief arrives in ChatGPT. It does not load into this window automatically yet. No pick loaded is different from a completed search finding no suitable trade.</p></details>
+    </section>
+    <section class="market-pulse" id="marketSnapshot" aria-labelledby="snapshotTitle">
+      <div class="pulse-title"><h2 id="snapshotTitle">My Market 24hr Snapshot<br><span class="snapshot-sub">Your Dump opps</span></h2></div>
+      <div class="pulse-grid">
+        <div><span class="pulse-label">Failed</span><strong class="pulse-number snapshot-failed" id="snapshotFailed">0</strong></div>
+        <div><span class="pulse-label">Qualifying</span><strong class="pulse-number snapshot-qualified" id="snapshotQualified">0</strong></div>
+        <div><span class="pulse-label">Static</span><strong class="pulse-number snapshot-static" id="snapshotStatic">0</strong></div>
+      </div>
+      <div class="pulse-foot" id="pulseCoverage">Only the coins in your Dump opps windows.</div>
+      <details class="coin-plan"><summary>What does this mean?</summary><p class="trade-note">Failed: a rule failed or selling continues. Qualifying: closed candles show recovery, but remaining checks must still pass. It does not mean buy. Static: four recent 15-minute candles stayed within a 0.5% range; not a buy signal. Incomplete checks are not counted in any box. This is a current snapshot of your 24-hour drop list, not a history of the last day. NEW means first added less than 24 hours ago.</p></details>
+    </section>
+    <section class="dump-glance" aria-labelledby="dumpGlanceTitle">
+      <div class="glance-head"><h2 id="dumpGlanceTitle">Dump opps at a glance</h2><span id="dumpCheckDot" class="check-dot" role="img" aria-label="No price request running" title="No price request running"></span></div>
+      <div class="glance-columns" aria-hidden="true"><span>Coin</span><span>Price</span><span>24H</span><span></span></div>
+      <div id="dumpGlanceRows"></div>
+    </section>
+    <!-- SCL BUY SETUPS WINDOW -->
+    <section class="section dump-buy-zone" id="scl-buy-setups">
+      <div class="desk-heading"><h2>Dump opps</h2><span class="trade-note">10%+ drops  |  sample recovery first</span></div>
+      <p class="trade-note">Watch the recovery. Check the exit. Choose your own trade.</p>
+      <div class="opportunity-cards" id="buySetupRows"></div>
+    </section>
 
-One researched coin, with an entry and two exit levels.
-
-Buy near
-Pending
-Take profit at
-Pending
-Get out if
-Pending
-Why this pick?
-My Market 24hr Snapshot
-Your Dump opps
-
-Failed0
-Qualifying0
-Static0
-Only the coins in your Dump opps windows.
-What does this mean?
-Dump opps at a glance
+    <section class="section wallet-ledger" id="walletLedger">
+      <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
+      <button type="button" class="btn" id="trackWalletButton" aria-expanded="false" aria-controls="trackWalletChoices" onclick="toggleWalletTracking()">Track my wallet</button>
+      <div id="trackWalletChoices" hidden>
+        <p class="trade-note">Optional: connect to help detect purchases you start from this desk. This does not import every wallet trade or place an order.</p>
+        <div class="actions"><button type="button" class="btn" onclick="connectRabby()">Rabby</button><button type="button" class="btn purple" onclick="connectPhantom()">Phantom</button></div>
+      </div>
+      <div class="wallet-ledger-grid" id="pendingBuys"></div>
+      <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
+    </section>
 
 
-CoinPrice24H
-Dump opps
+    <details class="desk-menu" id="deskMenu"><summary>Menu  |  settings</summary>
+      <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
+    </details><!-- end Menu -->
 
-10%+ drops | sample recovery first
-Watch the recovery. Check the exit. Choose your own trade.
 
-My buys
+  </div>
 
-Connect a wallet to detect buys
-Track my wallet
-Open positions & history
-Menu | settings
-RESTORE PUMPNDUMP REMOVALS0 removed from Dump opps
+  <dialog class="chart-dialog" id="poolChartDialog" aria-labelledby="poolChartTitle">
+    <header><strong id="poolChartTitle">Pool chart</strong><button type="button" class="btn" onclick="closePoolChart()">Close</button></header>
+    <p class="trade-note">GeckoTerminal chart. Choose the candle interval inside the chart. Its display does not complete our buy checks.</p>
+    <iframe id="poolChartFrame" title="Exact pool chart from GeckoTerminal" referrerpolicy="no-referrer" allow="fullscreen" allowfullscreen></iframe>
+    <p class="trade-note">If the chart stays blank, <a id="poolChartExternal" target="_blank" rel="noopener noreferrer">open this same pool directly</a>.</p>
+  </dialog>
+  <script src="app-core.js.?v=20260928-3" defer></script>
+  <script src="app-ui.js.?v=20260928-3" defer></script>
+<!-- Candle selector 2026-09-28: per-card 15m, 4h, 3-day closed hollow candles.
+4h and 3-day bars aggregate complete hourly OHLCV in fixed UTC epoch buckets.
+Source gaps, partial buckets and open bars are omitted; insufficient history has an exact chart fallback.
+Selections survive card redraws in this session. Uses up to 1000 hourly bars, same bounded request count.
+Display interval does not alter qualification timeframes. iPhone/provider acceptance pending. -->
+<!-- Chart loading repair 2026-09-28: bounded interleaved pool/candle queue; independent 15m/hour errors;
+exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
+Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
+<!-- Owner cleanup 2026-09-28: removed All coins table and EARN panel, styles, renderer, calculations and listeners. Discovery, watchlist scanning, Dump opps, charts and wallet history retained. -->
+<!-- Owner cleanup: lower chain market banners and their repeated rendering removed; top ticker and chain discovery retained. -->
+<!-- Wallet menu cleanup: one optional Track my wallet disclosure in My buys; Rabby/Phantom are explicit tracking choices. Removed Menu wallet buttons and unused chain-switch shortcut. -->
+</body>
+</html>
