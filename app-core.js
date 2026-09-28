@@ -847,6 +847,7 @@
       shell.setAttribute('aria-pressed', String(paused));
       shell.setAttribute('aria-label', paused ? 'Resume moving coin banner' : 'Pause moving coin banner');
       $('tickerControlLabel').textContent = paused ? 'BANNER PAUSED  |  TAP TO RESUME' : 'CHECKING EVERY CONFIGURED COIN  |  TAP TO PAUSE';
+      if(market.length) renderTickerPrices();
     }
     function validTokenAddress(lane, address) {
       if (lane.api === 'solana') return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
