@@ -596,8 +596,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const model = tradeMath(row.price,plan);
       if (!(model.budget > 0) || !Number.isFinite(model.entry) || !Number.isFinite(model.exit)) return {enabled:false,note:'Choose your spend and prices first.'};
       const q = qualificationState(row);
-      if (q.tone === 'checking') return {enabled:false,note:'Waiting for a fresh price.'};
-      if (q.note === 'Outside the 10% drop rule') return {enabled:false,note:'This coin has left the 10% drop window.'};
+      if (q.stage !== 'recovery') return {enabled:false,note:q.stage === 'freshness'?'Waiting for a fresh price.':q.stage === 'drop'?'This coin has left the 10% drop window.':'Waiting for recovery evidence.'};
       return {enabled:true,route,note:'Opens '+route.venue+' for manual review. Set your amount, entry and exit there; no order is placed here.'};
     }
     function resultBuyMarkup(row,plan) {
@@ -859,26 +858,6 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       $('buySetupRows').innerHTML = rows;
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { if (openPlans.has(box.dataset.tradePlan)) box.querySelector('details[data-manual-costs]').open = true; });
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box => { syncStepControl(box,'budget',true); syncStepControl(box,'multiple',true); });
-    }
-
-    function prepareDumpBuy(cg) {
-      const m = price(cg);
-      const change = finiteChange(m?.price_change_percentage_24h);
-      if (!freshMarketItem(m)) return alert('Price is missing or stale. Refresh before reviewing a buy.');
-      if (change === null || change > -10 || change <= -100) return alert('This coin no longer meets the 10% rolling 24-hour dump rule. Nothing was prepared.');
-      if (entryStateFor(cg) !== 'recovering') return alert('BUY NOW remains locked until two fresh price movements confirm recovery.');
-      const amount = Number(prompt('How many USDC do you want to review for this immediate entry?', '10'));
-      if (!Number.isFinite(amount) || amount <= 0) return alert('No valid amount entered. Nothing was prepared.');
-      const maxSlippagePct = Number(prompt('Maximum price movement allowed before you refuse the entry? Enter a percentage.', '0.5'));
-      if (!Number.isFinite(maxSlippagePct) || maxSlippagePct < 0 || maxSlippagePct > 2) return alert('Choose a maximum between 0% and 2%. Nothing was prepared.');
-      const livePrice = Number(m.current_price);
-      const priceCeiling = livePrice * (1 + maxSlippagePct / 100);
-      const item = checkerCoins.find(x => x.cg === cg);
-      if (!item) return alert('Verified market identity is unavailable. Nothing was prepared.');
-      const summary = `${String(m.symbol || '').toUpperCase()} protected immediate-entry review\nAmount: ${amount.toFixed(2)} USDC\nObserved price: ${livePrice}\nMaximum price: ${priceCeiling}\nRolling 24H: ${change.toFixed(2)}%\nThis is a review note, not an order.`;
-      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(summary).catch(() => {});
-      alert(summary + '\n\nConfirm identity, spread, fees and the final order at the venue.');
-      openTradingRoute(cg);
     }
 
     // --- DUMP-A-THON LOGIC (Direct Links & Visible Addresses) ---
