@@ -1,4 +1,17 @@
 <!doctype html>
+<!-- SEA CHEF LABS SONAR UPDATE — 28 SEPTEMBER 2026
+My Market counts the currently visible Dump opps only: Failed / Qualifying / Static.
+Qualifying = measured closed-candle recovery, NOT full approval or a buy instruction.
+NEW is a separate first-appearance badge lasting 24 hours. Watched rows may have both badges.
+Candles: up to 48 closed 15-minute OHLCV candles for the exact recorded pool; no invented bars.
+If data is missing, old or mismatched, only the existing safe chart link is offered.
+Named watchlist coin links are coin pages, not a claim of an exact executable pool.
+Sonar reflects real requests; section outlines acknowledge validated data arrival, not qualification.
+Wake refresh preserves owner state and rate limits; previous positive data must be refreshed.
+Pick of the Day automatic import remains unconnected. It is an honest empty slot until integrated.
+Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded trading session.
+-->
+
 <html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
@@ -399,6 +412,29 @@
     .daily-spotlight .coin-plan summary { color:#d7c3ed; }
     @keyframes dailyGlow { 0%,100% { box-shadow:0 0 18px rgba(139,92,190,.10); } 50% { box-shadow:0 0 30px rgba(139,92,190,.22); } }
     @media(prefers-reduced-motion:reduce) { .daily-spotlight { animation:none; } }
+    /* Sea Chef Sonar follows real request starts, validated arrivals and failures. */
+    .sonar-dock { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:12px 0; }
+    .sonar-control { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:20px; border:1px solid #554267; background:#16101e; color:#e4d4f8; cursor:pointer; text-align:left; }
+    .sonar-control strong { display:block; font-size:15px; }
+    .sonar-control small { display:block; margin-top:3px; color:#b9acc9; font-size:12px; }
+    .sonar-ring { flex:none; width:36px; height:36px; border:1px solid #776184; border-radius:50%; position:relative; background:radial-gradient(circle, #b99acc 2px,transparent 3px,transparent 10px,#493c57 11px,transparent 12px); }
+    .sonar-ring::after { content:''; position:absolute; inset:3px; border-radius:50%; opacity:0; background:conic-gradient(from 0deg,transparent 55%,rgba(185,144,222,.1) 75%,#c9a2ec 100%); }
+    .sonar-busy .sonar-ring::after { opacity:.85; animation:sonarSweep 2.8s linear infinite; }
+    @keyframes sonarSweep { to {transform:rotate(360deg);} }
+    .sonar-details { color:#bdb0cb; font-size:12px; flex:1; min-width:120px; }
+    .sonar-details summary { cursor:pointer; padding:8px; }
+    .sonar-feed { display:flex; flex-wrap:wrap; justify-content:space-between; gap:5px; padding:7px; border-bottom:1px solid #33263e; }
+    .snapshot-sub { font-size:16px; font-weight:500; color:#c7b6d7; }
+    .snapshot-failed { color:#e7a5b5; } .snapshot-qualified {color:#cfafea;} .snapshot-static {color:#c8b8de;}
+    .hollow-chart { display:block; width:100%; height:auto; min-height:100px; margin-top:10px; background:#100e14; border-radius:14px; }
+    .candle-empty { padding:18px 0; }
+    .candle-caption { display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between; font-size:11px; color:#bfb2cc; }
+    .candle-link { display:inline-block; font-size:12px; border-radius:14px; text-decoration:none; background:#30233e; color:#e2d2f1; }
+    .candle-key { margin-top:6px; font-size:11px; line-height:1.4; }
+    .opportunity-card[data-feed-active="true"]::after {animation:none;opacity:0;}
+    @media(prefers-reduced-motion:reduce) { .sonar-busy .sonar-ring::after {animation:none;} }
+    .gauge-motion-paused .sonar-ring::after {animation-play-state:paused;}
+
   </style>
 </head>
 <body class="notranslate">
@@ -407,6 +443,10 @@
       <div class="brand"><h1>Sea Chef Labs</h1><div class="brand-subtitle">Your calm crypto desk</div></div>
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
+    <div class="sonar-dock">
+      <button type="button" class="sonar-control" id="sonarWake" onclick="refreshDesk()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
+      <details class="sonar-details"><summary aria-label="Show feed status">Feed status</summary><div id="sonarFeeds">No requests yet.</div></details>
+    </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
       <div class="top-copy"><span class="currency-note" id="currencyNote">Prices USD  |  spend and results AUD</span><span id="refreshStatus" role="status" aria-live="polite">Auto-refresh on | phone: pull down | laptop: Ctrl+R</span></div>
@@ -427,14 +467,15 @@
       </dl>
       <details class="coin-plan"><summary>Why this pick?</summary><p class="daily-note">Your morning brief arrives in ChatGPT. It does not load into this window automatically yet. No pick loaded is different from a completed search finding no suitable trade.</p></details>
     </section>
-    <section class="market-pulse" aria-label="Configured watchlist price breadth">
-      <div class="pulse-title"><h2>Market pulse</h2><span class="trade-note">Watchlist  |  rolling 24H</span></div>
+    <section class="market-pulse" id="marketSnapshot" aria-labelledby="snapshotTitle">
+      <div class="pulse-title"><h2 id="snapshotTitle">My Market 24hr Snapshot<br><span class="snapshot-sub">Your Dump opps</span></h2></div>
       <div class="pulse-grid">
-        <div><span class="pulse-label">Rising</span><strong class="pulse-number" id="pulseUp">-</strong><div class="pulse-track"><span id="pulseUpBar"></span></div></div>
-        <div><span class="pulse-label">Falling</span><strong class="pulse-number" id="pulseDown">-</strong><div class="pulse-track down"><span id="pulseDownBar"></span></div></div>
-        <div><span class="pulse-label">Unchanged</span><strong class="pulse-number" id="pulseFlat">-</strong><div class="pulse-track flat"><span id="pulseFlatBar"></span></div></div>
+        <div><span class="pulse-label">Failed</span><strong class="pulse-number snapshot-failed" id="snapshotFailed">0</strong></div>
+        <div><span class="pulse-label">Qualifying</span><strong class="pulse-number snapshot-qualified" id="snapshotQualified">0</strong></div>
+        <div><span class="pulse-label">Static</span><strong class="pulse-number snapshot-static" id="snapshotStatic">0</strong></div>
       </div>
-      <div class="pulse-foot" id="pulseCoverage">Waiting for fresh watchlist prices</div>
+      <div class="pulse-foot" id="pulseCoverage">Only the coins in your Dump opps windows.</div>
+      <details class="coin-plan"><summary>What does this mean?</summary><p class="trade-note">Failed: a rule failed or selling continues. Qualifying: closed candles show recovery, but remaining checks must still pass. It does not mean buy. Static: four recent 15-minute candles stayed within a 0.5% range; not a buy signal. Incomplete checks are not counted in any box. This is a current snapshot of your 24-hour drop list, not a history of the last day. NEW means first added less than 24 hours ago.</p></details>
     </section>
     <section class="dump-glance" aria-labelledby="dumpGlanceTitle">
       <div class="glance-head"><h2 id="dumpGlanceTitle">Dump opps at a glance</h2><span id="dumpCheckDot" class="check-dot" role="img" aria-label="No price request running" title="No price request running"></span></div>
@@ -469,7 +510,7 @@
       <details class="coin-plan"><summary>TITANX ecosystem | what we found</summary>
         <p class="trade-note"><strong>DRAGONX:</strong> protocol buybacks are different from interest paid to you. Direct holder staking yield has not been verified. <a href="https://dragonx.win/" target="_blank" rel="noopener noreferrer">Official site</a></p>
         <p class="trade-note"><strong>Titan Farms:</strong> liquidity farming adds token-price and pool risk. An active DRAGONX pool, its rate and withdrawal terms still need verification. <a href="https://docs.titanfarms.win/" target="_blank" rel="noopener noreferrer">Read the docs</a></p>
-        <p class="trade-note"><strong>HORIZON:</strong> researching only. The site says in development, and the supplied preview was Sepolia testnet. No verified mainnet yield or DRAGONX earning market. <a href="https://horizon.win/" target="_blank" rel="noopener noreferrer">Official site</a> Â· <a href="https://docs.horizon.win/" target="_blank" rel="noopener noreferrer">Whitepaper</a></p>
+        <p class="trade-note"><strong>HORIZON:</strong> researching only. The site says in development, and the supplied preview was Sepolia testnet. No verified mainnet yield or DRAGONX earning market. <a href="https://horizon.win/" target="_blank" rel="noopener noreferrer">Official site</a> · <a href="https://docs.horizon.win/" target="_blank" rel="noopener noreferrer">Whitepaper</a></p>
       </details>
     </details>
 
@@ -998,20 +1039,33 @@
       });
       return {up,down,flat,unknown,total:unique.length,measured:up+down+flat,feedCurrent};
     }
+    function snapshotBucket(row,now=Date.now()) {
+      const q=qualificationState(row,now);
+      if(['risk','excluded','drop','falling','inactive'].includes(q.stage)) return 'failed';
+      if(q.stage==='freshness') return null;
+      // Recovery is progress, not a complete qualification pass or buy instruction.
+      if(q.stage==='recovery') return 'qualified';
+      const candles=chartCandles(row,now);
+      const last=candles?.rows.slice(-4);
+      if(last?.length===4 && last.every((c,i)=>c.volume>0 && (!i||c.at-last[i-1].at===900000))) {
+        const hi=Math.max(...last.map(c=>c.high)),lo=Math.min(...last.map(c=>c.low));
+        if((hi-lo)/lo<=0.005) return 'static';
+      }
+      return null;
+    }
     function refreshMarketPulse() {
-      if (!$('pulseCoverage')) return;
-      const b=watchlistBreadth();
-      [['Up',b.up],['Down',b.down],['Flat',b.flat]].forEach(([name,count])=> {
-        $('pulse'+name).textContent=String(count);
-        $('pulse'+name+'Bar').style.width=(b.measured ? count/b.measured*100 : 0)+'%';
-      });
-      $('pulseCoverage').textContent=b.feedCurrent
-        ? `${b.measured} of ${b.total} latest prices measured | ${b.unknown} waiting | chain discoveries excluded`
-        : `Waiting for a current public price feed | ${b.total} watchlist coins ready to check`;
+      if(!$('snapshotFailed')) return;
+      const counts={failed:0,qualified:0,static:0},rows=[...visibleTradeRows.values()];
+      for(const row of rows) {const bucket=snapshotBucket(row);if(bucket)counts[bucket]++;}
+      $('snapshotFailed').textContent=String(counts.failed);
+      $('snapshotQualified').textContent=String(counts.qualified);
+      $('snapshotStatic').textContent=String(counts.static);
+      const uncounted=rows.length-counts.failed-counts.qualified-counts.static;
+      $('pulseCoverage').textContent=rows.length+' coins in your windows'+(uncounted?' | '+uncounted+' not counted yet':'');
     }
     function compactState(row,now=Date.now()) {
       const q=qualificationState(row,now);
-      const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES',evidence:'WATCH | CHECKS NEEDED',inactive:'WAIT | QUIET MARKET',recovery:'WATCH | RECOVERY SEEN',risk:'AVOID | REPORTED RESTRICTION'};
+      const names={freshness:'DATA NEEDED',drop:'OUTSIDE DROP RULE',samples:'WATCHING',falling:'STILL FALLING',rising:'RISING SAMPLES',level:'LEVEL SAMPLES',mixed:'MIXED MOVES',evidence:'WATCH | CHECKS NEEDED',inactive:'WAIT | QUIET MARKET',recovery:'WATCH | RECOVERY SEEN',risk:'AVOID | REPORTED RESTRICTION',excluded:'EXCLUDED'};
       return {q,label:names[q.stage] || 'WATCHING',tone:q.stage || 'freshness'};
     }
     function recoveryPriority(row) {
@@ -1021,16 +1075,32 @@
     function compareDeskRows(a,b) {
       return recoveryPriority(a)-recoveryPriority(b) || a.symbol.localeCompare(b.symbol) || a.key.localeCompare(b.key);
     }
+    function chartLink(row) {
+      const match=evidencePool(row);
+      if(match && /^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(match.pool.chart)) return {url:match.pool.chart,label:'Open chart'};
+      if(row.kind==='chain' && /^https:\/\/www\.geckoterminal\.com\/[a-z0-9_-]+\/pools\/[a-zA-Z0-9_-]+\?locale=en$/.test(String(row.chart||''))) return {url:row.chart,label:'Open chart'};
+      if(row.kind==='named' && checkerCoins.some(c=>c.cg===row.key)) return {url:'https://www.coingecko.com/en/coins/'+encodeURIComponent(row.key),label:'Open coin chart'};
+      return null;
+    }
+    function chartCandles(row,now=Date.now()) {
+      const match=evidencePool(row);if(!match) return null;
+      const e=poolCandleEvidence.get(candleEvidenceKey(match.lane,match.pool));
+      if(!e || e.observedAt<marketWakeAt || now<e.observedAt || now-e.observedAt>20*60000 || !Array.isArray(e.quarter))return null;
+      const rows=e.quarter.slice(-48);
+      if(rows.length<2 || !rows.every((c,i)=>[c.at,c.open,c.high,c.low,c.close,c.volume].every(Number.isFinite)&&c.at>0&&c.at%900000===0&&c.at+900000<=now&&c.volume>=0&&Math.min(c.open,c.high,c.low,c.close)>0&&c.high>=Math.max(c.open,c.close,c.low)&&c.low<=Math.min(c.open,c.close,c.high)&&(!i||c.at>rows[i-1].at)))return null;
+      if(now-(rows[rows.length-1].at+900000)>900000)return null;
+      return {rows,observedAt:e.observedAt,match};
+    }
     function sampleChartMarkup(row) {
-      const samples=(deskSamples.get(row.key)||[]).filter(s=>Date.now()-s.at<=2*60*60*1000);
-      if (samples.length<2) return '<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="Qualification sampling in progress"><path d="M8 70H312" fill="none" stroke="#34425c"/><path class="qualification-line line-scanning" d="M8 40H312" fill="none" stroke-width="3" stroke-linecap="round"/></svg><div class="card-freshness">Checking the next live price move</div>';
-      const lo=Math.min(...samples.map(s=>s.price)),hi=Math.max(...samples.map(s=>s.price)),range=hi-lo || lo*.002;
-      const duration=samples[samples.length-1].at-samples[0].at;
-      const pts=samples.map((s,i)=>`${i?'L':'M'}${(8+(s.at-samples[0].at)*304/duration).toFixed(2)},${(hi===lo ? 38 : 10+(hi-s.price)/range*56).toFixed(2)}`).join(' ');
-      const q=sampleQualificationState(row);
-      const stage=qualificationState(row).stage==='risk'?'falling':/^(freshness|drop|samples|falling|mixed|level|rising)$/.test(q.stage) ? q.stage : 'freshness';
-      const label=`${row.symbol}: ${samples.length} samples observed in this tab, not candles`;
-      return `<svg class="session-chart" viewBox="0 0 320 80" role="img" aria-label="${escapeHTML(label)}"><path d="M8 70H312" fill="none" stroke="#34425c"/><path class="qualification-line line-${stage}" d="${pts}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="card-freshness">This tab  |  ${samples.length} samples  |  ${escapeHTML(usdPrice(lo))}-${escapeHTML(usdPrice(hi))}</div>`;
+      const data=chartCandles(row),link=chartLink(row);
+      const action=link?`<a class="btn candle-link" href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>`:'<span class="trade-note">Exact chart link unavailable</span>';
+      if(!data)return `<div class="candle-empty">${action}</div>`;
+      const rows=data.rows,low=Math.min(...rows.map(c=>c.low)),high=Math.max(...rows.map(c=>c.high));
+      const padding=Math.max((high-low)*.08,high*.0001),lo=low-padding,hi=high+padding;
+      const y=v=>12+(hi-v)/(hi-lo)*100,first=rows[0].at,last=rows[rows.length-1].at;
+      const x=t=>10+(t-first)/(last-first)*296,width=Math.max(1,Math.min(7,296*900000/(last-first)*.65));
+      const bodies=rows.map(c=>{const top=y(Math.max(c.open,c.close)),bottom=y(Math.min(c.open,c.close)),colour=c.close>=c.open?'#8ddbd5':'#e7a0af';return `<g stroke="${colour}" stroke-width="1.25"><line x1="${x(c.at)}" x2="${x(c.at)}" y1="${y(c.high)}" y2="${y(c.low)}"/><rect x="${x(c.at)-width/2}" y="${top}" width="${width}" height="${Math.max(.8,bottom-top)}" fill="none"/></g>`;}).join('');
+      return `<svg class="hollow-chart" viewBox="0 0 320 124" role="img" aria-label="${escapeHTML(row.symbol)}: exact pool, closed 15-minute candles in USD"><path d="M6 114H314" stroke="#39323f"/>${bodies}</svg><div class="candle-caption"><span>15m closed | USD | ${escapeHTML(localClock(first))} - ${escapeHTML(localClock(last+900000))}</span>${action}</div><div class="trade-note candle-key">Hollow candles: aqua closed higher, rose lower. Chart colours are price direction, not buy approval.</div>`;
     }
     function compactFreshness(row) {
       let at=null;
@@ -1042,14 +1112,70 @@
       return (row.kind==='chain'?'Feed received ':'Price observed ')+age+' ago';
     }
     // The neutral dot reflects actual public-price requests, never buy qualification.
+    let marketWakeAt=0,lastHiddenAt=0,lastWakeAttempt=0,wakePromise=null;
+    const sonarFeeds=new Map();
+    function rowRefreshedSinceWake(row) {
+      if(!marketWakeAt)return true;
+      if(row?.kind==='named')return marketReceivedAt>=marketWakeAt;
+      const m=evidencePool(row);return Boolean(m&&m.pool.observedAt>=marketWakeAt);
+    }
+    function sonarLabel(scope) {
+      if(scope==='watchlist')return 'Watchlist prices';
+      if(scope==='evidence')return 'Public risk and quote checks';
+      const api=scope.replace('candles:',''),lane=CHAIN_LANES.find(l=>l.api===api);
+      return (lane?.name||'Market')+(scope.startsWith('candles:')?' candles':' prices');
+    }
+    function sonarActivity(scope,delta) {
+      const state=sonarFeeds.get(scope)||{phase:'idle',at:0};
+      if(delta>0 && (activePriceChecks.get(scope)||0)===1){state.phase='running';state.accepted=false;}
+      if(delta<0 && !(activePriceChecks.get(scope)||0))state.phase=state.accepted?'received':'unavailable';
+      sonarFeeds.set(scope,state);refreshSonar();
+    }
+    function sonarFresh(scope,ids=[]) {
+      const state=sonarFeeds.get(scope)||{};state.accepted=true;state.at=Date.now();
+      state.phase=(activePriceChecks.get(scope)||0)>0?'running':'received';sonarFeeds.set(scope,state);
+      if(!document.hidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        for(const id of ids){const box=$(id);box?.animate?.([{outline:'1px solid transparent',outlineOffset:'0px'},{outline:'2px solid #85d7d1',outlineOffset:'3px'},{outline:'1px solid transparent',outlineOffset:'5px'}],{duration:1600,easing:'ease-out'});}
+      }
+      refreshSonar();
+    }
+    function refreshSonar() {
+      const button=$('sonarWake'),status=$('sonarStatus'),details=$('sonarFeeds');if(!button||!status)return;
+      const busy=!document.hidden&&activePriceChecks.size>0;
+      button.classList.toggle('sonar-busy',busy);button.setAttribute('aria-busy',String(busy));
+      const entries=[...sonarFeeds],received=entries.filter(([,v])=>v.phase==='received').length;
+      status.textContent=document.hidden?'Paused while closed':busy?'Waking your market...':received?received+' feeds updated | tap to refresh':'Tap to wake my market';
+      if(details)details.innerHTML=entries.length?entries.map(([key,v])=>`<div class="sonar-feed"><span>${escapeHTML(sonarLabel(key))}</span><span>${document.hidden&&v.phase==='running'?'Paused':v.phase==='running'?'Receiving...':v.phase==='received'?'Updated '+escapeHTML(localClock(v.at)):'Unavailable / waiting'}</span></div>`).join(''):'No requests yet.';
+    }
+    async function wakeMarket() {
+      if(document.hidden)return;
+      if(wakePromise)return wakePromise;
+      if(Date.now()-lastWakeAttempt<15000)return;
+      lastWakeAttempt=Date.now();marketWakeAt=Date.now();sonarFeeds.clear();
+      // Keep owner pins, plans, positions and negative risk findings. Invalidate old positives.
+      routeEvidence.clear();priceSamples={};gaugeSamples.clear();
+      for(const [key,value] of securityEvidence)if(!value.critical)securityEvidence.delete(key);
+      for(const lane of CHAIN_LANES){const state=discoveryState(lane);if(['WAITING','SCANNING','END OF AVAILABLE PAGES','PUBLIC PAGE LIMIT'].includes(state.status)){state.nextAt=0;state.nextPage=1;}}
+      chainEvidenceDueAt=0;refreshQualificationGauges();refreshSonar();
+      $('refreshStatus').textContent='Waking your market | fresh checks first';
+      wakePromise=(async()=>{
+        // Existing locks and provider backoffs are retained. No duplicate scans.
+        await Promise.allSettled([(async()=>{await load();if(marketReceivedAt<marketWakeAt && !document.hidden)await load();})(),refreshChainPools(),refreshSecuritySweep(),checkPendingWalletBuys()]);
+        buildBuySetups();refreshQualificationGauges();
+        $('refreshStatus').textContent='Refresh cycle finished | see Sonar feed status';
+      })().finally(()=>{wakePromise=null;refreshSonar();});
+      return wakePromise;
+    }
+
     const activePriceChecks=new Map();
     function priceCheckActivity(scope,delta) {
       const count=Math.max(0,(activePriceChecks.get(scope)||0)+delta);
       if(count) activePriceChecks.set(scope,count); else activePriceChecks.delete(scope);
       refreshCheckDots();
+      sonarActivity(scope,delta);
     }
     function checkingRow(row) {
-      return (activePriceChecks.get(row.kind==='named'?'watchlist':row.key.split(':')[0])||0)>0;
+      return ((activePriceChecks.get(row.kind==='named'?'watchlist':row.key.split(':')[0])||0)+(activePriceChecks.get('candles:'+row.key.split(':')[0])||0))>0;
     }
     function refreshCheckDots() {
       const dot=$('dumpCheckDot'); if(!dot) return;
@@ -1080,10 +1206,10 @@
         const fresh=qualificationState(row).stage!=='freshness';
         const change=Number.isFinite(row.change)?row.change:null;
         const tone=!fresh||change===null?'glance-muted':change<0?'glance-down':change>0?'glance-up':'glance-muted';
-        const label=change===null?'â':(change>0?'+':'')+change.toFixed(2)+'%';
+        const label=change===null?'—':(change>0?'+':'')+change.toFixed(2)+'%';
         const watching=watchedDumpRows.has(row.key);
-        const watch=watching?' Â· WATCHING':'';
-        const newLabel=!watching&&isNewDumpEntry(row.key)?'<span class="glance-new">NEW</span>':'';
+        const watch=watching?' · WATCHING':'';
+        const newLabel=isNewDumpEntry(row.key)?'<span class="glance-new">NEW</span>':'';
         const watchLabel=watching?'<span class="glance-watching">WATCHING</span>':'';
         return `<button type="button" class="glance-row" data-glance-key="${escapeHTML(row.key)}" aria-label="Open ${escapeHTML(row.symbol)} on ${escapeHTML(row.chain)}${watch}">
           <span class="glance-coin"><strong>${escapeHTML(row.symbol)}</strong>${newLabel}${watchLabel}<small>${escapeHTML(row.chain)}</small></span>
@@ -1117,6 +1243,7 @@
           const latest=host.querySelector('[data-plan-sampled-price]');
           if(latest) latest.textContent='Sampled price '+usdPrice(row.price);
         }
+        host.querySelector('[data-card-chart]').innerHTML=sampleChartMarkup(row);
         const c=compactState(row);
         host.dataset.feedActive=String(c.q.stage!=='freshness' && c.q.stage!=='drop');
         const badge=host.querySelector('[data-card-state]');
@@ -1127,6 +1254,7 @@
         if(evidence) evidence.innerHTML=marketEvidenceMarkup(row);
       });
       renderDumpGlance();
+      refreshMarketPulse();
     }
     function recordPriceSamples() {
       const recordedAt = Date.now();
@@ -1349,6 +1477,8 @@
       if(!permitted) throw Error('Unsupported public evidence endpoint');
       if(document.hidden) throw Error('Checks pause while the page is hidden');
       if(Date.now()<(publicServiceCooldown.get(u.hostname)||0)) throw Error('Provider cooling down; retry later');
+      const evidenceStarted=Date.now();
+      priceCheckActivity('evidence',1);
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
       try {
         const response=await fetch(u.href,{method:'GET',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
@@ -1359,8 +1489,9 @@
         if(!response.ok) throw Error('Public provider unavailable (HTTP '+response.status+')');
         const body=await response.text();
         if(body.length>1500000) throw Error('Public response too large');
+        if(evidenceStarted<marketWakeAt)throw Error('Refresh required after reopening');
         return JSON.parse(body);
-      } finally {clearTimeout(timer);}
+      } finally {clearTimeout(timer);priceCheckActivity('evidence',-1);}
     }
     function securityBit(value) {return value===1||value==='1'?true:value===0||value==='0'?false:null;}
     function securityFraction(value) {const n=evidenceNumber(value);return n!==null&&n<=1?n:null;}
@@ -1407,11 +1538,11 @@
       const asset=assetContext(row);if(!asset)return null;
       const s=securityEvidence.get(assetKey(asset));
       // An old adverse finding remains unresolved until a new valid report supersedes it.
-      return s&&s.asset===assetKey(asset)&&now>=s.at&&(s.critical||now-s.at<=15*60000)?s:null;
+      return s&&s.asset===assetKey(asset)&&now>=s.at&&(s.critical||(s.at>=marketWakeAt&&now-s.at<=15*60000))?s:null;
     }
     async function checkAssetSecurity(asset) {
       const key=assetKey(asset),cached=securityEvidence.get(key);
-      if(cached&&Date.now()>=cached.at&&Date.now()-cached.at<10*60000)return cached;
+      if(cached&&cached.at>=marketWakeAt&&Date.now()>=cached.at&&Date.now()-cached.at<10*60000)return cached;
       if(securityPending.has(key))return securityPending.get(key);
       if(Date.now()-(securityAttempts.get(key)||0)<60000)return null;
       const chainId=PUBLIC_CHAIN_IDS[asset.chain];
@@ -1420,7 +1551,7 @@
       const work=(async()=>{try {
         const endpoint=asset.chain==='solana'?'solana/token_security':'token_security/'+chainId;
         const data=await publicEvidenceGET('https://api.gopluslabs.io/api/v1/'+endpoint+'?contract_addresses='+encodeURIComponent(asset.address));
-        const result=parseSecurity(data,asset);securityEvidence.set(key,result);return result;
+        const result=parseSecurity(data,asset);securityEvidence.set(key,result);sonarFresh('evidence',['scl-buy-setups']);return result;
       } catch(_) {if(!securityEvidence.get(key)?.critical)securityEvidence.delete(key);return null;}finally{securityPending.delete(key);}})();
       securityPending.set(key,work);return work;
     }
@@ -1488,7 +1619,7 @@
     }
     function freshRouteEvidence(row,plan,now=Date.now()) {
       const e=routeEvidence.get(row.key);
-      return e?.status==='observed'&&e.fingerprint===routeFingerprint(row,plan)&&now>=e.at&&now-e.at<=10000?e:null;
+      return e?.status==='observed'&&e.at>=marketWakeAt&&e.fingerprint===routeFingerprint(row,plan)&&now>=e.at&&now-e.at<=10000?e:null;
     }
     async function runRouteCheck(key) {
       const row=visibleTradeRows.get(key);if(!row)return;
@@ -1531,7 +1662,7 @@
       const button=`<button type="button" class="btn" data-check-route="${escapeHTML(row.key)}" ${routeCheckPending.size||!asset||!QUOTE_NETWORKS[asset.chain]?'disabled':''}>CHECK MY COSTS</button>`;
       if(!fresh)return button+`<div class="trade-note">${escapeHTML(message)}</div>`;
       const number=v=>Number(v).toLocaleString('en-US',{maximumFractionDigits:4});
-      return button+`<div class="trade-note"><strong>${escapeHTML(fresh.provider)} comparison | not an order</strong><br>${number(fresh.inputUSDC)} USDC in â ${number(fresh.returnedUSDC)} USDC back now, before unquoted costs. Difference ${fresh.dragPct.toFixed(2)}%.</div><details class="trade-assumptions"><summary>Quote details &amp; remaining costs</summary><div class="trade-note">Size-related deterioration versus a 10%-size probe: buy ${fresh.buyImpact.toFixed(2)}%, sell ${fresh.sellImpact.toFixed(2)}%. Independent snapshots, not realized slippage.<br>Network estimate: ${fresh.gasUSD===null?'not supplied':'US$'+number(fresh.gasUSD)+' for both swaps; approval costs extra'}. Token-tax coverage and wallet/setup charges are not verified.<br>Uses A$${fresh.budget} as swap input, gas extra; reference USD/AUD ${fresh.fx.rate} (${escapeHTML(fresh.fx.date)}), assumes 1 USDC = US$1. Quotes are for current market prices, not your future entry/target. Do not add these costs to the manual model twice.<br>OPEN MARKET may use another provider; check its final quote. A reverse quote is not proof your wallet can sell. ${escapeHTML(new Date(fresh.at).toISOString())}</div></details>`;
+      return button+`<div class="trade-note"><strong>${escapeHTML(fresh.provider)} comparison | not an order</strong><br>${number(fresh.inputUSDC)} USDC in → ${number(fresh.returnedUSDC)} USDC back now, before unquoted costs. Difference ${fresh.dragPct.toFixed(2)}%.</div><details class="trade-assumptions"><summary>Quote details &amp; remaining costs</summary><div class="trade-note">Size-related deterioration versus a 10%-size probe: buy ${fresh.buyImpact.toFixed(2)}%, sell ${fresh.sellImpact.toFixed(2)}%. Independent snapshots, not realized slippage.<br>Network estimate: ${fresh.gasUSD===null?'not supplied':'US$'+number(fresh.gasUSD)+' for both swaps; approval costs extra'}. Token-tax coverage and wallet/setup charges are not verified.<br>Uses A$${fresh.budget} as swap input, gas extra; reference USD/AUD ${fresh.fx.rate} (${escapeHTML(fresh.fx.date)}), assumes 1 USDC = US$1. Quotes are for current market prices, not your future entry/target. Do not add these costs to the manual model twice.<br>OPEN MARKET may use another provider; check its final quote. A reverse quote is not proof your wallet can sell. ${escapeHTML(new Date(fresh.at).toISOString())}</div></details>`;
     }
     function paintRouteChecks() {
       document.querySelectorAll('[data-route-check]').forEach(host=>{
@@ -1616,14 +1747,17 @@
       if(wait) await new Promise(resolve=>setTimeout(resolve,wait));
       if(document.hidden) throw Error('Evidence check paused while page hidden');
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
-      priceCheckActivity(lane.api,1); chainLastRequestAt=Date.now();
+      const candleStarted=Date.now();
+      priceCheckActivity('candles:'+lane.api,1); chainLastRequestAt=candleStarted;
       try {
         const url=`https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(lane.api)}/pools/${encodeURIComponent(pool.poolAddress)}/ohlcv/${timeframe}?aggregate=${aggregate}&limit=${limit}&currency=usd&token=base&include_empty_intervals=false`;
         const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
         if(response.status===429) {const e=Error('Evidence feed rate limited');e.rateLimited=true;throw e;}
         if(!response.ok) throw Error('Evidence feed unavailable');
-        return parseClosedCandles(await response.json(),lane,pool,timeframe==='hour'?3600:900);
-      } finally {clearTimeout(timer);priceCheckActivity(lane.api,-1);}
+        const payload=await response.json();
+        if(candleStarted<marketWakeAt)throw Error('Refresh required after reopening');
+        return parseClosedCandles(payload,lane,pool,timeframe==='hour'?3600:900);
+      } finally {clearTimeout(timer);priceCheckActivity('candles:'+lane.api,-1);}
     }
     async function refreshPoolEvidence() {
       // Called under the existing shared refresh lock. At most six extra GETs per cycle.
@@ -1639,6 +1773,7 @@
           const hour=await fetchEvidenceCandles(lane,pool,'hour',1,200);
           const quarter=await fetchEvidenceCandles(lane,pool,'minute',15,100);
           poolCandleEvidence.set(key,{hour,quarter,observedAt:Date.now()});
+          if(hour.length&&quarter.length)sonarFresh('candles:'+lane.api,['marketSnapshot','scl-buy-setups']);
         } catch(error) {
           poolCandleEvidence.delete(key);
           if(error.rateLimited) throw error;
@@ -1648,6 +1783,7 @@
       // Bound session memory without changing owner history.
       if(poolCandleAttempts.size>500) {const keep=[...poolCandleAttempts].sort((a,b)=>b[1]-a[1]).slice(0,400);poolCandleAttempts.clear();keep.forEach(([k,v])=>poolCandleAttempts.set(k,v));}
       for(const [key,value] of poolCandleEvidence) if(Date.now()-value.observedAt>60*60000) poolCandleEvidence.delete(key);
+      buildBuySetups();
     }
     function marketTakeaway(row,now=Date.now()) {
       const q=qualificationState(row,now);
@@ -1713,6 +1849,7 @@
       const waitMs = Math.max(0, CHAIN_REQUEST_GAP_MS - (Date.now() - chainLastRequestAt));
       if (waitMs) await new Promise(resolve => setTimeout(resolve,waitMs));
       if (document.hidden) { const error=new Error('Page paused'); error.paused=true; throw error; }
+      const pageStarted=Date.now();
       priceCheckActivity(lane.api,1);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(),15000);
@@ -1728,6 +1865,7 @@
         throw error;
       }
       const payload = await response.json();
+      if(pageStarted<marketWakeAt){const e=Error('Refresh after reopening');e.paused=true;throw e;}
       if (!Array.isArray(payload?.data) || payload.data.length>CHAIN_PAGE_SIZE || (payload.data.length && !Array.isArray(payload?.included))) throw new Error(`${lane.name} pool feed invalid`);
       const includedById = new Map((payload.included||[]).filter(item=>item&&typeof item.id==='string').map(item => [item.id,item]));
       return {rows:payload.data.map(pool => normalisePoolToken(pool,includedById,lane)).filter(Boolean),rawCount:payload.data.length};
@@ -1752,6 +1890,7 @@
         state.status=ended?'END OF AVAILABLE PAGES':'PUBLIC PAGE LIMIT';
       } else {state.nextPage=page+1;state.nextAt=0;state.status='SCANNING';}
       commitChainPools(lane,[...state.pages.values()].flatMap(result=>result.rows));
+      if(result.rows.some(p=>freshChainPool(p))) sonarFresh(lane.api,['chainBoards','marketSnapshot','scl-buy-setups']);
     }
     function commitChainPools(lane, pages) {
       const unique = [];
@@ -2003,7 +2142,7 @@
     }
     function sampleQualificationState(row, now = Date.now()) {
       const checking = {label:'CHECKING',tone:'checking',angle:0,note:'Fresh price evidence needed',stage:'freshness',sampleCount:0};
-      if (!row) return checking;
+      if (!row || !rowRefreshedSinceWake(row)) return checking;
       let current, change, observedAt, maxAge;
       if (row.kind === 'named') {
         const m = price(row.key);
@@ -2038,11 +2177,11 @@
     function dumpExclusionReason(row,now=Date.now()) {
       const change=planNumber(row?.change);
       if(change===null) return 'Current 24-hour change is missing.';
-      if(change<=-50) return 'Extreme drop â down 50% or more in 24 hours.';
+      if(change<=-50) return 'Extreme drop — down 50% or more in 24 hours.';
       const match=evidencePool(row);
       if(!match) return 'Seven days of trading history not yet verified.';
       const e=poolCandleEvidence.get(candleEvidenceKey(match.lane,match.pool));
-      if(!e||!Number.isFinite(e.observedAt)||now<e.observedAt||now-e.observedAt>20*60000||!Array.isArray(e.hour)||!Array.isArray(e.quarter)) return 'Seven days of trading history not yet verified.';
+      if(!e||!Number.isFinite(e.observedAt)||e.observedAt<marketWakeAt||now<e.observedAt||now-e.observedAt>20*60000||!Array.isArray(e.hour)||!Array.isArray(e.quarter)) return 'Seven days of trading history not yet verified.';
       const summary=closedCandleSummary(e.hour,e.quarter,now);
       if(!summary.sevenDays) return 'Seven days of trading history not yet verified.';
       return null;
@@ -2051,6 +2190,7 @@
       const sampled=sampleQualificationState(row,now);
       const security=currentSecurity(row,now);
       if(security?.critical)return {...sampled,label:'AVOID',tone:'wait',stage:'risk',note:security.flags.find(f=>f.critical).label+' | public provider finding, not a scam verdict'};
+      if(!rowRefreshedSinceWake(row)) return {...sampled,label:'WAIT',tone:'checking',stage:'freshness',note:'Fresh data needed after reopening',angle:0};
       const exclusion=dumpExclusionReason(row,now);
       if(exclusion) return {...sampled,label:'EXCLUDED',tone:'wait',stage:'excluded',note:exclusion,angle:0};
       if(['freshness','drop'].includes(sampled.stage)) return sampled;
@@ -2206,6 +2346,7 @@
     function resultBuyStatus(row,plan) {
       const exclusion=dumpExclusionReason(row);
       if(exclusion) return {enabled:false,note:exclusion};
+      if(!rowRefreshedSinceWake(row)) return {enabled:false,note:"Fresh data needed after reopening."};
       if(currentSecurity(row)?.critical) return {enabled:false,note:'Public provider reports a serious token restriction. Review Market checks before proceeding elsewhere.'};
       const route = resultBuyRoute(row);
       if (!route) return {enabled:false,note:'Trading route unavailable for this coin.'};
@@ -2441,6 +2582,7 @@
       pinned.forEach(row=>merged.set(row.key,row));
       const qualified = [...merged.values()].filter(row => !pumpDumpExclusions.has(pumpDumpKeyForRow(row))&&(!currentSecurity(row)?.critical||watchedDumpRows.has(row.key))).sort((a,b)=>Number(watchedDumpRows.has(b.key))-Number(watchedDumpRows.has(a.key)) || compareDeskRows(a,b));
       visibleTradeRows = new Map(qualified.map(row => [row.key,row]));
+      refreshMarketPulse();
       void refreshSecuritySweep();
       renderDumpGlance();
       const expandedCards=new Set(Array.from($('buySetupRows').querySelectorAll('details.coin-plan[open]')).map(d=>d.dataset.planKey));
@@ -2569,6 +2711,7 @@
     }
     let feedPromise=null,feedRetryAt=0,manualRefreshAt=0,manualRefreshing=false;
     function load() {
+      if(document.hidden)return Promise.resolve('paused');
       if(feedPromise) return feedPromise;
       if(Date.now()<feedRetryAt) return Promise.resolve('cooldown');
       feedPromise=performLoad().finally(()=>{feedPromise=null;});
@@ -2591,6 +2734,7 @@
         if (!r.ok) throw new Error(`Public feed returned HTTP ${r.status}`);
         const payload = await r.json();
         if (!Array.isArray(payload)) throw new Error('Public feed returned an invalid payload');
+        if(requestStarted<marketWakeAt)return 'superseded';
         market = payload.filter(m => m && typeof m.id === 'string' && ids.includes(m.id) && typeof m.symbol === 'string');
         marketReceivedAt = Date.now();
         if (Object.keys(sessionBaseline).length === 0) {
@@ -2602,7 +2746,9 @@
         renderChainBoards();
         buildDump();
         buildBuySetups();
-        return market.some(m=>freshMarketItem(m))?'updated':'stale';
+        const fresh=market.some(m=>freshMarketItem(m));
+        if(fresh)sonarFresh('watchlist',['tickerShell']);
+        return fresh?'updated':'stale';
       } catch (e) {
         $('ticker').textContent = 'Live feed unavailable - retrying';
         $('tickerStatus').textContent = `No fresh ranking - retry ${localClock(Date.now())}`;
@@ -2613,16 +2759,11 @@
       } finally { clearTimeout(timer); priceCheckActivity('watchlist',-1); }
     }
     async function refreshDesk() {
-      if(manualRefreshing) return;
+      if(manualRefreshing || document.hidden)return;
       const status=$('refreshStatus');
-      if(Date.now()-manualRefreshAt<15000) { status.textContent='Please wait a few seconds between refreshes'; return; }
+      if(Date.now()-manualRefreshAt<15000){status.textContent='Please wait a few seconds between refreshes';return;}
       manualRefreshAt=Date.now();manualRefreshing=true;
-      status.textContent='Refreshing watchlist prices...';
-      try {
-        const result=await load();
-        refreshQualificationGauges();
-        status.textContent=result==='updated'?'Prices checked '+localClock(Date.now())+'  |  chains refresh on their schedule':result==='cooldown'?'Feed cooling down  |  automatic retry will follow':result==='stale'?'Feed replied with old prices  |  waiting for fresh data':'Could not refresh  |  check your connection';
-      } finally { manualRefreshing=false; }
+      try {await wakeMarket();} finally {manualRefreshing=false;}
     }
     function installPullRefresh() {
       let start=null,distance=0,armed=false;
@@ -2651,13 +2792,13 @@
     // Dated public research, NOT a live rate feed, ranked recommendation or deposit route.
     const EARN_RESEARCH_DATE='2026-09-28';
     const earnResearch=Object.freeze([
-      {id:'sky',name:'Sky Â· sUSDS',rate:3.6,kind:'APY',source:'https://sky.money/susds',
+      {id:'sky',name:'Sky · sUSDS',rate:3.6,kind:'APY',source:'https://sky.money/susds',
         access:'No protocol lockup advertised; network access still matters.',risk:'Protocol, collateral and USD-peg risk.',why:'Variable return funded by protocol surplus.'},
-      {id:'maple',name:'Maple Â· syrupUSDC',rate:5.2,kind:'APY',source:'https://maple.finance/',
+      {id:'maple',name:'Maple · syrupUSDC',rate:5.2,kind:'APY',source:'https://maple.finance/',
         access:'Withdrawals can queue. Check current liquidity and terms.',risk:'Borrower, smart-contract and USD-peg risk.',why:'Variable lending yield. Global access is not proof of your eligibility.',terms:'https://docs.maple.finance/syrupusdc-usdt-for-lenders/faq'},
-      {id:'kraken',name:'Kraken Â· USDC',rate:2,plusRate:4,kind:'APY',source:'https://support.kraken.com/au/articles/stablecoin-rewards',
+      {id:'kraken',name:'Kraken · USDC',rate:2,plusRate:4,kind:'APY',source:'https://support.kraken.com/au/articles/stablecoin-rewards',
         access:'No product lockup advertised; platform restrictions can apply.',risk:'Exchange custody and USD-peg risk.',why:'Up to 2% standard or 4% with paid Kraken+. Eligibility and rates vary.'},
-      {id:'binance',name:'Binance Â· USDT promotion',rate:7,kind:'APR',source:'https://www.binance.com/en/support/announcement/detail/20ffd754d7414596aa065a23e23eabbd',
+      {id:'binance',name:'Binance · USDT promotion',rate:7,kind:'APR',source:'https://www.binance.com/en/support/announcement/detail/20ffd754d7414596aa065a23e23eabbd',
         starts:Date.parse('2026-09-25T00:00:00Z'),ends:Date.parse('2026-10-09T00:00:00Z'),cap:1000,
         access:'Flexible product; redemptions can be delayed.',risk:'Exchange custody and USD-peg risk.',why:'Up to 7% on the first 1,000 USDT, through 8 Oct UTC. Bonus conditions apply; later rates unknown.'}
     ]);
@@ -2668,7 +2809,7 @@
       if(offer.cap && amount>offer.cap)return {message:'Above the promotion cap. No blended return assumed.'};
       const rate=tier==='plus'&&offer.plusRate?offer.plusRate:offer.rate;
       const gross=amount*(offer.kind==='APR'?rate/100*days/365:Math.expm1(Math.log1p(rate/100)*days/365));
-      return {gross,net:costs===null?null:gross-costs,rate,message:costs===null?'Before costs â enter your total costs.':'After your entered costs â estimate only.'};
+      return {gross,net:costs===null?null:gross-costs,rate,message:costs===null?'Before costs — enter your total costs.':'After your entered costs — estimate only.'};
     }
     function renderEarn() {
       const host=$('earnCards');if(!host)return;
@@ -2677,7 +2818,7 @@
       host.innerHTML=earnResearch.map(offer=>{
         const scenario=earnScenario(offer,amount,days,costs,tier);
         const rate=tier==='plus'&&offer.plusRate?offer.plusRate:offer.rate;
-        return `<article class="earn-card"><h3>${escapeHTML(offer.name)}</h3><div class="earn-rate">${rate}% ${offer.kind}<span class="trade-note"> Â· researched rate</span></div>
+        return `<article class="earn-card"><h3>${escapeHTML(offer.name)}</h3><div class="earn-rate">${rate}% ${offer.kind}<span class="trade-note"> · researched rate</span></div>
           <div class="earn-result">${scenario.gross===undefined?'Check terms first':usd(scenario.net===null?scenario.gross:scenario.net)+' over '+Number(days)+' days'}</div>
           <p>${escapeHTML(scenario.message)}</p><p>${escapeHTML(offer.access)}<br>${escapeHTML(offer.risk)}</p>
           <a class="btn" href="${offer.source}" target="_blank" rel="noopener noreferrer">LOOK INTO IT</a>
@@ -2782,9 +2923,9 @@
     setInterval(()=>{if(priceCurrency==='AUD' && !validDisplayFx(displayFx)) repaintCurrency();},60000);
     refreshChainPools();
     setInterval(refreshChainPools, CHAIN_POOL_REFRESH_MS);
-    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if (!document.hidden) { refreshQualificationGauges(); load(); refreshChainPools(); checkPendingWalletBuys(); } });
-    window.addEventListener('pageshow', load);
-    window.addEventListener('online', load);
+    document.addEventListener('visibilitychange', () => { document.body.classList.toggle('gauge-motion-paused',document.hidden); if(document.hidden){lastHiddenAt=Date.now();refreshSonar();}else{if(wakePromise){marketWakeAt=Date.now();wakePromise.finally(()=>{lastWakeAttempt=0;void wakeMarket();});}else{void wakeMarket();}} });
+    window.addEventListener('pageshow', event=>{if(event.persisted)void wakeMarket();});
+    window.addEventListener('online', ()=>{void wakeMarket();});
   </script>
 </body>
 </html>
