@@ -24,5 +24,36 @@
   },
   "pick": null,
   "dumpOpps": [],
-  "previousValidSydneyDate": null
+  "previousValidSydneyDate": null,
+  "marketSummary": {
+    "source": "Binance public spot 24h",
+    "majors": [
+      {
+        "symbol": "BTC",
+        "price": 83716,
+        "change24h": 0.182
+      },
+      {
+        "symbol": "ETH",
+        "price": 2679.3,
+        "change24h": -0.426
+      },
+      {
+        "symbol": "SOL",
+        "price": 119.15,
+        "change24h": 0.312
+      }
+    ]
+  },
+  "fallbackDumpWatches": [
+    {
+      "symbol": "HBAR",
+      "pair": "HBAR/USDT",
+      "price": 0.10251,
+      "change24h": -15.65,
+      "quoteVolume": 88235073.84947,
+      "status": "Watching recovery",
+      "source": "Binance public spot 24h"
+    }
+  ]
 }
