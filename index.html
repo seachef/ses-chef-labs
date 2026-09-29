@@ -1041,17 +1041,18 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       const samples=row.evidence?.samples;
       if(!Array.isArray(samples)||samples.length!==3||!samples.every((sample,i)=>Number.isFinite(Number(sample.price))&&Number(sample.price)>0&&Number.isFinite(Number(sample.at))&&(!i||Number(sample.at)-Number(samples[i-1].at)>=20*60*1000)))return null;
       if(!(Number(samples[2].price)>Number(samples[1].price)&&Number(samples[1].price)>=Number(samples[0].price)))return null;
-      return {kind:'named',key:row.key,symbol:coin.symbol,chain:String(coin.chain||'MARKET').toUpperCase(),contract:String(coin.addr||''),venue:'Manual market route only',price,change,state:'recovering',rating:Number.isFinite(rating)?Math.max(0,Math.min(100,rating)):0,chart:`https://www.coingecko.com/en/coins/${encodeURIComponent(row.key)}`,publishedAt:publishedDailySnapshot?.generatedAt};
+      return {kind:'named',key:row.key,symbol:coin.symbol,chain:String(coin.chain||'MARKET').toUpperCase(),contract:String(coin.addr||''),venue:'Manual market route only',price,change,state:'recovering',rating:Number.isFinite(rating)?Math.max(0,Math.min(100,rating)):0,chart:`https://www.coingecko.com/en/coins/${encodeURIComponent(row.key)}`,publishedAt:publishedDailySnapshot?.generatedAt,overnightLastPrice:Number(samples[2].price),liveObservedAt:null};
     }
     function publishedCardMarkup(row,index) {
       const watched=watchedDumpRows.has(row.key),chart=chartLink(row)?.url||row.chart;
+      const compact=compactState(row),live=Number.isFinite(row.liveObservedAt);
       return `<article class="opportunity-card" data-feed-active="true" data-desk-key="${escapeHTML(row.key)}" aria-label="${escapeHTML(row.symbol)} daily opportunity">
         <div class="opportunity-head"><div><h3>${escapeHTML(row.symbol)}</h3><span class="trade-note">${escapeHTML(row.chain)}</span></div><div class="buttons"><button type="button" class="watch-button" data-watch-key="${escapeHTML(row.key)}" aria-pressed="${watched}">${watched?'WATCHING':'WATCH'}</button><a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a><button type="button" class="pnd-button" data-pump-dump-key="${escapeHTML(pumpDumpKeyForRow(row))}" data-pump-dump-symbol="${escapeHTML(row.symbol)}">PUMPNDUMP</button></div></div>
         ${contractMarkup(row)}
-        <div class="opportunity-price"><span><span class="trade-note">Overnight price</span><b>${escapeHTML(usdPrice(row.price))}</b></span><span class="decline">24H ${row.change.toFixed(2)}%</span></div>
-        <span class="card-state" data-tone="recovery">RECOVERY SEEN</span>
-        <div class="card-reason">Two non-falling overnight moves after a 10%+ drop</div>
-        <div class="card-freshness">Prepared ${escapeHTML(publishedDailySnapshot.generatedAtSydney)} Sydney</div>
+        <div class="opportunity-price"><span><span class="trade-note">${live?'Live price':'Overnight price'}</span><b>${escapeHTML(usdPrice(row.price))}</b></span><span class="decline">24H ${row.change.toFixed(2)}%</span></div>
+        <span class="card-state" data-tone="${escapeHTML(compact.tone)}">${escapeHTML(compact.label)}</span>
+        <div class="card-reason">${escapeHTML(compact.q.note)}</div>
+        <div class="card-freshness">${live?'Live price checked '+escapeHTML(new Date(row.liveObservedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})):'Waiting for current price'}</div>
         <details class="coin-plan"><summary>My entry &amp; exit plan</summary>${tradePlanMarkup(row,index)}</details>
       </article>`;
     }
@@ -1061,6 +1062,34 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       renderDailyPick();refreshMarketPulse();renderDumpGlance();renderTickerPrices();
       $('buySetupRows').innerHTML=rows.length?rows.map(publishedCardMarkup).join(''):'<div class="empty">No qualified Dump opps in the prepared daily desk.</div>';
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box=>{syncStepControl(box,'budget',true);syncStepControl(box,'multiple',true);});
+    }
+    async function refreshPublishedPrices(rows) {
+      if(!rows.length)return true;
+      const status=$('sonarStatus'),controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+      if(status)status.textContent='Checking current prices';
+      try {
+        const url=new URL('https://api.coingecko.com/api/v3/coins/markets');
+        url.searchParams.set('vs_currency','usd');url.searchParams.set('ids',rows.map(row=>row.key).join(','));
+        url.searchParams.set('sparkline','false');url.searchParams.set('price_change_percentage','24h');url.searchParams.set('precision','full');
+        const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});
+        if(!response.ok)throw Error('Live price HTTP '+response.status);
+        const payload=await response.json();if(!Array.isArray(payload))throw Error('Live price response invalid');
+        const liveById=new Map(payload.map(item=>[item.id,item])),checkedAt=Date.now();
+        for(const row of rows){
+          const item=liveById.get(row.key),price=Number(item?.current_price),change=Number(item?.price_change_percentage_24h),sourceAt=new Date(item?.last_updated).getTime();
+          if(!Number.isFinite(price)||price<=0||!Number.isFinite(change)||!Number.isFinite(sourceAt)||sourceAt>checkedAt||checkedAt-sourceAt>5*60*1000)continue;
+          row.price=price;row.change=change;row.liveObservedAt=checkedAt;row.liveSourceAt=sourceAt;
+        }
+        visibleTradeRows=new Map(rows.map(row=>[row.key,row]));renderPublishedSnapshot();
+        const complete=rows.every(row=>Number.isFinite(row.liveObservedAt));
+        if(status)status.textContent=complete?'Live prices ready':'Some live prices unavailable';
+        $('refreshStatus').textContent=complete?'Current prices loaded':'Some current prices could not be loaded';
+        return complete;
+      } catch(error) {
+        if(status)status.textContent='Live prices unavailable';
+        $('refreshStatus').textContent='Current prices could not be loaded';
+        renderPublishedSnapshot();return false;
+      } finally {clearTimeout(timer);}
     }
     async function loadPublishedSnapshot() {
       const button=$('sonarWake'),status=$('sonarStatus');
@@ -1078,6 +1107,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         const current=snapshot.sydneyDate===today,firstRun=!snapshot.sydneyDate;
         if(status)status.textContent=current?'Daily desk ready':firstRun?'Awaiting first overnight desk':'Previous daily desk';
         $('refreshStatus').textContent=current?'Ready for today':firstRun?'Awaiting tonight\'s research':'Using the last completed daily desk';
+        if(rows.length)await refreshPublishedPrices(rows);
       } catch(error) {
         if(status)status.textContent='Daily desk unavailable';
         $('refreshStatus').textContent='The completed daily desk could not be loaded';
@@ -2199,7 +2229,13 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const sampled=sampleQualificationState(row,now);
       const security=currentSecurity(row,now);
       if(security?.critical)return {...sampled,label:'AVOID',tone:'wait',stage:'risk',note:security.flags.find(f=>f.critical).label+' | public provider finding, not a scam verdict'};
-      if(publishedDailyKeys.has(row?.key))return {label:'WATCH',tone:'watch',stage:'recovery',note:'Recovery screen met by the completed overnight research',angle:90,sampleCount:3};
+      if(publishedDailyKeys.has(row?.key)) {
+        if(!Number.isFinite(row.liveObservedAt))return {label:'WAIT',tone:'checking',stage:'freshness',note:'Waiting for a current price',angle:0,sampleCount:3};
+        if(row.change>-10)return {label:'WAIT',tone:'wait',stage:'drop',note:'Current price is outside the 10% drop rule',angle:0,sampleCount:3};
+        if(row.change<=-50)return {label:'EXCLUDED',tone:'wait',stage:'excluded',note:'Current price is down 50% or more',angle:0,sampleCount:3};
+        if(row.price<row.overnightLastPrice)return {label:'WAIT',tone:'wait',stage:'falling',note:'Current price has fallen below the final overnight recovery sample',angle:10,sampleCount:3};
+        return {label:'WATCH',tone:'watch',stage:'recovery',note:'Overnight recovery still holds at the current price',angle:90,sampleCount:3};
+      }
       if(!rowRefreshedSinceWake(row)) return {...sampled,label:'WAIT',tone:'checking',stage:'freshness',note:'Fresh data needed after reopening',angle:0};
       const exclusion=dumpExclusionReason(row,now);
       if(exclusion) return {...sampled,label:'EXCLUDED',tone:'wait',stage:'excluded',note:exclusion,angle:0};
