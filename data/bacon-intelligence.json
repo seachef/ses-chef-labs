@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-09-29T18:30:00+08:00",
+  "thesis": "VirtualBacon says the market is already in a bull run.",
+  "sources": [
+    {
+      "name": "VirtualBacon Digest",
+      "url": "https://t.me/virtualbacon",
+      "role": "narratives"
+    },
+    {
+      "name": "VB Trade",
+      "url": "https://t.me/vb_trade",
+      "role": "charts-trades"
+    }
+  ],
+  "coins": [
+    {
+      "symbol": "DOGE",
+      "name": "Dogecoin",
+      "coingeckoId": "dogecoin",
+      "status": "researching",
+      "baconView": "Positive context supplied by owner; exact source thesis still to be captured.",
+      "narrative": "Bacon positive mention",
+      "staking": "Not native staking",
+      "firstSeen": "2026-09-29",
+      "source": "Facebook Reel supplied by owner",
+      "dueDiligence": "pending"
+    }
+  ],
+  "tradeSetup": null
+}
