@@ -447,7 +447,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
     <div class="sonar-dock">
-      <button type="button" class="sonar-control" id="sonarWake" onclick="wakeMarket()" aria-label="Wake my market: refresh public data"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Wake my market</small></span></button>
+      <button type="button" class="sonar-control" id="sonarWake" onclick="loadPublishedSnapshot()" aria-label="Reload the prepared daily desk"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Loading daily desk</small></span></button>
     </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
@@ -779,6 +779,8 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     let pumpDumpExclusions=readPumpDumpExclusions();
     const MARKET_SNAPSHOT_KEY='seaChefLastMarketSnapshotV1', MARKET_SNAPSHOT_MAX_AGE=7*24*60*60*1000;
     let market = [], marketReceivedAt = 0, active = deep.slice(0, 8).map(x => x.id), orders = readSavedOrders(), sessionBaseline = {}, priceSamples = {}, chainPools = {}, chainPoolsUpdatedAt = {}, chainRefreshInFlight = false, chainLastRequestAt = 0, chainRetryTimer = null;
+    let publishedDailySnapshot=null;
+    const publishedDailyKeys=new Set();
     const $ = id => document.getElementById(id);
     const money = p => displayCoinPrice(p);
     const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -996,6 +998,14 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     }
     function refreshMarketPulse() {
       if(!$('snapshotFailed')) return;
+      if(publishedDailySnapshot) {
+        const counts=publishedDailySnapshot.counts;
+        $('snapshotFailed').textContent=String(counts.failed);
+        $('snapshotQualified').textContent=String(counts.qualifying);
+        $('snapshotStatic').textContent=String(counts.static);
+        $('pulseCoverage').textContent='Prepared '+publishedDailySnapshot.generatedAtSydney+' Sydney';
+        return;
+      }
       const counts={failed:0,qualified:0,static:0},rows=[...visibleTradeRows.values()];
       for(const row of rows) {const bucket=snapshotBucket(row);if(bucket)counts[bucket]++;}
       $('snapshotFailed').textContent=String(counts.failed);
@@ -1021,6 +1031,57 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       entry.textContent=usdPrice(buy);
       target.textContent=model.multiple>1?usdPrice(model.exit):'Set in plan';
       invalidation.textContent=usdPrice(buy*.9);
+    }
+    function validPublishedRow(row) {
+      if(!row||row.kind!=='named'||typeof row.key!=='string')return null;
+      const coin=checkerCoins.find(item=>item.cg===row.key);
+      if(!coin||String(row.symbol)!==coin.symbol||String(row.contract)!==String(coin.addr||''))return null;
+      const price=Number(row.price),change=Number(row.change),rating=Number(row.rating);
+      if(!Number.isFinite(price)||price<=0||!Number.isFinite(change)||change>-10||change<=-50)return null;
+      const samples=row.evidence?.samples;
+      if(!Array.isArray(samples)||samples.length!==3||!samples.every((sample,i)=>Number.isFinite(Number(sample.price))&&Number(sample.price)>0&&Number.isFinite(Number(sample.at))&&(!i||Number(sample.at)-Number(samples[i-1].at)>=20*60*1000)))return null;
+      if(!(Number(samples[2].price)>Number(samples[1].price)&&Number(samples[1].price)>=Number(samples[0].price)))return null;
+      return {kind:'named',key:row.key,symbol:coin.symbol,chain:String(coin.chain||'MARKET').toUpperCase(),contract:String(coin.addr||''),venue:'Manual market route only',price,change,state:'recovering',rating:Number.isFinite(rating)?Math.max(0,Math.min(100,rating)):0,chart:`https://www.coingecko.com/en/coins/${encodeURIComponent(row.key)}`,publishedAt:publishedDailySnapshot?.generatedAt};
+    }
+    function publishedCardMarkup(row,index) {
+      const watched=watchedDumpRows.has(row.key),chart=chartLink(row)?.url||row.chart;
+      return `<article class="opportunity-card" data-feed-active="true" data-desk-key="${escapeHTML(row.key)}" aria-label="${escapeHTML(row.symbol)} daily opportunity">
+        <div class="opportunity-head"><div><h3>${escapeHTML(row.symbol)}</h3><span class="trade-note">${escapeHTML(row.chain)}</span></div><div class="buttons"><button type="button" class="watch-button" data-watch-key="${escapeHTML(row.key)}" aria-pressed="${watched}">${watched?'WATCHING':'WATCH'}</button><a class="btn" href="${escapeHTML(chart)}" target="_blank" rel="noopener noreferrer">CHART</a><button type="button" class="pnd-button" data-pump-dump-key="${escapeHTML(pumpDumpKeyForRow(row))}" data-pump-dump-symbol="${escapeHTML(row.symbol)}">PUMPNDUMP</button></div></div>
+        ${contractMarkup(row)}
+        <div class="opportunity-price"><span><span class="trade-note">Overnight price</span><b>${escapeHTML(usdPrice(row.price))}</b></span><span class="decline">24H ${row.change.toFixed(2)}%</span></div>
+        <span class="card-state" data-tone="recovery">RECOVERY SEEN</span>
+        <div class="card-reason">Two non-falling overnight moves after a 10%+ drop</div>
+        <div class="card-freshness">Prepared ${escapeHTML(publishedDailySnapshot.generatedAtSydney)} Sydney</div>
+        <details class="coin-plan"><summary>My entry &amp; exit plan</summary>${tradePlanMarkup(row,index)}</details>
+      </article>`;
+    }
+    function renderPublishedSnapshot() {
+      const rows=[...visibleTradeRows.values()].filter(row=>!pumpDumpExclusions.has(pumpDumpKeyForRow(row)));
+      visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
+      renderDailyPick();refreshMarketPulse();renderDumpGlance();renderTickerPrices();
+      $('buySetupRows').innerHTML=rows.length?rows.map(publishedCardMarkup).join(''):'<div class="empty">No qualified Dump opps in the prepared daily desk.</div>';
+      $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box=>{syncStepControl(box,'budget',true);syncStepControl(box,'multiple',true);});
+    }
+    async function loadPublishedSnapshot() {
+      const button=$('sonarWake'),status=$('sonarStatus');
+      if(button)button.setAttribute('aria-busy','true');if(status)status.textContent='Loading daily desk';
+      try {
+        const response=await fetch('daily-snapshot.json?day='+new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date()),{cache:'no-store',headers:{Accept:'application/json'}});
+        if(!response.ok)throw Error('Daily desk HTTP '+response.status);
+        const snapshot=await response.json();
+        if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps))throw Error('Daily desk validation failed');
+        publishedDailySnapshot=snapshot;publishedDailyKeys.clear();
+        const rows=snapshot.dumpOpps.map(validPublishedRow).filter(Boolean);rows.forEach(row=>publishedDailyKeys.add(row.key));
+        visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
+        renderPublishedSnapshot();
+        const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date());
+        const current=snapshot.sydneyDate===today;
+        if(status)status.textContent=current?'Daily desk ready':'Previous daily desk';
+        $('refreshStatus').textContent=current?'Ready for today':'Using the last completed daily desk';
+      } catch(error) {
+        if(status)status.textContent='Daily desk unavailable';
+        $('refreshStatus').textContent='The completed daily desk could not be loaded';
+      } finally {if(button)button.setAttribute('aria-busy','false');}
     }
     function compactState(row,now=Date.now()) {
       const q=qualificationState(row,now);
@@ -1109,6 +1170,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       return `${controls}<svg class="hollow-chart" viewBox="0 0 320 124" role="img" aria-label="${escapeHTML(row.symbol)}: exact pool, closed ${data.label} candles in USD"><path d="M6 114H314" stroke="#39323f"/>${bodies}</svg><div class="candle-caption"><span>${interval==='3d'?'3-day':interval} closed | USD | ${escapeHTML(new Date(first).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))} - ${escapeHTML(new Date(last+data.step).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</span>${action}</div><div class="trade-note candle-key">Hollow candles: aqua closed higher, rose lower. Chart colours are price direction, not buy approval.</div>`;
     }
     function compactFreshness(row) {
+      if(publishedDailyKeys.has(row.key)&&publishedDailySnapshot?.generatedAtSydney)return 'Prepared '+publishedDailySnapshot.generatedAtSydney+' Sydney';
       let at=null;
       if(row.kind==='named') at=new Date(price(row.key)?.last_updated).getTime();
       else { const lane=CHAIN_LANES.find(l=>(chainPools[l.key]||[]).some(p=>p.identity===row.key)); if(lane) at=chainPools[lane.key].find(p=>p.identity===row.key)?.observedAt; }
@@ -2137,6 +2199,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const sampled=sampleQualificationState(row,now);
       const security=currentSecurity(row,now);
       if(security?.critical)return {...sampled,label:'AVOID',tone:'wait',stage:'risk',note:security.flags.find(f=>f.critical).label+' | public provider finding, not a scam verdict'};
+      if(publishedDailyKeys.has(row?.key))return {label:'WATCH',tone:'watch',stage:'recovery',note:'Recovery screen met by the completed overnight research',angle:90,sampleCount:3};
       if(!rowRefreshedSinceWake(row)) return {...sampled,label:'WAIT',tone:'checking',stage:'freshness',note:'Fresh data needed after reopening',angle:0};
       const exclusion=dumpExclusionReason(row,now);
       if(exclusion) return {...sampled,label:'EXCLUDED',tone:'wait',stage:'excluded',note:exclusion,angle:0};
@@ -2751,11 +2814,8 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     });
     $('poolChartDialog').addEventListener('close',()=>{$('poolChartFrame').removeAttribute('src');});
     render();
-    const restoredLastDesk=restoreMarketSnapshot();
-    if(market.length) renderTickerPrices();
-    if(restoredLastDesk) $('refreshStatus').textContent='Last open restored | tap Sonar or pull down to refresh prices';
-    
-    installPullRefresh();
+    const restoredLastDesk=false;
+    void loadPublishedSnapshot();
     $('buySetupRows').addEventListener('toggle',event=>{
       if(event.target.matches('details.market-evidence') && event.target.open) {
         const row=visibleTradeRows.get(event.target.dataset.evidenceKey),asset=row&&assetContext(row);
@@ -2782,19 +2842,21 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       const key=button.dataset.pumpDumpKey, symbol=button.dataset.pumpDumpSymbol || 'This coin';
       if (!key || key.length>180) return alert('Coin identity is invalid. Nothing was removed.');
       if (!confirm('Remove '+symbol+' from the Dump opps lineup as Pump & Dump?')) return;
-      pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur(); setTimeout(buildBuySetups,0);
+      pumpDumpExclusions.add(key); savePumpDumpExclusions(); button.blur();
+      if(publishedDailySnapshot)renderPublishedSnapshot();else setTimeout(buildBuySetups,0);
     });
     $('buySetupRows').addEventListener('click',event=>{
       const button=event.target.closest('[data-watch-key]'); if(!button) return;
       event.preventDefault();event.stopPropagation();
-      toggleDumpWatch(button.dataset.watchKey); button.blur(); setTimeout(buildBuySetups,0);
+      toggleDumpWatch(button.dataset.watchKey); button.blur();
+      if(publishedDailySnapshot)renderPublishedSnapshot();else setTimeout(buildBuySetups,0);
     });
     $('dumpGlanceRows').addEventListener('click',event=>{
       const row=event.target.closest('[data-glance-key]');
       if(row) openGlanceCard(row.dataset.glanceKey);
     });
     document.addEventListener('visibilitychange',refreshCheckDots);
-    $('buySetupRows').addEventListener('focusout',() => setTimeout(buildBuySetups,0));
+    $('buySetupRows').addEventListener('focusout',() => {if(!publishedDailySnapshot)setTimeout(buildBuySetups,0);});
     $('buySetupRows').addEventListener('click',event => {
       if (!event.target.closest('[data-use-price]')) return;
       const box = event.target.closest('[data-trade-plan]');
@@ -2854,11 +2916,8 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       } catch(_) {}
     }
     restoreLastView();
-    // Reopen exactly where Craig left off, then refresh without clearing the saved desk.
-    $('refreshStatus').textContent=restoredLastDesk?'Last open restored | refreshing in background':'First opening | refreshing in background';
-    setTimeout(()=>{void wakeMarket();},0);
-    setInterval(refreshQualificationGauges, 15000);
-    setInterval(()=>{if(!document.hidden)paintRouteChecks();},2000);
+    // Daytime is display-only. GitHub prepares the desk overnight in Sydney.
+    $('refreshStatus').textContent='Loading daily desk';
     document.addEventListener('visibilitychange', () => {
       document.body.classList.toggle('gauge-motion-paused',document.hidden);
       if(document.hidden){lastHiddenAt=Date.now();saveLastView();refreshSonar();}
