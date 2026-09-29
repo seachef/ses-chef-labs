@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-09-29T18:30:00+08:00",
+  "updatedAt": "2026-09-30T07:30:00+08:00",
   "thesis": "VirtualBacon says the market is already in a bull run.",
   "sources": [
     {
@@ -26,6 +26,126 @@
       "firstSeen": "2026-09-29",
       "source": "Facebook Reel supplied by owner",
       "dueDiligence": "pending"
+    },
+    {
+      "symbol": "XRP",
+      "name": "XRP",
+      "coingeckoId": "ripple",
+      "status": "bacon-bought",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "narrative": "Payments rotation",
+      "staking": "No native protocol staking",
+      "firstSeen": "2026-09-29",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "HBAR",
+      "name": "Hedera",
+      "coingeckoId": "hedera-hashgraph",
+      "status": "bacon-bought",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "narrative": "Payments rotation",
+      "staking": "Native staking available",
+      "firstSeen": "2026-09-29",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "XLM",
+      "name": "Stellar",
+      "coingeckoId": "stellar",
+      "status": "bacon-bought",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket; Bacon said Stellar showed the strongest beta in his study.",
+      "narrative": "Payments rotation",
+      "staking": "No native protocol staking",
+      "firstSeen": "2026-09-29",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "IOTA",
+      "name": "IOTA",
+      "coingeckoId": "iota",
+      "status": "bacon-bought",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "narrative": "Payments rotation",
+      "staking": "Check current network staking options",
+      "firstSeen": "2026-09-29",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "ALGO",
+      "name": "Algorand",
+      "coingeckoId": "algorand",
+      "status": "bacon-bought",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "narrative": "Payments rotation",
+      "staking": "Consensus rewards / staking mechanics require current check",
+      "firstSeen": "2026-09-29",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "AURORA",
+      "name": "Aurora",
+      "coingeckoId": "aurora-near",
+      "status": "bacon-holding",
+      "baconView": "Bacon described Aurora as one of his current ecosystem holdings.",
+      "narrative": "NEAR / Zcash exposure",
+      "staking": "Researching",
+      "firstSeen": "2026-09-24",
+      "source": "VirtualBacon: Robinhood Crypto Narrative",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "RHEA",
+      "name": "Rhea Finance",
+      "coingeckoId": "rhea-finance",
+      "status": "bacon-holding",
+      "baconView": "Bacon described Rhea Finance as one of his current ecosystem holdings.",
+      "narrative": "NEAR / Zcash exposure",
+      "staking": "Researching",
+      "firstSeen": "2026-09-24",
+      "source": "VirtualBacon: Robinhood Crypto Narrative",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "RENDER",
+      "name": "Render",
+      "coingeckoId": "render-token",
+      "status": "bacon-likes",
+      "baconView": "Bacon called Render an S-tier AI coin and said it still had room to move.",
+      "narrative": "AI infrastructure",
+      "staking": "Researching",
+      "firstSeen": "2026-09-24",
+      "source": "VirtualBacon: Robinhood Crypto Narrative",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "FET",
+      "name": "Artificial Superintelligence Alliance",
+      "coingeckoId": "artificial-superintelligence-alliance",
+      "status": "bacon-likes",
+      "baconView": "Bacon said Fetch.ai / FET still looked S-tier.",
+      "narrative": "AI infrastructure",
+      "staking": "Researching",
+      "firstSeen": "2026-09-24",
+      "source": "VirtualBacon: Robinhood Crypto Narrative",
+      "dueDiligence": "researching"
+    },
+    {
+      "symbol": "TAO",
+      "name": "Bittensor",
+      "coingeckoId": "bittensor",
+      "status": "bacon-watching",
+      "baconView": "Bacon said Bittensor is the next area he is watching and discussed upside targets.",
+      "narrative": "Bittensor / decentralized AI",
+      "staking": "Native staking available",
+      "firstSeen": "2026-09-24",
+      "source": "VirtualBacon: Robinhood Crypto Narrative",
+      "dueDiligence": "researching"
     }
   ],
   "tradeSetup": {

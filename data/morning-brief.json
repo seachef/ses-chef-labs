@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "localDate": "2026-09-30",
+  "timezone": "Australia/Perth",
+  "generatedAt": "2026-09-30T07:30:00+08:00",
+  "title": "🥓 Bacon Heat",
+  "lines": [
+    "QNT already exploded. Bacon is chasing the coins beside it, not QNT itself.",
+    "He bought a 5-coin payments basket: XRP · HBAR · XLM · IOTA · ALGO.",
+    "It is a 1–2 week trade idea, not a forever hold.",
+    "BTC: Bacon is buying weakness down toward roughly $78K.",
+    "Next areas still on his radar: Robinhood Chain and Bittensor."
+  ],
+  "runningSheet": {
+    "newWindows": 5,
+    "explicitBuys": 5,
+    "tradeSetups": 1,
+    "strongestTheme": "Payments / ISO 20022 rotation",
+    "nextTheme": "Bittensor / AI",
+    "marketThesis": "Bull run thesis remains active"
+  },
+  "sources": [
+    {
+      "label": "VirtualBacon latest episode",
+      "url": "https://podcasts.apple.com/sg/podcast/virtualbacon/id1644952569"
+    },
+    {
+      "label": "VirtualBacon Digest",
+      "url": "https://t.me/virtualbacon"
+    },
+    {
+      "label": "VB Trade",
+      "url": "https://t.me/vb_trade"
+    }
+  ]
+}
