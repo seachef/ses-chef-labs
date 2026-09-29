@@ -1,0 +1,38 @@
+name: Sea Chef overnight research
+
+on:
+  schedule:
+    # Covers midnight-6am in Australia/Sydney across AEST and AEDT.
+    # The script performs the authoritative Sydney-time check.
+    - cron: '17,47 13-20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sea-chef-overnight-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Research and prepare the daily desk
+        run: node scripts/overnight-research.mjs
+      - name: Publish completed research
+        run: |
+          if git diff --quiet -- daily-snapshot.json data/research-state.json; then
+            echo "No overnight data change to publish."
+            exit 0
+          fi
+          git config user.name "Sea Chef Labs overnight worker"
+          git config user.email "actions@users.noreply.github.com"
+          git add daily-snapshot.json data/research-state.json
+          git commit -m "Update overnight market snapshot"
+          git push
