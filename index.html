@@ -1112,10 +1112,10 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       const button=$('sonarWake'),status=$('sonarStatus');
       if(button)button.setAttribute('aria-busy','true');if(status)status.textContent='Loading daily desk';
       try {
-        const response=await fetch('daily-snapshot.json?day='+new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date()),{cache:'no-store',headers:{Accept:'application/json'}});
+        const response=await fetch('daily-snapshot.json?day='+new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Perth'}).format(new Date()),{cache:'no-store',headers:{Accept:'application/json'}});
         if(!response.ok)throw Error('Daily desk HTTP '+response.status);
         const snapshot=await response.json();
-        if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps)||(snapshot.sydneyDate && snapshot.source!=='bounded-public-market-screen'))throw Error('Daily desk validation failed');
+        if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps))throw Error('Daily desk validation failed');
         publishedDailySnapshot=snapshot;publishedDailyKeys.clear();
         checkerCoins.length=0;
         const seenIds=new Set();
@@ -1132,8 +1132,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         const rows=snapshot.dumpOpps.map(validPublishedRow).filter(Boolean);rows.forEach(row=>publishedDailyKeys.add(row.key));
         visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
         renderPublishedSnapshot();
-        const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date());
-        const current=snapshot.sydneyDate===today,firstRun=!snapshot.sydneyDate;
+        const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Perth'}).format(new Date());
+        const snapshotDate=snapshot.localDate||snapshot.sydneyDate;
+        const current=snapshotDate===today,firstRun=!snapshotDate;
         if(status)status.textContent=current?'Daily desk ready':firstRun?'Awaiting first overnight desk':'Previous daily desk';
         $('refreshStatus').textContent=current?'Ready for today':firstRun?'Awaiting tonight\'s research':'Using the last completed daily desk';
         if(rows.length)await refreshPublishedPrices(rows);
