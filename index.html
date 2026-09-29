@@ -438,6 +438,10 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       .opportunity-card::after {animation:none!important;opacity:0!important;}
       .section,.daily-spotlight,.market-pulse,.dump-glance,.wallet-ledger {box-shadow:none;}
     }
+
+    /* Bacon Intelligence Desk */
+    .bacon-desk{margin:20px 0;padding:20px;border:1px solid #76533f;border-radius:22px;background:radial-gradient(ellipse at top right,rgba(184,112,72,.16),transparent 62%),#141113;}
+    .bacon-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.bacon-head h2{margin:3px 0;color:#f0c4a6;font-size:24px}.bacon-kicker{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#c99172}.bacon-source{color:#bca99f;font-size:12px}.bacon-thesis{margin:14px 0;padding:12px 14px;border:1px solid #493a37;border-radius:14px;background:#191416;color:#d8c9c2;font-size:13px;line-height:1.5}.bacon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.bacon-card{padding:15px;border:1px solid #46383a;border-radius:18px;background:#19171b}.bacon-card h3{margin:0 0 8px;color:#edd8ca;font-size:18px}.bacon-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.bacon-pill{border:1px solid #574347;border-radius:999px;padding:4px 8px;color:#cfbdb4;font-size:11px}.bacon-card p{margin:7px 0;color:#bfb5b4;font-size:12px;line-height:1.45}.bacon-trade{margin-top:14px;padding:14px;border:1px solid #59424b;border-radius:16px;background:#1d171c}.bacon-trade strong{color:#e4c4d0}.bacon-levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}.bacon-levels div{padding:9px;border-radius:12px;background:#121114;border:1px solid #3b3238}.bacon-levels small{display:block;color:#a99ba2;font-size:10px}.bacon-levels span{display:block;margin-top:4px;color:#e3dbe0;font-size:13px}.bacon-approve{margin-top:10px;opacity:.55;cursor:not-allowed}.bacon-note{margin:10px 0 0;color:#a99ba2;font-size:11px}@media(max-width:560px){.bacon-desk{padding:16px}.bacon-levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body class="notranslate">
@@ -485,6 +489,15 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     <section class="section dump-buy-zone" id="scl-buy-setups">
       <div class="desk-heading"><h2>Dump opps</h2></div>
       <div class="opportunity-cards" id="buySetupRows"></div>
+    </section>
+
+    <section class="bacon-desk" id="baconIntelligence" aria-labelledby="baconTitle">
+      <div class="bacon-head"><div><span class="bacon-kicker">Research tool</span><h2 id="baconTitle">🥓 Bacon Intelligence Desk</h2></div><span class="bacon-source">Digest · Charts · YouTube · X</span></div>
+      <div class="bacon-thesis"><strong>Bacon thesis:</strong> market is already in a bull run. Positive Bacon calls accumulate here as permanent research candidates; Sea Chef due diligence stays separate from Bacon's view.</div>
+      <div class="bacon-grid" id="baconCoinWindows">
+        <article class="bacon-card"><h3>DOGE</h3><div class="bacon-meta"><span class="bacon-pill">Bacon mention</span><span class="bacon-pill">Due diligence pending</span></div><p><strong>Bacon view:</strong> positive context supplied by owner; exact thesis still to be captured from source.</p><p><strong>Sea Chef:</strong> research window opened. No automatic buy status.</p></article>
+      </div>
+      <div class="bacon-trade"><strong>Fast Trade Setup</strong><p class="bacon-note">Chart/trade calls stay separate from long-term narrative windows. Order levels appear here after the source and live market are verified.</p><div class="bacon-levels"><div><small>PAIR</small><span>Waiting</span></div><div><small>ENTRY</small><span>—</span></div><div><small>STOP</small><span>—</span></div><div><small>TARGETS</small><span>—</span></div></div><button class="btn bacon-approve" type="button" disabled title="Execution connection not enabled">Approve trade</button><p class="bacon-note">Approval is required before any future supported execution. No seed phrase or private key is stored.</p></div>
     </section>
 
     <section class="section wallet-ledger" id="walletLedger">
