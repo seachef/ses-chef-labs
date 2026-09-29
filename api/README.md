@@ -13,3 +13,9 @@ The Bacon Fast Trade Desk is currently a **staging and owner-approval** interfac
 `.env.example` documents variable names only; real values belong in encrypted deployment secrets.
 
 Current state: **execution disabled; no order submission implementation**.
+
+## OKX Australia adapter
+
+The initial provider is OKX. Australian accounts use the regional OKX API domain documented for AU/US registrations. The adapter supports authenticated balance reads, pending-order reads, staged order conversion for SPOT/SWAP, demo headers, HMAC-SHA256 signing, and a live submission function guarded by three independent gates: credentials present, `SCL_EXECUTION_ENABLED=true`, and demo mode disabled.
+
+Default configuration is **demo mode ON and live execution OFF**. Create an OKX Demo Trading API key first. Use Read + Trade only; do not grant Withdraw permission. Production credentials must never be committed.
