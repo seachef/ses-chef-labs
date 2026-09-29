@@ -1,17 +1,4 @@
 <!doctype html>
-<!-- SEA CHEF LABS SONAR UPDATE — 28 SEPTEMBER 2026
-My Market counts the currently visible Dump opps only: Failed / Qualifying / Static.
-Qualifying = measured closed-candle recovery, NOT full approval or a buy instruction.
-NEW is a separate first-appearance badge lasting 24 hours. Watched rows may have both badges.
-Candles: up to 48 closed 15-minute OHLCV candles for the exact recorded pool; no invented bars.
-If data is missing, old or mismatched, only the existing safe chart link is offered.
-Overnight-discovered coin links are coin pages, not a claim of an exact executable pool.
-Sonar reflects real requests; section outlines acknowledge validated data arrival, not qualification.
-Wake refresh preserves owner state and rate limits; previous positive data must be refreshed.
-Pick of the Day automatic import remains unconnected. It is an honest empty slot until integrated.
-Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded trading session.
--->
-
 <html lang="en-AU" translate="no">
 <head>
   <meta charset="utf-8">
@@ -473,9 +460,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="brand"><h1>Sea Chef Labs</h1></div>
       <div class="currency-switch" role="group" aria-label="Coin price display currency"><button type="button" class="btn" id="pricesUSD" aria-pressed="true" onclick="setPriceCurrency('USD')">USD</button><button type="button" class="btn" id="pricesAUD" aria-pressed="false" onclick="setPriceCurrency('AUD')">AUD</button></div>
     </header>
-    <div class="sonar-dock">
-      <button type="button" class="sonar-control" id="sonarWake" onclick="loadPublishedSnapshot()" aria-label="Reload the prepared daily desk"><span class="sonar-ring" aria-hidden="true"></span><span><strong>Sea Chef Sonar</strong><small id="sonarStatus" role="status">Loading daily desk</small></span></button>
-    </div>
     <div id="pullCue" class="pull-cue" aria-hidden="true">PULL Pull to refresh</div>
     <div class="top-controls">
       <div class="top-copy" hidden aria-hidden="true"><span class="currency-note" id="currencyNote"></span><span id="refreshStatus"></span></div>
@@ -551,9 +535,19 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     </section>
 
 
-    <details class="desk-menu" id="deskMenu"><summary>Menu  |  settings</summary>
-      <div class="pnd-restore"><button type="button" class="pnd-button" onclick="restorePumpDumpCoins()">RESTORE PUMPNDUMP REMOVALS</button><span class="trade-note" id="pndRemovedCount">0 removed from Dump opps</span></div>
-    </details><!-- end Menu -->
+    <div hidden aria-hidden="true" id="legacyMarketHooks">
+      <button id="sonarWake" type="button"></button>
+      <span id="sonarStatus"></span>
+      <span id="snapshotFailed">0</span>
+      <span id="snapshotQualified">0</span>
+      <span id="snapshotStatic">0</span>
+      <span id="pulseCoverage"></span>
+      <div id="dumpGlanceRows"></div>
+      <div id="buySetupRows"></div>
+      <span id="pndRemovedCount"></span>
+    </div>
+    <details class="desk-menu" id="deskMenu"><summary>Settings</summary>
+</details><!-- end Menu -->
 
 
   </div>
@@ -992,11 +986,11 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     function savePumpDumpExclusions() {
       localStorage.setItem('seaChefPumpDumpExclusions',JSON.stringify([...pumpDumpExclusions].sort()));
       const count=$('pndRemovedCount');
-      if (count) count.textContent=pumpDumpExclusions.size+' removed from Dump opps';
+      if (count) count.textContent=pumpDumpExclusions.size+' removed';
     }
     function restorePumpDumpCoins() {
-      if (!pumpDumpExclusions.size) return alert('No Pump & Dump removals are saved.');
-      if (!confirm('Restore every coin you removed from Dump opps?')) return;
+      if (!pumpDumpExclusions.size) return alert('No removals are saved.');
+      if (!confirm('Restore every coin you removed?')) return;
       pumpDumpExclusions.clear(); savePumpDumpExclusions(); buildBuySetups();
     }
     function freshMarketItem(m, now = Date.now()) {
@@ -1154,7 +1148,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       const rows=[...visibleTradeRows.values()].filter(row=>!pumpDumpExclusions.has(pumpDumpKeyForRow(row)));
       visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
       renderDailyPick();refreshMarketPulse();renderDumpGlance();renderTickerPrices();
-      $('buySetupRows').innerHTML=rows.length?rows.map(publishedCardMarkup).join(''):'<div class="empty">No qualified Dump opps in the prepared daily desk.</div>';
+      $('buySetupRows').innerHTML=rows.length?rows.map(publishedCardMarkup).join(''):'<div class="empty">No current candidates.</div>';
       $('buySetupRows').querySelectorAll('[data-trade-plan]').forEach(box=>{syncStepControl(box,'budget',true);syncStepControl(box,'multiple',true);});
     }
     async function refreshPublishedPrices(rows) {
@@ -1187,7 +1181,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     }
     async function loadPublishedSnapshot() {
       const button=$('sonarWake'),status=$('sonarStatus');
-      if(button)button.setAttribute('aria-busy','true');if(status)status.textContent='Loading daily desk';
+      if(button)button.setAttribute('aria-busy','true');if(status)status.textContent='Loading';
       try {
         const response=await fetch('daily-snapshot.json?day='+new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Perth'}).format(new Date()),{cache:'no-store',headers:{Accept:'application/json'}});
         if(!response.ok)throw Error('Daily desk HTTP '+response.status);
@@ -1212,12 +1206,12 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Perth'}).format(new Date());
         const snapshotDate=snapshot.localDate||snapshot.sydneyDate;
         const current=snapshotDate===today,firstRun=!snapshotDate;
-        if(status)status.textContent=current?'Daily desk ready':firstRun?'Awaiting first overnight desk':'Previous daily desk';
-        $('refreshStatus').textContent=current?'Ready for today':firstRun?'Awaiting tonight\'s research':'Using the last completed daily desk';
+        if(status)status.textContent=current?'Ready':firstRun?'Loading':'Ready';
+        $('refreshStatus').textContent=current?'Ready for today':firstRun?'Awaiting tonight\'s research':'Ready';
         if(rows.length)await refreshPublishedPrices(rows);
       } catch(error) {
         if(status)status.textContent='Daily desk unavailable';
-        $('refreshStatus').textContent='The completed daily desk could not be loaded';
+        $('refreshStatus').textContent='Some data unavailable';
       } finally {if(button)button.setAttribute('aria-busy','false');}
     }
     function compactState(row,now=Date.now()) {
@@ -1349,7 +1343,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       const busy=!document.hidden&&activePriceChecks.size>0;
       button.classList.toggle('sonar-busy',busy);button.setAttribute('aria-busy',String(busy));
       const entries=[...sonarFeeds],received=entries.filter(([,v])=>v.phase==='received').length;
-      status.textContent=document.hidden?'Paused while closed':busy?'Waking your market...':received?received+' feeds updated | tap to refresh':'Tap to wake my market';
+      status.textContent=document.hidden?'Paused while closed':busy?'Refreshing...':received?received+' feeds updated | tap to refresh':'Refresh';
       if(details)details.innerHTML=entries.length?entries.map(([key,v])=>`<div class="sonar-feed"><span>${escapeHTML(sonarLabel(key))}</span><span>${document.hidden&&v.phase==='running'?'Paused':v.phase==='running'?'Receiving...':v.phase==='received'?'Updated '+escapeHTML(localClock(v.at)):'Unavailable / waiting'}</span></div>`).join(''):'No requests yet.';
     }
     async function wakeMarket() {
@@ -1362,7 +1356,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       for(const [key,value] of securityEvidence)if(!value.critical)securityEvidence.delete(key);
       for(const lane of CHAIN_LANES){const state=discoveryState(lane);if(['WAITING','SCANNING','END OF AVAILABLE PAGES','PUBLIC PAGE LIMIT'].includes(state.status)){state.nextAt=0;state.nextPage=1;}}
       chainEvidenceDueAt=0;refreshQualificationGauges();refreshSonar();
-      $('refreshStatus').textContent='Waking your market | fresh checks first';
+      $('refreshStatus').textContent='Refreshing | fresh checks first';
       wakePromise=(async()=>{
         // Existing locks and provider backoffs are retained. No duplicate scans.
         await Promise.allSettled([(async()=>{await load();if(marketReceivedAt<marketWakeAt && !document.hidden&&Date.now()>=feedRetryAt)await load();})()]);
@@ -1424,7 +1418,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
           <span class="glance-change ${tone}">${label}</span>
           <span class="check-dot" role="img" data-glance-dot="${escapeHTML(row.key)}"></span>
         </button>`;
-      }).join(''):'<div class="trade-note">No Dump opps to show.</div>';
+      }).join(''):'<div class="trade-note">No items to show.</div>';
       refreshCheckDots();
       if(focused) [...host.querySelectorAll('[data-glance-key]')].find(el=>el.dataset.glanceKey===focused)?.focus({preventScroll:true});
     }
@@ -1964,7 +1958,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
         excluded:["OUTSIDE YOUR RULES",q.note],
         inactive:["DOESN'T PASS","Too little two-way trading was observed. Getting out could be difficult."],
         falling:["STILL FALLING","Selling is continuing. A cheaper price alone is not a recovery."],
-        drop:["OUTSIDE DUMP OPPS","It is no longer down 10% over 24 hours. A watch pin can keep it here."],
+        drop:["OUTSIDE RANGE","It is no longer down 10% over 24 hours. A watch pin can keep it here."],
         freshness:["STILL CHECKING","We need a recent price before judging this coin."],
         recovery:["LOOKING PROMISING","The chart has shown recovery. The sell route, costs and remaining risks still need checking."],
         mixed:["STILL CHECKING","The price has not settled into a clear recovery yet."]
@@ -3061,7 +3055,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
     }
     restoreLastView();
     // Daytime is display-only. GitHub prepares the desk overnight in Sydney.
-    $('refreshStatus').textContent='Loading daily desk';
+    $('refreshStatus').textContent='Loading';
     document.addEventListener('visibilitychange', () => {
       document.body.classList.toggle('gauge-motion-paused',document.hidden);
       if(document.hidden){lastHiddenAt=Date.now();saveLastView();refreshSonar();}
@@ -3079,7 +3073,6 @@ Display interval does not alter qualification timeframes. iPhone/provider accept
 exact-pool official GeckoTerminal embed on demand, single frame outside card rerenders.
 Provider availability on Craig's iPhone still needs acceptance. Embedded display never passes an evidence gate. -->
 <!-- Owner cleanup 2026-09-28: removed All coins table and EARN panel, styles, renderer, calculations and listeners. Discovery, watchlist scanning, Dump opps, charts and wallet history retained. -->
-<!-- Owner cleanup: lower chain market banners and their repeated rendering removed; top ticker and chain discovery retained. -->
 <!-- Wallet menu cleanup: one optional Track my wallet disclosure in My buys; Rabby/Phantom are explicit tracking choices. Removed Menu wallet buttons and unused chain-switch shortcut. -->
 </body>
 </html>
