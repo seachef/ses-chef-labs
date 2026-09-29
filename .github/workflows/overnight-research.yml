@@ -2,9 +2,9 @@ name: Sea Chef overnight research
 
 on:
   schedule:
-    # Covers midnight-6am in Australia/Sydney across AEST and AEDT.
-    # The script performs the authoritative Sydney-time check.
-    - cron: '17,47 13-20 * * *'
+    # Covers midnight-6am in Australia/Perth (UTC+8).
+    # The script performs the authoritative Perth-time check.
+    - cron: '17,47 16-21 * * *'
   workflow_dispatch:
 
 permissions:
