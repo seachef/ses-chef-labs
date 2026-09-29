@@ -451,6 +451,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     @media(max-width:620px){.morning-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.morning-lines p{font-size:13px}}
     .bacon-trade-simple{padding:18px}.bacon-one-input{margin:16px 0}.bacon-one-input label{display:block;color:#d6c8cf;font-size:12px;font-weight:750;letter-spacing:.04em;margin-bottom:7px}.bacon-one-input-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}.bacon-dollar{font-size:22px;font-weight:800;color:#f0ccb7}.bacon-one-input .input{font-size:22px;font-weight:800;min-height:52px}.bacon-one-input .btn{min-height:52px}.bacon-ticket{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.bacon-ticket>div{padding:10px;border:1px solid #40343a;border-radius:12px;background:#151217;min-width:0}.bacon-ticket small{display:block;color:#a99ba2;font-size:10px;margin-bottom:5px}.bacon-ticket strong{display:block;color:#eadfe3;font-size:13px;overflow-wrap:anywhere}.bacon-big-approve{width:100%;min-height:52px;font-size:17px;margin-top:6px}.bacon-clear-link{display:block;margin:10px auto 0;border:0;background:transparent;color:#a99ba2;text-decoration:underline;font-size:12px}.bacon-big-approve:disabled{opacity:.42;cursor:not-allowed}@media(max-width:680px){.bacon-ticket{grid-template-columns:repeat(2,minmax(0,1fr))}.bacon-one-input-row{grid-template-columns:auto minmax(0,1fr)}.bacon-one-input-row .btn{grid-column:1/-1;width:100%}}
     .bacon-desk{padding:14px;margin:14px 0;border-radius:18px}.bacon-head h2{font-size:20px}.bacon-kicker{font-size:10px}.bacon-thesis{margin:10px 0;padding:9px 11px;font-size:12px}.bacon-grid{gap:8px}.bacon-card{padding:11px;border-radius:14px}.bacon-card h3{font-size:16px;margin-bottom:6px}.bacon-card p{font-size:11px;margin:5px 0}.bacon-meta{margin-bottom:7px}.bacon-pill{font-size:10px;padding:3px 7px}.bacon-trade-simple{padding:14px;margin-top:10px}.bacon-source{font-size:11px}
+    .bacon-morning{margin:10px 0 12px;padding:10px;border-radius:14px}.bacon-morning .morning-head h2{font-size:18px}.bacon-morning .morning-lines{gap:5px;margin:10px 0}.bacon-morning .morning-lines p{padding:8px 9px;font-size:12px}.bacon-morning .morning-stats{gap:6px}.bacon-morning .morning-stats span{padding:8px;font-size:10px}.bacon-morning .morning-stats strong{font-size:14px}
 </style>
 </head>
 <body class="notranslate">
@@ -471,19 +472,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="ticker-status"><strong id="tickerControlLabel">BANNER PAUSED  |  TAP TO START</strong><span id="tickerStatus">Waiting for fresh public prices...</span></div>
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
-    <section class="morning-brief" id="morningBrief" aria-labelledby="morningBriefTitle">
-      <div class="morning-head"><div><span class="morning-kicker">6 AM Perth brief</span><h2 id="morningBriefTitle">🥓 Bacon Heat</h2></div><span class="bacon-pill" id="morningBriefDate">30 Sep</span></div>
-      <div id="morningHeatLines" class="morning-lines">
-        <p>🔥 QNT already exploded. Bacon is chasing the coins beside it, not QNT itself.</p>
-        <p>🔥 Bought: XRP · HBAR · XLM · IOTA · ALGO.</p>
-        <p>🔥 This is a 1–2 week trade idea, not a forever hold.</p>
-        <p>🔥 BTC: Bacon is buying weakness down toward roughly $78K.</p>
-        <p>🔥 Next watch: Robinhood Chain + Bittensor.</p>
-      </div>
-      <div class="morning-stats" id="morningStats">
-        <span><strong>5</strong> new windows</span><span><strong>5</strong> explicit buys</span><span><strong>1</strong> trade setup</span><span><strong>HOT</strong> payments rotation</span>
-      </div>
-    </section>
     <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
       <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">Pick of the Day</h2></div></div>
       <p class="daily-empty">No pick loaded</p>
@@ -513,9 +501,33 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       <div class="opportunity-cards" id="buySetupRows"></div>
     </section>
 
+    <section class="section wallet-ledger" id="walletLedger">
+      <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
+      <button type="button" class="btn" id="trackWalletButton" aria-expanded="false" aria-controls="trackWalletChoices" onclick="toggleWalletTracking()">Track my wallet</button>
+      <div id="trackWalletChoices" hidden>
+        <div class="actions"><button type="button" class="btn" onclick="connectRabby()">Rabby</button><button type="button" class="btn purple" onclick="connectPhantom()">Phantom</button></div>
+      </div>
+      <div class="wallet-ledger-grid" id="pendingBuys"></div>
+      <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
+    </section>
+
+
     <section class="bacon-desk" id="baconIntelligence" aria-labelledby="baconTitle">
       <div class="bacon-head"><div><span class="bacon-kicker">Research</span><h2 id="baconTitle">🥓 Bacon Intel</h2></div><span class="bacon-source">Digest · Charts · YouTube · X</span></div>
       <div class="bacon-thesis"><strong>Thesis:</strong> bull run active. Bacon calls stay here; Sea Chef checks them.</div>
+      <div class="morning-brief bacon-morning" id="morningBrief" aria-labelledby="morningBriefTitle">
+      <div class="morning-head"><div><span class="morning-kicker">6 AM Perth brief</span><h2 id="morningBriefTitle">🥓 Bacon Heat</h2></div><span class="bacon-pill" id="morningBriefDate">30 Sep</span></div>
+      <div id="morningHeatLines" class="morning-lines">
+        <p>🔥 QNT already exploded. Bacon is chasing the coins beside it, not QNT itself.</p>
+        <p>🔥 Bought: XRP · HBAR · XLM · IOTA · ALGO.</p>
+        <p>🔥 This is a 1–2 week trade idea, not a forever hold.</p>
+        <p>🔥 BTC: Bacon is buying weakness down toward roughly $78K.</p>
+        <p>🔥 Next watch: Robinhood Chain + Bittensor.</p>
+      </div>
+      <div class="morning-stats" id="morningStats">
+        <span><strong>5</strong> new windows</span><span><strong>5</strong> explicit buys</span><span><strong>1</strong> trade setup</span><span><strong>HOT</strong> payments rotation</span>
+      </div>
+      </div>
       <div class="bacon-grid" id="baconCoinWindows"><article class="bacon-card"><h3>Loading Bacon windows…</h3></article></div>
       <div class="bacon-trade bacon-trade-simple" id="baconFastTrade">
   <div class="bacon-head"><div><strong>Fast Trade</strong><p class="bacon-note">You enter one thing only: the AUD amount.</p></div><span class="bacon-pill" id="baconTradeState">WAITING FOR SETUP</span></div>
@@ -537,16 +549,6 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
   <button class="bacon-clear-link" type="button" onclick="clearBaconTrade()">Clear amount</button>
   <p class="bacon-note" id="baconTradeNote">Sea Chef loads and calculates the rest from the verified setup.</p>
 </div>
-    </section>
-
-    <section class="section wallet-ledger" id="walletLedger">
-      <div class="desk-heading"><h2>My buys</h2><span class="trade-note" id="walletLedgerStatus">Connect a wallet to detect buys</span></div>
-      <button type="button" class="btn" id="trackWalletButton" aria-expanded="false" aria-controls="trackWalletChoices" onclick="toggleWalletTracking()">Track my wallet</button>
-      <div id="trackWalletChoices" hidden>
-        <div class="actions"><button type="button" class="btn" onclick="connectRabby()">Rabby</button><button type="button" class="btn purple" onclick="connectPhantom()">Phantom</button></div>
-      </div>
-      <div class="wallet-ledger-grid" id="pendingBuys"></div>
-      <details class="coin-plan"><summary>Open positions &amp; history</summary><div class="wallet-ledger-grid" id="openPositions"></div><div class="wallet-ledger-grid" id="tradeHistory"></div></details>
     </section>
 
 
