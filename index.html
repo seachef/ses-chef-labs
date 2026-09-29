@@ -2168,7 +2168,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
         if(row.change>-10)return {label:'WAIT',tone:'wait',stage:'drop',note:'Current price is outside the 10% drop rule',angle:0,sampleCount:3};
         if(row.change<=-50)return {label:'EXCLUDED',tone:'wait',stage:'excluded',note:'Current price is down 50% or more',angle:0,sampleCount:3};
         if(row.price<row.overnightLastPrice)return {label:'WAIT',tone:'wait',stage:'falling',note:'Current price has fallen below the final overnight recovery sample',angle:10,sampleCount:3};
-        return {label:'WATCH',tone:'watch',stage:'recovery',note:'Overnight recovery still holds at the current price',angle:90,sampleCount:3};
+        return {label:'WATCH',tone:'watch',stage:'evidence',note:'Overnight price recovery only | exit liquidity and security checks still needed',angle:45,sampleCount:3};
       }
       if(!rowRefreshedSinceWake(row)) return {...sampled,label:'WAIT',tone:'checking',stage:'freshness',note:'Fresh data needed after reopening',angle:0};
       const exclusion=dumpExclusionReason(row,now);
