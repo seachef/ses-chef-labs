@@ -5,7 +5,7 @@ Qualifying = measured closed-candle recovery, NOT full approval or a buy instruc
 NEW is a separate first-appearance badge lasting 24 hours. Watched rows may have both badges.
 Candles: up to 48 closed 15-minute OHLCV candles for the exact recorded pool; no invented bars.
 If data is missing, old or mismatched, only the existing safe chart link is offered.
-Named watchlist coin links are coin pages, not a claim of an exact executable pool.
+Overnight-discovered coin links are coin pages, not a claim of an exact executable pool.
 Sonar reflects real requests; section outlines acknowledge validated data arrival, not qualification.
 Wake refresh preserves owner state and rate limits; previous positive data must be refreshed.
 Pick of the Day automatic import remains unconnected. It is an honest empty slot until integrated.
@@ -654,93 +654,12 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     function dismissWalletRecord(id) { pendingWalletBuys=pendingWalletBuys.filter(r=>r.id!==id);saveWalletLedger(); }
     function markPositionSold(id) { const index=openWalletPositions.findIndex(r=>r.id===id);if(index<0)return;walletTradeHistory.unshift({...openWalletPositions[index],status:'closed',closedAt:Date.now()});openWalletPositions.splice(index,1);saveWalletLedger(); }
 
-    // --- VERIFIED CATALOGS ---
-    const deep = [
-      {id:'solana',s:'SOL',n:'Solana',c:'Solana',a:'Native SOL',cg:'solana',chain:'solana',addr:'Native',dex:'https://dexscreener.com/solana/solana'},
-      {id:'dogwifcoin',s:'WIF',n:'dogwifhat',c:'Solana',a:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',cg:'dogwifcoin',chain:'solana',addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',dex:'https://dexscreener.com/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-      {id:'jupiter-exchange-solana',s:'JUP',n:'Jupiter',c:'Solana',a:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',cg:'jupiter-exchange-solana',chain:'solana',addr:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',dex:'https://dexscreener.com/solana/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
-      {id:'matic-network',s:'POL',n:'POL',c:'Polygon',a:'0x0000000000000000000000000000000000001010',cg:'matic-network',chain:'polygon',addr:'0x0000000000000000000000000000000000001010',dex:'https://dexscreener.com/polygon/polygon'},
-      {id:'bonk',s:'BONK',n:'Bonk',c:'Solana',a:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',cg:'bonk',chain:'solana',addr:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',dex:'https://dexscreener.com/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'},
-      {id:'raydium',s:'RAY',n:'Raydium',c:'Solana',a:'4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',cg:'raydium',chain:'solana',addr:'4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',dex:'https://dexscreener.com/solana/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'},
-      {id:'pyth-network',s:'PYTH',n:'Pyth Network',c:'Solana',a:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',cg:'pyth-network',chain:'solana',addr:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',dex:'https://dexscreener.com/solana/HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'},
-      {id:'render-token',s:'RENDER',n:'Render',c:'Solana',a:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',cg:'render-token',chain:'solana',addr:'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',dex:'https://dexscreener.com/solana/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof'},
-      {id:'chainlink',s:'LINK',n:'Chainlink',c:'Ethereum',a:'0x514910771AF9Ca656af840dff83E8264EcF986CA',cg:'chainlink',chain:'ethereum',addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA',dex:'https://dexscreener.com/ethereum/0x514910771AF9Ca656af840dff83E8264EcF986CA'},
-      {id:'arbitrum',s:'ARB',n:'Arbitrum',c:'Arbitrum',a:'0x912CE59144191C1204E64559FE8253a0e49E6548',cg:'arbitrum',chain:'arbitrum',addr:'0x912CE59144191C1204E64559FE8253a0e49E6548',dex:'https://dexscreener.com/arbitrum/0x912CE59144191C1204E64559FE8253a0e49E6548'},
-      {id:'optimism',s:'OP',n:'Optimism',c:'Optimism',a:'0x4200000000000000000000000000000000000042',cg:'optimism',chain:'optimism',addr:'0x4200000000000000000000000000000000000042',dex:'https://dexscreener.com/optimism'},
-      {id:'avalanche-2',s:'AVAX',n:'Avalanche',c:'Avalanche',a:'Native AVAX',cg:'avalanche-2',chain:'avalanche',addr:'Native',dex:'https://dexscreener.com/avalanche'},
-      {id:'aave',s:'AAVE',n:'Aave',c:'Ethereum',a:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',cg:'aave',chain:'ethereum',addr:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9',dex:'https://dexscreener.com/ethereum/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'}
-    ];
-
-    const dumpCoins = [
-      {symbol:'HYPE', cg:'hyperliquid', chain:'hyperliquid', addr:'Native'},
-      {symbol:'ONDO', cg:'ondo', chain:'ethereum', addr:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3'},
-      {symbol:'SUI', cg:'sui', chain:'sui', addr:'Native'},
-      {symbol:'LINK', cg:'chainlink', chain:'ethereum', addr:'0x514910771AF9Ca656af840dff83E8264EcF986CA'},
-      {symbol:'AAVE', cg:'aave', chain:'ethereum', addr:'0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAe9'},
-      {symbol:'INJ', cg:'injective-protocol', chain:'injective', addr:'Native'},
-      {symbol:'PENDLE', cg:'pendle', chain:'ethereum', addr:'0x808507121B80c02388fAd14726482e061B8da827'},
-      {symbol:'TAO', cg:'bittensor', chain:'bittensor', addr:'Native'},
-      {symbol:'NEAR', cg:'near', chain:'near', addr:'Native'},
-      {symbol:'TIA', cg:'celestia', chain:'celestia', addr:'Native'},
-      {symbol:'SEI', cg:'sei-network', chain:'sei', addr:'Native'},
-      {symbol:'JUP', cg:'jupiter-exchange-solana', chain:'solana', addr:'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'},
-      {symbol:'RUNE', cg:'thorchain', chain:'thorchain', addr:'Native'},
-      {symbol:'ARB', cg:'arbitrum', chain:'arbitrum', addr:'0x912CE59144191C1204E64559FE8253a0e49E6548'},
-      {symbol:'OP', cg:'optimism', chain:'optimism', addr:'0x4200000000000000000000000000000000000042'},
-      {symbol:'ZRO', cg:'layerzero', chain:'ethereum', addr:'0x6985884C4392D348587B19cb9eAAf157F13271cd'},
-      {symbol:'PYTH', cg:'pyth-network', chain:'solana', addr:'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'},
-      {symbol:'ENA', cg:'ena', chain:'ethereum', addr:'0x57e114B691Db790C35207b2e685D4A43181e6061'},
-      {symbol:'WIF', cg:'dogwifcoin', chain:'solana', addr:'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'},
-      {symbol:'BONK', cg:'bonk', chain:'solana', addr:'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'},
-      {symbol:'FLOKI', cg:'floki', chain:'ethereum', addr:'0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E'},
-      {symbol:'PEPE', cg:'pepe', chain:'ethereum', addr:'0x6982508145454Ce325dDbE47a25d4ec3d2311933'},
-      {symbol:'JASMY', cg:'jasmy', chain:'ethereum', addr:'0x7420B4b9a0110cdC71fB720908340C03F9Bc03EC'},
-      {symbol:'HBAR', cg:'hedera-hashgraph', chain:'hedera', addr:'Native'},
-      {symbol:'XLM', cg:'stellar', chain:'stellar', addr:'Native'},
-      {symbol:'ADA', cg:'cardano', chain:'cardano', addr:'Native'},
-      {symbol:'AVAX', cg:'avalanche-2', chain:'avalanche', addr:'Native'},
-      {symbol:'APT', cg:'aptos', chain:'aptos', addr:'Native'},
-      {symbol:'ATOM', cg:'cosmos', chain:'cosmos', addr:'Native'},
-      {symbol:'FIL', cg:'filecoin', chain:'filecoin', addr:'Native'},
-      {symbol:'ICP', cg:'internet-computer', chain:'internet-computer', addr:'Native'},
-      {symbol:'FET', cg:'fetch-ai', chain:'ethereum', addr:'0xaea46A60368A7Db0442f9926649aB438D1819d9a'},
-      {symbol:'AKT', cg:'akash-network', chain:'cosmos', addr:'Native'},
-      {symbol:'IMX', cg:'immutable-x', chain:'ethereum', addr:'0xF57e7e7C23978C3cAEC3C3548E3D615c346e79fF'},
-      {symbol:'GRT', cg:'the-graph', chain:'ethereum', addr:'0xc944E90C64B2c07662A292be6244BDf05Cda44a7'},
-      {symbol:'OMI', cg:'ecomi', chain:'multichain', addr:'Identity check required', chart:'https://www.coingecko.com/en/coins/ecomi'},
-      {symbol:'PLUME', cg:'plume', chain:'plume', addr:'Native'},
-      {symbol:'LTC', cg:'litecoin', chain:'litecoin', addr:'Native'},
-      {symbol:'ALGO', cg:'algorand', chain:'algorand', addr:'Native'},
-      {symbol:'ZEN', cg:'zen', chain:'zen', addr:'Native'},
-      {symbol:'ROSE', cg:'oasis-network', chain:'oasis', addr:'Native'},
-      {symbol:'MATIC', cg:'matic-network', chain:'polygon', addr:'0x0000000000000000000000000000000000001010'},
-      {symbol:'XRP', cg:'ripple', chain:'xrp-ledger', addr:'Native', chart:'https://www.coingecko.com/en/coins/xrp'},
-      {symbol:'AXL', cg:'axelar', chain:'axelar', addr:'Native', chart:'https://www.coingecko.com/en/coins/axelar'},
-      {symbol:'AR', cg:'arweave', chain:'arweave', addr:'Native', chart:'https://www.coingecko.com/en/coins/arweave'},
-      {symbol:'STX', cg:'blockstack', chain:'stacks', addr:'Native', chart:'https://www.coingecko.com/en/coins/stacks'},
-      {symbol:'KAS', cg:'kaspa', chain:'kaspa', addr:'Native', chart:'https://www.coingecko.com/en/coins/kaspa'},
-      {symbol:'METIS', cg:'metis-token', chain:'metis', addr:'Native', chart:'https://www.coingecko.com/en/coins/metis-token'},
-      {symbol:'BNB', cg:'binancecoin', chain:'bnb', addr:'Native', chart:'https://www.coingecko.com/en/coins/bnb'},
-      {symbol:'DOGE', cg:'dogecoin', chain:'dogecoin', addr:'Native', chart:'https://www.coingecko.com/en/coins/dogecoin'},
-      {symbol:'TRX', cg:'tron', chain:'tron', addr:'Native', chart:'https://www.coingecko.com/en/coins/tron'},
-      {symbol:'DOT', cg:'polkadot', chain:'polkadot', addr:'Native', chart:'https://www.coingecko.com/en/coins/polkadot'},
-      {symbol:'BCH', cg:'bitcoin-cash', chain:'bitcoin-cash', addr:'Native', chart:'https://www.coingecko.com/en/coins/bitcoin-cash'},
-      {symbol:'ETC', cg:'ethereum-classic', chain:'ethereum-classic', addr:'Native', chart:'https://www.coingecko.com/en/coins/ethereum-classic'},
-      {symbol:'UNI', cg:'uniswap', chain:'ethereum', addr:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', chart:'https://www.coingecko.com/en/coins/uniswap'},
-      {symbol:'XMR', cg:'monero', chain:'monero', addr:'Native', chart:'https://www.coingecko.com/en/coins/monero'},
-      {symbol:'TON', cg:'the-open-network', chain:'ton', addr:'Native', chart:'https://www.coingecko.com/en/coins/toncoin'},
-      {symbol:'SHIB', cg:'shiba-inu', chain:'ethereum', addr:'0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', chart:'https://www.coingecko.com/en/coins/shiba-inu'},
-      {symbol:'BTC', cg:'bitcoin', chain:'bitcoin', addr:'Native'},
-      {symbol:'ETH', cg:'ethereum', chain:'ethereum', addr:'Native'}
-    ];
-
-    const checkerCoins = [...dumpCoins];
-    deep.forEach(item => {
-      if (!checkerCoins.some(existing => existing.cg === item.cg)) {
-        checkerCoins.push({symbol:item.s, cg:item.cg, chain:item.chain, addr:item.addr, chart:item.dex});
-      }
-    });
-    const ids = checkerCoins.map(x => x.cg);
+    // The overnight desk discovers assets from public markets; no owner ticker whitelist.
+    // Legacy deep-pair controls remain inert so saved owner history is not rewritten.
+    const deep = [];
+    const dumpCoins = [];
+    const checkerCoins = [];
+    let ids = [];
     const BLUE_CHIPS = new Set(['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','TRX','LINK','AVAX','DOT','LTC','BCH','XMR','TON','SHIB']);
     const CHAIN_LANES = Object.freeze([
       {key:'bnb', api:'bsc', name:'BNB CHAIN', gas:'BNB', wallet:'RABBY'},
@@ -1038,6 +957,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
       if(!coin||String(row.symbol)!==coin.symbol||String(row.contract)!==String(coin.addr||''))return null;
       const price=Number(row.price),change=Number(row.change),rating=Number(row.rating);
       if(!Number.isFinite(price)||price<=0||!Number.isFinite(change)||change>-10||change<=-50)return null;
+      const firstTrade=new Date(row.evidence?.oldestObservedTradeAt).getTime();
+      const reportedAt=new Date(publishedDailySnapshot?.generatedAt).getTime();
+      if(!Number.isFinite(firstTrade)||!Number.isFinite(reportedAt)||firstTrade>reportedAt-7*24*60*60*1000)return null;
       const samples=row.evidence?.samples;
       if(!Array.isArray(samples)||samples.length!==3||!samples.every((sample,i)=>Number.isFinite(Number(sample.price))&&Number(sample.price)>0&&Number.isFinite(Number(sample.at))&&(!i||Number(sample.at)-Number(samples[i-1].at)>=20*60*1000)))return null;
       if(!(Number(samples[2].price)>Number(samples[1].price)&&Number(samples[1].price)>=Number(samples[0].price)))return null;
@@ -1098,8 +1020,20 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         const response=await fetch('daily-snapshot.json?day='+new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date()),{cache:'no-store',headers:{Accept:'application/json'}});
         if(!response.ok)throw Error('Daily desk HTTP '+response.status);
         const snapshot=await response.json();
-        if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps))throw Error('Daily desk validation failed');
+        if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps)||(snapshot.sydneyDate && snapshot.source!=='bounded-public-market-screen'))throw Error('Daily desk validation failed');
         publishedDailySnapshot=snapshot;publishedDailyKeys.clear();
+        checkerCoins.length=0;
+        const seenIds=new Set();
+        for(const candidate of snapshot.dumpOpps) {
+          if(!candidate || typeof candidate.key!=='string' || !/^[a-z0-9._-]{2,100}$/.test(candidate.key) || seenIds.has(candidate.key)) continue;
+          if(typeof candidate.symbol!=='string' || !/^[A-Z0-9._-]{1,20}$/.test(candidate.symbol)) continue;
+          if(typeof candidate.chain!=='string' || !/^[A-Z0-9 _-]{2,40}$/.test(candidate.chain)) continue;
+          const address=String(candidate.contract||'');
+          if(!/^0x[a-fA-F0-9]{40}$/.test(address) && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) continue;
+          checkerCoins.push({cg:candidate.key,symbol:candidate.symbol,chain:candidate.chain.toLowerCase(),addr:address,chart:'https://www.coingecko.com/en/coins/'+encodeURIComponent(candidate.key)});
+          seenIds.add(candidate.key);
+        }
+        ids=checkerCoins.map(item=>item.cg);
         const rows=snapshot.dumpOpps.map(validPublishedRow).filter(Boolean);rows.forEach(row=>publishedDailyKeys.add(row.key));
         visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
         renderPublishedSnapshot();
@@ -2749,6 +2683,7 @@ async function fetchEvidenceCandles(lane,pool,timeframe,aggregate,limit) {
       return feedPromise;
     }
     async function performLoad() {
+      if(!ids.length) return 'no overnight candidates';
       priceCheckActivity('watchlist',1);
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
       try {
