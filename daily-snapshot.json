@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "sydneyDate": null,
+  "generatedAt": null,
+  "generatedAtSydney": null,
+  "source": "awaiting-first-overnight-run",
+  "manualOnly": true,
+  "signing": false,
+  "submitting": false,
+  "counts": {
+    "failed": 0,
+    "qualifying": 0,
+    "static": 0
+  },
+  "pick": null,
+  "dumpOpps": []
+}
