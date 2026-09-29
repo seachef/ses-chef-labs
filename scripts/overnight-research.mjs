@@ -5,15 +5,15 @@ const STATE_FILE = new URL('data/research-state.json', ROOT);
 const SNAPSHOT_FILE = new URL('daily-snapshot.json', ROOT);
 const FORCE = process.argv.includes('--force');
 const now = new Date();
-const sydneyParts = Object.fromEntries(new Intl.DateTimeFormat('en-AU', {
-  timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit',
+const localParts = Object.fromEntries(new Intl.DateTimeFormat('en-AU', {
+  timeZone: 'Australia/Perth', year: 'numeric', month: '2-digit', day: '2-digit',
   hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
 }).formatToParts(now).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
-const sydneyHour = Number(sydneyParts.hour);
-const sydneyDate = `${sydneyParts.year}-${sydneyParts.month}-${sydneyParts.day}`;
+const localHour = Number(localParts.hour);
+const localDate = `${localParts.year}-${localParts.month}-${localParts.day}`;
 
-if (!FORCE && (sydneyHour < 0 || sydneyHour >= 6)) {
-  console.log(`Outside Sydney research window (${sydneyHour}:00); no research performed.`);
+if (!FORCE && (localHour < 0 || localHour >= 6)) {
+  console.log(`Outside Perth research window (${localHour}:00); no research performed.`);
   process.exit(0);
 }
 
@@ -106,7 +106,14 @@ function recoveryStrength(samples) {
   return ((three[2].price / three[0].price) - 1) * 100;
 }
 
-const catalog = await discoverCatalog();
+let catalog=[];
+let providerError=null;
+try {
+  catalog = await discoverCatalog();
+} catch (error) {
+  providerError = String(error?.message || error);
+  console.warn('Primary market screen unavailable: '+providerError);
+}
 const state = readJson(STATE_FILE, {schema: 1, samples: {}, lastQualified: []});
 if (state.schema !== 1 || !state.samples || typeof state.samples !== 'object') throw new Error('Research state schema is invalid');
 
@@ -161,16 +168,26 @@ const dumpOpps = ageChecked;
 const pick = null; // Price-only screen cannot authorise a Trade of the Day.
 const previousSnapshot = readJson(SNAPSHOT_FILE, null);
 const snapshot = {
-  schema: 1, sydneyDate, generatedAt: now.toISOString(), generatedAtSydney: `${sydneyDate} ${sydneyParts.hour}:${sydneyParts.minute}:${sydneyParts.second}`,
-  source: 'bounded-public-market-screen', manualOnly: true, signing: false, submitting: false,
+  schema: 1,
+  localDate,
+  localTimezone: 'Australia/Perth',
+  sydneyDate: localDate,
+  generatedAt: now.toISOString(),
+  generatedAtLocal: `${localDate} ${localParts.hour}:${localParts.minute}:${localParts.second}`,
+  generatedAtSydney: `${localDate} ${localParts.hour}:${localParts.minute}:${localParts.second}`,
+  source: providerError ? 'bounded-public-market-screen-degraded' : 'bounded-public-market-screen',
+  providerError,
+  manualOnly: true, signing: false, submitting: false,
   counts: {failed, qualifying: 0, static: staticCount}, coverage: {marketRows: new Set(payload.map(x=>x.id)).size, identifiedDecliners: catalog.length, ageChecked: Math.min(candidates.length,12), preliminary: dumpOpps.length}, pick, dumpOpps,
-  previousValidSydneyDate: previousSnapshot?.sydneyDate || null
+  previousValidSydneyDate: previousSnapshot?.localDate || previousSnapshot?.sydneyDate || null
 };
 
 state.updatedAt = now.toISOString();
-state.sydneyDate = sydneyDate;
+state.localDate = localDate;
+state.localTimezone = 'Australia/Perth';
+state.sydneyDate = localDate;
 state.lastQualified = dumpOpps.map(row => row.key);
 fs.mkdirSync(new URL('data/', ROOT), {recursive: true});
 fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
 fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(snapshot, null, 2) + '\n');
-console.log(`Published ${dumpOpps.length} preliminary review cards for ${sydneyDate}; no execution-qualified pick.`);
+console.log(`Published ${dumpOpps.length} preliminary review cards for ${localDate} Perth; no execution-qualified pick.`);
