@@ -1003,7 +1003,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         $('snapshotFailed').textContent=String(counts.failed);
         $('snapshotQualified').textContent=String(counts.qualifying);
         $('snapshotStatic').textContent=String(counts.static);
-        $('pulseCoverage').textContent='Prepared '+publishedDailySnapshot.generatedAtSydney+' Sydney';
+        $('pulseCoverage').textContent=publishedDailySnapshot.generatedAtSydney?'Prepared '+publishedDailySnapshot.generatedAtSydney+' Sydney':'Awaiting tonight\'s research';
         return;
       }
       const counts={failed:0,qualified:0,static:0},rows=[...visibleTradeRows.values()];
@@ -1075,9 +1075,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         visibleTradeRows=new Map(rows.map(row=>[row.key,row]));
         renderPublishedSnapshot();
         const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney'}).format(new Date());
-        const current=snapshot.sydneyDate===today;
-        if(status)status.textContent=current?'Daily desk ready':'Previous daily desk';
-        $('refreshStatus').textContent=current?'Ready for today':'Using the last completed daily desk';
+        const current=snapshot.sydneyDate===today,firstRun=!snapshot.sydneyDate;
+        if(status)status.textContent=current?'Daily desk ready':firstRun?'Awaiting first overnight desk':'Previous daily desk';
+        $('refreshStatus').textContent=current?'Ready for today':firstRun?'Awaiting tonight\'s research':'Using the last completed daily desk';
       } catch(error) {
         if(status)status.textContent='Daily desk unavailable';
         $('refreshStatus').textContent='The completed daily desk could not be loaded';
