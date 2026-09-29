@@ -461,6 +461,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     .bacon-heat-inline .morning-lines,.bacon-heat-inline .morning-stats{margin-left:0;margin-right:0}
     .bacon-trade-simple{border:0!important;background:transparent!important;padding:12px 0!important;margin:0!important}
     .bacon-grid{display:block!important}.bacon-coin-line{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid #30282d}.bacon-coin-line:last-child{border-bottom:0}.bacon-coin-line strong{color:#efcfbd;font-size:14px}.bacon-coin-line span{color:#bbb0b5;font-size:12px;line-height:1.35}
+    .bacon-coin-line{grid-template-columns:52px minmax(0,1fr);gap:8px;padding:5px 0!important;line-height:1.2}.bacon-coin-line strong{font-size:13px!important}.bacon-coin-line span{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body class="notranslate">
@@ -536,7 +537,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         <span><strong>5</strong> new windows</span><span><strong>5</strong> explicit buys</span><span><strong>1</strong> trade setup</span><span><strong>HOT</strong> payments rotation</span>
       </div>
       </div>
-      <div class="bacon-subsection"><div class="bacon-inline-title"><strong>Intel</strong><span>Coins Bacon likes / bought</span></div><div class="bacon-grid" id="baconCoinWindows"><article class="bacon-card"><h3>Loading Bacon windows…</h3></article></div></div>
+      <div class="bacon-subsection"><div class="bacon-inline-title"><strong>Intel</strong><span>Coins</span></div><div class="bacon-grid" id="baconCoinWindows"><div class="bacon-coin-line"><strong>...</strong><span>Loading</span></div></div></div>
       <div class="bacon-subsection bacon-trade-simple" id="baconFastTrade">
   <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">WAITING FOR SETUP</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
   <div class="bacon-one-input">
@@ -597,11 +598,13 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     function renderBaconDesk(){
       const host=document.getElementById('baconCoinWindows'); if(!host)return;
       const coins=Array.isArray(baconState.data?.coins)?baconState.data.coins:[];
-      if(!coins.length){host.innerHTML='<div class="bacon-coin-line"><strong>No coins yet</strong><span>New positive Bacon calls will appear here.</span></div>';return;}
+      if(!coins.length){host.innerHTML='<div class="bacon-coin-line"><strong>No coins yet</strong><span>Waiting for Bacon calls.</span></div>';return;}
       host.innerHTML=coins.map(coin=>{
-        let reason=coin.baconView||coin.narrative||'Bacon positive mention';
-        reason=String(reason).replace(/^Bacon\s+/i,'').trim();
-        if(reason.length>110)reason=reason.slice(0,107)+'...';
+        const status=String(coin.status||'').toLowerCase();
+        const narrative=String(coin.narrative||'').trim();
+        let reason=status.includes('bought')?'Bought by Bacon':status.includes('holding')?'Bacon holds it':status.includes('likes')?'Bacon likes it':status.includes('watching')?'Bacon watching':status.includes('mention')?'Bacon mentioned it':'Bacon call';
+        if(narrative)reason+=' · '+narrative;
+        if(reason.length>58)reason=reason.slice(0,55)+'...';
         return '<div class="bacon-coin-line"><strong>'+baconEscape(coin.symbol)+'</strong><span>'+baconEscape(reason)+'</span></div>';
       }).join('');
     }
