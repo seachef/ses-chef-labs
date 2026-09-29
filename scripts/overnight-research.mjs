@@ -158,12 +158,12 @@ for(const row of candidates.slice(0,12)) {
 }
 
 const dumpOpps = ageChecked;
-const pick = dumpOpps[0] || null;
+const pick = null; // Price-only screen cannot authorise a Trade of the Day.
 const previousSnapshot = readJson(SNAPSHOT_FILE, null);
 const snapshot = {
   schema: 1, sydneyDate, generatedAt: now.toISOString(), generatedAtSydney: `${sydneyDate} ${sydneyParts.hour}:${sydneyParts.minute}:${sydneyParts.second}`,
   source: 'bounded-public-market-screen', manualOnly: true, signing: false, submitting: false,
-  counts: {failed, qualifying: dumpOpps.length, static: staticCount}, coverage: {marketRows: new Set(payload.map(x=>x.id)).size, identifiedDecliners: catalog.length, ageChecked: Math.min(candidates.length,12)}, pick, dumpOpps,
+  counts: {failed, qualifying: 0, static: staticCount}, coverage: {marketRows: new Set(payload.map(x=>x.id)).size, identifiedDecliners: catalog.length, ageChecked: Math.min(candidates.length,12), preliminary: dumpOpps.length}, pick, dumpOpps,
   previousValidSydneyDate: previousSnapshot?.sydneyDate || null
 };
 
@@ -173,4 +173,4 @@ state.lastQualified = dumpOpps.map(row => row.key);
 fs.mkdirSync(new URL('data/', ROOT), {recursive: true});
 fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
 fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(snapshot, null, 2) + '\n');
-console.log(`Published ${dumpOpps.length} qualifying opportunities for ${sydneyDate}; pick: ${pick?.symbol || 'none'}.`);
+console.log(`Published ${dumpOpps.length} preliminary review cards for ${sydneyDate}; no execution-qualified pick.`);
