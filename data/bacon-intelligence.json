@@ -28,5 +28,25 @@
       "dueDiligence": "pending"
     }
   ],
-  "tradeSetup": null
+  "tradeSetup": {
+    "source": "VirtualBacon vb_trade screenshot supplied by owner",
+    "capturedAt": "2026-09-29",
+    "verified": true,
+    "pair": "1INCH/USDT",
+    "side": "SHORT",
+    "sourceLeverage": 25,
+    "executableLeverage": 2,
+    "entry": 0.10172,
+    "entryRange": [
+      0.10172,
+      0.10782
+    ],
+    "targets": [
+      0.09969,
+      0.09765,
+      0.09562
+    ],
+    "stop": 0.1108748,
+    "note": "Bacon source setup preserved at 25x; executable leverage is capped separately for the configured Australian retail venue."
+  }
 }
