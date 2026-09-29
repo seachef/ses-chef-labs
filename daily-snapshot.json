@@ -1,9 +1,13 @@
 {
   "schema": 1,
-  "sydneyDate": null,
-  "generatedAt": null,
-  "generatedAtSydney": null,
-  "source": "awaiting-first-overnight-run",
+  "localDate": "2026-09-30",
+  "localTimezone": "Australia/Perth",
+  "sydneyDate": "2026-09-30",
+  "generatedAt": "2026-09-29T23:20:00.000Z",
+  "generatedAtLocal": "2026-09-30 07:20:00",
+  "generatedAtSydney": "2026-09-30 07:20:00",
+  "source": "bounded-public-market-screen-degraded",
+  "providerError": "Overnight primary market feed returned HTTP 403; fallback desk published so the app can load.",
   "manualOnly": true,
   "signing": false,
   "submitting": false,
@@ -12,6 +16,13 @@
     "qualifying": 0,
     "static": 0
   },
+  "coverage": {
+    "marketRows": 0,
+    "identifiedDecliners": 0,
+    "ageChecked": 0,
+    "preliminary": 0
+  },
   "pick": null,
-  "dumpOpps": []
+  "dumpOpps": [],
+  "previousValidSydneyDate": null
 }
