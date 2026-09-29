@@ -462,6 +462,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     .bacon-trade-simple{border:0!important;background:transparent!important;padding:12px 0!important;margin:0!important}
     .bacon-grid{display:block!important}.bacon-coin-line{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid #30282d}.bacon-coin-line:last-child{border-bottom:0}.bacon-coin-line strong{color:#efcfbd;font-size:14px}.bacon-coin-line span{color:#bbb0b5;font-size:12px;line-height:1.35}
     .bacon-coin-line{grid-template-columns:52px minmax(0,1fr);gap:8px;padding:5px 0!important;line-height:1.2}.bacon-coin-line strong{font-size:13px!important}.bacon-coin-line span{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .morning-market-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 14px}.morning-market-strip>div{padding:10px;border:1px solid #37303a;border-radius:12px;background:#121014}.morning-market-strip strong,.morning-market-strip span,.morning-market-strip small{display:block}.morning-market-strip strong{font-size:12px;color:#e9d7e2}.morning-market-strip span{font-size:15px;margin:3px 0;color:#f2edf5}.morning-market-strip small{font-size:10px;color:#b8aeba}.fallback-dump-static{margin-top:8px}.fallback-dump-row{display:grid;grid-template-columns:64px 90px 90px minmax(0,1fr);gap:8px;align-items:center;padding:10px;border:1px solid #46383f;border-radius:12px;background:#141116;font-size:12px}.fallback-dump-row strong{color:#f0cfbd}.fallback-dump-row span:last-child{color:#b7abb2}@media(max-width:620px){.fallback-dump-row{grid-template-columns:56px 80px 82px minmax(0,1fr);font-size:11px}}
 </style>
 </head>
 <body class="notranslate">
@@ -491,6 +492,11 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">Pending</dd></div>
       </dl>
     </section>
+    <section class="morning-market-strip" aria-label="Morning market check">
+      <div><strong>BTC</strong><span>$83,716</span><small>+0.18%</small></div>
+      <div><strong>ETH</strong><span>$2,679.30</span><small>-0.43%</small></div>
+      <div><strong>SOL</strong><span>$119.15</span><small>+0.31%</small></div>
+    </section>
     <section class="market-pulse" id="marketSnapshot" aria-labelledby="snapshotTitle">
       <div class="pulse-title"><h2 id="snapshotTitle">My Market 24hr Snapshot<br><span class="snapshot-sub">Your Dump opps</span></h2></div>
       <div class="pulse-grid">
@@ -509,6 +515,14 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     <section class="section dump-buy-zone" id="scl-buy-setups">
       <div class="desk-heading"><h2>Dump opps</h2></div>
       <div class="opportunity-cards" id="buySetupRows"></div>
+      <div class="fallback-dump-static" id="fallbackDumpStatic">
+        <div class="fallback-dump-row">
+          <strong>HBAR</strong>
+          <span>$0.10251</span>
+          <span>-15.65% 24h</span>
+          <span>Watching recovery · not qualified yet</span>
+        </div>
+      </div>
     </section>
 
     <section class="section wallet-ledger" id="walletLedger">
