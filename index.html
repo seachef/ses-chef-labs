@@ -460,6 +460,7 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     .bacon-heat-inline{border:0;padding-top:8px}
     .bacon-heat-inline .morning-lines,.bacon-heat-inline .morning-stats{margin-left:0;margin-right:0}
     .bacon-trade-simple{border:0!important;background:transparent!important;padding:12px 0!important;margin:0!important}
+    .bacon-grid{display:block!important}.bacon-coin-line{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid #30282d}.bacon-coin-line:last-child{border-bottom:0}.bacon-coin-line strong{color:#efcfbd;font-size:14px}.bacon-coin-line span{color:#bbb0b5;font-size:12px;line-height:1.35}
 </style>
 </head>
 <body class="notranslate">
@@ -596,15 +597,15 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     function renderBaconDesk(){
       const host=document.getElementById('baconCoinWindows'); if(!host)return;
       const coins=Array.isArray(baconState.data?.coins)?baconState.data.coins:[];
-      if(!coins.length){host.innerHTML='<article class="bacon-card"><h3>No Bacon coins yet</h3><p>Positive calls will accumulate here.</p></article>';return;}
+      if(!coins.length){host.innerHTML='<div class="bacon-coin-line"><strong>No coins yet</strong><span>New positive Bacon calls will appear here.</span></div>';return;}
       host.innerHTML=coins.map(coin=>{
-        const px=baconState.prices.get(coin.coingeckoId)||{};
-        const price=Number(px.usd),change24=Number(px.usd_24h_change);
-        const live=Number.isFinite(price)?'$'+price.toLocaleString('en-AU',{maximumSignificantDigits:7}):'Price waiting';
-        const change=Number.isFinite(change24)?(change24>=0?'+':'')+change24.toFixed(2)+'% 24h':'24h waiting';
-        return '<article class="bacon-card"><h3>'+baconEscape(coin.symbol)+' <span class="bacon-source">'+baconEscape(live)+' · '+baconEscape(change)+'</span></h3><div class="bacon-meta"><span class="bacon-pill">'+baconEscape(coin.narrative||'Bacon positive')+'</span><span class="bacon-pill">'+baconEscape(coin.status||'researching')+'</span></div><p><strong>Bacon view:</strong> '+baconEscape(coin.baconView||'Source thesis pending')+'</p><p><strong>Sea Chef:</strong> '+baconEscape(coin.dueDiligence||'pending')+' · <strong>Staking:</strong> '+baconEscape(coin.staking||'checking')+'</p><p class="bacon-note">First seen '+baconEscape(coin.firstSeen||'—')+' · '+baconEscape(coin.source||'source pending')+'</p></article>';
+        let reason=coin.baconView||coin.narrative||'Bacon positive mention';
+        reason=String(reason).replace(/^Bacon\s+/i,'').trim();
+        if(reason.length>110)reason=reason.slice(0,107)+'...';
+        return '<div class="bacon-coin-line"><strong>'+baconEscape(coin.symbol)+'</strong><span>'+baconEscape(reason)+'</span></div>';
       }).join('');
     }
+
     const baconTradeDraft={checked:false,approved:false,setup:null};
     const baconMoney=n=>Number.isFinite(n)?new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:2}).format(n):'—';
     function setBaconTradeState(label){const el=document.getElementById('baconTradeState');if(el)el.textContent=label;}
