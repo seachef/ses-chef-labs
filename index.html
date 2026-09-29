@@ -452,6 +452,14 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
     .bacon-trade-simple{padding:18px}.bacon-one-input{margin:16px 0}.bacon-one-input label{display:block;color:#d6c8cf;font-size:12px;font-weight:750;letter-spacing:.04em;margin-bottom:7px}.bacon-one-input-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}.bacon-dollar{font-size:22px;font-weight:800;color:#f0ccb7}.bacon-one-input .input{font-size:22px;font-weight:800;min-height:52px}.bacon-one-input .btn{min-height:52px}.bacon-ticket{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.bacon-ticket>div{padding:10px;border:1px solid #40343a;border-radius:12px;background:#151217;min-width:0}.bacon-ticket small{display:block;color:#a99ba2;font-size:10px;margin-bottom:5px}.bacon-ticket strong{display:block;color:#eadfe3;font-size:13px;overflow-wrap:anywhere}.bacon-big-approve{width:100%;min-height:52px;font-size:17px;margin-top:6px}.bacon-clear-link{display:block;margin:10px auto 0;border:0;background:transparent;color:#a99ba2;text-decoration:underline;font-size:12px}.bacon-big-approve:disabled{opacity:.42;cursor:not-allowed}@media(max-width:680px){.bacon-ticket{grid-template-columns:repeat(2,minmax(0,1fr))}.bacon-one-input-row{grid-template-columns:auto minmax(0,1fr)}.bacon-one-input-row .btn{grid-column:1/-1;width:100%}}
     .bacon-desk{padding:14px;margin:14px 0;border-radius:18px}.bacon-head h2{font-size:20px}.bacon-kicker{font-size:10px}.bacon-thesis{margin:10px 0;padding:9px 11px;font-size:12px}.bacon-grid{gap:8px}.bacon-card{padding:11px;border-radius:14px}.bacon-card h3{font-size:16px;margin-bottom:6px}.bacon-card p{font-size:11px;margin:5px 0}.bacon-meta{margin-bottom:7px}.bacon-pill{font-size:10px;padding:3px 7px}.bacon-trade-simple{padding:14px;margin-top:10px}.bacon-source{font-size:11px}
     .bacon-morning{margin:10px 0 12px;padding:10px;border-radius:14px}.bacon-morning .morning-head h2{font-size:18px}.bacon-morning .morning-lines{gap:5px;margin:10px 0}.bacon-morning .morning-lines p{padding:8px 9px;font-size:12px}.bacon-morning .morning-stats{gap:6px}.bacon-morning .morning-stats span{padding:8px;font-size:10px}.bacon-morning .morning-stats strong{font-size:14px}
+    .bacon-desk{background:#131014;border:1px solid #5a4138;padding:14px;border-radius:18px}
+    .bacon-subsection{margin:0;padding:12px 0;border-top:1px solid #352c31;background:transparent}
+    .bacon-subsection:first-of-type{border-top:0}
+    .bacon-inline-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;color:#edcdbd}
+    .bacon-inline-title strong{font-size:15px}.bacon-inline-title span{font-size:10px;color:#aa9ca4}
+    .bacon-heat-inline{border:0;padding-top:8px}
+    .bacon-heat-inline .morning-lines,.bacon-heat-inline .morning-stats{margin-left:0;margin-right:0}
+    .bacon-trade-simple{border:0!important;background:transparent!important;padding:12px 0!important;margin:0!important}
 </style>
 </head>
 <body class="notranslate">
@@ -513,10 +521,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
 
 
     <section class="bacon-desk" id="baconIntelligence" aria-labelledby="baconTitle">
-      <div class="bacon-head"><div><span class="bacon-kicker">Research</span><h2 id="baconTitle">🥓 Bacon Intel</h2></div><span class="bacon-source">Digest · Charts · YouTube · X</span></div>
-      <div class="bacon-thesis"><strong>Thesis:</strong> bull run active. Bacon calls stay here; Sea Chef checks them.</div>
-      <div class="morning-brief bacon-morning" id="morningBrief" aria-labelledby="morningBriefTitle">
-      <div class="morning-head"><div><span class="morning-kicker">6 AM Perth brief</span><h2 id="morningBriefTitle">🥓 Bacon Heat</h2></div><span class="bacon-pill" id="morningBriefDate">30 Sep</span></div>
+      <div class="bacon-head"><div><h2 id="baconTitle">🥓 Bacon</h2></div><span class="bacon-source">Intel · Heat · Trade</span></div>
+      <div class="bacon-subsection bacon-heat-inline" id="morningBrief" aria-labelledby="morningBriefTitle">
+      <div class="bacon-inline-title"><strong id="morningBriefTitle">Heat</strong><span id="morningBriefDate">30 Sep</span></div>
       <div id="morningHeatLines" class="morning-lines">
         <p>🔥 QNT already exploded. Bacon is chasing the coins beside it, not QNT itself.</p>
         <p>🔥 Bought: XRP · HBAR · XLM · IOTA · ALGO.</p>
@@ -528,9 +535,9 @@ Checked with synthetic Node/DOM fixtures, not an iPhone browser or funded tradin
         <span><strong>5</strong> new windows</span><span><strong>5</strong> explicit buys</span><span><strong>1</strong> trade setup</span><span><strong>HOT</strong> payments rotation</span>
       </div>
       </div>
-      <div class="bacon-grid" id="baconCoinWindows"><article class="bacon-card"><h3>Loading Bacon windows…</h3></article></div>
-      <div class="bacon-trade bacon-trade-simple" id="baconFastTrade">
-  <div class="bacon-head"><div><strong>Fast Trade</strong><p class="bacon-note">You enter one thing only: the AUD amount.</p></div><span class="bacon-pill" id="baconTradeState">WAITING FOR SETUP</span></div>
+      <div class="bacon-subsection"><div class="bacon-inline-title"><strong>Intel</strong><span>Coins Bacon likes / bought</span></div><div class="bacon-grid" id="baconCoinWindows"><article class="bacon-card"><h3>Loading Bacon windows…</h3></article></div></div>
+      <div class="bacon-subsection bacon-trade-simple" id="baconFastTrade">
+  <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">WAITING FOR SETUP</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
   <div class="bacon-one-input">
     <label for="baconSpendAud">AMOUNT TO BUY (AUD)</label>
     <div class="bacon-one-input-row"><span class="bacon-dollar">A$</span><input class="input" id="baconSpendAud" inputmode="decimal" placeholder="500" aria-label="Amount to buy in Australian dollars"><button class="btn purple" type="button" onclick="prepareBaconTrade()">Load trade</button></div>
