@@ -455,6 +455,11 @@
     .daily-buy-now{display:inline-flex;margin-top:14px;margin-left:8px;text-decoration:none;min-height:44px;align-items:center;justify-content:center}
     @media(max-width:520px){.daily-chart-link,.daily-buy-now{width:100%;margin-left:0;margin-top:9px}}
     .daily-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.daily-actions .btn{min-height:44px;align-items:center;justify-content:center;text-decoration:none}@media(max-width:520px){.daily-actions .btn{width:100%}}
+    #tradeOfTheDay{order:-1;border-width:2px;padding:20px;margin:12px 0 18px;box-shadow:0 0 26px rgba(139,92,190,.16)}
+    #tradeOfTheDay .daily-eyebrow{font-weight:800}
+    #tradeOfTheDay .daily-empty{font-size:15px;line-height:1.45}
+    #tradeOfTheDay .daily-preview dd{font-size:17px;font-weight:750}
+    #tradeOfTheDay .daily-buy-now{font-size:17px;font-weight:850;min-height:50px}
 </style>
 </head>
 <body class="notranslate">
@@ -473,8 +478,8 @@
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
     <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
-      <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">HBAR · LOOK AT CHART</h2></div></div>
-      <p class="daily-empty">Large liquid pullback + Bacon payments basket. Recovery confirmation needed first.</p>
+      <div class="daily-head"><div><span class="daily-eyebrow">Sea Chef Labs · core feature</span><h2 id="dailyPickTitle">HBAR · BUY TODAY WATCH</h2></div></div>
+      <p class="daily-empty"><strong>Why:</strong> Large liquid pullback + Bacon payments basket. Waiting for recovery confirmation.</p>
       <dl class="daily-preview" aria-label="Today's researched watch levels">
         <div><dt>Ideal entry</dt><dd id="dailyEntry">$0.1028–$0.1031</dd></div>
         <div><dt>Current</dt><dd id="dailyTarget">$0.10158</dd></div>
