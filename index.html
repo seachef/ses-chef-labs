@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#08080b">
   <meta name="color-scheme" content="dark">
   <title>Sea Chef Labs</title>
-  <style><style>
+  <style>
   #paperPortfolio {
     margin: 12px 0 18px;
     padding: 20px;
@@ -39,7 +39,7 @@
 </style>
 
 <script>
-(() => {
+document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("paperPortfolio")) return;
 
   const stake = 1000;
@@ -187,8 +187,9 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refresh();
   });
-})();
+});
 </script>
+<style>
  * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
     body { margin:0; padding:16px; background:#0f172a; color:#f8fafc; }
     .container { max-width:1280px; margin:auto; }
