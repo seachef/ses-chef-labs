@@ -513,13 +513,13 @@
       </div>
       <div class="bacon-subsection"><div class="bacon-inline-title"><strong>Intel</strong><span>Coins</span></div><div class="bacon-grid" id="baconCoinWindows"><div class="bacon-coin-line"><strong>...</strong><span>Loading</span></div></div></div>
       <div class="bacon-subsection bacon-trade-simple" id="baconFastTrade">
-  <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">EMPTY</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
+  <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">PICK OF THE DAY</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
   <div class="bacon-one-input">
     <label for="baconSpendAud">AMOUNT TO BUY (AUD)</label>
     <div class="bacon-one-input-row"><span class="bacon-dollar">A$</span><input class="input" id="baconSpendAud" inputmode="decimal" placeholder="500" aria-label="Amount to buy in Australian dollars"><button class="btn purple" type="button" onclick="prepareBaconTrade()">Load trade</button></div>
   </div>
   <div class="bacon-ticket" aria-live="polite">
-    <div><small>TRADE</small><strong id="baconTicketPair">No setup loaded</strong></div>
+    <div><small>TRADE</small><strong id="baconTicketPair">Pick of the Day loading</strong></div>
     <div><small>ENTRY</small><strong id="baconTicketEntry">—</strong></div>
     <div><small>STOP</small><strong id="baconTicketStop">—</strong></div>
     <div><small>TARGETS</small><strong id="baconTicketTargets">—</strong></div>
@@ -530,7 +530,7 @@
   </div>
   <button class="btn purple bacon-big-approve" type="button" id="baconApprove" onclick="approveBaconTrade()" disabled>Approve</button>
   <button class="bacon-clear-link" type="button" onclick="clearBaconTrade()">Clear amount</button>
-  <p class="bacon-note" id="baconTradeNote">Waiting for the next verified Bacon setup.</p>
+  <p class="bacon-note" id="baconTradeNote">Pick of the Day is loaded here. Trade levels appear when the setup is ready.</p>
 </div>
     </section>
 
@@ -599,7 +599,22 @@
     function activeBaconSetup(){const s=baconState.data?.tradeSetup;return s&&s.verified?s:null;}
     function renderBaconTradeSetup(){
       const s=activeBaconSetup();baconTradeDraft.setup=s;
-      if(!s){setBaconTradeState('WAITING FOR VERIFIED SETUP');return;}
+      if(!s){
+        const pick=publishedDailySnapshot&&publishedDailySnapshot.pick;
+        if(pick&&typeof pick.symbol==='string'){
+          document.getElementById('baconTicketPair').textContent=String(pick.symbol)+' · PICK OF THE DAY';
+          document.getElementById('baconTicketEntry').textContent=Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'—';
+          document.getElementById('baconTicketStop').textContent='Waiting';
+          document.getElementById('baconTicketTargets').textContent='Waiting';
+          document.getElementById('baconTicketLeverage').textContent='Spot watch';
+          setBaconTradeState('PICK OF THE DAY');
+          document.getElementById('baconTradeNote').textContent='Today\'s pick is loaded. Trade levels appear when the setup is ready.';
+        }else{
+          document.getElementById('baconTicketPair').textContent='No pick loaded';
+          setBaconTradeState('EMPTY');
+        }
+        return;
+      }
       document.getElementById('baconTicketPair').textContent=String(s.pair||'')+' '+String(s.side||'');
       document.getElementById('baconTicketEntry').textContent=String(s.entry??'—');
       document.getElementById('baconTicketStop').textContent=String(s.stop??'—');
@@ -1188,6 +1203,7 @@
         const snapshot=await response.json();
         if(snapshot?.schema!==1||snapshot.manualOnly!==true||snapshot.signing!==false||snapshot.submitting!==false||!snapshot.counts||!Array.isArray(snapshot.dumpOpps))throw Error('Daily desk validation failed');
         publishedDailySnapshot=snapshot;publishedDailyKeys.clear();
+        if(typeof renderBaconTradeSetup==='function')renderBaconTradeSetup();
         checkerCoins.length=0;
         const seenIds=new Set();
         for(const candidate of snapshot.dumpOpps) {
