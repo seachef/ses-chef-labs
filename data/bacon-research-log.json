@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-09-30T12:14:00Z",
+  "records": [
+    {
+      "id": "youtube:n9pYIQknYZ0:btc",
+      "canonicalUrl": "https://www.youtube.com/watch?v=n9pYIQknYZ0",
+      "sourceName": "VirtualBacon · Sept 29 stream",
+      "publishedAt": "2026-09-29T14:20:45Z",
+      "firstSeenAt": "2026-09-30T12:14:00Z",
+      "lastSeenAt": "2026-09-30T12:14:00Z",
+      "contentHash": "0eb5805907e19a44723ad5a99bc8b8ba7ab758ef764350afc2c9cd7e2d18ab6b",
+      "summary": "Transcript: USD 78,000–84,000 dip zone; weekly close below USD 78,000 is thesis invalidation, not an executable stop. No explicit take-profit verified.",
+      "symbols": [
+        "BTC"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-09-30T12:14:00Z",
+          "contentHash": "0eb5805907e19a44723ad5a99bc8b8ba7ab758ef764350afc2c9cd7e2d18ab6b",
+          "summary": "Transcript: USD 78,000–84,000 dip zone; weekly close below USD 78,000 is thesis invalidation, not an executable stop. No explicit take-profit verified."
+        }
+      ]
+    },
+    {
+      "id": "official-domain:x-recovery:2026-09-23",
+      "canonicalUrl": "https://virtualbacon.com/",
+      "sourceName": "VirtualBacon official domain",
+      "publishedAt": "2026-09-24T02:02:00Z",
+      "firstSeenAt": "2026-09-30T12:14:00Z",
+      "lastSeenAt": "2026-09-30T12:14:00Z",
+      "contentHash": "42177ecb0a071b17a289fc5e28026862a6ad2faa048afd007f4c3071bf638a70",
+      "summary": "Official domain states X recovered Sept 23; older Telegram and YouTube About compromise notices remain. Public X text is accessible; account security cannot be independently guaranteed.",
+      "symbols": [],
+      "classification": "security",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-09-30T12:14:00Z",
+          "contentHash": "42177ecb0a071b17a289fc5e28026862a6ad2faa048afd007f4c3071bf638a70",
+          "summary": "Official domain states X recovered Sept 23; older Telegram and YouTube About compromise notices remain. Public X text is accessible; account security cannot be independently guaranteed."
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "checkedAt": "2026-09-30T12:14:00Z",
+      "date": "2026-09-30",
+      "status": "partial",
+      "summary": "Nothing to report.",
+      "sourceChecks": [
+        {
+          "name": "VirtualBacon Telegram",
+          "url": "https://t.me/s/virtualbacon",
+          "status": "checked",
+          "checkedAt": "2026-09-30T12:07:00Z",
+          "detail": "Contains creator text and YouTube links; embedded video content not reviewed"
+        },
+        {
+          "name": "VB Trading Journal",
+          "url": "https://t.me/s/vb_trade",
+          "status": "checked",
+          "checkedAt": "2026-09-30T12:08:00Z",
+          "detail": "Latest visible post retains X-compromise warning"
+        },
+        {
+          "name": "Official YouTube",
+          "url": "https://www.youtube.com/@virtualbacon/about",
+          "status": "checked",
+          "checkedAt": "2026-09-30T12:09:00Z",
+          "detail": "Official identity and Facebook/Instagram links verified; actual transcripts retrieved for Sept24, Sept28 and Sept29 streams; videos not visually watched"
+        },
+        {
+          "name": "Official Facebook",
+          "url": "https://www.facebook.com/virtualbacon0x/",
+          "status": "partial",
+          "checkedAt": "2026-09-30T12:13:00Z",
+          "detail": "Latest visible caption expanded about Robinhood/ARB vs Base/OP/Aerodrome; video 1:12; exact post timestamp not established; existing browser session used, no login changes; Firecrawl unsupported"
+        },
+        {
+          "name": "Official Instagram",
+          "url": "https://www.instagram.com/VirtualBacon0x/",
+          "status": "partial",
+          "checkedAt": "2026-09-30T12:13:00Z",
+          "detail": "Opening reel displayed sign-up/login gate; no post caption or video reviewed; Firecrawl unsupported"
+        },
+        {
+          "name": "Official recovery notice",
+          "url": "https://virtualbacon.com/",
+          "status": "checked",
+          "checkedAt": "2026-09-30T12:08:00Z",
+          "detail": "Explicit recovery notice last updated Sept23 2026 22:02 ET. Says X recovered Sept23, compromise began Sept21 around18:40 ET. YouTube About explicitly names domain as recovery-confirmation location. Older About/Telegram alerts remain"
+        },
+        {
+          "name": "Official X",
+          "url": "https://x.com/virtualbacon",
+          "status": "checked",
+          "checkedAt": "2026-09-30T12:10:00Z",
+          "detail": "Public post text readable. Official domain confirms Sept 23 recovery; older Telegram/About warnings remain. Legacy Telegram-only collector unchanged."
+        }
+      ],
+      "newIds": [
+        "youtube:n9pYIQknYZ0:btc",
+        "official-domain:x-recovery:2026-09-23"
+      ],
+      "revisedIds": []
+    }
+  ]
+}

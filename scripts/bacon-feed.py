@@ -17,11 +17,16 @@ class Messages(HTMLParser):
         if self.current and 'tgme_widget_message_forwarded_from' in classes:self.current['forwarded']=True
         if self.current and tag=='time':self.current['publishedAt']=a.get('datetime')
         if self.text_depth and tag=='br':self.current['text']+='\n'
+    def handle_startendtag(self,tag,attrs):
+        # HTMLParser otherwise emits an end tag for <br/>, ending text early.
+        self.handle_starttag(tag,attrs)
+        if tag not in ('br','img','meta','link','input','hr','source'):self.handle_endtag(tag)
     def handle_data(self,data):
         if self.current and self.text_depth:self.current['text']+=data
     def handle_endtag(self,tag):
-        if self.text_depth==len(self.stack):self.text_depth=None
-        if self.stack and self.stack[-1]==tag:self.stack.pop()
+        if self.stack and self.stack[-1]==tag:
+            if self.text_depth==len(self.stack):self.text_depth=None
+            self.stack.pop()
 
 def parse(html):
     p=Messages();p.feed(html)
@@ -84,3 +89,4 @@ def run():
     path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps({'posts':len(data['posts']),'setups':len(data['setups']),'feeds':health}))
 if __name__=='__main__':run()
+
