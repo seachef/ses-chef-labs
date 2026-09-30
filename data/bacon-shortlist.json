@@ -1,64 +1,91 @@
 {
   "schema": 1,
   "paperOnly": true,
-  "date": "2026-09-30",
-  "checkedAt": "2026-09-30T12:14:00Z",
+  "date": "2026-10-01",
+  "checkedAt": "2026-09-30T21:10:35Z",
   "deadlineAt": "2026-09-30T22:00:00Z",
-  "summary": "Nothing to report.",
+  "summary": "No complete paper setup verified. Latest livestream review incomplete.",
   "status": "partial",
   "sourceChecks": [
     {
       "name": "VirtualBacon Telegram",
       "url": "https://t.me/s/virtualbacon",
       "status": "checked",
-      "checkedAt": "2026-09-30T12:07:00Z",
-      "detail": "Contains creator text and YouTube links; embedded video content not reviewed"
+      "checkedAt": "2026-09-30T21:01:55Z",
+      "detail": "Public post text 2352–2372 and exact timestamps inspected. New posts 2370–2372 since the prior run. Post 2371 links the Sept 30 livestream; post 2372 repeats the latest X quarter commentary. Embedded video 2355 was not reviewed."
     },
     {
       "name": "VB Trading Journal",
       "url": "https://t.me/s/vb_trade",
       "status": "checked",
-      "checkedAt": "2026-09-30T12:08:00Z",
-      "detail": "Latest visible post retains X-compromise warning"
+      "checkedAt": "2026-09-30T21:01:58Z",
+      "detail": "Public feed text 433–452 inspected. Latest post 452 is the unchanged Sept 22, 02:53:38 UTC compromise warning. No new current trade call. Older mint solicitation 449 excluded."
     },
     {
       "name": "Official YouTube",
-      "url": "https://www.youtube.com/@virtualbacon/about",
-      "status": "checked",
-      "checkedAt": "2026-09-30T12:09:00Z",
-      "detail": "Official identity and Facebook/Instagram links verified; actual transcripts retrieved for Sept24, Sept28 and Sept29 streams; videos not visually watched"
+      "url": "https://www.youtube.com/@VirtualBacon/about",
+      "status": "partial",
+      "checkedAt": "2026-09-30T21:07:50Z",
+      "detail": "Official About and latest stream identified. Full transcripts retrieved for Sept 23, 24, 25, 28 and 29; relevant trade and risk passages assessed. Latest Sept 30 stream HGh4qglSpEk has public description and chapters only; the player and transcript export confirm captions/transcript unavailable. Latest livestream review incomplete; videos were not visually reviewed."
     },
     {
       "name": "Official Facebook",
       "url": "https://www.facebook.com/virtualbacon0x/",
       "status": "partial",
-      "checkedAt": "2026-09-30T12:13:00Z",
-      "detail": "Latest visible caption expanded about Robinhood/ARB vs Base/OP/Aerodrome; video 1:12; exact post timestamp not established; existing browser session used, no login changes; Firecrawl unsupported"
+      "checkedAt": "2026-09-30T21:05:43Z",
+      "detail": "Public captions read through the prior Robinhood/ARB post. Three newer captions cover the BTC USD 90,000 base case and conditional altcoin rotation, the Sept 30 live broadcast, and a daily news briefing. Canonical post links verified and related cross-posts grouped in the ledger. Exact post timestamps unavailable; videos were not reviewed."
     },
     {
       "name": "Official Instagram",
-      "url": "https://www.instagram.com/VirtualBacon0x/",
+      "url": "https://www.instagram.com/virtualbacon0x/",
       "status": "partial",
-      "checkedAt": "2026-09-30T12:13:00Z",
-      "detail": "Opening reel displayed sign-up/login gate; no post caption or video reviewed; Firecrawl unsupported"
+      "checkedAt": "2026-09-30T21:04:45Z",
+      "detail": "Public profile and grid visible. Opening the newest visible carousel produced the existing sign-up/login gate. No caption, publication date, or video was assessed; grid visibility does not establish new calls. Access limitation unchanged."
     },
     {
       "name": "Official recovery notice",
       "url": "https://virtualbacon.com/",
       "status": "checked",
-      "checkedAt": "2026-09-30T12:08:00Z",
-      "detail": "Explicit recovery notice last updated Sept23 2026 22:02 ET. Says X recovered Sept23, compromise began Sept21 around18:40 ET. YouTube About explicitly names domain as recovery-confirmation location. Older About/Telegram alerts remain"
+      "checkedAt": "2026-09-30T21:02:05Z",
+      "detail": "Official domain still explicitly confirms X recovered Sept 23; notice updated Sept 23 at 22:02 ET after the Sept 21 compromise. Official YouTube About names this domain for recovery confirmation; older About/Telegram warnings remain. Account security cannot be independently guaranteed."
     },
     {
       "name": "Official X",
       "url": "https://x.com/virtualbacon",
       "status": "checked",
-      "checkedAt": "2026-09-30T12:10:00Z",
-      "detail": "Public post text readable. Official domain confirms Sept 23 recovery; older Telegram/About warnings remain. Legacy Telegram-only collector unchanged."
+      "checkedAt": "2026-09-30T21:02:59Z",
+      "detail": "After checking the official recovery notice, public profile text returned five latest posts from Sept 30, 13:43:22–20:37:22 UTC. No complete setup. The same-titled livestream announcement is grouped with YouTube; the 20:37 quarter post is deduplicated with Telegram 2372. Five-post window is not an exhaustive archive."
+    },
+    {
+      "name": "BTC public price",
+      "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+      "status": "checked",
+      "checkedAt": "2026-09-30T21:08:43Z",
+      "detail": "Public Coinbase spot snapshot: BTC/USD 83,687.085. No upstream quote timestamp was supplied. Price context only; no complete source-explicit setup qualified for promotion."
+    },
+    {
+      "name": "Paid/private community",
+      "url": "https://thecoiners.io",
+      "status": "excluded",
+      "checkedAt": "2026-09-30T21:10:35Z",
+      "detail": "Public-source research only. Paid/private community material was not accessed; this remains outside available coverage."
     }
   ],
   "items": [],
   "watchlist": [
+    {
+      "id": "youtube:HGh4qglSpEk:btc",
+      "symbol": "BTC",
+      "sourceUrl": "https://www.youtube.com/watch?v=HGh4qglSpEk",
+      "sourceName": "VirtualBacon · Sept 30 stream",
+      "publishedAt": "2026-09-30T14:40:41Z",
+      "note": "Description and related Facebook caption: BTC USD 90,000 three-month base case, USD 78,000 support and USD 95,000 resistance. A fast move toward USD 90,000–91,000 in October would prompt altcoin-to-BTC rotation. These are forecast/rotation levels, not a complete trade. No explicit entry, executable stop or take-profit verified. Latest livestream transcript unavailable.",
+      "missing": [
+        "entry",
+        "stop",
+        "targets"
+      ]
+    },
     {
       "id": "youtube:n9pYIQknYZ0:btc",
       "symbol": "BTC",
