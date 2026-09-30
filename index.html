@@ -8,7 +8,187 @@
   <meta name="theme-color" content="#08080b">
   <meta name="color-scheme" content="dark">
   <title>Sea Chef Labs</title>
-  <style>
+  <style><style>
+  #paperPortfolio {
+    margin: 12px 0 18px;
+    padding: 20px;
+    border: 2px solid #675080;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #211a2c, #131117);
+    color: #eee5f5;
+  }
+  #paperPortfolio h2 { margin: 0; font-size: 24px; }
+  #paperPortfolio .paper-label { color: #c6b5d6; font-size: 16px; }
+  #paperPortfolio .paper-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  #paperPortfolio strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 26px;
+    font-variant-numeric: tabular-nums;
+  }
+  #paperPortfolio p { font-size: 16px; line-height: 1.5; }
+  @media (max-width: 600px) {
+    #paperPortfolio .paper-grid { grid-template-columns: 1fr 1fr; }
+    #paperPortfolio .paper-grid > div:first-child { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+(() => {
+  if (document.getElementById("paperPortfolio")) return;
+
+  const stake = 1000;
+  const entry = 0.10283;
+  const quantity = stake / entry;
+  const storageKey = "seaChefPaperHBAR20260930v1";
+  const panel = document.createElement("section");
+  panel.id = "paperPortfolio";
+  panel.setAttribute("aria-label", "Moving paper portfolio");
+  panel.innerHTML = `
+    <h2>Moving portfolio</h2>
+    <p class="paper-label">PAPER TRADE · HBAR</p>
+    <div class="paper-grid">
+      <div>
+        <span>Portfolio value · USDT</span>
+        <strong id="paperValue">—</strong>
+      </div>
+      <div>
+        <span>Profit / loss · USDT</span>
+        <strong id="paperProfit">—</strong>
+      </div>
+      <div>
+        <span>Return</span>
+        <strong id="paperReturn">—</strong>
+      </div>
+    </div>
+    <p>Starting balance: 1,000 USDT<br>
+       Entry: 0.10283 USDT<br>
+       Holding: 9,724.79 HBAR</p>
+    <p>HBAR now: <b id="paperPrice">—</b> USDT</p>
+    <p id="paperStatus" role="status">Checking live price…</p>
+    <p class="paper-label">Before fees · No real money invested</p>
+  `;
+
+  const header = document.querySelector(".topbar");
+  if (header) {
+    header.insertAdjacentElement("afterend", panel);
+  } else {
+    (document.querySelector(".container") || document.body).prepend(panel);
+  }
+
+  const el = id => document.getElementById(id);
+  const money = value => value.toLocaleString("en-AU", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  let quote = null;
+  let busy = false;
+
+  function render(status) {
+    if (!quote) {
+      el("paperStatus").textContent = status;
+      return;
+    }
+
+    const value = quantity * quote.price;
+    const profit = value - stake;
+    const percentage = profit / stake * 100;
+    const sign = profit >= 0 ? "+" : "−";
+    const colour = profit >= 0 ? "#69dfae" : "#ff8585";
+
+    el("paperValue").textContent = money(value);
+    el("paperProfit").textContent = sign + money(Math.abs(profit));
+    el("paperReturn").textContent =
+      sign + Math.abs(percentage).toFixed(2) + "%";
+    el("paperPrice").textContent = quote.price.toFixed(5);
+
+    el("paperProfit").style.color = colour;
+    el("paperReturn").style.color = colour;
+
+    const time = new Intl.DateTimeFormat("en-AU", {
+      timeZone: "Australia/Perth",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    }).format(new Date(quote.at));
+
+    el("paperStatus").textContent = `${status} · ${time} WA`;
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (
+      saved &&
+      Number.isFinite(saved.price) &&
+      saved.price > 0 &&
+      Number.isFinite(saved.at)
+    ) {
+      quote = saved;
+    }
+  } catch (_) {}
+
+  render(quote ? "Saved quote · checking live price" : "Checking live price…");
+
+  async function refresh() {
+    if (busy || document.hidden) return;
+    busy = true;
+
+    try {
+      const response = await fetch(
+        "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=HBARUSDT",
+        { cache: "no-store", signal: AbortSignal.timeout(8000) }
+      );
+      if (!response.ok) throw new Error("Price unavailable");
+
+      const data = await response.json();
+      const price = Number(data.lastPrice);
+      const at = Number(data.closeTime);
+
+      if (
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isFinite(at) ||
+        Math.abs(Date.now() - at) > 120000
+      ) throw new Error("Stale price");
+
+      quote = { price, at };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(quote));
+      } catch (_) {}
+
+      render("Live Binance HBAR/USDT · updates every 15 seconds");
+    } catch (_) {
+      render(
+        quote
+          ? "Live feed unavailable · last saved quote"
+          : "Live price unavailable · retrying"
+      );
+    } finally {
+      busy = false;
+    }
+  }
+
+  refresh();
+  setInterval(() => {
+    if (quote && Date.now() - quote.at > 120000) {
+      render("Stale quote · reconnecting");
+    }
+    refresh();
+  }, 15000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refresh();
+  });
+})();
+</script>
  * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
     body { margin:0; padding:16px; background:#0f172a; color:#f8fafc; }
     .container { max-width:1280px; margin:auto; }
