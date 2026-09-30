@@ -603,12 +603,12 @@
         const pick=publishedDailySnapshot&&publishedDailySnapshot.pick;
         if(pick&&typeof pick.symbol==='string'){
           document.getElementById('baconTicketPair').textContent=String(pick.symbol)+' · PICK OF THE DAY';
-          document.getElementById('baconTicketEntry').textContent=Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'—';
+          document.getElementById('baconTicketEntry').textContent=typeof pick.idealEntry==='string'?pick.idealEntry:(Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'—');
           document.getElementById('baconTicketStop').textContent='Waiting';
           document.getElementById('baconTicketTargets').textContent='Waiting';
           document.getElementById('baconTicketLeverage').textContent='Spot watch';
           setBaconTradeState('PICK OF THE DAY');
-          document.getElementById('baconTradeNote').textContent='Today\'s pick is loaded. Trade levels appear when the setup is ready.';
+          document.getElementById('baconTradeNote').textContent=pick.entryRule||'Today\'s pick is loaded. You only enter the AUD amount.';
         }else{
           document.getElementById('baconTicketPair').textContent='No pick loaded';
           setBaconTradeState('EMPTY');
