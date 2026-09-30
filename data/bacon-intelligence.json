@@ -151,6 +151,18 @@
   "tradeSetup": null,
   "posts": [
     {
+      "url": "https://t.me/virtualbacon/2371",
+      "channel": "virtualbacon",
+      "text": "We're LIVE. Inflation Falls, Bitcoin Rips. Is the Fed Done Hiking? Join here:\nhttps://www.youtube.com/watch?v=HGh4qglSpEk",
+      "publishedAt": "2026-09-30T14:29:59+00:00"
+    },
+    {
+      "url": "https://t.me/virtualbacon/2370",
+      "channel": "virtualbacon",
+      "text": "☕️ GM! Here are the most important market events over the last 24 hours:\n\n🌍Market Overview:\n\n🔸 August PCE, the Fed's main inflation gauge, cooled to 3.4% on the year vs 3.7% expected, and core rose 3.0% vs 3.3%, even as spending jumped 0.9% on the month. That weakens the case for an October hike.\n\n🔸 OpenAI launched GPT-6.1 Sol, which it says nearly matches GPT-6 Astra on coding and agent work at one-fifth the token price, plus always-on Dots agents for Pro users. That price cut squeezes rival AI margins.\n\n🔸 Consumer confidence sank to 81.9 vs 89 expected, the lowest since 2014, and job openings missed at 7.08M. With the Fed's Williams seeing no need for urgency, October hike odds fell to about 50% from roughly 70%.\n\n🔸 Trump signed a \"morally binding\" AI document with tech leaders and ordered agencies to call AI \"super intelligence\". Speaker Johnson called the principles voluntary, so no new brake on AI spending behind chip stocks.\n\n🔸 Anthropic found China's GLM-5.3 builds cyber exploits like Claude Mythos Preview but shipped without meaningful safeguards, bypassed 64% to 100% of the time in its tests. A tailwind for cybersecurity stocks.\n\n🔸 Kalshi is in advanced talks to raise roughly $1B at close to a $40B valuation, as Fed and jobs bets go mainstream.\n\n🪙Crypto Updates:\n\n🔸 The $XRP Ledger now carries a second record of who owns shares in selected BTG Pactual funds for CSD BR, a Brazilian market operator with roughly $4T of registered assets.\n\n🔸 Robinhood unveiled US crypto perps arriving in the coming months, with up to 10x leverage on $BTC and $ETH and 3x on $SOL, $XRP, $DOGE, $ADA, $LINK and $HYPE, plus AI agents that can execute trades.\n\n🔸 Zcash's NU7 upgrade would cut $ZEC block times from 75 seconds to 25, with developers targeting Nov. 5, and Gemini already switched to Zakura software that synced in a little over six hours.\n\n🔸 Binance Pay opened crypto payments at PayPay merchants across Japan to about 48M eligible users from more than 100 countries, while merchants still settle in yen.\n\n🔸 Ethereum's Glamsterdam upgrade, built for higher layer-1 throughput, goes live on the Sepolia testnet Oct. 6. Mainnet still has no activation date.\n\n🔸 $HYPE and $ZEC holders can now borrow up to $100,000 in $USDC on Coinbase without triggering a taxable sale.",
+      "publishedAt": "2026-09-30T13:00:01+00:00"
+    },
+    {
       "url": "https://t.me/virtualbacon/2369",
       "channel": "virtualbacon",
       "text": "We're LIVE. I'm Buying This Dip in Bitcoin and Altcoins. Ignore the FUD. Join here:\nhttps://www.youtube.com/watch?v=n9pYIQknYZ0",
@@ -386,7 +398,7 @@
       "publishedAt": "2026-06-08T18:01:47+00:00"
     }
   ],
-  "checkedAt": "2026-09-30T12:22:29.427342+00:00",
+  "checkedAt": "2026-09-30T16:51:47.332706+00:00",
   "feedHealth": [
     {
       "channel": "virtualbacon",
@@ -400,5 +412,5 @@
     }
   ],
   "setups": [],
-  "sourceAlert": "Bacon reported his X account compromised. X posts are excluded; public Telegram only."
+  "sourceAlert": null
 }
