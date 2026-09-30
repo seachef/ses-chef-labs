@@ -34,7 +34,9 @@
     "idealEntry": "$0.1028–$0.1031",
     "idealEntryLow": 0.1028,
     "idealEntryHigh": 0.1031,
-    "entryRule": "Wait for 15m candles to stop making lower lows."
+    "entryRule": "Wait for 15m candles to stop making lower lows.",
+    "buyUrl": "https://www.okx.com/trade-spot/hbar-usdt",
+    "buyVenue": "OKX Spot"
   },
   "dumpOpps": [],
   "previousValidSydneyDate": null,
