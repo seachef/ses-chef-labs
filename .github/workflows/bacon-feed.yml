@@ -1,0 +1,49 @@
+name: Bacon public feed
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/bacon-feed.py
+      - .github/workflows/bacon-feed.yml
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: bacon-public-feed
+  cancel-in-progress: false
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Bacon public channels
+        run: python scripts/bacon-feed.py
+      - name: Save sourced feed
+        run: |
+          if ! git diff --quiet -- data/bacon-intelligence.json; then
+            git config user.name 'Sea Chef Bacon feed'
+            git config user.email 'actions@users.noreply.github.com'
+            git add data/bacon-intelligence.json
+            git commit -m 'Refresh Bacon public feed'
+            git push
+          fi
+      - name: Prepare public site
+        run: |
+          mkdir -p /tmp/bacon-site/data
+          cp index.html /tmp/bacon-site/index.html
+          cp data/bacon-intelligence.json /tmp/bacon-site/data/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/bacon-site
+      - uses: actions/deploy-pages@v4
+        id: deployment
