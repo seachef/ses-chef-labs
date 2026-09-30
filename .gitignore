@@ -6,3 +6,6 @@ build/
 .env
 .env.*
 !.env.example
+
+# Private local exchange order journal
+.okx-demo-orders.json*
