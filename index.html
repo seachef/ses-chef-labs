@@ -513,13 +513,13 @@
       </div>
       <div class="bacon-subsection"><div class="bacon-inline-title"><strong>Intel</strong><span>Coins</span></div><div class="bacon-grid" id="baconCoinWindows"><div class="bacon-coin-line"><strong>...</strong><span>Loading</span></div></div></div>
       <div class="bacon-subsection bacon-trade-simple" id="baconFastTrade">
-  <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">WAITING FOR SETUP</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
+  <div class="bacon-inline-title"><strong>Fast Trade</strong><span class="bacon-pill" id="baconTradeState">EMPTY</span></div><p class="bacon-note">You enter one thing only: the AUD amount.</p>
   <div class="bacon-one-input">
     <label for="baconSpendAud">AMOUNT TO BUY (AUD)</label>
     <div class="bacon-one-input-row"><span class="bacon-dollar">A$</span><input class="input" id="baconSpendAud" inputmode="decimal" placeholder="500" aria-label="Amount to buy in Australian dollars"><button class="btn purple" type="button" onclick="prepareBaconTrade()">Load trade</button></div>
   </div>
   <div class="bacon-ticket" aria-live="polite">
-    <div><small>TRADE</small><strong id="baconTicketPair">Waiting for Bacon setup</strong></div>
+    <div><small>TRADE</small><strong id="baconTicketPair">No setup loaded</strong></div>
     <div><small>ENTRY</small><strong id="baconTicketEntry">—</strong></div>
     <div><small>STOP</small><strong id="baconTicketStop">—</strong></div>
     <div><small>TARGETS</small><strong id="baconTicketTargets">—</strong></div>
@@ -530,7 +530,7 @@
   </div>
   <button class="btn purple bacon-big-approve" type="button" id="baconApprove" onclick="approveBaconTrade()" disabled>Approve</button>
   <button class="bacon-clear-link" type="button" onclick="clearBaconTrade()">Clear amount</button>
-  <p class="bacon-note" id="baconTradeNote">Sea Chef loads and calculates the rest from the verified setup.</p>
+  <p class="bacon-note" id="baconTradeNote">Waiting for the next verified Bacon setup.</p>
 </div>
     </section>
 
