@@ -26,11 +26,14 @@
     "symbol": "HBAR",
     "pair": "HBAR/USDT",
     "status": "LOOK AT CHART",
-    "price": 0.10251,
-    "change24h": -15.65,
-    "reason": "Big liquid pullback + Bacon payments basket. Worth watching for recovery.",
+    "price": 0.10158,
+    "change24h": -16.683,
+    "reason": "Large liquid pullback + Bacon payments basket. Recovery confirmation needed first.",
     "chart": "https://www.binance.com/en/trade/HBAR_USDT?type=spot",
-    "source": "Binance public spot 24h + VirtualBacon payments basket"
+    "source": "Binance public spot 24h + VirtualBacon payments basket",
+    "idealEntryLow": 0.1028,
+    "idealEntryHigh": 0.1031,
+    "entryRule": "Wait for 15m candles to stop making lower lows before entering."
   },
   "dumpOpps": [],
   "previousValidSydneyDate": null,
