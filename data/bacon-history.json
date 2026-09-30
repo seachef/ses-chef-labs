@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "records": [
+    {
+      "symbol": "XRP",
+      "date": "2026-09-29",
+      "narrative": "Payments rotation",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "sourceUrl": null
+    },
+    {
+      "symbol": "HBAR",
+      "date": "2026-09-29",
+      "narrative": "Payments rotation",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "sourceUrl": null
+    },
+    {
+      "symbol": "XLM",
+      "date": "2026-09-29",
+      "narrative": "Payments rotation",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket; Bacon said Stellar showed the strongest beta in his study.",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "sourceUrl": null
+    },
+    {
+      "symbol": "IOTA",
+      "date": "2026-09-29",
+      "narrative": "Payments rotation",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "sourceUrl": null
+    },
+    {
+      "symbol": "ALGO",
+      "date": "2026-09-29",
+      "narrative": "Payments rotation",
+      "baconView": "Bought as part of Bacon's five-coin payments/ISO 20022 rotation basket.",
+      "source": "VirtualBacon: Quant Up 400%. Which Altcoins Are Next to Rally?",
+      "sourceUrl": null
+    }
+  ]
+}

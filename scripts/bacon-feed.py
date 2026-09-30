@@ -72,6 +72,15 @@ def run():
             coin={'symbol':symbol,'name':symbol};data['coins'].append(coin)
         coin.update(status='bacon-bought',baconView='Complete spot buy setup posted by Bacon.',narrative='Bacon’s spot setup',firstSeen=s['publishedAt'][:10],source='VB public Telegram',sourceUrl=s['sourceUrl'])
     data['sourceAlert']=('Bacon reported his X account compromised. X posts are excluded; public Telegram only.' if any(re.search(r'(?i)(?:my X account.*(?:compromised|hacked)|X account is still compromised)',p['text']) for p in data['posts'][:20]) else None)
+    history_path=Path('data/bacon-history.json')
+    history=json.loads(history_path.read_text()) if history_path.exists() else {'schema':1,'records':[]}
+    records={(r['symbol'],r.get('date'),r.get('sourceUrl')):r for r in history['records']}
+    for coin in data['coins']:
+        if coin.get('status')=='bacon-bought':
+            record={'symbol':coin['symbol'],'date':coin.get('firstSeen'),'narrative':coin.get('narrative'),'baconView':coin.get('baconView'),'source':coin.get('source'),'sourceUrl':coin.get('sourceUrl')}
+            records[(record['symbol'],record['date'],record['sourceUrl'])]=record
+    history['records']=sorted(records.values(),key=lambda r:r.get('date') or '',reverse=True)
+    history_path.write_text(json.dumps(history,indent=2,ensure_ascii=False)+'\n')
     path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps({'posts':len(data['posts']),'setups':len(data['setups']),'feeds':health}))
 if __name__=='__main__':run()
