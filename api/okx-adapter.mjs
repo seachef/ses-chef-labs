@@ -19,7 +19,7 @@ function signature(secret,timestamp,method,path,body=''){
 }
 export function okxStatus(env=process.env){
   const c=cfg(env),base=executionStatus(env);
-  return {...base,provider:'OKX',region:'AU',baseUrl:c.base,demo:c.demo,credentialsPresent:Boolean(c.key&&c.secret&&c.passphrase),liveSubmissionEnabled:c.enabled&&!c.demo};
+  return {...base,provider:'OKX',region:'AU',baseUrl:c.base,demo:c.demo,credentialsPresent:Boolean(c.key&&c.secret&&c.passphrase),liveSubmissionEnabled:false};
 }
 export async function okxPrivateRequest(path,{method='GET',body=null,env=process.env}={}){
   const c=cfg(env);
@@ -44,12 +44,6 @@ export function buildOkxOrder(staged,{instrumentType='SPOT',size,orderType='limi
   const instId=s.pair.replace('/','-')+(swap?'-SWAP':'');
   return {staged:s,request:{instId,tdMode:swap?'isolated':'cash',side:s.side==='LONG'?'buy':'sell',ordType:orderType,px:String(s.entry),sz:String(size)}};
 }
-export async function submitOkxApprovedOrder(staged,options={},env=process.env){
-  const c=cfg(env),status=okxStatus(env);
-  if(!status.credentialsPresent)throw new Error('OKX_CREDENTIALS_NOT_CONFIGURED');
-  if(!c.enabled)throw new Error('LIVE_EXECUTION_DISABLED');
-  if(c.demo)throw new Error('DEMO_MODE_ACTIVE');
-  const built=buildOkxOrder(staged,options);
-  if(c.maxOrderAud>0&&built.staged.notionalAud>c.maxOrderAud)throw new Error('ORDER_EXCEEDS_SERVER_CAP');
-  return okxPrivateRequest('/api/v5/trade/order',{method:'POST',body:built.request,env});
+export async function submitOkxApprovedOrder() {
+  throw new Error('LIVE_EXECUTION_DISABLED_USE_DEMO_SERVICE');
 }
