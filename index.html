@@ -454,6 +454,7 @@
     .daily-chart-link{display:inline-flex;margin-top:14px;text-decoration:none;min-height:44px;align-items:center;justify-content:center}
     .daily-buy-now{display:inline-flex;margin-top:14px;margin-left:8px;text-decoration:none;min-height:44px;align-items:center;justify-content:center}
     @media(max-width:520px){.daily-chart-link,.daily-buy-now{width:100%;margin-left:0;margin-top:9px}}
+    .daily-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.daily-actions .btn{min-height:44px;align-items:center;justify-content:center;text-decoration:none}@media(max-width:520px){.daily-actions .btn{width:100%}}
 </style>
 </head>
 <body class="notranslate">
@@ -472,13 +473,17 @@
       <div class="track" id="ticker">Loading live prices...</div>
     </div>
     <section class="daily-spotlight" id="tradeOfTheDay" aria-labelledby="dailyPickTitle">
-      <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">Pick of the Day</h2></div></div>
-      <p class="daily-empty">No pick loaded</p>
-      <dl class="daily-preview" aria-label="No researched trade levels loaded">
-        <div><dt>Buy near</dt><dd id="dailyEntry" aria-label="Entry not loaded">Pending</dd></div>
-        <div><dt>Take profit at</dt><dd id="dailyTarget" aria-label="Profit target not loaded">Pending</dd></div>
-        <div><dt>Get out if</dt><dd id="dailyInvalidation" aria-label="Exit condition not loaded">Pending</dd></div>
+      <div class="daily-head"><div><span class="daily-eyebrow">Your daily spotlight</span><h2 id="dailyPickTitle">HBAR · LOOK AT CHART</h2></div></div>
+      <p class="daily-empty">Large liquid pullback + Bacon payments basket. Recovery confirmation needed first.</p>
+      <dl class="daily-preview" aria-label="Today's researched watch levels">
+        <div><dt>Ideal entry</dt><dd id="dailyEntry">$0.1028–$0.1031</dd></div>
+        <div><dt>Current</dt><dd id="dailyTarget">$0.10158</dd></div>
+        <div><dt>Rule</dt><dd id="dailyInvalidation">Wait for recovery</dd></div>
       </dl>
+      <div class="daily-actions">
+        <a id="dailyChartLink" class="btn daily-chart-link" href="https://www.binance.com/en/trade/HBAR_USDT?type=spot" target="_blank" rel="noopener noreferrer">Open chart</a>
+        <a id="dailyBuyNow" class="btn purple daily-buy-now" href="https://www.okx.com/trade-spot/hbar-usdt" target="_blank" rel="noopener noreferrer">BUY NOW · OKX SPOT</a>
+      </div>
     </section>
     <section class="narrative-window" id="narrativeWindow" aria-labelledby="narrativeTitle">
       <div class="narrative-head"><h2 id="narrativeTitle">Narrative</h2><span>What money is chasing</span></div>
@@ -1114,9 +1119,9 @@
       if(pick&&typeof pick.symbol==='string'){
         title.textContent=pick.symbol+' · '+String(pick.status||'LOOK AT CHART');
         summary.textContent=String(pick.reason||'Best researched candidate to inspect today.');
-        entry.textContent=Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'Watch';
-        target.textContent='Not set yet';
-        invalidation.textContent='Wait for recovery';
+        entry.textContent=typeof pick.idealEntry==='string'?pick.idealEntry:(Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'Watch');
+        target.textContent=Number.isFinite(Number(pick.price))?usdPrice(Number(pick.price)):'Current price';
+        invalidation.textContent=pick.entryRule||'Wait for recovery';
         let link=document.getElementById('dailyChartLink');
         if(!link){
           link=document.createElement('a');
