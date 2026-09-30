@@ -1,21 +1,9 @@
-# Sea Chef Labs execution API foundation
+# Sea Chef Labs OKX execution boundary
 
-The Bacon Fast Trade Desk is currently a **staging and owner-approval** interface. This folder is the boundary for a later authenticated exchange API.
+The public GitHub Pages desk remains paper-only. The new local desktop service implements demo spot order preview, confirmation, balance reads, order tracking, and entry cancellation. Real trading is disabled.
 
-## Security rules
+See [OKX_DEMO_SETUP.md](OKX_DEMO_SETUP.md) for setup, limits, tests, and remaining connection work.
 
-- Exchange secrets stay server-side. Never put API keys, secrets, passphrases, seed phrases or private keys in `index.html`, browser JavaScript, JSON data files, commits, issues, or chat.
-- Use a dedicated exchange API key with **withdrawals disabled** and only the minimum trading permissions needed.
-- Live execution remains disabled until a specific supported exchange is selected, its official API is implemented, server-side authentication is configured, and an end-to-end paper/test environment passes.
-- Owner approval and exchange submission are separate events. A staged approval must not silently become a live order.
-- Server-side order caps must be configured before enabling submission.
+Exchange secrets stay in the desktop's local `.env` file and never go into browser code, JSON feeds, chat, or commits. Use a dedicated OKX Demo Trading API key with Read + Trade and no Withdraw permission. The service binds to localhost only; it must not be exposed to the internet.
 
-`.env.example` documents variable names only; real values belong in encrypted deployment secrets.
-
-Current state: **execution disabled; no order submission implementation**.
-
-## OKX Australia adapter
-
-The initial provider is OKX. Australian accounts use the regional OKX API domain documented for AU/US registrations. The adapter supports authenticated balance reads, pending-order reads, staged order conversion for SPOT/SWAP, demo headers, HMAC-SHA256 signing, and a live submission function guarded by three independent gates: credentials present, `SCL_EXECUTION_ENABLED=true`, and demo mode disabled.
-
-Default configuration is **demo mode ON and live execution OFF**. Create an OKX Demo Trading API key first. Use Read + Trade only; do not grant Withdraw permission. Production credentials must never be committed.
+Seven mocked tests passed. An actual OKX demo balance, buy, fill, attached exit and cancellation have not yet been verified. The journal preserves client order IDs and blocks automatic retries after an uncertain submission.
