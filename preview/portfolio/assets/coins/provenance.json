@@ -1,0 +1,53 @@
+[
+  {
+    "ticker": "DRAGONX",
+    "file": "DRAGONX.png",
+    "source_page": "https://dragonx.win/",
+    "asset_url": "https://framerusercontent.com/images/XR43Ni74upw0Xb9aAwWoWVArmXg.png",
+    "retrieved_utc": "2026-10-01",
+    "sha256": "53954f8992b607b79644a9e7f0c139679c03309d407fa29c718d49aa55ad1f18",
+    "note": "Official project page header; downloaded through its displayed image. Original delivered as AVIF; lossless format conversion to PNG only.",
+    "published_file": "dragonx.png"
+  },
+  {
+    "ticker": "SHOGUN",
+    "file": "SHOGUN-full.png",
+    "source_page": "https://app.shogun.win/auction",
+    "asset_url": "https://app.shogun.win/img/SHOGUN_S_FULL-min.png",
+    "retrieved_utc": "2026-10-01",
+    "sha256": "e4fa8fe182e8c4549b5723ce47b97f70aac01d34e57791b760afdf3fe1cbd855",
+    "note": "Official project token icon, full-resolution asset referenced by page image.",
+    "published_file": "shogun.png"
+  },
+  {
+    "ticker": "HEX",
+    "file": "HEX.png",
+    "source_page": "https://hex.com/downloads/",
+    "asset_url": "https://hex.com/downloads/logo/HEXagon.png",
+    "retrieved_utc": "2026-10-01",
+    "sha256": "d53aefaabf250409f40f4de997102c78eaf14113dad85e785d6b5296fdd87859",
+    "note": "Official branding download labelled HEX.COM logo vector.",
+    "published_file": "hex.png",
+    "derivative_note": "Official source proportionally downsampled to 256px maximum dimension for web performance; artwork not altered."
+  },
+  {
+    "ticker": "HDRN",
+    "file": "HDRN.png",
+    "source_page": "https://app.icosa.pro/apps/icosa",
+    "asset_url": "https://app.icosa.pro/img/hdrn.716745e2.png",
+    "retrieved_utc": "2026-10-01",
+    "sha256": "3423fbd63ba19491024fe5ad801c8e508f727ce85966fa00224650bbd8260c94",
+    "note": "Publisher official Icosa X Hedron application sidebar token asset. Publisher sites cross-reference protocol relation.",
+    "published_file": "hdrn.png"
+  },
+  {
+    "ticker": "ICSA",
+    "file": "ICSA-token.png",
+    "source_page": "https://app.icosa.pro/apps/icosa",
+    "asset_url": "https://app.icosa.pro/img/icsa.e2b79cbc.png",
+    "retrieved_utc": "2026-10-01",
+    "sha256": "c48c95b61eeca312c7c579af385f11dd7f72ede8d97677f31a45398e7fa6af7c",
+    "note": "Publisher official Icosa X Hedron application sidebar token asset.",
+    "published_file": "icsa.png"
+  }
+]

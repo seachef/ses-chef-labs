@@ -1,0 +1,26 @@
+{
+  "library": "Simple Icons",
+  "version": "16.33.0",
+  "package": "https://www.npmjs.com/package/simple-icons",
+  "artwork": "Original bundled brand vectors, unmodified",
+  "note": "Brand assets retain their owners\u2019 trademarks. Links are platform homepages until private settings are available.",
+  "additional_assets": {
+    "chatgpt": "Simple Icons 14.15.0 OpenAI mark, original monochrome vector",
+    "github": "Simple Icons 16.33.0 GitHub mark",
+    "westpac": "Lucide 1.8.0 landmark navigation icon; not represented as the bank logo",
+    "coinspot": "Lucide 1.8.0 coins navigation icon; not represented as the exchange logo",
+    "bigpond": "Lucide 1.8.0 mail navigation icon; not represented as a Telstra logo",
+    "gmail": "Simple Icons 16.33.0",
+    "whatsapp": "Simple Icons 16.33.0"
+  },
+  "verified_destination_sources": [
+    "https://chatgpt.com/",
+    "https://github.com/seachef/ses-chef-labs",
+    "https://www.westpac.com.au/",
+    "https://www.coinspot.com.au/",
+    "https://www.telstra.com.au/support/email/using-telstra-webmail",
+    "https://www.telstra.com.au/exchange/telstra-mail-and-bigpond-email-outage--what-you-can-do-",
+    "https://support.google.com/mail/answer/8494",
+    "https://web.whatsapp.com/"
+  ]
+}
