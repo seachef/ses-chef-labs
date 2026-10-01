@@ -1,0 +1,28 @@
+{
+  "source": "User-selected Sea Chef Labs combined design",
+  "source_pixels": [
+    1487,
+    1058
+  ],
+  "assets": {
+    "sea-chef-wave.png": {
+      "crop": [
+        37,
+        28,
+        107,
+        62
+      ],
+      "purpose": "Exact supplied decorative brand mark, no redraw"
+    },
+    "hero-wave.png": {
+      "crop": [
+        600,
+        208,
+        1487,
+        345
+      ],
+      "purpose": "Text-free decorative wave background only, no balances or other data"
+    }
+  },
+  "artwork_changed": false
+}
