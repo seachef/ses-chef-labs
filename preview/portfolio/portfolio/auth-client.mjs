@@ -1,4 +1,4 @@
-import { AUTH_CONFIG } from './auth-config.mjs';
+import { AUTH_CONFIG } from './auth-config.mjs?v=20261001.data2';
 let clientPromise=null;
 export function hasAuthCallback(location=globalThis.location){const query=new URLSearchParams(location?.search||''),hash=new URLSearchParams((location?.hash||'').slice(1));return query.has('code')||query.has('error')||hash.has('error')||hash.has('access_token');}
 export function shouldResumeAuth(storage=globalThis.sessionStorage,location=globalThis.location){if(hasAuthCallback(location))return true;try{return !!storage?.getItem(AUTH_CONFIG.storageKey);}catch{return false;}}
