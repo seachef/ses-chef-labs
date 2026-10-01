@@ -61,7 +61,7 @@
       "url": "https://x.com/virtualbacon",
       "status": "partial",
       "checkedAt": "2026-10-01T21:04:06Z",
-      "detail": "Profile and fresh scrape expose 5 newest posts only. Search identified additional posts/replies; all 8 additional in-window records opened and full text verified. Cannot claim exhaustive full-history or all-replies coverage; sign-in prompt limits profile older history. Recovered official source checked separately after current domain recovery notice; legacy collector exclusion/settings unchanged."
+      "detail": "Profile and fresh scrape expose 5 newest posts only. Search identified additional posts/replies; all 8 additional in-window records opened and full text verified. Cannot claim exhaustive full-history or all-replies coverage; sign-in prompt limits profile older history. Recovered official source checked separately after current domain recovery notice; legacy collector exclusion/settings unchanged. Full text reviewed; attached videos and chart imagery not systematically inspected. No specific technical-chart attachment identified in accessible post structure; no complete setup established by reviewed text."
     },
     {
       "name": "Official Facebook",
@@ -100,33 +100,7 @@
       "sourceUrl": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=1846s",
       "sourceName": "VirtualBacon · Oct1 stream",
       "publishedAt": "2026-10-01T14:10:33+00:00",
-      "note": "Post-exploit weakness identified as a possible buying opportunity in NEAR / NEAR ecosystem; holdings described as unchanged. Creator says issue patched, not independently security-verified here.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "youtube:rHMO89SM_Dk:aurora",
-      "symbol": "AURORA",
-      "sourceUrl": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=1846s",
-      "sourceName": "VirtualBacon · Oct1 stream",
-      "publishedAt": "2026-10-01T14:10:33+00:00",
-      "note": "Post-exploit weakness identified as a possible buying opportunity in Aurora / NEAR ecosystem; holdings described as unchanged. Creator says issue patched, not independently security-verified here.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "youtube:rHMO89SM_Dk:rhea",
-      "symbol": "RHEA",
-      "sourceUrl": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=1846s",
-      "sourceName": "VirtualBacon · Oct1 stream",
-      "publishedAt": "2026-10-01T14:10:33+00:00",
-      "note": "Post-exploit weakness identified as a possible buying opportunity in RHEA (spoken-caption rendering RIA) / NEAR ecosystem; holdings described as unchanged. Creator says issue patched, not independently security-verified here.",
+      "note": "NEAR ecosystem: Bacon identifies NEAR, AURORA and RHEA post-exploit weakness as a possible buying opportunity and says his holdings are unchanged. His claim that the issue is patched has not been independently security-verified here. One shared narrative, no numerical trade plan.",
       "missing": [
         "entry",
         "stop",

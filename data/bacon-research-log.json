@@ -608,7 +608,8 @@
           "sourceName": "VirtualBacon Telegram",
           "publishedAt": "2026-10-01T14:20:14Z",
           "retrievedAt": "2026-10-01T20:59:10Z",
-          "summary": "Links the same Oct1 livestream; not a separate call."
+          "summary": "Links the same Oct1 livestream; not a separate call.",
+          "contentHash": "6f34623ce586bcdec10aa2a8b2c508a183c2a6bcbbf7e774f5d0ebc6457d66b5"
         }
       ]
     },
@@ -926,7 +927,7 @@
           "url": "https://x.com/virtualbacon",
           "status": "partial",
           "checkedAt": "2026-10-01T21:04:06Z",
-          "detail": "Profile and fresh scrape expose 5 newest posts only. Search identified additional posts/replies; all 8 additional in-window records opened and full text verified. Cannot claim exhaustive full-history or all-replies coverage; sign-in prompt limits profile older history. Recovered official source checked separately after current domain recovery notice; legacy collector exclusion/settings unchanged."
+          "detail": "Profile and fresh scrape expose 5 newest posts only. Search identified additional posts/replies; all 8 additional in-window records opened and full text verified. Cannot claim exhaustive full-history or all-replies coverage; sign-in prompt limits profile older history. Recovered official source checked separately after current domain recovery notice; legacy collector exclusion/settings unchanged. Full text reviewed; attached videos and chart imagery not systematically inspected. No specific technical-chart attachment identified in accessible post structure; no complete setup established by reviewed text."
         },
         {
           "name": "Official Facebook",
