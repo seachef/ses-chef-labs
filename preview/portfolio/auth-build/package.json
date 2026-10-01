@@ -1,0 +1,1 @@
+{"name":"sea-chef-browser-auth-build","private":true,"type":"module","scripts":{"build":"esbuild entry.mjs --bundle --format=esm --platform=browser --minify --target=es2022 --outfile=../vendor/supabase-2.117.2.mjs"},"dependencies":{"@supabase/supabase-js":"2.117.2"},"devDependencies":{"esbuild":"0.25.12"}}

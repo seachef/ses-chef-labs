@@ -1,3 +1,5 @@
+import { AUTH_CONFIG } from './portfolio/auth-config.mjs';
+import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs';
 import { COINS, SOCIALS, safeURL, socialURL, displayDecimal, aud, groupHoldings, portfolioTotal, historyPoints, coinMetadata, snapshotFreshness } from './portfolio/model.mjs';
 import { formatUnits } from './portfolio/domain.mjs';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs';
@@ -6,7 +8,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&
 const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-AU',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'Date unavailable';
 // Production is intentionally unconfigured until private Auth and RLS have been verified.
 // An approved bootstrap may supply an authenticated client; never embed service-role keys.
-const adapter=createPortfolioAdapter(globalThis.seaChefPortfolioClient||null);
+let adapter=createPortfolioAdapter(globalThis.seaChefPortfolioClient||null);
 const initialHoldings=$('holdingsBody').innerHTML,initialStake=$('stakeList').innerHTML;
 let model=null,range=30,requestId=0,busy=false,toastTimer=null,authStatus='not-configured',researchBusy=false;
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
@@ -14,22 +16,22 @@ function clearPrivate(){
   model=null;$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';$('historyEmpty').hidden=false;$('historyData').hidden=true;$('historyTable').replaceChildren();const canvas=$('historyChart');canvas.getContext?.('2d')?.clearRect(0,0,canvas.width,canvas.height);$('historyCaption').textContent='No verified snapshots yet';$('signOut').hidden=true;renderSocials();
 }
 function connectionCopy(status){
-  authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':status==='no-account'?'Account pending':'Not connected';
-  $('connectionDescription').textContent=status==='ready'?'Your private account is connected.':status==='signed-out'?'Sign in through the private account service.':status==='no-account'?'Your session is valid. No SMSF account has been provisioned yet.':'Your private portfolio is not connected yet.';
-  $('connectionExplanation').textContent=status==='ready'?'Balances are read from your authenticated, owner-only snapshots and held in memory for this session.':status==='signed-out'?'The private client is available, but no authenticated session is active. No wallet balances are loaded.':'Sign-in and verified balance snapshots still need to be enabled. Wallet addresses and balances are not stored in this public page.';
-  $('signOut').hidden=!['ready','no-account'].includes(status);
+  authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':['no-account','setup-pending'].includes(status)?'Setup pending':'Not connected';
+  $('connectionDescription').textContent=status==='ready'?'Your private account is connected.':status==='signed-out'?'Sign in with GitHub to open your private account.':['no-account','setup-pending'].includes(status)?'Signed in. Your private portfolio setup is still pending.':'Your private portfolio is not connected yet.';
+  $('connectionExplanation').textContent=status==='ready'?'Balances are read from your authenticated, owner-only snapshots and held in memory for this session.':status==='signed-out'?'Your session stays in this tab. Private wallet balances are loaded only after authentication and owner access are verified.':['no-account','setup-pending'].includes(status)?'Your sign-in succeeded. Owner access and verified wallet snapshots still need to be provisioned before balances can appear.':'Sign-in and verified balance snapshots still need to be enabled. Wallet addresses and balances are not stored in this public page.';
+  $('signOut').hidden=!['ready','no-account','setup-pending'].includes(status);$('signIn').hidden=!AUTH_CONFIG.enabled||['ready','no-account','setup-pending'].includes(status);
 }
 function openConnection(){if(!$('connectionDialog').open)$('connectionDialog').showModal();}
 async function refreshPortfolio({announce=false}={}){
   if(busy)return;busy=true;const focusedBefore=document.activeElement;const id=++requestId;$('refreshPortfolio').disabled=true;$('checkConnection').disabled=true;$('connectionResult').textContent='Checking private connection…';
   try{
-    const result=await adapter.readPortfolio();if(id!==requestId)return;clearPrivate();connectionCopy(result.status);
+    const result=await adapter.readPortfolio();if(id!==requestId)return;clearPrivate();if(result.status==='not-configured'&&AUTH_CONFIG.enabled)result.status='signed-out';connectionCopy(result.status);
     if(result.status==='ready'){
       model=result.model;renderModel();$('connectionResult').textContent=model.snapshot?'Stored snapshot loaded.':'Private account connected. First verified sync pending.';
       const links=await adapter.getSocialLinks();if(id===requestId&&model)renderSocials(links);
       if(announce)toast(model.snapshot?'Latest stored snapshot loaded. Refresh does not trigger transactions or a new chain sync.':'First verified sync is pending.');
     }else{
-      const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':result.status==='no-account'?'No private SMSF account has been provisioned yet.':'Private connection is not configured yet. No balances have been loaded.';
+      const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':['no-account','setup-pending'].includes(result.status)?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
       $('connectionResult').textContent=message;if(announce)toast(message);
     }
   }catch(error){if(id!==requestId)return;clearPrivate();connectionCopy('error');$('connectionResult').textContent='The private snapshot could not be verified. Balances have been cleared.';$('syncStatus').textContent='Snapshot unavailable · Please retry';if(announce)toast('Snapshot unavailable. No cached private balances are being shown.');}
@@ -96,4 +98,11 @@ const onAuthChange=event=>{if(['SIGNED_OUT','USER_DELETED'].includes(event)){++r
 let subscription=adapter.subscribe(onAuthChange);
 window.addEventListener('pagehide',()=>{++requestId;clearPrivate();subscription.unsubscribe();});
 window.addEventListener('pageshow',event=>{if(event.persisted){subscription=adapter.subscribe(onAuthChange);void refreshPortfolio();}});
-route();void refreshPortfolio();
+async function restoreSignIn(){
+  if(!AUTH_CONFIG.enabled){void refreshPortfolio();return;}
+  connectionCopy('signed-out');
+  try{const result=await resumeAuthentication();if(result.client){subscription.unsubscribe();adapter=createPortfolioAdapter(result.client);subscription=adapter.subscribe(onAuthChange);await refreshPortfolio();}else await refreshPortfolio();if(result.error){$('connectionResult').textContent=result.error;openConnection();}}
+  catch{$('connectionResult').textContent='This tab could not restore sign-in. Try signing in again.';connectionCopy('signed-out');}
+}
+$('signIn').addEventListener('click',async()=>{$('signIn').disabled=true;$('connectionResult').textContent='Opening GitHub sign-in…';try{await beginGitHubSignIn();}catch(error){$('connectionResult').textContent=error.message;$('signIn').disabled=false;}});
+route();void restoreSignIn();

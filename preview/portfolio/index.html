@@ -10,7 +10,7 @@
   <title>Sea Chef Labs · Portfolio</title>
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="stylesheet" href="portfolio.css?v=20261001.5">
-  <script type="module" src="portfolio.mjs?v=20261001.5"></script>
+  <script type="module" src="portfolio.mjs?v=20261001.auth1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -110,7 +110,7 @@
   <div class="dialog-heading"><h2 id="connectionTitle">Private connection</h2><button class="icon-button" id="closeConnection" aria-label="Close private connection"><img src="assets/ui/x.svg" width="24" height="24" alt=""></button></div>
   <div class="dialog-icon"><img src="assets/ui/shield-check.svg" width="38" height="38" alt=""></div>
   <p id="connectionDescription">Your private portfolio is not connected yet.</p><p id="connectionExplanation" class="muted">Sign-in and verified balance snapshots still need to be enabled. Wallet addresses and balances are not stored in this public page.</p><p class="connection-detail">Read-only access. No wallet connection, signing or transactions.</p>
-  <p id="connectionResult" class="muted" role="status"></p><div class="dialog-actions"><button class="button primary" id="checkConnection">Check connection</button><button class="button" id="signOut" hidden>Sign out</button><button class="button" id="dismissConnection">Close</button></div>
+  <p id="connectionResult" class="muted" role="status"></p><div class="dialog-actions"><button class="button primary" id="signIn" hidden>Sign in with GitHub</button><button class="button" id="checkConnection">Check connection</button><button class="button" id="signOut" hidden>Sign out</button><button class="button" id="dismissConnection">Close</button></div>
 </dialog>
 <div class="status-toast" id="statusToast" role="status" hidden></div>
 <noscript><p class="noscript">JavaScript is needed to load verified private balances. No balances are available on this public page. <a href="../../index.html">Open the research desk</a></p></noscript>
