@@ -5,7 +5,7 @@ import { formatUnits } from './portfolio/domain.mjs';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-AU',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'Date unavailable';
+const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-AU',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}).format(new Date(value)):'Date unavailable';
 // Production is intentionally unconfigured until private Auth and RLS have been verified.
 // An approved bootstrap may supply an authenticated client; never embed service-role keys.
 let adapter=createPortfolioAdapter(globalThis.seaChefPortfolioClient||null);
@@ -46,7 +46,7 @@ function renderModel(){
   $('coinsSubtitle').textContent=`Combined across ${snapshot.observed_wallets} of ${snapshot.expected_wallets} wallets`;
   $('portfolioValue').textContent=total==null?'A$ —':aud(total);$('portfolioValue').setAttribute('aria-label',total==null?'Complete AUD portfolio value unavailable':`${aud(total)} indicative portfolio value`);
   $('portfolioCaption').textContent=total==null?'Full AUD valuation unavailable · missing prices, FX or wallet coverage':freshness==='stale'?'Saved value · Snapshot is over 36 hours old':'Indicative total · Liquid tokens + staked principal';
-  $('syncStatus').textContent=`${freshness==='stale'?'Stale snapshot':freshness==='unverified-time'?'Snapshot time unverified':snapshot.status==='partial'?'Partial snapshot':'Verified snapshot'} · ${when(snapshot.observed_at)}`;
+  $('syncStatus').textContent=`${freshness==='stale'?'Stale snapshot':freshness==='unverified-time'?'Snapshot time unverified':snapshot.status==='partial'?'Saved partial snapshot':'Saved verified snapshot'} · ${when(snapshot.observed_at)}`;
   $('coinPrivacy').textContent=`${snapshot.unpriced_assets} unpriced asset${snapshot.unpriced_assets===1?'':'s'} · ${snapshot.balance_source||'Verified snapshot'} · Values exclude unminted rewards`;
   $('holdingsBody').innerHTML=holdings.length?holdings.map(h=>{
     const coin=coinMetadata(h),image=coin?`<img class="coin-icon" src="assets/coins/${coin.icon}" width="58" height="58" alt="">`:'',staked=h.staked!=='0';
