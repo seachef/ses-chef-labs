@@ -21,7 +21,7 @@ function connectionCopy(status){
 }
 function openConnection(){if(!$('connectionDialog').open)$('connectionDialog').showModal();}
 async function refreshPortfolio({announce=false}={}){
-  if(busy)return;busy=true;const id=++requestId;$('refreshPortfolio').disabled=true;$('checkConnection').disabled=true;$('connectionResult').textContent='Checking private connection…';
+  if(busy)return;busy=true;const focusedBefore=document.activeElement;const id=++requestId;$('refreshPortfolio').disabled=true;$('checkConnection').disabled=true;$('connectionResult').textContent='Checking private connection…';
   try{
     const result=await adapter.readPortfolio();if(id!==requestId)return;clearPrivate();connectionCopy(result.status);
     if(result.status==='ready'){
@@ -33,7 +33,7 @@ async function refreshPortfolio({announce=false}={}){
       $('connectionResult').textContent=message;if(announce)toast(message);
     }
   }catch(error){if(id!==requestId)return;clearPrivate();connectionCopy('error');$('connectionResult').textContent='The private snapshot could not be verified. Balances have been cleared.';$('syncStatus').textContent='Snapshot unavailable · Please retry';if(announce)toast('Snapshot unavailable. No cached private balances are being shown.');}
-  finally{if(id===requestId){busy=false;$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;}}
+  finally{if(id===requestId){busy=false;$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;if(['refreshPortfolio','checkConnection'].includes(focusedBefore?.id)&&document.activeElement===document.body)focusedBefore.focus();}}
 }
 function renderModel(){
   if(!model)return;const snapshot=model.snapshot;
@@ -89,10 +89,11 @@ function renderSocials(links={}){document.querySelectorAll('[data-social]').forE
 $('accountButton').addEventListener('click',openConnection);$('manageWallets').addEventListener('click',()=>{if(!model)openConnection();else{$('walletsTitle').scrollIntoView({block:'center',behavior:'auto'});$('walletsTitle').focus();}});document.addEventListener('click',event=>{if(event.target.closest('[data-connection]'))openConnection();});
 for(const id of ['closeConnection','dismissConnection'])$(id).addEventListener('click',()=>$('connectionDialog').close());
 $('refreshPortfolio').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('checkConnection').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('refreshResearch').addEventListener('click',()=>void loadResearch());
-$('signOut').addEventListener('click',async()=>{++requestId;busy=false;clearPrivate();connectionCopy('signed-out');try{await adapter.signOut();$('connectionResult').textContent='Signed out. Private balances cleared.';}catch{$('connectionResult').textContent='Balances cleared from this page. Service sign-out could not be confirmed.';}});
+$('signOut').addEventListener('click',async()=>{++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;try{await adapter.signOut();$('connectionResult').textContent='Signed out. Private balances cleared.';}catch{$('connectionResult').textContent='Balances cleared from this page. Service sign-out could not be confirmed.';}});
 for(const button of document.querySelectorAll('[data-range]'))button.addEventListener('click',()=>{range=Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));if(model)renderHistory();else toast('No verified history yet. Your selected range is saved for this visit.');});
 window.addEventListener('hashchange',route);window.addEventListener('resize',()=>{if(model&&location.hash!=='#research')renderHistory();});
-const subscription=adapter.subscribe(event=>{if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}});
+const onAuthChange=event=>{if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}};
+let subscription=adapter.subscribe(onAuthChange);
 window.addEventListener('pagehide',()=>{++requestId;clearPrivate();subscription.unsubscribe();});
-window.addEventListener('pageshow',event=>{if(event.persisted)void refreshPortfolio();});
+window.addEventListener('pageshow',event=>{if(event.persisted){subscription=adapter.subscribe(onAuthChange);void refreshPortfolio();}});
 route();void refreshPortfolio();
