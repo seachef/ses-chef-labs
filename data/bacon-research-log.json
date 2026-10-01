@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-09-30T21:10:35Z",
+  "updatedAt": "2026-10-01T21:09:02Z",
   "records": [
     {
       "id": "youtube:n9pYIQknYZ0:btc",
@@ -30,7 +30,7 @@
       "sourceName": "VirtualBacon official domain",
       "publishedAt": "2026-09-24T02:02:00Z",
       "firstSeenAt": "2026-09-30T12:14:00Z",
-      "lastSeenAt": "2026-09-30T21:10:35Z",
+      "lastSeenAt": "2026-10-01T20:59:02Z",
       "contentHash": "42177ecb0a071b17a289fc5e28026862a6ad2faa048afd007f4c3071bf638a70",
       "summary": "Official domain states X recovered Sept 23; older Telegram and YouTube About compromise notices remain. Public X text is accessible; account security cannot be independently guaranteed.",
       "symbols": [],
@@ -47,34 +47,151 @@
     {
       "id": "youtube:HGh4qglSpEk:btc",
       "canonicalUrl": "https://www.youtube.com/watch?v=HGh4qglSpEk",
-      "sourceName": "VirtualBacon · Sept 30 stream",
-      "publishedAt": "2026-09-30T14:40:41Z",
+      "sourceName": "VirtualBacon official YouTube",
+      "publishedAt": "2026-09-30T14:40:41+00:00",
       "firstSeenAt": "2026-09-30T21:10:35Z",
-      "lastSeenAt": "2026-09-30T21:10:35Z",
-      "contentHash": "43e813bebc91fad84c1a1f1036dbd9e4a1f6882947e4e6b45c49831d5f0dda22",
-      "summary": "BTC USD90,000 is the next-three-month base case, within a USD78,000–95,000 range; USD78,000 is 50-week-SMA support, not an executable stop. The creator describes rotating altcoins into BTC if USD90,000 arrives quickly in October. No complete entry/stop/target trade is verified. The latest stream has no available public transcript, so review remains incomplete.",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "a2159f118c95651644bffbe2a15e8c886f7aa09f70aadfdc62fcf5d2764e5079",
+      "summary": "Previously missing full transcript now reviewed: BTC USD90000 Q4 base case and rapid-October alt-to-BTC profit rotation confirmed. Existing XRP/XLM/HBAR/IOTA/ALGO longs were described as 2x. Aurora/RHEA holdings retained. Low-cap Robinhood and proof-of-verifiable-work/mining mentions lack verified token identity and complete levels. Historical WLFI loss discussion is not a current exit. No executable stop or complete setup verified; chart playback unavailable.",
       "symbols": [
-        "BTC"
+        "BTC",
+        "XRP",
+        "XLM",
+        "HBAR",
+        "IOTA",
+        "ALGO",
+        "NEAR",
+        "AURORA",
+        "RHEA"
       ],
       "classification": "watchlist",
-      "revision": 1,
+      "revision": 2,
       "revisions": [
         {
           "observedAt": "2026-09-30T21:10:35Z",
           "contentHash": "43e813bebc91fad84c1a1f1036dbd9e4a1f6882947e4e6b45c49831d5f0dda22",
           "summary": "BTC USD90,000 is the next-three-month base case, within a USD78,000–95,000 range; USD78,000 is 50-week-SMA support, not an executable stop. The creator describes rotating altcoins into BTC if USD90,000 arrives quickly in October. No complete entry/stop/target trade is verified. The latest stream has no available public transcript, so review remains incomplete."
+        },
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "a2159f118c95651644bffbe2a15e8c886f7aa09f70aadfdc62fcf5d2764e5079",
+          "summary": "Previously missing full transcript now reviewed: BTC USD90000 Q4 base case and rapid-October alt-to-BTC profit rotation confirmed. Existing XRP/XLM/HBAR/IOTA/ALGO longs were described as 2x. Aurora/RHEA holdings retained. Low-cap Robinhood and proof-of-verifiable-work/mining mentions lack verified token identity and complete levels. Historical WLFI loss discussion is not a current exit. No executable stop or complete setup verified; chart playback unavailable."
         }
       ],
-      "publicationTimeBasis": "YouTube startDate; archive datePublished is 2026-09-30T16:50:18Z",
+      "contentHashBasis": "SHA-256 whitespace-normalized actual public transcript; changed Sept30 hash reflects newly available transcript coverage, not a verified source edit.",
+      "publicationTimeBasis": "YouTube stream startDate; archive publication time retained separately.",
+      "archivePublishedAt": "2026-09-30T09:50:18-07:00",
+      "coverage": "Full transcript and source chapters assessed; attempted chart playback unavailable. No video/visual chart review claimed.",
+      "chapterSources": [
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=1744s",
+          "chapter": "29:04 Why I am Not Selling With Bitcoin at 83.9K",
+          "detail": "Still holding XRP, XLM, HBAR, IOTA and ALGO; describes them as existing 2x longs. No new entry, executable stop or individual coin take-profit stated."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=2862s",
+          "chapter": "47:42 Taking Profit If We Hit 90K in October",
+          "detail": "At a rapid October move to BTC 90000–91000 he plans to sell altcoins and rotate to Bitcoin; he does not intend to sell his Bitcoin into cash. Strong breakout beyond about 94800–95000 may keep him risk-on or prompt buying back."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=3481s",
+          "chapter": "58:01 What I am Holding Until Bitcoin Hits 90K",
+          "detail": "Existing five ISO longs remain. HBAR 0.12 and 0.108 are a comparison of price movement, not a defined entry/stop. Positions are conditioned on BTC reaching 90000; no coin-specific profit exits."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=3935s",
+          "chapter": "1:05:35 Near and Zcash Ecosystem Plays I Like",
+          "detail": "Still holding Aurora and the token transcribed as RIA (RHEA per task context). Broad ecosystem thesis only, no numeric trade levels."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=4490s",
+          "chapter": "1:14:50 What Really Happened With My World Liberty Trade",
+          "detail": "Describes a historical World Liberty trade closed shortly after 10/10 about a year earlier at roughly 40% loss; not a newly announced current closure."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk&t=5466s",
+          "chapter": "1:31:06 My 125K to 220K Target for This Cycle",
+          "detail": "Longer-cycle forecast roughly 125000–220000, with 160000–165000 midpoint and no plan to sell BTC before at least 150000–160000. Not a present short-horizon take-profit order."
+        }
+      ],
+      "crosspostObservations": [
+        {
+          "id": "x:2105697840899264852",
+          "url": "https://x.com/virtualbacon/status/2105697840899264852",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T16:34:21.901Z",
+          "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "606a6b9c4394cc43b227d54a3396281b16b3a8944364ccbef5eb839bd67677ec",
+          "summary": "Distinguishes WLFI ICO investment from a historical $2M leveraged/trading position closed roughly a year ago at ~40% loss. Not a current exit."
+        },
+        {
+          "id": "x:2105424132829581399",
+          "url": "https://x.com/virtualbacon/status/2105424132829581399",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-09-30T22:26:44.812Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "7af657c72bf66a46a7919bac320814bd58b3a4b18cd18fb6d75188bded8c5173",
+          "summary": "BTC cycle top range $125K–$220K, central estimate ~$160K; won't sell before $150K. Facebook crosspost adds 1–2 years."
+        },
+        {
+          "id": "x:2105409276269215753",
+          "url": "https://x.com/virtualbacon/status/2105409276269215753",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-09-30T21:27:42.732Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "6b73944df40f41cd6137c96c7529dadd03c58430854769fe993955622faa5d37",
+          "summary": "His macro interpretation: PCE methodological revision, not actual cooling; still BTC-positive through lower hike odds. These external statistics are his claims, not independently fact-checked here."
+        },
+        {
+          "id": "x:2105705577074634878",
+          "url": "https://x.com/virtualbacon/status/2105705577074634878",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T17:05:06.349Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "63d0f3348c71ead0958c288e770046ce3a1290126e5494993b3de1e8cbcfe742",
+          "summary": "Contextual reply explaining why he addressed WLFI rumor; not a new investment call."
+        },
+        {
+          "id": "facebook:1101542862847491",
+          "url": "https://www.facebook.com/reel/1101542862847491/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "0f7e0e82166569ca7df4347271423b451cb5a1f48356a327eb8e8ae8c27f2989",
+          "summary": "Prefers rotating profits into BTC during bull market, retaining upside; no specific new trade."
+        },
+        {
+          "id": "facebook:1462951422342156",
+          "url": "https://www.facebook.com/reel/1462951422342156",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "369b48019f0cfa4764d96b4cdbdc2cd8ec94eaaceb14f94b4b2b321b2163e0fd",
+          "summary": "Adds retrospective methodological revision and 49%→65% no-hike odds. Group with PCE X/video."
+        },
+        {
+          "id": "facebook:3180100175513680",
+          "url": "https://www.facebook.com/reel/3180100175513680/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "25d668d5106137c9f6facd562399cba8d86397afe19b8d32cdd7c35c0fdabffd",
+          "summary": "Adds explicit 1–2-year horizon to X cycle target. Exact Facebook publication time unresolved; don't assert post-cutoff separately."
+        }
+      ],
       "crosspostUrls": [
         "https://t.me/virtualbacon/2371",
         "https://x.com/virtualbacon/status/2105306831346417697",
         "https://www.facebook.com/reel/2139950266733192",
         "https://www.facebook.com/virtualbacon0x/videos/1097710809781270"
-      ],
-      "crosspostNote": "Telegram directly links the YouTube stream. X and Facebook promote the same-titled broadcast. The Facebook clip caption has matching BTC base-case/rotation context. These are related source evidence, not separate setups. Exact Facebook publication timestamps were unavailable.",
-      "coverage": "Creator description and chapter list reviewed; no public transcript available; video not watched in full.",
-      "contentHashBasis": "SHA-256 of whitespace-normalized creator description and chapters; views and likes excluded."
+      ]
     },
     {
       "id": "x:2105396608464834866",
@@ -315,6 +432,291 @@
       "coverage": "Actual full transcript retrieved; relevant trade-level and risk passages assessed; video not visually watched.",
       "publicationTimeBasis": "YouTube stream startDate",
       "contentHashBasis": "SHA-256 of whitespace-normalized retrieved transcript text; relevant trade and risk passages assessed."
+    },
+    {
+      "id": "telegram:virtualbacon:2373",
+      "canonicalUrl": "https://t.me/virtualbacon/2373",
+      "sourceName": "VirtualBacon Telegram",
+      "publishedAt": "2026-10-01T13:00:01+00:00",
+      "firstSeenAt": "2026-10-01T21:02:20Z",
+      "lastSeenAt": "2026-10-01T21:02:20Z",
+      "contentHash": "eb3e9bd76519b8161e075d0a46bf3683e43453e1ba83bd48429813254f1bd2cb",
+      "summary": "Daily commentary flags DOGE/DogeOS public testnet, ADA/Petrobras fuel-tracing pilot and ETH validator exits following a security incident. These are creator-reported news leads, not verified complete trade calls; no numeric entry, stop or targets supplied.",
+      "symbols": [
+        "DOGE",
+        "ADA",
+        "ETH"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:02:20Z",
+          "contentHash": "eb3e9bd76519b8161e075d0a46bf3683e43453e1ba83bd48429813254f1bd2cb",
+          "summary": "Daily commentary flags DOGE/DogeOS public testnet, ADA/Petrobras fuel-tracing pilot and ETH validator exits following a security incident. These are creator-reported news leads, not verified complete trade calls; no numeric entry, stop or targets supplied."
+        }
+      ],
+      "contentHashBasis": "SHA-256 whitespace-normalized full primary post text.",
+      "crosspostObservations": [
+        {
+          "id": "facebook:pfbid0oUc6ePvYxcsiwC1dSB9bM3XuhNdWKqdRFM9Z6bRc3U8XjgrxtRUhhQaijjZoBjdjl",
+          "url": "https://www.facebook.com/virtualbacon0x/posts/pfbid0oUc6ePvYxcsiwC1dSB9bM3XuhNdWKqdRFM9Z6bRc3U8XjgrxtRUhhQaijjZoBjdjl",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "a697ae59093260c1eff8422f018004c4e02fe5280eb6ad84f5883d0980d80f1c",
+          "summary": "Broad daily macro/crypto recap, not new entries/exits; statistics and third-party events are author claims, not independently fact-checked."
+        }
+      ]
+    },
+    {
+      "id": "youtube:rHMO89SM_Dk",
+      "canonicalUrl": "https://www.youtube.com/watch?v=rHMO89SM_Dk",
+      "sourceName": "VirtualBacon official YouTube",
+      "publishedAt": "2026-10-01T14:10:33+00:00",
+      "firstSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "cca9cbbeaa5bd975811221c702200fd8b1e81659ba7278cb8a776805ae92b20d",
+      "summary": "NEAR/AURORA/RHEA post-exploit weakness described as a possible buying opportunity; creator says holdings unchanged and issue patched, not independently security-verified here. LIT actively watched after Robinhood selected Bitstamp; no filled new LIT long announced. Existing five ISO longs remain held. BTC USD76000 possible daily downside is compatible with USD78000 weekly support; USD90000 Q4 view retained. USD175000 personal cycle sale objective is separate from Q4 rotation. No complete numerical entry/stop/targets; charts could not render.",
+      "symbols": [
+        "BTC",
+        "XRP",
+        "XLM",
+        "HBAR",
+        "IOTA",
+        "ALGO",
+        "NEAR",
+        "AURORA",
+        "RHEA",
+        "LIT"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "cca9cbbeaa5bd975811221c702200fd8b1e81659ba7278cb8a776805ae92b20d",
+          "summary": "NEAR/AURORA/RHEA post-exploit weakness described as a possible buying opportunity; creator says holdings unchanged and issue patched, not independently security-verified here. LIT actively watched after Robinhood selected Bitstamp; no filled new LIT long announced. Existing five ISO longs remain held. BTC USD76000 possible daily downside is compatible with USD78000 weekly support; USD90000 Q4 view retained. USD175000 personal cycle sale objective is separate from Q4 rotation. No complete numerical entry/stop/targets; charts could not render."
+        }
+      ],
+      "contentHashBasis": "SHA-256 whitespace-normalized actual public transcript; changed Sept30 hash reflects newly available transcript coverage, not a verified source edit.",
+      "publicationTimeBasis": "YouTube stream startDate; archive publication time retained separately.",
+      "archivePublishedAt": "2026-10-01T10:16:27-07:00",
+      "coverage": "Full transcript and source chapters assessed; attempted chart playback unavailable. No video/visual chart review claimed.",
+      "chapterSources": [
+        {
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=1846s",
+          "chapter": "30:46 NEAR Intents 3.8M Exploit Patched and Covered",
+          "detail": "Calls the post-exploit weakness a potential opportunity in NEAR and ecosystem tokens Aurora/RIA; says the issue looks patched and he is holding the same positions. These are the creator’s claims, not independently verified exploit resolution or safety."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=2121s",
+          "chapter": "35:21 Robinhood Summit US Perps Go to Bitstamp, Not Lighter",
+          "detail": "LIT selloff attracts dip interest after Robinhood uses Bitstamp; says he had not longed LIT into the event and is now actively watching, possibly for a long. No executed new long or numerical setup announced."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=3649s",
+          "chapter": "1:00:49 Daily Range 76K to 86K and the 78K Support Band",
+          "detail": "Daily candle-close range about 76000–86500 (swing wicks about 75000–87000); 76000 daily tag is compatible with thesis if weekly closes back above 78000. Broad weekly accumulation band 78000–84000. No executable stop stated."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=4258s",
+          "chapter": "1:10:58 Q and A Opens With My ISO 20022 Longs",
+          "detail": "Explicitly still long XRP, XLM, HBAR, IOTA and ALGO as follow-on trades to Quant. No entry, executable stop or asset-specific target supplied."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk&t=6597s",
+          "chapter": "1:49:57 Spotting the Cycle Top and My 175K Sell Target",
+          "detail": "Makes personal BTC cycle sale objective 175000 explicit, acknowledging it may not be reached or may precede further upside. More specific than Sept30 150000–170000 discussion, but no explicit cancellation of a numbered trade order."
+        }
+      ],
+      "crosspostObservations": [
+        {
+          "id": "x:2105754518872850831",
+          "url": "https://x.com/virtualbacon/status/2105754518872850831",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T20:19:34.983Z",
+          "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "e25811e2c05cb694e85ba03b9f95502827cd460142b199d0c43c10d66d82ef71",
+          "summary": "Exit strategy trade-off, not a new precise sell order."
+        },
+        {
+          "id": "x:2105661628222194070",
+          "url": "https://x.com/virtualbacon/status/2105661628222194070",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T14:10:28.126Z",
+          "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "3dfa119dcdd2c7ba80fb8c5ce4af2cdee0b0266052a8da921a617d6cd8d04cea",
+          "summary": "Oct 1 stream announcement/replay. Group with video and Facebook same-content records."
+        },
+        {
+          "id": "x:2105655814199693703",
+          "url": "https://x.com/virtualbacon/status/2105655814199693703",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T13:47:21.955Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "bf3cc9d603aa670c26b010a7a220f95604ce392148ecf4a217c559c233589359",
+          "summary": "Explicitly has not sold altcoins; future sale will be announced."
+        },
+        {
+          "id": "x:2105695412233380068",
+          "url": "https://x.com/virtualbacon/status/2105695412233380068",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T16:24:42.862Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "82fe7e0748bb32131ef7f618c94af15dbdd59cda896a0da9723ed32829404fe3",
+          "summary": "Behavioral reassurance; no new call."
+        },
+        {
+          "id": "facebook:1091195277038004",
+          "url": "https://www.facebook.com/reel/1091195277038004",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "8804d5a380fda19070f798a10032e2fa6dc3bfaa74331150326276a930f2b652",
+          "summary": "BTC floor $76K; weekly $78K; quarterly $90K; self-reported ~85% BTC/>5% alts. Group with Oct 1 video, not duplicate new call."
+        },
+        {
+          "id": "facebook:1131575072544156",
+          "url": "https://www.facebook.com/virtualbacon0x/videos/1131575072544156/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "a2102234eb6b62ad8eea8b3e6e31e592d872ac7cf84d74c1394fc44aea897975",
+          "summary": "Stream caption, same Oct 1 floor analysis. Video duration UI 1:57:20, not reviewed here."
+        },
+        {
+          "id": "facebook:1742277723494769",
+          "url": "https://www.facebook.com/reel/1742277723494769/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "publicationTimeBasis": "relative UI only; exact publication time unavailable; do not substitute comment timestamps",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "b7a710664881c1ceb563f61047079f5cf8e9093cef40c20b4ca34da9d990bc4a",
+          "summary": "Crosspost of BTC exit trade-off; caption-only evidence."
+        },
+        {
+          "id": "telegram:virtualbacon:2374",
+          "url": "https://t.me/virtualbacon/2374",
+          "sourceName": "VirtualBacon Telegram",
+          "publishedAt": "2026-10-01T14:20:14Z",
+          "retrievedAt": "2026-10-01T20:59:10Z",
+          "summary": "Links the same Oct1 livestream; not a separate call."
+        }
+      ]
+    },
+    {
+      "id": "x:2105761509842604392",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2105761509842604392",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-01T20:47:21.760Z",
+      "firstSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "f4f41f63d43f5ffef8c3ff0a14dbec270f01f43562676ec0c5b8384981d9dd9e",
+      "summary": "0G staking disclosure; IAI compute-credit mechanism. No complete trade levels supplied.",
+      "symbols": [
+        "0G",
+        "IAI"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "f4f41f63d43f5ffef8c3ff0a14dbec270f01f43562676ec0c5b8384981d9dd9e",
+          "summary": "0G staking disclosure; IAI compute-credit mechanism. No complete trade levels supplied."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
+      "crosspostObservations": []
+    },
+    {
+      "id": "x:2105725276848378191",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2105725276848378191",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-01T18:23:23.141Z",
+      "firstSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "8047420bf9b7f574e25041f435e1e8c852f599651de24b666d93ccc7ec9b39ce",
+      "summary": "Still bullish/holding Robinhood-chain bags but warns correlated exposure means one narrative bet.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "8047420bf9b7f574e25041f435e1e8c852f599651de24b666d93ccc7ec9b39ce",
+          "summary": "Still bullish/holding Robinhood-chain bags but warns correlated exposure means one narrative bet."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
+      "crosspostObservations": []
+    },
+    {
+      "id": "x:2105471097470960011",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2105471097470960011",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-01T01:33:22.055Z",
+      "firstSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "30dd788dab7be19efba89cae87f802b01043147f47efaf84b0a01423ee770c9c",
+      "summary": "General sentiment comment; no new investment call.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "30dd788dab7be19efba89cae87f802b01043147f47efaf84b0a01423ee770c9c",
+          "summary": "General sentiment comment; no new investment call."
+        }
+      ],
+      "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
+      "crosspostObservations": []
+    },
+    {
+      "id": "x:2105652191419609557",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2105652191419609557",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-01T13:32:58.217Z",
+      "firstSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "contentHash": "d6915060595445cfb82fdc020f70d85300798d0eb412fe6c5e54720b2581c536",
+      "summary": "Clarifies warning is against immediately chasing news candles, not all breakout trading.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-01T21:09:02Z",
+          "contentHash": "d6915060595445cfb82fdc020f70d85300798d0eb412fe6c5e54720b2581c536",
+          "summary": "Clarifies warning is against immediately chasing news candles, not all breakout trading."
+        }
+      ],
+      "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
+      "crosspostObservations": [
+        {
+          "id": "x:2105697930984202575",
+          "url": "https://x.com/virtualbacon/status/2105697930984202575",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-01T16:34:43.379Z",
+          "publicationTimeBasis": "UTC from X snowflake ID; browser-rendered Pacific date/time independently agrees to minute",
+          "retrievedAt": "2026-10-01T21:04:33Z",
+          "contentHash": "c698f8c02e37e7f9090967f404bd164dcf7a6b1a1cd48032cff32983aa2d788d",
+          "summary": "Reaffirms positioning before news instead of chasing afterward."
+        }
+      ]
     }
   ],
   "runs": [
@@ -463,6 +865,109 @@
         "youtube:olG9gpga3yk:review"
       ],
       "revisedIds": []
+    },
+    {
+      "checkedAt": "2026-10-01T21:09:02Z",
+      "date": "2026-10-02",
+      "status": "partial",
+      "summary": "NEAR, AURORA and RHEA dip interest; LIT on watch after Robinhood disappointment. No complete paper setup verified.",
+      "sourceChecks": [
+        {
+          "name": "VirtualBacon Telegram",
+          "url": "https://t.me/s/virtualbacon",
+          "status": "checked",
+          "checkedAt": "2026-10-01T20:59:10Z",
+          "detail": "Full primary feed text and exact timestamps inspected, posts2354–2374. Two posts since prior checkpoint:2373 daily commentary and2374 Oct1 livestream. Latest video transcript separately assessed; older embedded clip2355 not watched. Collector excerpt/setup count not used as evidence of no calls."
+        },
+        {
+          "name": "VB Trading Journal",
+          "url": "https://t.me/s/vb_trade",
+          "status": "checked",
+          "checkedAt": "2026-10-01T20:59:10Z",
+          "detail": "Full primary feed text433–452 inspected. No posts since prior checkpoint; latest remains Sept22 02:53:38UTC compromise warning. Old mint solicitation449 excluded; legacy collector settings unchanged."
+        },
+        {
+          "name": "Official YouTube · Sept30 livestream",
+          "url": "https://www.youtube.com/watch?v=HGh4qglSpEk",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:06:04Z",
+          "detail": "Fresh Firecrawl maxAge=0 returned actual full transcript text (69616-character page), metadata and chapters. Prior missing-transcript gap closed. Relevant transcript reviewed. Cloud-browser holdings visual check at 58:01 attempted: black player with buffering spinner persisted after resumed playback. No chart-only numeric fields verified."
+        },
+        {
+          "name": "Official YouTube · Oct1 livestream",
+          "url": "https://www.youtube.com/watch?v=rHMO89SM_Dk",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:02:26Z",
+          "detail": "Fresh Firecrawl maxAge=0 returned actual full transcript text (76087-character page), metadata and chapters. Relevant narrative/trade/risk passages reviewed. Cloud player at 1:00:49 remained black/buffering through playback and one reload; no chart-only levels verified. Transcript evidence is not video-watching evidence."
+        },
+        {
+          "name": "Official YouTube · stream inventory",
+          "url": "https://www.youtube.com/@VirtualBacon/streams",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:00:03Z",
+          "detail": "Fresh maxAge=0 fetch had usable official channel metadata but malformed-request body; not sufficient to establish exhaustive newest-stream inventory. Known Oct1 stream independently fetched."
+        },
+        {
+          "name": "Official official-domain",
+          "url": "https://virtualbacon.com/",
+          "status": "checked",
+          "checkedAt": "2026-10-01T20:59:02Z",
+          "detail": "Domain explicitly says account recovered with X support and back under owner control. Domain owner identifies Dennis Liu / Shu Xuan Liu."
+        },
+        {
+          "name": "Official YouTube About provenance",
+          "url": "https://www.youtube.com/@virtualbacon/about",
+          "status": "checked",
+          "checkedAt": "2026-10-01T21:04:33Z",
+          "detail": "Still carries Sept21 compromise warning ACCESS-15690804 and says channel/domain are recovery-confirmation sources. Official links verify X, Facebook VirtualBacon0x and Instagram VirtualBacon0x. Later explicit domain recovery takes precedence."
+        },
+        {
+          "name": "Official X",
+          "url": "https://x.com/virtualbacon",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:04:06Z",
+          "detail": "Profile and fresh scrape expose 5 newest posts only. Search identified additional posts/replies; all 8 additional in-window records opened and full text verified. Cannot claim exhaustive full-history or all-replies coverage; sign-in prompt limits profile older history. Recovered official source checked separately after current domain recovery notice; legacy collector exclusion/settings unchanged."
+        },
+        {
+          "name": "Official Facebook",
+          "url": "https://www.facebook.com/virtualbacon0x",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:03:50Z",
+          "detail": "Public newest posts reviewed down to Sept30 morning stream (prior to cutoff), seven relevant new/crosspost records. No complete video content reviewed; autoplay snippets are not counted as viewing. Exact publication timestamps unavailable for FB. Avoid treating commenter times as post times. Captions only; exact post publication times unavailable. Related crossposts deduplicated."
+        },
+        {
+          "name": "Official Instagram",
+          "url": "https://www.instagram.com/virtualbacon0x",
+          "status": "partial",
+          "checkedAt": "2026-10-01T21:00:41Z",
+          "detail": "Verified profile public with 142K followers and displayed post IDs; first reel produced See this post / Sign up or login. No captions/times/content accessed. Did not sign in or bypass."
+        },
+        {
+          "name": "BTC public price",
+          "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-01T20:59:58Z",
+          "detail": "Fresh Coinbase BTC/USD spot snapshot84605.335. No upstream quote timestamp supplied. Above discussed broad USD78000–84000 accumulation band at retrieval. Context only; no complete source-explicit setup qualified, so none promoted or implied filled."
+        },
+        {
+          "name": "Paid/private community",
+          "url": "https://thecoiners.io",
+          "status": "excluded",
+          "checkedAt": "2026-10-01T21:09:02Z",
+          "detail": "Not connected; paid/private material not accessed. Public research only."
+        }
+      ],
+      "newIds": [
+        "telegram:virtualbacon:2373",
+        "youtube:rHMO89SM_Dk",
+        "x:2105761509842604392",
+        "x:2105725276848378191",
+        "x:2105471097470960011",
+        "x:2105652191419609557"
+      ],
+      "revisedIds": [
+        "youtube:HGh4qglSpEk:btc"
+      ]
     }
   ]
 }
