@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-10-01T21:09:02Z",
+  "updatedAt": "2026-10-02T21:10:03Z",
   "records": [
     {
       "id": "youtube:n9pYIQknYZ0:btc",
@@ -476,7 +476,7 @@
       "sourceName": "VirtualBacon official YouTube",
       "publishedAt": "2026-10-01T14:10:33+00:00",
       "firstSeenAt": "2026-10-01T21:09:02Z",
-      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
       "contentHash": "cca9cbbeaa5bd975811221c702200fd8b1e81659ba7278cb8a776805ae92b20d",
       "summary": "NEAR/AURORA/RHEA post-exploit weakness described as a possible buying opportunity; creator says holdings unchanged and issue patched, not independently security-verified here. LIT actively watched after Robinhood selected Bitstamp; no filled new LIT long announced. Existing five ISO longs remain held. BTC USD76000 possible daily downside is compatible with USD78000 weekly support; USD90000 Q4 view retained. USD175000 personal cycle sale objective is separate from Q4 rotation. No complete numerical entry/stop/targets; charts could not render.",
       "symbols": [
@@ -610,6 +610,17 @@
           "retrievedAt": "2026-10-01T20:59:10Z",
           "summary": "Links the same Oct1 livestream; not a separate call.",
           "contentHash": "6f34623ce586bcdec10aa2a8b2c508a183c2a6bcbbf7e774f5d0ebc6457d66b5"
+        },
+        {
+          "id": "facebook:1788737972168331",
+          "url": "https://www.facebook.com/reel/1788737972168331/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "retrievedAt": "2026-10-02T21:06:05Z",
+          "contentHash": "b977e5dab102654df564f4aff0a19cebda489fec5dff70ee70a37de99c390948",
+          "summary": "Cycle timing framework; no named new coin purchase.",
+          "publicationTimeBasis": "Relative public UI label only",
+          "publicationDisplay": "17 hours ago"
         }
       ]
     },
@@ -718,6 +729,325 @@
           "summary": "Reaffirms positioning before news instead of chasing afterward."
         }
       ]
+    },
+    {
+      "id": "telegram:virtualbacon:2375",
+      "canonicalUrl": "https://t.me/virtualbacon/2375",
+      "sourceName": "VirtualBacon Telegram",
+      "publishedAt": "2026-10-02T13:00:01+00:00",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "cee602cdcd9c7a02f67f08c447042c6ea847d08d1f9fe11d08d17fbf53726997",
+      "summary": "Daily digest highlights SOL bank stablecoin use, XRP/Evernorth proposed Oct8 listing, ETH zkAPI and QNT futures after a sharp rally. News claims attributed to Bacon, not independently validated catalysts or trade instructions. No complete trade levels.",
+      "symbols": [
+        "SOL",
+        "XRP",
+        "ETH",
+        "QNT",
+        "WLFI"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "cee602cdcd9c7a02f67f08c447042c6ea847d08d1f9fe11d08d17fbf53726997",
+          "summary": "Daily digest highlights SOL bank stablecoin use, XRP/Evernorth proposed Oct8 listing, ETH zkAPI and QNT futures after a sharp rally. News claims attributed to Bacon, not independently validated catalysts or trade instructions. No complete trade levels."
+        }
+      ],
+      "contentHashBasis": "SHA-256 whitespace-normalized full primary post text."
+    },
+    {
+      "id": "youtube:VHCDMCPPPaA",
+      "canonicalUrl": "https://www.youtube.com/watch?v=VHCDMCPPPaA",
+      "sourceName": "VirtualBacon official YouTube",
+      "publishedAt": "2026-10-02T14:47:05Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "f9d1b40d67af3c59c99670ea79f4e57cbba567fad2fd9bca6c349e4a84e224bd",
+      "summary": "0G preferred as Venice-like token-to-compute narrative rather than chasing Venice; token-value capture of Aethir/io.net/Akash questioned. TAO and Nockchain privacy/PoW-AI discussed; QTC small holding disclosed with severe SafeTrade liquidity caveat, possible NEAR venue next week explicitly hearsay. Aurora/RHEA holdings retained. New launchpad-token purchase and another addition described, but transcript spellings PON/pawns/ponds and ZC/ZCT/ZZ cannot be safely mapped to token identities while video frames are unavailable. BTC needs USD87000 break for USD90000 objective; USD78000 support is not an executable stop. No complete numerical setup.",
+      "symbols": [
+        "0G",
+        "TAO",
+        "QTC",
+        "NEAR",
+        "ZEC",
+        "AURORA",
+        "RHEA",
+        "BTC"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "f9d1b40d67af3c59c99670ea79f4e57cbba567fad2fd9bca6c349e4a84e224bd",
+          "summary": "0G preferred as Venice-like token-to-compute narrative rather than chasing Venice; token-value capture of Aethir/io.net/Akash questioned. TAO and Nockchain privacy/PoW-AI discussed; QTC small holding disclosed with severe SafeTrade liquidity caveat, possible NEAR venue next week explicitly hearsay. Aurora/RHEA holdings retained. New launchpad-token purchase and another addition described, but transcript spellings PON/pawns/ponds and ZC/ZCT/ZZ cannot be safely mapped to token identities while video frames are unavailable. BTC needs USD87000 break for USD90000 objective; USD78000 support is not an executable stop. No complete numerical setup."
+        }
+      ],
+      "archivePublishedAt": "2026-10-02T16:56:09Z",
+      "publicationTimeBasis": "Official YouTube metadata startDate; archive publication separately retained.",
+      "contentHashBasis": "SHA-256 whitespace-normalized actual full public transcript.",
+      "coverage": "Full Firecrawl YouTube transcript available. Video chart playback at 1:17:18 in cloud browser black/buffering, though captions loaded; unable to verify screen ticker spellings or chart annotations. No stop loss instructions found.",
+      "chapterSources": [
+        {
+          "topic": "BTC / altcycle",
+          "source": "VHCDMCPPPaA",
+          "chapter": "00:19:25 and 00:22:58",
+          "summary": "Bacon favors $90K next over $78K if BTC clears $87K; weekly resistance $87K–$93.5K, possible strong rejection $93K–$94K. A breakout could make ~$83K a higher low. Bull support ~$78K and daily-wick floor ~$76K remain scenario levels, not promised floor or explicit stop. Later resistance $100K–$104K then $119K–$124K. He remains about 85% BTC; discusses 80/20 rebalancing example. Still not broad altseason; wants selected narrative exposure and sell alt gains into BTC."
+        },
+        {
+          "topic": "Privacy / NEAR",
+          "source": "VHCDMCPPPaA",
+          "chapter": "01:07:41",
+          "summary": "Continues NEAR+Zcash privacy/AI thesis but says both already rallied heavily; holds Aurora and RHEA infrastructure exposure, continuing earlier picks. New mentions of identifying/cooperating with NEAR Intents hacker; described as ongoing resolution, not confirmed recovered funds. No new entries, stops or targets."
+        },
+        {
+          "topic": "AI inference / token demand",
+          "source": "VHCDMCPPPaA",
+          "chapter": "01:09:44",
+          "summary": "Prefers researching 0G as Venice-like token-staking-to-compute model rather than chasing Venice after claimed $1→$30 move. Aethir Mesh, io.net and Akash have compute/inference services, but he explicitly says uncertainty whether their token captures inference demand as directly. These are source opinions, not independently validated tokenomics."
+        },
+        {
+          "topic": "AI / proof of work / privacy",
+          "source": "VHCDMCPPPaA",
+          "chapter": "01:14:46",
+          "summary": "Bittensor/TAO remains straightforward AI-mining narrative. Nockchain described as interesting privacy/PoW, choppy; Pearl already ~5x and poor exchange listings so less attractive. Quantus/QTC described as >2x since coverage, tiny SafeTrade liquidity, only small bag held. He claims >$10k buy can incur ~10% slippage, and ~$50k selling could push ~$140→$60; not independently checked liquidity. Waiting for possible NEAR Intents venue next week (hearsay, not confirmed listing)."
+        },
+        {
+          "topic": "Robinhood ecosystem",
+          "source": "VHCDMCPPPaA",
+          "chapter": "01:17:18",
+          "summary": "Says newly bought a launchpad token transcribed 'pawns/pon/ponds' after market cap from ~$900M to ~$500M, compared with Virtuals' second run. Says added a token transcribed 'ZC/ZCT/ZZ', still some 'EUB/Ubi' and RHEA/Aurora. Exact token spellings and contracts unresolved; do not map prices or create trade rows from transcript alone. Orbio and Bundlecat referenced as already up too much, not held. Claimed Robinhood teaser explicitly not official endorsement."
+        },
+        {
+          "topic": "Viewer coins",
+          "source": "VHCDMCPPPaA",
+          "chapter": "01:25:29",
+          "summary": "Phala acknowledged privacy-AI exposure but not held; Fetch and Render still considered cheap/S-tier yet not current leading narrative. These are broad opinions, not specific new trades."
+        },
+        {
+          "topic": "XRP / XRPN",
+          "source": "virtualbacon/2377 and VHCDMCPPPaA 00:13:44",
+          "summary": "Oct2 chart caption says XRP likely bottomed under $1; historical ranking XRP cheapest vs BTC, ETH pretty cheap, BNB not yet. Stream flags Evernorth/XRPN Oct8 listing for possible future mNAV research, explicitly says he does not yet know undervaluation/overvaluation; not a recommendation to buy XRPN."
+        }
+      ],
+      "crosspostObservations": [
+        {
+          "id": "telegram:virtualbacon:2376",
+          "url": "https://t.me/virtualbacon/2376",
+          "sourceName": "VirtualBacon Telegram",
+          "publishedAt": "2026-10-02T14:50:09+00:00",
+          "retrievedAt": "2026-10-02T21:01:56.411Z",
+          "contentHash": "95818d6be803012e3494bad0d1da53e1929c458631cfa9807314003ce1d98364",
+          "summary": "Livestream announcement; same call."
+        },
+        {
+          "id": "youtube:GRHh5mOLNrs",
+          "url": "https://www.youtube.com/watch?v=GRHh5mOLNrs",
+          "sourceName": "VirtualBacon official YouTube",
+          "publishedAt": "2026-10-02T20:31:01Z",
+          "retrievedAt": "2026-10-02T21:05:53.178Z",
+          "contentHash": "5876a4a914b6d8c30c894b29b2845c1e3abcd88ea43033945063d320cceb11ab",
+          "summary": "Full edited-clip transcript assessed; repeats cycle section, not independent setup.",
+          "contentHashBasis": "SHA-256 whitespace-normalized full transcript."
+        },
+        {
+          "id": "x:2106125193999720590",
+          "url": "https://x.com/virtualbacon/status/2106125193999720590",
+          "sourceName": "VirtualBacon X",
+          "publishedAt": "2026-10-02T20:52:30.000Z",
+          "retrievedAt": "2026-10-02T21:02:28Z",
+          "contentHash": "77ed6cd0cdaa7e5af6bab0eda7712b57e08b8e344a5ce418c49ce6f5a134ccb2",
+          "summary": "Historical-cycle excerpt of same stream; 25% dip/173% rally are historical comparisons, not future limits."
+        },
+        {
+          "id": "facebook:1606695400920905",
+          "url": "https://www.facebook.com/reel/1606695400920905",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "retrievedAt": "2026-10-02T21:03:26Z",
+          "contentHash": "7eef31dc21d084bb4f1206455fb8d9f89f8409465a6e2a5fedaddf3e8c3f6ce1",
+          "summary": "Historical-cycle framing, duplicates X 2106125193999720590. Not a new coin call.",
+          "publicationTimeBasis": "Relative public UI label only; no exact timestamp asserted",
+          "publicationDisplay": "21 minutes ago"
+        },
+        {
+          "id": "facebook:1686887966185462",
+          "url": "https://www.facebook.com/reel/1686887966185462",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "retrievedAt": "2026-10-02T21:05:06Z",
+          "contentHash": "7e1f396035957d34176daa59d8436ba6eb651bce8ed82beee1b86e98b00a6fb7",
+          "summary": "BTC conditional breakout setup; NEAR/Zcash/AI are show topics, not individual buys. Crosspost of Oct2 stream; no independent second call.",
+          "publicationTimeBasis": "Relative public UI label only; comment timestamps were not used as publication times",
+          "publicationDisplay": "2 hours ago"
+        },
+        {
+          "id": "facebook:946685985168024",
+          "url": "https://www.facebook.com/virtualbacon0x/videos/946685985168024/",
+          "sourceName": "VirtualBacon Facebook",
+          "publishedAt": null,
+          "retrievedAt": "2026-10-02T21:05:00Z",
+          "contentHash": "cf7b3233093f355b8020a89df22331f2d142c877cf90f80a615257442703ef61",
+          "summary": "Livestream caption, duplicate source for Oct2 YouTube stream.",
+          "publicationTimeBasis": "Relative public UI label only",
+          "publicationDisplay": "6 hours ago"
+        }
+      ]
+    },
+    {
+      "id": "x:2106122393416839529",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106122393416839529",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T20:41:23.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "f5bf9ed21fe7fa5e5cddcda3e68f3e6657777cb8d73417fa16e9bf88274d31e7",
+      "summary": "XRP under-$1 likely-bottom opinion; XRP/ETH/BNB relative value ranking explicitly recalls a stream one month earlier. No new purchase disclosure, entry, stop, or target.",
+      "symbols": [
+        "XRP",
+        "ETH",
+        "BNB"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "f5bf9ed21fe7fa5e5cddcda3e68f3e6657777cb8d73417fa16e9bf88274d31e7",
+          "summary": "XRP under-$1 likely-bottom opinion; XRP/ETH/BNB relative value ranking explicitly recalls a stream one month earlier. No new purchase disclosure, entry, stop, or target."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
+      "crosspostObservations": [
+        {
+          "id": "telegram:virtualbacon:2377",
+          "url": "https://t.me/virtualbacon/2377",
+          "sourceName": "VirtualBacon Telegram",
+          "publishedAt": "2026-10-02T20:41:51+00:00",
+          "retrievedAt": "2026-10-02T21:01:56.411Z",
+          "contentHash": "f5bf9ed21fe7fa5e5cddcda3e68f3e6657777cb8d73417fa16e9bf88274d31e7",
+          "summary": "Same XRP relative-value statement. Attached XRP/USDT chart visually inspected: no trade annotations.",
+          "chartAssessment": "XRP/TetherUS candlestick chart, right-side displayed last-price label 1.4749 and July/2026 axis. No drawn entry zone, stop, target, risk/reward tool, or directional annotations. Label 1.4749 is historical chart value, not current executable market quote."
+        }
+      ]
+    },
+    {
+      "id": "x:2106087667482157292",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106087667482157292",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T18:23:23.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "1206af740dbd1e80776ff3b6b809cf38487c57024e7ab20d365bd58dc439d3f8",
+      "summary": "Low-cap liquidity due diligence framework, no named coin call Creator favors market-cap/locked-liquidity ratio around 10:1 and rejects thinner than 30:1. This heuristic does not establish safety or prevent every rug/exploit.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "1206af740dbd1e80776ff3b6b809cf38487c57024e7ab20d365bd58dc439d3f8",
+          "summary": "Low-cap liquidity due diligence framework, no named coin call Creator favors market-cap/locked-liquidity ratio around 10:1 and rejects thinner than 30:1. This heuristic does not establish safety or prevent every rug/exploit."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text."
+    },
+    {
+      "id": "x:2106069509576822997",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106069509576822997",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T17:11:14.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "ea763fd6afaf9332602331f6f6562fc957e5afbcb08a9bb7c2193d51345ed73b",
+      "summary": "Speaker's MetaMask staking-incident scope claim and migration-DM warning. Do not present as independently verified wallet-safety assurance.",
+      "symbols": [
+        "ETH"
+      ],
+      "classification": "security",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "ea763fd6afaf9332602331f6f6562fc957e5afbcb08a9bb7c2193d51345ed73b",
+          "summary": "Speaker's MetaMask staking-incident scope claim and migration-DM warning. Do not present as independently verified wallet-safety assurance."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text."
+    },
+    {
+      "id": "x:2106064761633075655",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106064761633075655",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T16:52:22.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "11b0ddafb71afe3e820b9913cec72bf75c69c6d3d88710938316cc89d6e7d312",
+      "summary": "ADA likely underperforms most coins but speaker sees at least 3x potential and BTC at least 2x. No base price, exact target, entry or stop stated.",
+      "symbols": [
+        "ADA",
+        "BTC"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "11b0ddafb71afe3e820b9913cec72bf75c69c6d3d88710938316cc89d6e7d312",
+          "summary": "ADA likely underperforms most coins but speaker sees at least 3x potential and BTC at least 2x. No base price, exact target, entry or stop stated."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text."
+    },
+    {
+      "id": "x:2106011365043556559",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106011365043556559",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T13:20:11.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "b28d920b4d24ee874ce90203e4a20c70788b504c37557d11a1bd939f69793501",
+      "summary": "Impersonator channel warning. Not evidence that recovered official X was compromised again.",
+      "symbols": [],
+      "classification": "security",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "b28d920b4d24ee874ce90203e4a20c70788b504c37557d11a1bd939f69793501",
+          "summary": "Impersonator channel warning. Not evidence that recovered official X was compromised again."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text."
+    },
+    {
+      "id": "x:2105971065919004935",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2105971065919004935",
+      "sourceName": "VirtualBacon X",
+      "publishedAt": "2026-10-02T10:40:03.000Z",
+      "firstSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "contentHash": "78684fc7ad9b1874627f2067102cc9ce25e7fc933c8aa7d995a6fb32a45bf818",
+      "summary": "Spot/no-leverage preference, not a named new coin recommendation.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-02T21:10:03Z",
+          "contentHash": "78684fc7ad9b1874627f2067102cc9ce25e7fc933c8aa7d995a6fb32a45bf818",
+          "summary": "Spot/no-leverage preference, not a named new coin recommendation."
+        }
+      ],
+      "publicationTimeBasis": "Firecrawl x-twitter extractor exact timestamp",
+      "contentHashBasis": "SHA-256 whitespace-normalized full public source text."
     }
   ],
   "runs": [
@@ -969,6 +1299,123 @@
       "revisedIds": [
         "youtube:HGh4qglSpEk:btc"
       ]
+    },
+    {
+      "checkedAt": "2026-10-02T21:10:03Z",
+      "date": "2026-10-03",
+      "status": "partial",
+      "summary": "XRP bottom thesis renewed; 0G and AI-compute token demand in focus. QTC liquidity warning. No complete paper setup verified.",
+      "sourceChecks": [
+        {
+          "name": "VirtualBacon Telegram",
+          "url": "https://t.me/s/virtualbacon",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:01:56.411Z",
+          "detail": "Full primary public feed2357–2377 covers prior checkpoint; new2375–2377 read in full. XRP2377 chart visually inspected, no entry/stop/target annotations. Livestream announcement and XRP social repost deduplicated. Collector excerpts/setup count not relied on."
+        },
+        {
+          "name": "VB Trading Journal",
+          "url": "https://t.me/s/vb_trade",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:01:56.411Z",
+          "detail": "Full public feed433–452 inspected. Latest remains Sept22 02:53:38UTC security warning; no new post since checkpoint. Prior compromise-era solicitation excluded; collector settings unchanged."
+        },
+        {
+          "name": "Official YouTube · Bitcoin Is Breaking Out. Are Altcoins the Better Buy Now?",
+          "url": "https://www.youtube.com/watch?v=VHCDMCPPPaA",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:02:57Z",
+          "detail": "Full Firecrawl YouTube transcript available. Video chart playback at 1:17:18 in cloud browser black/buffering, though captions loaded; unable to verify screen ticker spellings or chart annotations. No stop loss instructions found."
+        },
+        {
+          "name": "Official YouTube · Is It Too Late to Buy Altcoins in This Bitcoin Bull Run?",
+          "url": "https://www.youtube.com/watch?v=GRHh5mOLNrs",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:05:53.178Z",
+          "detail": "Full transcript available. Recut of today's stream cycle section, not separate new setup. Same BTC-majority, narrative-alt trading and rotate gains to BTC view."
+        },
+        {
+          "name": "Official YouTube inventory",
+          "url": "https://www.youtube.com/@VirtualBacon/streams",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:07:20Z",
+          "detail": "Channel inventory pages returned malformed-request bodies despite HTTP200 metadata; browser shell did not expose complete inventory. Known Oct2 stream and official edited clip directly verified with full transcripts; exhaustive archive coverage unavailable."
+        },
+        {
+          "name": "Official recovery notice",
+          "url": "https://virtualbacon.com/",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:02:28Z",
+          "detail": "Domain still explicitly confirms Sept23 recovery, updated Sept23 22:02ET. No new compromise notice observed. Recovered official X assessed separately; legacy collector exclusion unchanged."
+        },
+        {
+          "name": "Official YouTube About provenance",
+          "url": "https://www.youtube.com/@VirtualBacon/about",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:02:28Z",
+          "detail": "Older Sept21 compromise warning remains; explicitly names this channel and virtualbacon.com as recovery-confirmation sources and links the official social profiles. Later dated domain recovery accepted; no claim of independently guaranteed account security."
+        },
+        {
+          "name": "Official X",
+          "url": "https://x.com/virtualbacon",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:04:41Z",
+          "detail": "Latest five profile posts plus two additional in-window individual posts reviewed. Not exhaustive replies/archive. New impersonator-channel warning does not say recovered X is compromised again. Attached social videos not watched; duplicate XRP chart checked on official Telegram."
+        },
+        {
+          "name": "Official Facebook",
+          "url": "https://www.facebook.com/virtualbacon0x",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:06:38Z",
+          "detail": "Four new/recent expanded public captions read down to a-day-ago material; related stream/clip crossposts grouped. Captions only, no video analysis. Publication labels relative only; exact timestamps not invented. Older cutoff-uncertain captions not counted as new calls."
+        },
+        {
+          "name": "Official Instagram",
+          "url": "https://www.instagram.com/virtualbacon0x",
+          "status": "partial",
+          "checkedAt": "2026-10-02T21:04:05Z",
+          "detail": "Verified public profile accessible; latest post required login/signup. No post/reel content reviewed; stopped at gate."
+        },
+        {
+          "name": "XRP public price",
+          "url": "https://api.coinbase.com/v2/prices/XRP-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:04:22Z",
+          "detail": "Fresh public Coinbase XRP/USD snapshot 1.4743 USD. No upstream quote timestamp. Context only, no complete setup qualified. Above retrospective sub-USD1 XRP bottom; not an entry or filled trade."
+        },
+        {
+          "name": "ETH public price",
+          "url": "https://api.coinbase.com/v2/prices/ETH-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:04:29Z",
+          "detail": "Fresh public Coinbase ETH/USD snapshot 2663.775 USD. No upstream quote timestamp. Context only, no complete setup qualified. No source-explicit executable levels verified."
+        },
+        {
+          "name": "BTC public price",
+          "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-02T21:04:39Z",
+          "detail": "Fresh public Coinbase BTC/USD snapshot 84489.425 USD. No upstream quote timestamp. Context only, no complete setup qualified. Below discussed USD87000 BTC breakout condition at retrieval."
+        },
+        {
+          "name": "Paid/private community",
+          "url": "https://thecoiners.io",
+          "status": "excluded",
+          "checkedAt": "2026-10-02T21:10:03Z",
+          "detail": "Not connected; paid/private content not accessed. Public research only."
+        }
+      ],
+      "newIds": [
+        "telegram:virtualbacon:2375",
+        "youtube:VHCDMCPPPaA",
+        "x:2106122393416839529",
+        "x:2106087667482157292",
+        "x:2106069509576822997",
+        "x:2106064761633075655",
+        "x:2106011365043556559",
+        "x:2105971065919004935"
+      ],
+      "revisedIds": []
     }
   ]
 }
