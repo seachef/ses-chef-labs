@@ -151,6 +151,12 @@
   "tradeSetup": null,
   "posts": [
     {
+      "url": "https://t.me/virtualbacon/2377",
+      "channel": "virtualbacon",
+      "text": "I think XRP most likely bottomed when it went under $1. It fell a lot harder than Bitcoin did.\n\nA month ago on stream I ranked the majors against Bitcoin: XRP the cheapest, Ethereum pretty cheap, BNB not that cheap yet",
+      "publishedAt": "2026-10-02T20:41:51+00:00"
+    },
+    {
       "url": "https://t.me/virtualbacon/2376",
       "channel": "virtualbacon",
       "text": "We're LIVE. Bitcoin Is Breaking Out. Are Altcoins the Better Buy Now? Join here:\nhttps://www.youtube.com/watch?v=VHCDMCPPPaA",
@@ -428,7 +434,7 @@
       "publishedAt": "2026-06-08T18:01:47+00:00"
     }
   ],
-  "checkedAt": "2026-10-02T18:31:56.426398+00:00",
+  "checkedAt": "2026-10-02T23:04:10.522545+00:00",
   "feedHealth": [
     {
       "channel": "virtualbacon",
