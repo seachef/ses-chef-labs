@@ -12,8 +12,8 @@
   <title>Sea Chef Labs · Portfolio</title>
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="portfolio.css?v=20261002.valuation1">
-  <script type="module" src="portfolio.mjs?v=20261002.valuation1"></script>
+  <link rel="stylesheet" href="portfolio.css?v=20261002.staking1">
+  <script type="module" src="portfolio.mjs?v=20261002.staking1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -22,7 +22,7 @@
     <a class="brand" href="#portfolio" aria-label="Sea Chef Labs portfolio"><span>Sea Chef Labs</span></a>
     <nav class="main-nav" aria-label="Main navigation">
       <a href="#portfolio" data-route="portfolio" aria-current="page">Portfolio</a>
-      <a href="#ladder" data-route="ladder">HEX ladder</a>
+      <a href="#staking" data-route="staking" id="openStakingWindow" aria-haspopup="dialog">Staking &amp; rewards</a>
       <a href="#research" data-route="research">Research</a>
     </nav>
     <div class="account-tools">
@@ -38,8 +38,8 @@
         <p class="eyebrow">YOUR PRIVATE VIEW</p>
         <h1 id="portfolioTitle">Portfolio</h1>
         <p class="hero-subtitle" id="walletSummary">Combined wallets · Ethereum</p>
-        <p class="portfolio-value" id="portfolioValue" aria-label="Portfolio value unavailable">A$ —</p>
-        <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p>
+        <p class="value-label" id="portfolioValueLabel">Portfolio value</p><p class="portfolio-value" id="portfolioValue" aria-label="Portfolio value unavailable">A$ —</p>
+        <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p><p class="total-scope" id="portfolioScope">Includes held balances in Staking &amp; rewards. Unminted estimates are excluded.</p>
       </div>
       <div class="hero-actions">
         <div class="button-row">
@@ -58,13 +58,10 @@
             <tbody id="holdingsBody">
               <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/dragonx.png" width="58" height="58" alt=""><div><span class="asset-name">DragonX</span><span class="asset-symbol">DRAGONX</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
               <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/shogun.png" width="58" height="58" alt=""><div><span class="asset-name">SHOGUN</span><span class="asset-symbol">SHOGUN</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
-              <tr><th scope="row"><div class="asset"><img class="coin-icon hex-icon" src="assets/coins/hex.png" width="58" height="58" alt=""><div><span class="asset-name">HEX</span><span class="asset-symbol">HEX · liquid + staked</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
-              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/hdrn.png" width="58" height="58" alt=""><div><span class="asset-name">Hedron</span><span class="asset-symbol">HDRN</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
-              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/icsa.png" width="58" height="58" alt=""><div><span class="asset-name">Icosa</span><span class="asset-symbol">ICSA</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
             </tbody>
           </table>
         </div>
-        <div class="coins-footer"><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value. Unminted rewards are shown separately.</p></div>
+        <div class="coins-footer"><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
       </section>
       <aside class="support-panels">
         <section class="glass history-panel" aria-labelledby="historyTitle">
@@ -73,29 +70,14 @@
           <div id="historyData" hidden><canvas id="historyChart" aria-label="Recorded portfolio values" role="img"></canvas><details><summary>View recorded values</summary><div id="historyTable"></div></details></div>
           <p class="history-caption" id="historyCaption">No verified snapshots yet</p>
         </section>
-        <section class="glass ladder-summary" aria-labelledby="ladderSummaryTitle">
-          <div class="panel-heading compact"><h2 id="ladderSummaryTitle">HEX ladder</h2><a class="text-link" href="#ladder">View ladder <img src="assets/ui/arrow-right.svg" width="21" height="21" alt=""></a></div>
-          <p>Maturities, at a glance</p>
-          <div class="maturity-empty" id="maturitySummary">Your stake maturities will appear after sync</div>
-          <a class="reward-link" href="#rewards"><div class="paired-coins"><img src="assets/coins/icsa.png" width="45" height="45" alt=""><img src="assets/coins/hdrn.png" width="45" height="45" alt=""></div><span>ICOSA / Hedron<small>Wallet &amp; unminted rewards</small></span><img src="assets/ui/arrow-right.svg" width="23" height="23" alt=""></a>
-
-        </section>
         <section class="glass watched-wallets" aria-labelledby="walletsTitle">
           <div class="panel-heading compact"><h2 id="walletsTitle" tabindex="-1">Watched wallets</h2><span class="small-badge">READ-ONLY</span></div>
           <div id="watchedWalletList"><p>Private wallet addresses appear after sign-in.</p></div>
-          <a class="text-link wallet-tools-link" href="#tools">Wallets &amp; trading <img src="assets/ui/arrow-right.svg" width="17" height="17" alt=""></a><div class="wallet-app-links"><a href="https://staker.app/" target="_blank" rel="noopener noreferrer">Staker <img src="assets/ui/external-link.svg" width="15" height="15" alt=""><span class="sr-only">, opens in a new tab</span></a><a href="https://app.icosa.pro/apps/icosa" target="_blank" rel="noopener noreferrer">Icosa / Hedron <img src="assets/ui/external-link.svg" width="15" height="15" alt=""><span class="sr-only">, opens in a new tab</span></a></div>
+          <a class="text-link wallet-tools-link" href="#tools">Wallets &amp; trading <img src="assets/ui/arrow-right.svg" width="17" height="17" alt=""></a>
           <p class="read-only-note"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Read-only · No wallet signing</p>
         </section>
       </aside>
     </div>
-  </section>
-  <section id="ladderView" class="view secondary-view" aria-labelledby="ladderTitle" hidden>
-    <div class="page-heading"><div><p class="eyebrow">LOCKED PRINCIPAL</p><h1 id="ladderTitle">HEX ladder</h1><p>Stake principal, maturity dates and verification status</p></div><a class="text-link" href="#portfolio">Back to portfolio</a></div>
-    <section class="glass detail-panel"><div class="empty-detail" id="stakeList"><img src="assets/coins/hex.png" width="70" height="62" alt=""><h2>Your stakes, in one place</h2><p>Connect your private account to view the verified ladder.</p><p class="fine-print">Staked HEX is locked principal. It is not a liquid wallet balance or a guaranteed payout.</p><button class="button" data-connection>Connection details</button></div></section>
-  </section>
-  <section id="rewardsView" class="view secondary-view" aria-labelledby="rewardsTitle" hidden>
-    <div class="page-heading"><div><p class="eyebrow">SEPARATE FROM HOLDINGS</p><h1 id="rewardsTitle">Wallet &amp; rewards</h1><p>ICOSA and Hedron balances, without double counting</p></div><a class="text-link" href="#portfolio">Back to portfolio</a></div>
-    <div class="reward-grid"><section class="glass detail-panel"><h2>Liquid tokens</h2><p>Minted tokens held in your wallets</p><div id="liquidRewardBalances" class="reward-balances"><p>HDRN <span>—</span></p><p>ICSA <span>—</span></p></div><p class="fine-print">These balances are part of Your coins when verified.</p></section><section class="glass detail-panel"><h2>Unminted rewards</h2><p>Estimates, not a wallet balance</p><div id="rewardEstimates" class="empty-detail"><p>Private reward estimates are not connected yet.</p></div><p class="fine-print">Excluded from the portfolio total. Minting is never performed by this dashboard.</p></section></div>
   </section>
   <section id="researchView" class="view secondary-view" aria-labelledby="researchTitle" hidden>
     <div class="page-heading"><div><p class="eyebrow">RESEARCH, SEPARATELY</p><h1 id="researchTitle">Bacon research</h1><p>Source-linked notes and manual paper practice</p></div><a class="button" href="../../index.html">Open paper desk <img src="assets/ui/arrow-right.svg" width="20" height="20" alt=""></a></div>
@@ -108,6 +90,24 @@
 <section class="shortcut-shelf" aria-labelledby="shortcutsTitle"><h2 id="shortcutsTitle">My shortcuts</h2><div class="shortcut-groups"><div class="shortcut-group"><h3>Socials</h3><nav aria-label="Socials shortcuts"><a data-social="x" href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="Open X in a new tab"><img src="assets/social/x.svg" width="20" height="20" alt=""><span>X</span></a><a data-social="facebook" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Facebook in a new tab"><img src="assets/social/facebook.svg" width="20" height="20" alt=""><span>Facebook</span></a><a data-social="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Instagram in a new tab"><img src="assets/social/instagram.svg" width="20" height="20" alt=""><span>Instagram</span></a><a data-social="youtube" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="Open YouTube in a new tab"><img src="assets/social/youtube.svg" width="20" height="20" alt=""><span>YouTube</span></a><a data-social="tiktok" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="Open TikTok in a new tab"><img src="assets/social/tiktok.svg" width="20" height="20" alt=""><span>TikTok</span></a></nav></div><div class="shortcut-group"><h3>Conversations</h3><nav aria-label="Conversations shortcuts"><a data-social="bigpond" href="https://email.telstra.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Bigpond in a new tab"><img src="assets/social/bigpond.svg" width="20" height="20" alt=""><span>Bigpond</span></a><a data-social="gmail" href="https://mail.google.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Gmail in a new tab"><img src="assets/social/gmail.svg" width="20" height="20" alt=""><span>Gmail</span></a><a data-social="whatsapp" href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer" aria-label="Open WhatsApp in a new tab"><img src="assets/social/whatsapp.svg" width="20" height="20" alt=""><span>WhatsApp</span></a><a data-social="telegram" href="https://web.telegram.org/" target="_blank" rel="noopener noreferrer" aria-label="Open Telegram in a new tab"><img src="assets/social/telegram.svg" width="20" height="20" alt=""><span>Telegram</span></a></nav></div><div class="shortcut-group"><h3>Everyday</h3><nav aria-label="Everyday shortcuts"><a data-social="chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="Open ChatGPT in a new tab"><img src="assets/social/chatgpt.svg" width="20" height="20" alt=""><span>ChatGPT</span></a><a data-social="github" href="https://github.com/seachef/ses-chef-labs" target="_blank" rel="noopener noreferrer" aria-label="Open GitHub in a new tab"><img src="assets/social/github.svg" width="20" height="20" alt=""><span>GitHub</span></a><a data-social="westpac" href="https://www.westpac.com.au/" target="_blank" rel="noopener noreferrer" aria-label="Open Westpac in a new tab"><img src="assets/social/westpac.svg" width="20" height="20" alt=""><span>Westpac</span></a><a data-social="coinspot" href="https://www.coinspot.com.au/" target="_blank" rel="noopener noreferrer" aria-label="Open CoinSpot in a new tab"><img src="assets/social/coinspot.svg" width="20" height="20" alt=""><span>CoinSpot</span></a></nav></div></div><p class="shortcut-note">Opens each service in a new tab. Use your own login there.</p></section>
   <footer class="site-footer"><span>Sea Chef Labs</span><span>Private portfolio · Read-only by design</span><a href="../../index.html">Research &amp; paper desk</a></footer>
 </main>
+<dialog id="stakingDialog" class="staking-window" aria-labelledby="stakingTitle" aria-describedby="stakingDescription">
+  <div class="dialog-heading"><h2 id="stakingTitle">Staking &amp; rewards</h2><button class="button" id="closeStakingWindow" aria-label="Close staking and rewards">Close</button></div>
+  <p id="stakingDescription">HEX, Hedron and Icosa, kept in their own view. These held balances remain part of your overall portfolio. Unminted estimates are separate.</p>
+  <div class="staking-window-body">
+    <section class="glass detail-panel staking-balances" aria-labelledby="stakingBalancesTitle">
+      <h3 id="stakingBalancesTitle">Held balances</h3><p>Liquid tokens and staked principal</p>
+      <div class="holdings-scroll"><table class="holdings-table"><caption class="sr-only">Private HEX, Hedron and Icosa balances</caption><thead><tr><th scope="col">Asset</th><th scope="col">Combined balance</th><th scope="col">Indicative AUD</th></tr></thead><tbody id="stakingHoldingsBody">
+              <tr><th scope="row"><div class="asset"><img class="coin-icon hex-icon" src="assets/coins/hex.png" width="58" height="58" alt=""><div><span class="asset-name">HEX</span><span class="asset-symbol">HEX · liquid + staked</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
+              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/hdrn.png" width="58" height="58" alt=""><div><span class="asset-name">Hedron</span><span class="asset-symbol">HDRN</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
+              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/icsa.png" width="58" height="58" alt=""><div><span class="asset-name">Icosa</span><span class="asset-symbol">ICSA</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
+      </tbody></table></div>
+      <div class="coins-footer"><p class="privacy-note" id="stakingCoinPrivacy">Balances appear only after authentication</p><p class="valuation-note" id="stakingValuationStatus" hidden></p><details id="stakingValuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="stakingValuationSources"></div></details><p class="fine-print">Staked principal is locked. Values are indicative, before fees and slippage. The ladder below is a breakdown of these holdings, not an additional balance.</p></div>
+    </section>
+    <section class="glass detail-panel" aria-labelledby="ladderTitle"><h3 id="ladderTitle">HEX ladder</h3><p class="staking-date-note" id="maturitySummary">Your stake maturities will appear after sync</p><div class="empty-detail" id="stakeList"><p>Sign in to view the saved ladder.</p><p class="fine-print">Ending stakes is never performed here.</p><button class="button" data-connection>Connection details</button></div></section>
+    <div class="reward-grid"><section class="glass detail-panel"><h3>Liquid Hedron &amp; Icosa</h3><div id="liquidRewardBalances" class="reward-balances"><p>HDRN <span>—</span></p><p>ICSA <span>—</span></p></div><p class="fine-print">A breakdown of the held balances above, not an additional balance.</p></section><section class="glass detail-panel"><h3>Unminted rewards</h3><p>Estimates, not a wallet balance</p><div id="rewardEstimates" class="empty-detail"><p>Private reward estimates are not connected yet.</p></div><p class="fine-print">Excluded from held balances and the portfolio total. Minting is never performed here.</p></section></div>
+    <div class="staking-protocols"><h3>Protocol shortcuts</h3><div class="wallet-app-links"><a href="https://staker.app/" target="_blank" rel="noopener noreferrer">Staker <img src="assets/ui/external-link.svg" width="15" height="15" alt=""><span class="sr-only">, opens in a new tab</span></a><a href="https://app.icosa.pro/apps/icosa" target="_blank" rel="noopener noreferrer">Icosa / Hedron <img src="assets/ui/external-link.svg" width="15" height="15" alt=""><span class="sr-only">, opens in a new tab</span></a></div><p class="fine-print">Opens the separate service in a new tab.</p></div>
+  </div>
+</dialog>
 <dialog id="connectionDialog" aria-labelledby="connectionTitle" aria-describedby="connectionDescription">
   <div class="dialog-heading"><h2 id="connectionTitle">Private connection</h2><button class="icon-button" id="closeConnection" aria-label="Close private connection"><img src="assets/ui/x.svg" width="24" height="24" alt=""></button></div>
   <div class="dialog-icon"><img src="assets/ui/shield-check.svg" width="38" height="38" alt=""></div>

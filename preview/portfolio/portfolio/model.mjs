@@ -53,9 +53,18 @@ export function groupHoldings(model){
   return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
 export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;return s.held_value_aud??null;}
+export function pricedHoldingsSummary(holdings){
+  const priced=holdings.filter(h=>h.aud!=null),held=holdings.filter(h=>h.quantity!=='0');
+  return {value:priced.length?decimalSum(priced.map(h=>h.aud)):null,pricedAssets:held.filter(h=>h.aud!=null).length,unpricedAssets:held.filter(h=>h.aud==null).length};
+}
 export function historyPoints(history,days,now=Date.now()){
   const cutoff=now-days*86400000;return (history||[]).filter(s=>Number.isFinite(Date.parse(s.observed_at))&&Date.parse(s.observed_at)>=cutoff&&Date.parse(s.observed_at)<=now+60000).sort((a,b)=>Date.parse(a.observed_at)-Date.parse(b.observed_at)).map(s=>({at:s.observed_at,value:!valuationContext(s).carried&&s.status==='complete'&&verifiedFx(s)&&s.observed_wallets===s.expected_wallets&&s.unpriced_assets===0?s.held_value_aud??null:null,status:s.status}));
 }
 
 export function coinMetadata(holding){return COINS.find(c=>holding.chainId===1&&c.assetId===String(holding.assetId).toLowerCase()&&c.decimals===holding.decimals)||null;}
+export function partitionHoldings(holdings){
+  const main=[],staking=[];
+  for(const holding of holdings)(['HEX','HDRN','ICSA'].includes(coinMetadata(holding)?.symbol)?staking:main).push(holding);
+  return {main,staking};
+}
 export function snapshotFreshness(snapshot,now=Date.now()) { const at=Date.parse(valuationContext(snapshot).balanceStart); if(!Number.isFinite(at)||at>now+60000)return 'unverified-time';return now-at>36*3600000?'stale':'dated'; }
