@@ -41,3 +41,5 @@ html,body{background-color:var(--bg);color:var(--text);color-scheme:dark}body::b
 .value-label{font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:16px}.value-label+.portfolio-value{margin-top:3px}
 
 .holdings-table .amount,.holdings-table .money{overflow-wrap:anywhere}.holdings-table .holding-detail{white-space:normal;overflow-wrap:anywhere}
+
+.refresh-status{font-size:12px;line-height:1.55;max-width:380px;text-align:right;overflow-wrap:anywhere}.refresh-status:empty{display:none}@media(max-width:720px){.refresh-status{max-width:none;text-align:left}}

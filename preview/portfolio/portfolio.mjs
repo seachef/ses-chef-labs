@@ -2,7 +2,7 @@ import { AUTH_CONFIG } from './portfolio/auth-config.mjs?v=20261001.data2';
 import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs?v=20261001.data2';
 import { COINS, SOCIALS, safeURL, socialURL, displayDecimal, aud, groupHoldings, portfolioTotal, historyPoints, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary } from './portfolio/model.mjs?v=20261002.staking1';
 import { formatUnits } from './portfolio/domain.mjs?v=20261001.data2';
-import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261001.data2';
+import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261002.refresh1';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en-AU',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}).format(new Date(value)):'Date unavailable';
@@ -10,11 +10,12 @@ const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en
 // An approved bootstrap may supply an authenticated client; never embed service-role keys.
 let adapter=createPortfolioAdapter(globalThis.seaChefPortfolioClient||null);
 const initialHoldings=$('holdingsBody').innerHTML,initialStakingHoldings=$('stakingHoldingsBody').innerHTML,initialStake=$('stakeList').innerHTML;
+const initialRefreshButton=$('refreshPortfolio').innerHTML;
 let visibleView='portfolio',stakingReturnView='portfolio';
 let model=null,range=30,requestId=0,busy=false,toastTimer=null,authStatus='not-configured',researchBusy=false;
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
 function clearPrivate(){
-  model=null;$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';$('historyEmpty').querySelector('p').textContent='History starts after first sync';$('historyEmpty').querySelector('span').textContent='Only verified snapshots. No estimated past returns.';$('historyEmpty').hidden=false;$('historyData').hidden=true;$('historyTable').replaceChildren();const canvas=$('historyChart');canvas.getContext?.('2d')?.clearRect(0,0,canvas.width,canvas.height);$('historyCaption').textContent='No verified snapshots yet';$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
+  model=null;$('refreshStatus').textContent='';$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';$('historyEmpty').querySelector('p').textContent='History starts after first sync';$('historyEmpty').querySelector('span').textContent='Only verified snapshots. No estimated past returns.';$('historyEmpty').hidden=false;$('historyData').hidden=true;$('historyTable').replaceChildren();const canvas=$('historyChart');canvas.getContext?.('2d')?.clearRect(0,0,canvas.width,canvas.height);$('historyCaption').textContent='No verified snapshots yet';$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
 }
 function connectionCopy(status){
   authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':['no-account','setup-pending'].includes(status)?'Setup pending':'Not connected';
@@ -23,20 +24,49 @@ function connectionCopy(status){
   $('signOut').hidden=!['ready','no-account','setup-pending'].includes(status);$('signIn').hidden=!AUTH_CONFIG.enabled||['ready','no-account','setup-pending'].includes(status);
 }
 function openConnection(){if(!$('connectionDialog').open)$('connectionDialog').showModal();}
-async function refreshPortfolio({announce=false}={}){
-  if(busy)return;busy=true;const focusedBefore=document.activeElement;const id=++requestId;$('refreshPortfolio').disabled=true;$('checkConnection').disabled=true;$('connectionResult').textContent='Checking private connection…';
+function refreshFailureCopy(result){
+  if(result.status==='auth-unavailable')return 'Sign-in could not be checked because the service is unavailable.';
+  if(result.status==='throttled')return `Refresh is cooling down. Try again in ${result.retryAfterSeconds} seconds.`;
+  const messages={ALCHEMY_KEY_NOT_CONFIGURED:'Wallet refresh setup is awaiting its secure provider configuration.',BACKEND_NOT_CONFIGURED:'Wallet refresh setup is not finished yet.',REFRESH_NOT_CONFIGURED:'Wallet refresh is not configured yet.',ALCHEMY_AUTH_OR_ACCESS_FAILED:'The refresh provider configuration needs attention.',ALCHEMY_CAPACITY_EXHAUSTED:'The refresh provider has reached its usage allowance.',ALCHEMY_RATE_LIMITED:'The refresh provider is busy. Please try again later.',AUTH_UNAVAILABLE:'Sign-in could not be checked because the service is unavailable.',COLLECTION_FAILED:'Fresh balances could not be verified. Please try again later.',REFRESH_UNCONFIRMED:'Refresh could not be confirmed. Check connection before trying again.'};
+  return messages[result.code]||'Refresh is unavailable. Please try again later.';
+}
+function showRefreshStatus(message){$('refreshStatus').textContent=message;$('connectionResult').textContent=message;}
+function keepSavedDisplay(message){showRefreshStatus(message+(model?' Your last verified saved balances remain shown.':' No new balances have been loaded.'));}
+async function refreshPortfolio({announce=false,collect=false}={}){
+  if(busy)return;busy=true;const focusedBefore=document.activeElement,id=++requestId;let collected=null;
+  $('refreshPortfolio').disabled=true;$('checkConnection').disabled=true;$('refreshPortfolio').setAttribute('aria-busy','true');
+  if(collect){$('refreshPortfolio').textContent='Refreshing…';showRefreshStatus('Reading watched wallets. Your saved balances remain visible while this runs.');}
+  else $('connectionResult').textContent='Checking private connection…';
   try{
-    const result=await adapter.readPortfolio();if(id!==requestId)return;clearPrivate();if(result.status==='not-configured'&&AUTH_CONFIG.enabled)result.status='signed-out';connectionCopy(result.status);
+    if(collect){
+      collected=await adapter.collectSnapshot();if(id!==requestId)return;
+      if(['signed-out','not-configured','forbidden'].includes(collected.status)){
+        clearPrivate();connectionCopy(collected.status==='forbidden'?'error':'signed-out');showRefreshStatus(collected.status==='forbidden'?'Refresh access was denied. Private balances have been cleared.':'Sign in with GitHub before refreshing watched wallets.');openConnection();return;
+      }
+      if(collected.status!=='saved'){keepSavedDisplay(refreshFailureCopy(collected));return;}
+      showRefreshStatus('New snapshot saved. Loading the verified balances…');
+    }
+    const result=await adapter.readPortfolio();if(id!==requestId)return;
+    if(result.status==='auth-unavailable'){if(!model)connectionCopy('error');keepSavedDisplay('Sign-in could not be checked because the service is unavailable.');return;}
+    clearPrivate();if(result.status==='not-configured'&&AUTH_CONFIG.enabled)result.status='signed-out';connectionCopy(result.status);
     if(result.status==='ready'){
-      model=result.model;renderModel();$('connectionResult').textContent=model.snapshot?'Stored balances loaded. Dollar values depend on available prices and AUD conversion.':'Private account connected. First verified sync pending.';
+      model=result.model;renderModel();
+      const message=collected?.status==='saved'?(model.snapshot?.id===collected.snapshotId?'Fresh watched-wallet balances loaded. Prices may still be incomplete.':'New snapshot saved. Showing the latest available saved record.'):model.snapshot?'Stored balances loaded. Dollar values depend on available prices and AUD conversion.':'Private account connected. First verified sync pending.';
+      $('connectionResult').textContent=message;if(collect)showRefreshStatus(message);
       const links=await adapter.getSocialLinks();if(id===requestId&&model)renderSocials(links);
-      if(announce)toast(model.snapshot?'Saved observations reloaded. Wallet balances were not refreshed.':'First verified sync is pending.');
+      if(announce&&!collect)toast(model.snapshot?'Saved observations reloaded. Wallet balances were not refreshed.':'First verified sync is pending.');
     }else{
       const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':['no-account','setup-pending'].includes(result.status)?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
       $('connectionResult').textContent=message;if(announce)toast(message);
     }
-  }catch(error){if(id!==requestId)return;clearPrivate();connectionCopy('error');$('connectionResult').textContent='The private snapshot could not be verified. Balances have been cleared.';$('syncStatus').textContent='Snapshot unavailable · Please retry';if(announce)toast('Snapshot unavailable. No cached private balances are being shown.');}
-  finally{if(id===requestId){busy=false;$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;if(['refreshPortfolio','checkConnection'].includes(focusedBefore?.id)&&document.activeElement===document.body)focusedBefore.focus();}}
+  }catch(error){
+    if(id!==requestId)return;
+    if(collect&&model&&!['42501','PGRST301','PGRST302'].includes(error?.code)){
+      const auth=await adapter.session().catch(()=>({status:'auth-unavailable'}));if(id!==requestId)return;
+      if(auth.status==='auth-unavailable'||auth.status==='authenticated'&&auth.user.id===model.account.owner_id){keepSavedDisplay(collected?.status==='saved'?'The new snapshot was saved, but it could not be loaded. Use Check connection to reload it.':'Refresh could not be confirmed. Use Check connection before trying again.');return;}
+    }
+    clearPrivate();connectionCopy('error');$('connectionResult').textContent='The private snapshot could not be verified. Balances have been cleared.';$('syncStatus').textContent='Snapshot unavailable · Please retry';if(announce)toast('Snapshot unavailable. No cached private balances are being shown.');
+  }finally{if(id===requestId){busy=false;$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;if(['refreshPortfolio','checkConnection'].includes(focusedBefore?.id)&&document.activeElement===document.body)focusedBefore.focus();}}
 }
 function renderModel(){
   if(!model)return;const snapshot=model.snapshot;
@@ -50,7 +80,7 @@ function renderModel(){
   $('portfolioValue').textContent=headline==null?'A$ —':aud(headline);
   $('portfolioValue').setAttribute('aria-label',headline==null?'AUD values unavailable':total==null?`${aud(headline)} priced holdings subtotal. Incomplete portfolio valuation.`:`${aud(total)} indicative portfolio value`);
   $('portfolioCaption').textContent=total!=null?(freshness==='stale'?'Saved value · Balances are over 36 hours old':'Indicative total · Liquid tokens + staked principal'):headline==null?'Balances loaded · AUD prices unavailable':`Incomplete valuation · ${priced.unpricedAssets?priced.unpricedAssets+' held asset'+(priced.unpricedAssets===1?' is':'s are')+' unpriced':timing.carried?'Balances carried forward':snapshot.observed_wallets!==snapshot.expected_wallets?'Wallet coverage incomplete':'Full coverage not verified'}`;
-  $('portfolioScope').textContent=(total==null?'Only priced holdings. ':'')+'Includes held balances in Staking & rewards once. Unminted estimates are excluded.';
+  $('portfolioScope').textContent=(total==null?'Only priced holdings. ':'')+(snapshot.provenance?.known_asset_inventory_only?'Watched coins and ETH only. ':'')+'Includes held balances in Staking & rewards once. Unminted estimates are excluded.';
   $('syncStatus').textContent=`${freshness==='stale'?'Older saved balances':freshness==='unverified-time'?'Balance time unverified':'Saved balances'} · ${when(timing.balanceStart)}${timing.carried?' · Carried forward, not refreshed':''}`;
   const views=partitionHoldings(holdings);
   renderValuationDetails(snapshot,views.main,timing);renderValuationDetails(snapshot,views.staking,timing,'staking');
@@ -58,9 +88,9 @@ function renderModel(){
   const stakes=model.stakes.filter(s=>s.protocol==='hex'&&s.status!=='unlocked').sort((a,b)=>(a.maturity_date||'z').localeCompare(b.maturity_date||'z'));
   $('maturitySummary').textContent=stakes.length?`${stakes.length} recorded stake${stakes.length===1?'':'s'} · ${stakes[0].maturity_date?'Earliest maturity '+stakes[0].maturity_date:'Maturity date pending'}`:'No active HEX stakes in the latest snapshot';
   $('stakeList').classList.toggle('empty-detail',!stakes.length);
-  $('stakeList').innerHTML=stakes.length?`<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Stake</th><th>Principal · HEX</th><th>Maturity</th><th>Status</th></tr></thead><tbody>${stakes.map(s=>`<tr><td>${esc(s.stake_id)}</td><td>${displayDecimal(formatUnits(s.principal_raw,s.decimals))}</td><td>${esc(s.maturity_date||'Unverified')}</td><td>${esc(s.status)}</td></tr>`).join('')}</tbody></table></div><p class="fine-print">Principal only. Future payout is not estimated. Ending stakes is never performed here.</p>`:'<h2>No active HEX stakes recorded</h2><p>The latest snapshot has no active HEX stake observations.</p>';
+  $('stakeList').innerHTML=stakes.length?`<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Stake</th><th>Principal · HEX</th><th>Maturity</th><th>Status</th></tr></thead><tbody>${stakes.map(s=>`<tr><td>${esc(s.stake_id)}</td><td>${displayDecimal(formatUnits(s.principal_raw,s.decimals))}</td><td>${esc(s.maturity_date||'Unverified')}</td><td>${esc(({pending:'Pending',good_accounted:'Good Accounting recorded',active:'Active',matured:'Matured'})[s.status]||s.status)}</td></tr>`).join('')}</tbody></table></div><p class="fine-print">Principal only. Future payout is not estimated. Ending stakes is never performed here.</p>`:'<h2>No active HEX stakes recorded</h2><p>The latest snapshot has no active HEX stake observations.</p>';
   $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);return `<p>${symbol}<span>${row?displayDecimal(row.liquid):'Not observed'}</span></p>`;}).join('');
-  $('rewardEstimates').innerHTML=model.rewardEstimates.length?model.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
+  $('rewardEstimates').innerHTML=model.rewardEstimates.length?model.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${r.provenance?.carried_forward_estimate?'Saved estimate · not refreshed. ':''}${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
   renderHistory();
 }
 function renderHoldings(bodyId,holdings){
@@ -138,13 +168,13 @@ async function loadResearch(){
 function renderSocials(links={}){document.querySelectorAll('[data-social]').forEach(link=>{const item=SOCIALS.find(s=>s.id===link.dataset.social);link.href=socialURL(item.id,links[item.id])||item.url;});}
 $('accountButton').addEventListener('click',openConnection);$('manageWallets').addEventListener('click',()=>{if(!model)openConnection();else{$('walletsTitle').scrollIntoView({block:'center',behavior:'auto'});$('walletsTitle').focus();}});document.addEventListener('click',event=>{if(event.target.closest('[data-connection]'))openConnection();});
 for(const id of ['closeConnection','dismissConnection'])$(id).addEventListener('click',()=>$('connectionDialog').close());
-$('refreshPortfolio').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('checkConnection').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('refreshResearch').addEventListener('click',()=>void loadResearch());
-$('signOut').addEventListener('click',async()=>{++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;try{await adapter.signOut();$('connectionResult').textContent='Signed out. Private balances cleared.';}catch{$('connectionResult').textContent='Balances cleared from this page. Service sign-out could not be confirmed.';}});
+$('refreshPortfolio').addEventListener('click',()=>void refreshPortfolio({announce:true,collect:true}));$('checkConnection').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('refreshResearch').addEventListener('click',()=>void loadResearch());
+$('signOut').addEventListener('click',async()=>{++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;try{await adapter.signOut();$('connectionResult').textContent='Signed out. Private balances cleared.';}catch{$('connectionResult').textContent='Balances cleared from this page. Service sign-out could not be confirmed.';}});
 for(const button of document.querySelectorAll('[data-range]'))button.addEventListener('click',()=>{range=Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));if(model)renderHistory();else toast('No verified history yet. Your selected range is saved for this visit.');});
 window.addEventListener('hashchange',route);window.addEventListener('resize',()=>{if(model&&location.hash!=='#research')renderHistory();});
-const onAuthChange=event=>{if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}};
+const onAuthChange=(event,ownerId)=>{if(event==='SIGNED_IN'&&ownerId&&(!model||ownerId!==model.account.owner_id)){++requestId;busy=false;clearPrivate();}if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}};
 let subscription=adapter.subscribe(onAuthChange);
-window.addEventListener('pagehide',()=>{++requestId;clearPrivate();subscription.unsubscribe();});
+window.addEventListener('pagehide',()=>{++requestId;busy=false;clearPrivate();$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;subscription.unsubscribe();});
 window.addEventListener('pageshow',event=>{if(event.persisted){subscription=adapter.subscribe(onAuthChange);void refreshPortfolio();}});
 async function restoreSignIn(){
   if(!AUTH_CONFIG.enabled){void refreshPortfolio();return;}
