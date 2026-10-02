@@ -12,8 +12,8 @@
   <title>Sea Chef Labs · Portfolio</title>
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="portfolio.css?v=20261002.refresh1">
-  <script type="module" src="portfolio.mjs?v=20261002.refresh1"></script>
+  <link rel="stylesheet" href="portfolio.css?v=20261002.privacy1">
+  <script type="module" src="portfolio.mjs?v=20261002.privacy1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -26,6 +26,7 @@
       <a href="#research" data-route="research">Research</a>
     </nav>
     <div class="account-tools">
+      <button class="icon-button privacy-toggle" data-privacy-toggle aria-label="Hide coins and values" aria-pressed="false" title="Hide coins and values"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
       <span class="connection-badge" id="connectionBadge">Not connected</span>
       <button class="icon-button" id="accountButton" aria-label="Private account and connection"><img src="assets/ui/user-round.svg" width="23" height="23" alt=""></button>
     </div>
@@ -37,22 +38,24 @@
       <div class="hero-copy">
         <p class="eyebrow">YOUR PRIVATE VIEW</p>
         <h1 id="portfolioTitle">Portfolio</h1>
+        <div data-private>
         <p class="hero-subtitle" id="walletSummary">Combined wallets · Ethereum</p>
         <p class="value-label" id="portfolioValueLabel">Portfolio value</p><p class="portfolio-value" id="portfolioValue" aria-label="Portfolio value unavailable">A$ —</p>
         <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p><p class="total-scope" id="portfolioScope">Includes held balances in Staking &amp; rewards. Unminted estimates are excluded.</p>
+        </div><div class="privacy-placeholder privacy-hero" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Coins and values hidden</p></div>
       </div>
       <div class="hero-actions">
         <div class="button-row">
           <button class="button primary" id="refreshPortfolio"><img src="assets/ui/refresh-cw.svg" width="23" height="23" alt="">Refresh</button>
           <button class="button" id="manageWallets"><img src="assets/ui/wallet.svg" width="23" height="23" alt="">Watched wallets</button>
         </div>
-        <p class="sync-status" id="syncStatus">Not synced · Private connection pending</p><p class="refresh-status" id="refreshStatus" role="status" aria-live="polite"></p>
+        <p class="sync-status" id="syncStatus" data-private>Not synced · Private connection pending</p><p class="refresh-status" id="refreshStatus" role="status" aria-live="polite"></p>
       </div>
     </div>
     <div class="portfolio-grid">
       <section class="glass coins-panel" aria-labelledby="coinsTitle">
-        <div class="panel-heading"><div><h2 id="coinsTitle">Your coins</h2><p id="coinsSubtitle">Combined balances, kept private</p></div><span class="small-badge" id="holdingsStatus">READ-ONLY</span></div>
-        <div class="holdings-scroll">
+        <div class="panel-heading"><div><h2 id="coinsTitle">Your coins</h2><p id="coinsSubtitle" data-private>Combined balances, kept private</p></div><span class="small-badge" id="holdingsStatus">READ-ONLY</span></div>
+        <div class="holdings-scroll" data-private>
           <table class="holdings-table"><caption class="sr-only">Supported assets. Balances are unavailable until a private account is connected.</caption>
             <thead><tr><th scope="col">Asset</th><th scope="col">Combined balance</th><th scope="col">Indicative AUD</th></tr></thead>
             <tbody id="holdingsBody">
@@ -61,18 +64,22 @@
             </tbody>
           </table>
         </div>
-        <div class="coins-footer"><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
+        <div class="privacy-placeholder privacy-coins" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Your coins are hidden</p><span>Tap the eye to show them again</span></div>
+        <div class="coins-footer" data-private><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
       </section>
       <aside class="support-panels">
         <section class="glass history-panel" aria-labelledby="historyTitle">
-          <div class="panel-heading compact"><h2 id="historyTitle">Value history</h2><div class="periods" role="group" aria-label="Value history range"><button data-range="7" aria-pressed="false">1W</button><button data-range="30" aria-pressed="true">1M</button><button data-range="90" aria-pressed="false">3M</button><button data-range="365" aria-pressed="false">1Y</button></div></div>
+          <div class="panel-heading compact"><h2 id="historyTitle">Value history</h2><div data-private class="periods" role="group" aria-label="Value history range"><button data-range="7" aria-pressed="false">1W</button><button data-range="30" aria-pressed="true">1M</button><button data-range="90" aria-pressed="false">3M</button><button data-range="365" aria-pressed="false">1Y</button></div></div>
+          <div data-private>
           <div class="history-empty" id="historyEmpty"><img src="assets/ui/lock-keyhole.svg" width="29" height="29" alt=""><p>History starts after first sync</p><span>Only verified snapshots. No estimated past returns.</span></div>
           <div id="historyData" hidden><canvas id="historyChart" aria-label="Recorded portfolio values" role="img"></canvas><details><summary>View recorded values</summary><div id="historyTable"></div></details></div>
           <p class="history-caption" id="historyCaption">No verified snapshots yet</p>
+          </div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>History hidden</p></div>
         </section>
         <section class="glass watched-wallets" aria-labelledby="walletsTitle">
           <div class="panel-heading compact"><h2 id="walletsTitle" tabindex="-1">Watched wallets</h2><span class="small-badge">READ-ONLY</span></div>
-          <div id="watchedWalletList"><p>Private wallet addresses appear after sign-in.</p></div>
+          <div id="watchedWalletList" data-private><p>Private wallet addresses appear after sign-in.</p></div>
+          <div class="privacy-placeholder" data-privacy-placeholder hidden><p>Wallet details hidden</p></div>
           <a class="text-link wallet-tools-link" href="#tools">Wallets &amp; trading <img src="assets/ui/arrow-right.svg" width="17" height="17" alt=""></a>
           <p class="read-only-note"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Read-only · No wallet signing</p>
         </section>
@@ -91,9 +98,10 @@
   <footer class="site-footer"><span>Sea Chef Labs</span><span>Private portfolio · Read-only by design</span><a href="../../index.html">Research &amp; paper desk</a></footer>
 </main>
 <dialog id="stakingDialog" class="staking-window" aria-labelledby="stakingTitle" aria-describedby="stakingDescription">
-  <div class="dialog-heading"><h2 id="stakingTitle">Staking &amp; rewards</h2><button class="button" id="closeStakingWindow" aria-label="Close staking and rewards">Close</button></div>
-  <p id="stakingDescription">HEX, Hedron and Icosa, kept in their own view. These held balances remain part of your overall portfolio. Unminted estimates are separate.</p>
-  <div class="staking-window-body">
+  <div class="dialog-heading"><h2 id="stakingTitle">Staking &amp; rewards</h2><div class="staking-window-actions"><button class="icon-button privacy-toggle" data-privacy-toggle aria-label="Hide coins and values" aria-pressed="false" title="Hide coins and values"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button><button class="button" id="closeStakingWindow" aria-label="Close staking and rewards">Close</button></div></div>
+  <p id="stakingDescription">These held balances remain part of your overall portfolio. Unminted estimates are separate.</p>
+  <div class="privacy-placeholder privacy-coins" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Staking and rewards hidden</p><span>Tap the eye to show them again</span></div>
+  <div class="staking-window-body" data-private>
     <section class="glass detail-panel staking-balances" aria-labelledby="stakingBalancesTitle">
       <h3 id="stakingBalancesTitle">Held balances</h3><p>Liquid tokens and staked principal</p>
       <div class="holdings-scroll"><table class="holdings-table"><caption class="sr-only">Private HEX, Hedron and Icosa balances</caption><thead><tr><th scope="col">Asset</th><th scope="col">Combined balance</th><th scope="col">Indicative AUD</th></tr></thead><tbody id="stakingHoldingsBody">

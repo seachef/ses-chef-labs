@@ -11,6 +11,21 @@ const when=value=>Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('en
 let adapter=createPortfolioAdapter(globalThis.seaChefPortfolioClient||null);
 const initialHoldings=$('holdingsBody').innerHTML,initialStakingHoldings=$('stakingHoldingsBody').innerHTML,initialStake=$('stakeList').innerHTML;
 const initialRefreshButton=$('refreshPortfolio').innerHTML;
+// A display-only privacy switch for this page visit. Never persists or changes data.
+let privacyHidden=false;
+function setPrivacyHidden(hidden){
+  privacyHidden=hidden;
+  for(const region of document.querySelectorAll('[data-private]')){
+    region.hidden=hidden;region.inert=hidden;
+    if(hidden)region.setAttribute('aria-hidden','true');else region.removeAttribute('aria-hidden');
+  }
+  for(const placeholder of document.querySelectorAll('[data-privacy-placeholder]'))placeholder.hidden=!hidden;
+  for(const button of document.querySelectorAll('[data-privacy-toggle]')){
+    const label=hidden?'Show coins and values':'Hide coins and values';
+    button.setAttribute('aria-pressed',String(hidden));button.setAttribute('aria-label',label);button.title=label;
+  }
+}
+for(const button of document.querySelectorAll('[data-privacy-toggle]'))button.addEventListener('click',()=>setPrivacyHidden(!privacyHidden));
 let visibleView='portfolio',stakingReturnView='portfolio';
 let model=null,range=30,requestId=0,busy=false,toastTimer=null,authStatus='not-configured',researchBusy=false;
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
