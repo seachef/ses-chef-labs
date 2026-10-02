@@ -50,7 +50,7 @@ export function groupHoldings(model){
   for(const row of model.balances||[]){const g=get(row);g.liquidRaw+=BigInt(rawUnits(row.balance_raw));if(row.price_status==='unreliable')g.unreliable=true;if(row.price_status==='observed'&&row.price_usd!=null&&Number.isFinite(Date.parse(row.price_observed_at))&&row.price_source&&row.provenance?.quote?.held_valuation_eligible!==false)g.quotes.push(row);}
   for(const row of model.stakes||[]){if(row.status==='unlocked')continue;get(row).stakedRaw+=BigInt(rawUnits(row.principal_raw));}
   const fx=verifiedFx(model.snapshot);
-  return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
+  return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,unitPriceUsd:quote?.price_usd??null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
 export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;return s.held_value_aud??null;}
 export function pricedHoldingsSummary(holdings){
@@ -68,3 +68,21 @@ export function partitionHoldings(holdings){
   return {main,staking};
 }
 export function snapshotFreshness(snapshot,now=Date.now()) { const at=Date.parse(valuationContext(snapshot).balanceStart); if(!Number.isFinite(at)||at>now+60000)return 'unverified-time';return now-at>36*3600000?'stale':'dated'; }
+
+// Display rounding only. Raw decimal strings remain unchanged in the read model.
+function roundedDisplay(value,digits){
+  const [whole,fraction='']=value.split('.'),scale=10n**BigInt(digits);
+  const n=BigInt(whole)*scale+BigInt((fraction+'0'.repeat(digits)).slice(0,digits)||'0')+(Number(fraction[digits]||0)>=5?1n:0n);
+  if(!digits)return n.toString();const raw=n.toString().padStart(digits+1,'0');return `${raw.slice(0,-digits)}.${raw.slice(-digits)}`.replace(/\.?0+$/,'')||'0';
+}
+export function compactQuantity(value){
+  if(value==null||!/^\d+(\.\d+)?$/.test(String(value)))return '—';
+  const [rawWhole,fraction='']=String(value).split('.'),whole=BigInt(rawWhole).toString(),normal=whole+(fraction?'.'+fraction:'');
+  const tiers=[[12,'T'],[9,'B'],[6,'M'],[3,'K']];
+  if(whole.length>=4){let index=tiers.findIndex(([power])=>whole.length>power);const scaled=power=>{const at=whole.length-power;return whole.slice(0,at)+'.'+whole.slice(at)+fraction;};let rounded=roundedDisplay(scaled(tiers[index][0]),2);if(index>0&&BigInt(rounded.split('.')[0])>=1000n){index--;rounded=roundedDisplay(scaled(tiers[index][0]),2);}return displayDecimal(rounded,2)+tiers[index][1];}
+  if(whole!=='0')return displayDecimal(roundedDisplay(normal,2),2);
+  const first=fraction.search(/[1-9]/);if(first<0)return '0';
+  if(first>=6){let coefficient=BigInt(fraction.slice(first,first+3).padEnd(3,'0'))+(Number(fraction[first+3]||0)>=5?1n:0n),exponent=first+1;if(coefficient===1000n){coefficient=100n;exponent--;}const digits=coefficient.toString().padStart(3,'0'),mantissa=(digits[0]+'.'+digits.slice(1)).replace(/\.?0+$/,'');return mantissa+'e-'+exponent;}
+  return roundedDisplay(normal,first+4);
+}
+export function priceUsd(value){if(value==null||!/^\d+(\.\d+)?$/.test(String(value)))return 'Unavailable';return BigInt(String(value).split('.')[0])>0n?aud(value).replace('A$','US$'):'US$'+compactQuantity(value);}

@@ -8,17 +8,20 @@ export function createPortfolioAdapter(client=null){
     return {status:'authenticated',user:data.user};
   }
   async function rows(table,filters,options={}){
-    const collected=[],pageSize=500,max=options.limit||10000;
+    const collected=[],pageSize=500,max=options.limit||options.maxRows||10000;
     for(let start=0;start<max;start+=pageSize){
+      if(options.checkOwner)await options.checkOwner();
       let query=client.from(table).select('*');for(const [key,value] of Object.entries(filters))query=query.eq(key,value);
+      for(const [key,values] of Object.entries(options.in||{}))query=query.in(key,values);
       for(const column of options.order?(Array.isArray(options.order)?options.order:[options.order]):[])query=query.order(column,{ascending:!!options.ascending,nullsFirst:false});
       const count=Math.min(pageSize,max-start);query=query.range(start,start+count-1);
-      const {data,error}=await query;if(error){const failure=Error('Private snapshot unavailable');failure.code=error.code;throw failure;}
+      const {data,error,status}=await query;if(error){const failure=Error('Private snapshot unavailable');failure.code=error.code;failure.status=status;throw failure;}
+      if(options.checkOwner)await options.checkOwner();
       const page=data||[];collected.push(...page);if(page.length<count)return collected;
       if(options.limit&&collected.length>=options.limit)return collected;
     }
     // Failing closed is safer than presenting a silently truncated private portfolio.
-    throw Error('Snapshot is too large for a complete browser read');
+    const failure=Error('Snapshot is too large for a complete browser read');failure.code='SNAPSHOT_TOO_LARGE';throw failure;
   }
   async function sameUser(ownerId){const auth=await session();return auth.status==='authenticated'&&auth.user.id===ownerId;}
   return {
@@ -38,6 +41,70 @@ export function createPortfolioAdapter(client=null){
       const after=await session();if(after.status==='auth-unavailable')return {status:'auth-unavailable',model:null};
       if(after.status!=='authenticated'||after.user.id!==owner_id)return {status:'signed-out',model:null};
       return {status:'ready',model:{account,wallets,snapshot,balances,stakes,rewardEstimates,history}};
+    },
+    // Lazy detail-only read. All rows stay in memory; no collector or provider is invoked.
+    async readHistoryModels(model){
+      const cleared=(status,code)=>({status,model:null,models:[],historyLimited:false,...(code?{code}:{})});
+      let owner_id=model?.account?.owner_id,changed=false,subscription;
+      const fail=status=>{const error=Error('Private history unavailable');error.historyStatus=status;throw error;};
+      const checkOwner=async()=>{
+        if(changed)fail('signed-out');
+        let auth;try{auth=await session();}catch{fail('auth-unavailable');}
+        if(changed)fail('signed-out');
+        if(auth.status!=='authenticated')fail(auth.status);
+        if(owner_id&&auth.user.id!==owner_id)fail('signed-out');
+        owner_id=auth.user.id;
+      };
+      try{
+        subscription=client?.auth?.onAuthStateChange?.((event,authSession)=>{
+          if(event==='SIGNED_OUT'||(owner_id&&authSession?.user?.id!==owner_id))changed=true;
+        })?.data?.subscription;
+        await checkOwner();
+        const account=model?.account,account_id=account?.id,belongs=row=>row?.owner_id===owner_id&&row.account_id===account_id;
+        if(!account_id||account.owner_id!==owner_id||!Array.isArray(model.history)||!Array.isArray(model.wallets)||!model.wallets.every(belongs))throw Error('Invalid history scope');
+        const current=model.snapshot,saved=new Map();
+        for(const snapshot of model.history.slice(0,730)){
+          if(!snapshot?.id||!belongs(snapshot))throw Error('Invalid history scope');
+          if(!saved.has(snapshot.id))saved.set(snapshot.id,snapshot);
+        }
+        if(current){
+          if(!current.id||!belongs(current))throw Error('Invalid history scope');
+          if(!saved.has(current.id)&&saved.size===730)saved.delete([...saved.keys()].at(-1));
+          saved.set(current.id,current);
+        }
+        const models=[...saved.values()].map(snapshot=>({account,wallets:model.wallets,snapshot,balances:[],stakes:[],rewardEstimates:[]}));
+        const byId=new Map(models.map(item=>[item.snapshot.id,item]));
+        const validRows=(items,ids)=>Array.isArray(items)&&items.every(row=>belongs(row)&&ids.has(row.snapshot_id));
+        let remaining=100000;
+        if(current){
+          const ids=new Set([current.id]);
+          if(!validRows(model.balances,ids)||!validRows(model.stakes,ids))throw Error('Invalid history scope');
+          const currentModel=byId.get(current.id);currentModel.balances=model.balances;currentModel.stakes=model.stakes;
+          remaining-=model.balances.length+model.stakes.length;
+        }
+        if(remaining<=0){const error=Error('Private history unavailable');error.code='SNAPSHOT_TOO_LARGE';throw error;}
+        const pending=models.filter(item=>item.snapshot.id!==current?.id&&['complete','partial'].includes(item.snapshot.status)).map(item=>item.snapshot.id);
+        for(let start=0;start<pending.length;start+=50){
+          const ids=pending.slice(start,start+50),allowed=new Set(ids);
+          for(const [table,field,order] of [
+            ['portfolio_balance_snapshots','balances',['snapshot_id','wallet_id','chain_id','asset_id']],
+            ['portfolio_stake_snapshots','stakes',['snapshot_id','wallet_id','chain_id','protocol','stake_id']]
+          ]){
+            if(remaining<=0){const error=Error('Private history unavailable');error.code='SNAPSHOT_TOO_LARGE';throw error;}
+            const values=await rows(table,{owner_id,account_id},{in:{snapshot_id:ids},order,ascending:true,maxRows:Math.min(10000,remaining),checkOwner});
+            if(!validRows(values,allowed))throw Error('Invalid history scope');
+            remaining-=values.length;
+            for(const row of values)byId.get(row.snapshot_id)[field].push(row);
+          }
+        }
+        await checkOwner();
+        return {status:'ready',models,historyLimited:model.history.length>=730};
+      }catch(error){
+        if(error.historyStatus)return cleared(error.historyStatus);
+        if([401,403].includes(error.status)||['42501','PGRST301','PGRST302','PGRST303'].includes(error.code))return cleared('signed-out');
+        try{await checkOwner();}catch(authError){return cleared(authError.historyStatus||'auth-unavailable');}
+        return cleared('unavailable',error.code==='SNAPSHOT_TOO_LARGE'?'HISTORY_TOO_LARGE':'HISTORY_UNAVAILABLE');
+      }finally{subscription?.unsubscribe();}
     },
     async collectSnapshot(){
       const auth=await session();if(auth.status!=='authenticated')return {status:auth.status};

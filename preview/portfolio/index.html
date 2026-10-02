@@ -12,8 +12,8 @@
   <title>Sea Chef Labs · Portfolio</title>
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="portfolio.css?v=20261002.privacy1">
-  <script type="module" src="portfolio.mjs?v=20261002.privacy1"></script>
+  <link rel="stylesheet" href="portfolio.css?v=20261002.details1">
+  <script type="module" src="portfolio.mjs?v=20261002.details1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -21,11 +21,12 @@
   <div class="topbar-inner">
     <a class="brand" href="#portfolio" aria-label="Sea Chef Labs portfolio"><span>Sea Chef Labs</span></a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="#portfolio" data-route="portfolio" aria-current="page">Portfolio</a>
+      <a href="#portfolio" data-route="portfolio" aria-current="page">Home</a>
       <a href="#staking" data-route="staking" id="openStakingWindow" aria-haspopup="dialog">Staking &amp; rewards</a>
       <a href="#research" data-route="research">Research</a>
     </nav>
     <div class="account-tools">
+      <button class="button wallets-launcher" id="walletsButton" aria-label="Wallets" aria-haspopup="dialog"><img src="assets/ui/wallet.svg" width="20" height="20" alt=""><span>Wallets</span></button>
       <button class="icon-button privacy-toggle" data-privacy-toggle aria-label="Hide coins and values" aria-pressed="false" title="Hide coins and values"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
       <span class="connection-badge" id="connectionBadge">Not connected</span>
       <button class="icon-button" id="accountButton" aria-label="Private account and connection"><img src="assets/ui/user-round.svg" width="23" height="23" alt=""></button>
@@ -37,16 +38,18 @@
     <div class="hero">
       <div class="hero-copy">
         <p class="eyebrow">YOUR PRIVATE VIEW</p>
-        <h1 id="portfolioTitle">Portfolio</h1>
+        <h1 id="portfolioTitle"><a class="portfolio-open" href="#overview" aria-haspopup="dialog">Portfolio <span aria-hidden="true">↗</span></a></h1>
         <div data-private>
         <p class="hero-subtitle" id="walletSummary">Combined wallets · Ethereum</p>
         <p class="value-label" id="portfolioValueLabel">Portfolio value</p><p class="portfolio-value" id="portfolioValue" aria-label="Portfolio value unavailable">A$ —</p>
+        <p class="recorded-headline" id="portfolioChange">24h change unavailable · No comparable recorded values yet</p>
         <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p><p class="total-scope" id="portfolioScope">Includes held balances in Staking &amp; rewards. Unminted estimates are excluded.</p>
         </div><div class="privacy-placeholder privacy-hero" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Coins and values hidden</p></div>
       </div>
       <div class="hero-actions">
         <div class="button-row">
           <button class="button primary" id="refreshPortfolio"><img src="assets/ui/refresh-cw.svg" width="23" height="23" alt="">Refresh</button>
+          <a class="button" href="#holdings" aria-haspopup="dialog">Holdings</a>
           <button class="button" id="manageWallets"><img src="assets/ui/wallet.svg" width="23" height="23" alt="">Watched wallets</button>
         </div>
         <p class="sync-status" id="syncStatus" data-private>Not synced · Private connection pending</p><p class="refresh-status" id="refreshStatus" role="status" aria-live="polite"></p>
