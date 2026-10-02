@@ -1,6 +1,6 @@
 import { AUTH_CONFIG } from './portfolio/auth-config.mjs?v=20261001.data2';
 import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs?v=20261001.data2';
-import { COINS, SOCIALS, safeURL, socialURL, displayDecimal, aud, groupHoldings, portfolioTotal, historyPoints, coinMetadata, snapshotFreshness } from './portfolio/model.mjs?v=20261001.data2';
+import { COINS, SOCIALS, safeURL, socialURL, displayDecimal, aud, groupHoldings, portfolioTotal, historyPoints, coinMetadata, snapshotFreshness, valuationContext } from './portfolio/model.mjs?v=20261002.valuation1';
 import { formatUnits } from './portfolio/domain.mjs?v=20261001.data2';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261001.data2';
 const $=id=>document.getElementById(id);
@@ -13,7 +13,7 @@ const initialHoldings=$('holdingsBody').innerHTML,initialStake=$('stakeList').in
 let model=null,range=30,requestId=0,busy=false,toastTimer=null,authStatus='not-configured',researchBusy=false;
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
 function clearPrivate(){
-  model=null;$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';$('historyEmpty').querySelector('p').textContent='History starts after first sync';$('historyEmpty').querySelector('span').textContent='Only verified snapshots. No estimated past returns.';$('historyEmpty').hidden=false;$('historyData').hidden=true;$('historyTable').replaceChildren();const canvas=$('historyChart');canvas.getContext?.('2d')?.clearRect(0,0,canvas.width,canvas.height);$('historyCaption').textContent='No verified snapshots yet';$('signOut').hidden=true;renderSocials();
+  model=null;$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';$('historyEmpty').querySelector('p').textContent='History starts after first sync';$('historyEmpty').querySelector('span').textContent='Only verified snapshots. No estimated past returns.';$('historyEmpty').hidden=false;$('historyData').hidden=true;$('historyTable').replaceChildren();const canvas=$('historyChart');canvas.getContext?.('2d')?.clearRect(0,0,canvas.width,canvas.height);$('historyCaption').textContent='No verified snapshots yet';$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
 }
 function connectionCopy(status){
   authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':['no-account','setup-pending'].includes(status)?'Setup pending':'Not connected';
@@ -27,9 +27,9 @@ async function refreshPortfolio({announce=false}={}){
   try{
     const result=await adapter.readPortfolio();if(id!==requestId)return;clearPrivate();if(result.status==='not-configured'&&AUTH_CONFIG.enabled)result.status='signed-out';connectionCopy(result.status);
     if(result.status==='ready'){
-      model=result.model;renderModel();$('connectionResult').textContent=model.snapshot?'Stored snapshot loaded.':'Private account connected. First verified sync pending.';
+      model=result.model;renderModel();$('connectionResult').textContent=model.snapshot?'Stored balances loaded. Dollar values depend on available prices and AUD conversion.':'Private account connected. First verified sync pending.';
       const links=await adapter.getSocialLinks();if(id===requestId&&model)renderSocials(links);
-      if(announce)toast(model.snapshot?'Latest stored snapshot loaded. Refresh does not trigger transactions or a new chain sync.':'First verified sync is pending.');
+      if(announce)toast(model.snapshot?'Saved observations reloaded. Wallet balances were not refreshed.':'First verified sync is pending.');
     }else{
       const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':['no-account','setup-pending'].includes(result.status)?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
       $('connectionResult').textContent=message;if(announce)toast(message);
@@ -42,15 +42,15 @@ function renderModel(){
   $('walletSummary').textContent=model.wallets.length?`All ${model.wallets.length} wallets · Ethereum`:'No wallets provisioned';
   $('watchedWalletList').innerHTML=model.wallets.length?model.wallets.map(w=>`<div class="watched-wallet"><span>${esc(w.label||'Watched wallet')}</span><details><summary>View address</summary><p class="wallet-address">${esc(w.address)}</p></details></div>`).join(''):'<p>No watched wallets provisioned yet.</p>';
   if(!snapshot){$('portfolioCaption').textContent='First verified sync pending';$('coinsSubtitle').textContent='Private account connected · awaiting snapshot';$('syncStatus').textContent='Connected · No verified snapshot yet';$('coinPrivacy').textContent='Private account connected. Balances appear after first sync.';return;}
-  const holdings=groupHoldings(model),total=portfolioTotal(model),freshness=snapshotFreshness(snapshot);
+  const holdings=groupHoldings(model),total=portfolioTotal(model),freshness=snapshotFreshness(snapshot),timing=valuationContext(snapshot);
   $('coinsSubtitle').textContent=`Combined across ${snapshot.observed_wallets} of ${snapshot.expected_wallets} wallets`;
   $('portfolioValue').textContent=total==null?'A$ —':aud(total);$('portfolioValue').setAttribute('aria-label',total==null?'Complete AUD portfolio value unavailable':`${aud(total)} indicative portfolio value`);
-  $('portfolioCaption').textContent=total==null?'Full AUD valuation unavailable · missing prices, FX or wallet coverage':freshness==='stale'?'Saved value · Snapshot is over 36 hours old':'Indicative total · Liquid tokens + staked principal';
-  $('syncStatus').textContent=`${freshness==='stale'?'Stale snapshot':freshness==='unverified-time'?'Snapshot time unverified':snapshot.status==='partial'?'Saved partial snapshot':'Saved verified snapshot'} · ${when(snapshot.observed_at)}`;
-  $('coinPrivacy').textContent=`${snapshot.unpriced_assets} unpriced asset${snapshot.unpriced_assets===1?'':'s'} · ${snapshot.balance_source||'Verified snapshot'} · Values exclude unminted rewards`;
+  $('portfolioCaption').textContent=total==null?'Balances loaded · Full AUD total unavailable':freshness==='stale'?'Saved value · Balances are over 36 hours old':'Indicative total · Liquid tokens + staked principal';
+  $('syncStatus').textContent=`${freshness==='stale'?'Older saved balances':freshness==='unverified-time'?'Balance time unverified':'Saved balances'} · ${when(timing.balanceStart)}${timing.carried?' · Carried forward, not refreshed':''}`;
+  renderValuationDetails(snapshot,holdings,timing);
   $('holdingsBody').innerHTML=holdings.length?holdings.map(h=>{
     const coin=coinMetadata(h),image=coin?`<img class="coin-icon" src="assets/coins/${coin.icon}" width="58" height="58" alt="">`:'',staked=h.staked!=='0';
-    return `<tr><th scope="row"><div class="asset">${image}<div><span class="asset-name">${esc(coin?.name||h.symbol||'Token')}</span><span class="asset-symbol">${esc(h.symbol)}${!coin?' · Unlisted asset':''}</span></div></div></th><td><span class="amount" title="${esc(h.quantity)}">${displayDecimal(h.quantity)}</span><span class="holding-detail">${staked?`${displayDecimal(h.liquid)} liquid · ${displayDecimal(h.staked)} staked`:'Liquid tokens'}</span></td><td class="money">${aud(h.aud)}${h.aud==null?`<span class="holding-detail" title="${esc(h.priceSource||'Price unavailable')}">${h.usd!=null?aud(h.usd).replace('A$','US$')+' · AUD FX unavailable':'Price unavailable'}</span>`:''}</td></tr>`;
+    return `<tr><th scope="row"><div class="asset">${image}<div><span class="asset-name">${esc(coin?.name||h.symbol||'Token')}</span><span class="asset-symbol">${esc(h.symbol)}${!coin?' · Unlisted asset':''}</span></div></div></th><td><span class="amount" title="${esc(h.quantity)}">${displayDecimal(h.quantity)}</span><span class="holding-detail">${staked?`${displayDecimal(h.liquid)} liquid · ${displayDecimal(h.staked)} staked`:'Liquid tokens'}</span></td><td class="money">${aud(h.aud)}${h.aud==null?`<span class="holding-detail" title="${esc(h.priceSource||'Price unavailable')}">${h.usd!=null?aud(h.usd).replace('A$','US$')+' · AUD FX unavailable':h.unreliable?'Price unreliable · excluded':'Price unavailable'}</span>`:''}${h.quote?.low_liquidity===true?'<span class="holding-detail quote-warning">Low liquidity · indicative</span>':h.quote?.confidence==='low'?'<span class="holding-detail quote-warning">Low confidence · indicative</span>':''}</td></tr>`;
   }).join(''):'<tr><td colspan="3">No token observations in this snapshot. This does not establish a zero balance.</td></tr>';
   $('holdingsBody').closest('table').querySelector('caption').textContent='Verified liquid token balances and staked principal, combined by chain and token contract.';
   const stakes=model.stakes.filter(s=>s.protocol==='hex'&&s.status!=='unlocked').sort((a,b)=>(a.maturity_date||'z').localeCompare(b.maturity_date||'z'));
@@ -60,6 +60,24 @@ function renderModel(){
   $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);return `<p>${symbol}<span>${row?displayDecimal(row.liquid):'Not observed'}</span></p>`;}).join('');
   $('rewardEstimates').innerHTML=model.rewardEstimates.length?model.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
   renderHistory();
+}
+function renderValuationDetails(snapshot,holdings,timing){
+  const unpriced=holdings.filter(h=>h.quantity!=='0'&&h.usd==null).map(h=>h.symbol),gaps=[];
+  if(unpriced.length)gaps.push('Price unavailable or unreliable: '+unpriced.join(', '));
+  if(!timing.fxAt)gaps.push('AUD conversion unavailable');
+  if(snapshot.observed_wallets!==snapshot.expected_wallets)gaps.push('Wallet coverage incomplete');
+  $('coinPrivacy').textContent=gaps.length?gaps.join(' · '):timing.carried?'Known coin values shown · Full total unavailable for carried-forward balances':'Values exclude unminted rewards';
+  $('valuationStatus').hidden=false;
+  $('valuationStatus').textContent=[timing.carried?'Saved partial valuation · Original balances carried forward; wallets were not reread':snapshot.status==='partial'?'Saved partial snapshot':'Saved valuation',timing.valuedAt?'Valuation saved '+when(timing.valuedAt):null,timing.fxAt?'USD → AUD reference rate dated '+when(timing.fxAt):null].filter(Boolean).join('. ')+'.';
+  const rows=[`<p><strong>Balance observations</strong> · ${esc(when(timing.balanceStart))}${timing.balanceEnd&&timing.balanceEnd!==timing.balanceStart?' to '+esc(when(timing.balanceEnd)):''}</p>`];
+  if(timing.fxAt)rows.push(`<p><strong>AUD conversion</strong> · ${esc(timing.fxSource)} · Provider date ${esc(when(timing.fxAt))}. A reference rate, not a live trading rate.</p>`);
+  for(const h of holdings){
+    if(h.usd==null){rows.push(`<p><strong>${esc(h.symbol)}</strong> · ${h.unreliable?'Unreliable price, excluded from valuation':'Price unavailable'}</p>`);continue;}
+    const q=h.quote,notes=[q?.low_liquidity===true?'Low liquidity':null,q?.confidence==='low'?'Low confidence':null,'Indicative, before costs'].filter(Boolean);
+    const times=q?.retrieved_at?`Retrieved ${when(q.retrieved_at)} · ${q.provider_as_of?'Provider time '+when(q.provider_as_of):'Provider price time unavailable'}`:`Observed ${when(h.priceAt)}`;
+    rows.push(`<p><strong>${esc(h.symbol)}</strong> · ${esc(h.priceSource)} · ${esc(times)}<br>${esc(notes.join(' · '))}${q?.confidence_reason?' · '+esc(q.confidence_reason):''}</p>`);
+  }
+  $('valuationSources').innerHTML=rows.join('');$('valuationDetails').hidden=false;
 }
 function renderHistory(){
   const points=historyPoints(model?.history,range),available=points.filter(p=>p.value!=null);
