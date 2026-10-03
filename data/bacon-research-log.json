@@ -1714,7 +1714,7 @@
           "url": "https://x.com/virtualbacon",
           "status": "partial",
           "checkedAt": "2026-10-03T21:06:35Z",
-          "detail": "Read full text of five latest public posts and three additional official posts found via public index search (six Oct 3 posts plus two missed Oct 2 posts). Profile exposes only latest five before a login gate; public search is not exhaustive for Oct 2 21:10 UTC onward. BTC chart cross-post handled via Telegram review by parent. Ponzu and El Salvador public inline media inspected; no complete setups. No login bypass."
+          "detail": "Read full text of five latest public posts and three additional official posts found via public index search (six Oct 3 posts plus two missed Oct 2 posts). Profile exposes only latest five before a login gate; public search is not exhaustive for Oct 2 21:10 UTC onward. BTC chart cross-post handled via the visually inspected Telegram chart. Ponzu and El Salvador public inline media inspected; no complete setups. No login bypass."
         },
         {
           "name": "Official Facebook",
@@ -1756,7 +1756,7 @@
           "url": "https://www.youtube.com/shorts/UMPL8jcivO0",
           "status": "partial",
           "checkedAt": "2026-10-03T21:05:20.263Z",
-          "detail": "All text returned by the live YouTube transcript extractor assessed; no visual or audio review claimed. Older recut linked explicitly to original livestream; deduplicated, no new setup.  Audio and visuals not reviewed."
+          "detail": "All text returned by the live YouTube transcript extractor assessed; no visual or audio review claimed. Older recut linked explicitly to original livestream; deduplicated, no new setup.  Audio and visuals not reviewed. Returned transcript ends mid-sentence; completeness beyond returned text is unverified."
         },
         {
           "name": "Official YouTube · Oct2 livestream",
