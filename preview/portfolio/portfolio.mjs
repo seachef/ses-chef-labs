@@ -235,4 +235,5 @@ async function restoreSignIn(){
   catch{$('connectionResult').textContent='This tab could not restore sign-in. Try signing in again.';connectionCopy('signed-out');}
 }
 $('signIn').addEventListener('click',async()=>{$('signIn').disabled=true;$('connectionResult').textContent='Opening GitHub sign-in…';try{await beginGitHubSignIn();}catch(error){$('connectionResult').textContent=error.message;$('signIn').disabled=false;}});
-route();openDetailRoute();void restoreSignIn();
+// Public chart frames do not depend on authentication or private snapshot availability.
+route();openDetailRoute();void renderVisuals();void restoreSignIn();
