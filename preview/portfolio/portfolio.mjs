@@ -26,10 +26,14 @@ function setPrivacyHidden(hidden){
 document.addEventListener('click',event=>{if(event.target.closest('[data-privacy-toggle]'))setPrivacyHidden(!privacyHidden);});
 let walletChooser=null,walletLoad=null;
 $('walletsButton').addEventListener('click',async()=>{const trigger=$('walletsButton');if(walletChooser){walletChooser.open(trigger);return;}if(walletLoad)return;const before=location.hash,previousRequest=requestId;trigger.disabled=true;walletLoad=import('./portfolio/wallets.mjs?v=20261002.details1').then(({createWalletChooser})=>{walletChooser=createWalletChooser({setPrivacyHidden,isPrivacyHidden:()=>privacyHidden});if(location.hash===before&&requestId===previousRequest)walletChooser.open(trigger);}).catch(()=>toast('Wallet chooser could not be loaded. Please try again.')).finally(()=>{walletLoad=null;trigger.disabled=false;});await walletLoad;});
-let detailViews=null,detailLoad=null;
+let detailViews=null,detailLoad=null,tradePlanner=null,plannerLoad=null;
+async function loadTradePlanner(){
+  if(tradePlanner){tradePlanner.refresh();return;}if(plannerLoad)return plannerLoad;
+  plannerLoad=import('./portfolio/trade-planner.mjs?v=20261003.desk1').then(({createTradePlanner})=>{tradePlanner=createTradePlanner({container:$('tradePlanner'),onRender:()=>setPrivacyHidden(privacyHidden)});setPrivacyHidden(privacyHidden);}).catch(()=>{$('tradePlanner').textContent='The planner could not be loaded. Return to Home and try again.';}).finally(()=>{plannerLoad=null;});return plannerLoad;
+}
 async function loadDetailViews(){
   if(detailViews)return detailViews;if(detailLoad)return detailLoad;
-  detailLoad=import('./portfolio/details.mjs?v=20261003.personal1').then(({createDetails})=>{detailViews=createDetails({getModel:()=>model,readHistoryModels:value=>adapter.readHistoryModels(value),renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,onAccessDenied:()=>{++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;},onHeadlineChange:summary=>{const c=summary?.change;$('portfolioChange').textContent=c?.available?`${c.formatted} · Value change since ${when(c.baselineAt)}`:'24h change unavailable · No comparable recorded values yet';},esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
+  detailLoad=import('./portfolio/details.mjs?v=20261003.personal1').then(({createDetails})=>{detailViews=createDetails({getModel:()=>model,readHistoryModels:value=>adapter.readHistoryModels(value),renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,onAccessDenied:()=>{++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;},onHeadlineChange:()=>{},esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
 }
 function openDetailRoute(){if(!detailViews&&['#overview','#holdings'].includes(location.hash))void loadDetailViews().then(view=>view?.route());}
 document.addEventListener('click',event=>{const launcher=event.target.closest('a[href="#overview"],a[href="#holdings"]'),coin=event.target.closest('[data-coin-key]'),before=location.hash,shownModel=model;if(launcher){event.preventDefault();const target=launcher.getAttribute('href');void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openPortfolio(launcher,target);});}else if(coin&&!detailViews){event.preventDefault();void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openCoin(coin.dataset.coinKey,coin);});}});
@@ -39,7 +43,7 @@ let model=null,accountModels=[],requestId=0,busy=false,toastTimer=null,authStatu
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
 function clearPrivate({keepAccounts=false}={}){
   if(!keepAccounts){accountModels=[];$('accountList').replaceChildren();$('accountSection').hidden=true;}
-  model=null;detailViews?.clear();$('portfolioChange').textContent='24h change unavailable · No comparable recorded values yet';$('refreshStatus').textContent='';$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';++visualRequest;visualBusy=false;visualError=false;visualHistory.clear();$('portfolioVisualOutput').replaceChildren();void renderVisuals();$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
+  model=null;tradePlanner?.clear();detailViews?.clear();$('portfolioChange').textContent='Change unavailable · No comparable recorded values yet';$('refreshStatus').textContent='';$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';++visualRequest;visualBusy=false;visualError=false;visualHistory.clear();$('portfolioVisualOutput').replaceChildren();void renderVisuals();$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
 }
 function connectionCopy(status){
   authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':['no-account','setup-pending'].includes(status)?'Setup pending':'Not connected';
@@ -135,8 +139,7 @@ function renderModel(){
   $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);return `<p>${symbol}<span>${row?displayDecimal(row.liquid):'Not observed'}</span></p>`;}).join('');
   $('rewardEstimates').innerHTML=model.rewardEstimates.length?model.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${r.provenance?.carried_forward_estimate?'Saved estimate · not refreshed. ':''}${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
   renderHistory();detailViews?.update();
-  const fresh=(model.history||[]).filter(s=>s.provenance?.valuation?.basis==='fresh_pinned_balances'&&s.provenance?.valuation?.balances_refreshed===true&&Date.parse(s.observed_at)>=Date.now()-86400000);
-  if(fresh.length>1)void loadDetailViews().then(view=>view?.loadHeadline());
+
 }
 function renderHoldings(bodyId,holdings){
   $(bodyId).innerHTML=holdings.length?holdings.map(h=>{
@@ -164,17 +167,21 @@ function renderValuationDetails(snapshot,holdings,timing,prefix=''){
   }
   target('valuationSources').innerHTML=rows.join('');target('valuationDetails').hidden=false;
 }
-let visuals=null,visualLoad=null,visualRange='1D',visualBusy=false,visualError=false,visualRequest=0;
+let visuals=null,visualLoad=null,visualRange='MAX',visualBusy=false,visualError=false,visualRequest=0;
 const visualHistory=new Map(),visualWindows={'1H':3600000,'1D':86400000,'1W':604800000,'1M':2592000000,'1Y':31536000000,MAX:Infinity};
 async function renderVisuals(){
   if(!visuals){
-    if(!visualLoad)visualLoad=import('./portfolio/visuals.mjs?v=20261003.personal1').then(module=>{
-      visuals=module;const css=document.createElement('link');css.rel='stylesheet';css.href='portfolio/visuals.css?v=20261003.personal1';document.head.append(css);
+    if(!visualLoad)visualLoad=import('./portfolio/visuals.mjs?v=20261003.desk1').then(module=>{
+      visuals=module;const css=document.createElement('link');css.rel='stylesheet';css.href='portfolio/visuals.css?v=20261003.desk1';document.head.append(css);
     }).catch(()=>{$('portfolioVisualOutput').textContent='Visuals could not be loaded. Your recorded holdings remain available.';}).finally(()=>{visualLoad=null;});
     await visualLoad;if(!visuals)return;
   }
   const current=model,historyModels=(current?.history||[]).map(s=>s.id===current.snapshot?.id?current:visualHistory.get(s.id)||{account:current.account,wallets:current.wallets,snapshot:s,balances:[],stakes:[],rewardEstimates:[]});
-  visuals.renderVisuals({container:$('portfolioVisualOutput'),model:current,historyModels,rangeKey:visualRange,loading:visualBusy,error:visualError,onRangeChange:key=>{visualRange=key;void renderHistory();},showBalance:false,showHoldings:false});
+  const rendered=visuals.renderVisuals({container:$('portfolioVisualOutput'),model:current,historyModels,rangeKey:visualRange,loading:visualBusy,error:visualError,onRangeChange:key=>{visualRange=key;void renderHistory();},showAllocation:false,showChange:false});
+  $('portfolioAllocation').innerHTML=visuals.renderAllocation(current);
+  const summary=rendered.summary;
+  $('portfolioChange').textContent=summary.changeAvailable?`${summary.changeFormatted} · Value change since ${when(summary.baselineAt)}`:'Change unavailable · No comparable recorded values yet';
+  $('portfolioChange').className='recorded-headline '+(summary.changeAvailable?(summary.change.startsWith('-')?'pv-negative':'pv-positive'):'');
   for(const row of document.querySelectorAll('[data-coin-trend]'))row.innerHTML=visuals.renderCoinSparkline({model:current,historyModels,coinKey:row.dataset.coinTrend,rangeKey:visualRange});
   setPrivacyHidden(privacyHidden);
 }
@@ -197,12 +204,13 @@ function route(){
   if(staking){
     if(!$('stakingDialog').open){stakingReturnView=visibleView;$('stakingDialog').showModal();}
   }else{
-    visibleView=['portfolio','research','tools'].includes(name)?name:'portfolio';
+    visibleView=['portfolio','research','tools','plan'].includes(name)?name:'portfolio';
     if($('stakingDialog').open)$('stakingDialog').close();
   }
-  for(const v of ['portfolio','research','tools'])$(v+'View').hidden=v!==visibleView;
+  for(const v of ['portfolio','research','tools','plan'])$(v+'View').hidden=v!==visibleView;
   document.querySelectorAll('[data-route]').forEach(link=>{if(link.dataset.route===(staking?'staking':visibleView))link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-  document.title=`Sea Chef Labs · ${staking?'Staking & rewards':{portfolio:'Portfolio',research:'Research',tools:'Wallets & trading'}[visibleView]}`;
+  document.title=`Sea Chef Labs · ${staking?'Staking & rewards':{portfolio:'Portfolio',research:'Research',tools:'Wallets & trading',plan:'Spot trade plan'}[visibleView]}`;
+  if(visibleView==='plan')void loadTradePlanner();
   if(visibleView==='research')void loadResearch();if(visibleView==='portfolio'&&model)renderHistory();
 }
 $('closeStakingWindow').addEventListener('click',closeStakingWindow);
