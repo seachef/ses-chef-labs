@@ -1,4 +1,5 @@
 /** Display-only, account-scoped portfolio visuals. Never fetch, cache or synthesize history. */
+import {createHoldingsChart} from './holdings-chart.mjs?v=20261003.charts1';
 import {groupHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext} from './model.mjs?v=20261003.personal1';
 import {recordedHistorySummary,RANGE_OPTIONS,signedDecimalDifference} from './history.mjs?v=20261002.details1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -59,10 +60,24 @@ export function renderAllocation(model){
 export function renderCoinSparkline(options={}){return renderRecordedChart(scopedHistory({...options,metric:'value'}),{compact:true});}
 const bindings=new WeakMap();
 /** Call again after parent-owned range/history/account updates. Return destroy() on teardown. */
-export function renderVisuals({container,model,historyModels=[],rangeKey='1D',now=Date.now(),loading=false,error=false,onRangeChange,showAllocation=true,showChange=true}={}){
+export function renderVisuals({container,model,historyModels=[],rangeKey='1D',now=Date.now(),loading=false,error=false,onRangeChange,showAllocation=true,showChange=true,interactive=false}={}){
  if(!container)throw TypeError('A visual container is required');bindings.get(container)?.();
  const options={model,historyModels,rangeKey,now},summary=scopedHistory(options),a=allocationSummary(model);
  container.innerHTML=`<div class="pv-layout${showAllocation?'':' pv-chart-only'}"><section class="pv-performance"><div class="pv-section-head"><h3>Holdings value</h3><span class="pv-badge">SAVED OBSERVATIONS</span></div><div class="pv-ranges" role="group" aria-label="Portfolio history range">${RANGE_OPTIONS.map(r=>`<button type="button" data-pv-range="${r.key}" aria-pressed="${r.key===summary.range}">${r.label}</button>`).join('')}</div>${renderRecordedChart(summary,{loading,error,showChange})}<p class="pv-note">Recorded AUD holdings value. Changes include holdings and market prices; deposits and withdrawals are not separated. This is not investment profit.</p></section>${showAllocation?renderAllocation(model):''}</div>`;
- const unbind=bindRecordedChart(container,summary),click=event=>{const range=event.target.closest('[data-pv-range]');if(range&&container.contains(range))onRangeChange?.(range.dataset.pvRange,range);};container.addEventListener('click',click);
- const destroy=()=>{unbind();container.removeEventListener('click',click);if(bindings.get(container)===destroy)bindings.delete(container);};bindings.set(container,destroy);return {summary,allocation:a,destroy};
+ let interactiveChart=null,live=true;
+ const unbind=bindRecordedChart(container,summary),click=event=>{const range=event.target.closest('[data-pv-range]');if(range&&container.contains(range))onRangeChange?.(range.dataset.pvRange,range);if(event.target.closest('[data-pv-reset]'))interactiveChart?.reset();};container.addEventListener('click',click);
+ const wrap=container.querySelector('.pv-chart-wrap');
+ if(interactive&&wrap){
+  const svg=wrap.querySelector('svg'),canvas=container.ownerDocument.createElement('div'),note=container.ownerDocument.createElement('p'),reset=container.ownerDocument.createElement('button');
+  canvas.className='pv-interactive-chart';canvas.setAttribute('data-pv-canvas','');canvas.setAttribute('aria-label','Interactive saved holdings chart');
+  note.className='pv-note';note.textContent='Loading interactive observations…';reset.type='button';reset.className='pv-reset';reset.setAttribute('data-pv-reset','');reset.textContent='Reset view';
+  svg.setAttribute('hidden','');wrap.append(canvas,note,reset);container.querySelector('.pv-axis').hidden=true;
+  const input=container.querySelector('[data-pv-scrub]'),reading=container.querySelector('[data-pv-reading]');
+  interactiveChart=createHoldingsChart({container:canvas,onInspect:(point,meta)=>{if(!live||!point)return;const copy=pointCopy(point,summary.metric);input.value=String(meta.index);input.setAttribute('aria-valuetext',copy);reading.textContent=copy;}});
+  void interactiveChart.update(summary).then(result=>{if(!live)return;if(result.status==='ready'){
+   canvas.dataset.chartReady='true';note.textContent=`Pan or pinch to explore. Observation-spaced time axis. ${result.connectionCount?'Dashed lines connect nearby comparable observations; values between points were not measured.':'Points are saved observations; gaps remain unfilled.'}${result.gapCount?' '+result.gapCount+' unavailable observations; inspect dates below.':''}`;
+  }else if(['error','empty'].includes(result.status)){canvas.hidden=true;svg.removeAttribute('hidden');reset.hidden=true;note.textContent='Interactive chart unavailable. Showing actual recorded points; exact values remain below.';container.querySelector('.pv-axis').hidden=false;}});
+  const attribution=container.ownerDocument.createElement('p');attribution.className='chart-attribution';attribution.innerHTML='<a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView Lightweight Charts™</a> · Copyright (с) 2025 TradingView, Inc.';wrap.append(attribution);
+ }
+ const destroy=()=>{live=false;interactiveChart?.destroy();unbind();container.removeEventListener('click',click);if(bindings.get(container)===destroy)bindings.delete(container);};bindings.set(container,destroy);return {summary,allocation:a,destroy};
 }

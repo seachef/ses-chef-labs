@@ -29,7 +29,7 @@ $('walletsButton').addEventListener('click',async()=>{const trigger=$('walletsBu
 let detailViews=null,detailLoad=null,tradePlanner=null,plannerLoad=null;
 async function loadTradePlanner(){
   if(tradePlanner){tradePlanner.refresh();return;}if(plannerLoad)return plannerLoad;
-  plannerLoad=import('./portfolio/trade-planner.mjs?v=20261003.pepe1').then(({createTradePlanner})=>{tradePlanner=createTradePlanner({container:$('tradePlanner'),onRender:()=>setPrivacyHidden(privacyHidden)});setPrivacyHidden(privacyHidden);}).catch(()=>{$('tradePlanner').textContent='The planner could not be loaded. Return to Home and try again.';}).finally(()=>{plannerLoad=null;});return plannerLoad;
+  plannerLoad=import('./portfolio/trade-planner.mjs?v=20261003.charts1').then(({createTradePlanner})=>{tradePlanner=createTradePlanner({container:$('tradePlanner'),onRender:()=>setPrivacyHidden(privacyHidden)});setPrivacyHidden(privacyHidden);}).catch(()=>{$('tradePlanner').textContent='The planner could not be loaded. Return to Home and try again.';}).finally(()=>{plannerLoad=null;});return plannerLoad;
 }
 async function loadDetailViews(){
   if(detailViews)return detailViews;if(detailLoad)return detailLoad;
@@ -43,7 +43,7 @@ let model=null,accountModels=[],requestId=0,busy=false,toastTimer=null,authStatu
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
 function clearPrivate({keepAccounts=false}={}){
   if(!keepAccounts){accountModels=[];$('accountList').replaceChildren();$('accountSection').hidden=true;}
-  model=null;tradePlanner?.clear();detailViews?.clear();$('portfolioChange').textContent='Change unavailable · No comparable recorded values yet';$('refreshStatus').textContent='';$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';++visualRequest;visualBusy=false;visualError=false;visualHistory.clear();$('portfolioVisualOutput').replaceChildren();void renderVisuals();$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
+  model=null;homeVisual?.destroy();homeVisual=null;tradePlanner?.clear();detailViews?.clear();$('portfolioChange').textContent='Daily change unavailable · No comparable recorded values yet';$('portfolioChange').className='recorded-headline';$('portfolioFreshness').replaceChildren();$('refreshStatus').textContent='';$('portfolioValueLabel').textContent='Portfolio value';$('portfolioScope').textContent='Includes held balances in Staking & rewards. Unminted estimates are excluded.';$('stakingHoldingsBody').innerHTML=initialStakingHoldings;$('stakingCoinPrivacy').textContent='Balances appear only after authentication';for(const id of ['stakingValuationStatus','stakingValuationDetails'])$(id).hidden=true;$('stakingValuationStatus').textContent='';$('stakingValuationDetails').open=false;$('stakingValuationSources').replaceChildren();$('watchedWalletList').innerHTML='<p>Private wallet addresses appear after sign-in.</p>';$('holdingsBody').innerHTML=initialHoldings;$('holdingsBody').closest('table').querySelector('caption').textContent='Supported assets. Balances are unavailable until a private account is connected.';$('stakeList').innerHTML=initialStake;$('portfolioValue').textContent='A$ —';$('portfolioValue').setAttribute('aria-label','Portfolio value unavailable');$('walletSummary').textContent='Combined wallets · Ethereum';$('coinsSubtitle').textContent='Combined balances, kept private';$('portfolioCaption').textContent='Connect your private account to see verified balances';$('syncStatus').textContent='Not synced · Private connection pending';$('coinPrivacy').innerHTML='<img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication';$('maturitySummary').textContent='Your stake maturities will appear after sync';$('liquidRewardBalances').innerHTML='<p>HDRN <span>—</span></p><p>ICSA <span>—</span></p>';$('rewardEstimates').innerHTML='<p>Private reward estimates are not connected yet.</p>';++visualRequest;visualBusy=false;visualError=false;visualHistory.clear();$('portfolioVisualOutput').replaceChildren();void renderVisuals();$('signOut').hidden=true;$('valuationStatus').hidden=true;$('valuationStatus').textContent='';$('valuationDetails').hidden=true;$('valuationDetails').open=false;$('valuationSources').replaceChildren();renderSocials();
 }
 function connectionCopy(status){
   authStatus=status;$('connectionBadge').textContent=status==='ready'?'Private session':status==='signed-out'?'Signed out':['no-account','setup-pending'].includes(status)?'Setup pending':'Not connected';
@@ -59,7 +59,7 @@ function refreshFailureCopy(result){
   return messages[result.code]||'Refresh is unavailable. Please try again later.';
 }
 function showRefreshStatus(message){$('refreshStatus').textContent=message;$('connectionResult').textContent=message;}
-function keepSavedDisplay(message){showRefreshStatus(message+(model?' Your last verified saved balances remain shown.':' No new balances have been loaded.'));}
+function keepSavedDisplay(message){showRefreshStatus(message+(model?' Your last verified saved balances remain shown.':' No new balances have been loaded.'));void renderVisuals();}
 function syncRefreshControl(){$('refreshPortfolio').disabled=busy;$('refreshPortfolio').innerHTML=initialRefreshButton;}
 async function refreshPortfolio({announce=false,collect=false}={}){
   if(busy)return;busy=true;const focusedBefore=document.activeElement,id=++requestId;let collected=null;
@@ -167,27 +167,44 @@ function renderValuationDetails(snapshot,holdings,timing,prefix=''){
   }
   target('valuationSources').innerHTML=rows.join('');target('valuationDetails').hidden=false;
 }
-let visuals=null,visualLoad=null,visualRange='MAX',visualBusy=false,visualError=false,visualRequest=0;
+let visuals=null,headlineHelper=null,homeVisual=null,visualLoad=null,visualRange='MAX',visualBusy=false,visualError=false,visualRequest=0;
 const visualHistory=new Map(),visualWindows={'1H':3600000,'1D':86400000,'1W':604800000,'1M':2592000000,'1Y':31536000000,MAX:Infinity};
 async function renderVisuals(){
   if(!visuals){
-    if(!visualLoad)visualLoad=import('./portfolio/visuals.mjs?v=20261003.desk1').then(module=>{
-      visuals=module;
+    if(!visualLoad)visualLoad=Promise.all([import('./portfolio/visuals.mjs?v=20261003.charts1'),import('./portfolio/headline.mjs?v=20261003.headline1')]).then(([module,headline])=>{
+      visuals=module;headlineHelper=headline.portfolioHeadline;
     }).catch(()=>{$('portfolioVisualOutput').textContent='Visuals could not be loaded. Your recorded holdings remain available.';}).finally(()=>{visualLoad=null;});
     await visualLoad;if(!visuals)return;
   }
   const current=model,historyModels=(current?.history||[]).map(s=>s.id===current.snapshot?.id?current:visualHistory.get(s.id)||{account:current.account,wallets:current.wallets,snapshot:s,balances:[],stakes:[],rewardEstimates:[]});
-  const rendered=visuals.renderVisuals({container:$('portfolioVisualOutput'),model:current,historyModels,rangeKey:visualRange,loading:visualBusy,error:visualError,onRangeChange:key=>{visualRange=key;void renderHistory();},showAllocation:false,showChange:false});
+  const now=Date.now();homeVisual=visuals.renderVisuals({container:$('portfolioVisualOutput'),model:current,historyModels,rangeKey:visualRange,now,loading:visualBusy,error:visualError,onRangeChange:key=>{visualRange=key;void renderHistory();},showAllocation:false,showChange:false,interactive:true});
   $('portfolioAllocation').innerHTML=visuals.renderAllocation(current);
-  const summary=rendered.summary;
-  $('portfolioChange').textContent=summary.changeAvailable?`${summary.changeFormatted} · Value change since ${when(summary.baselineAt)}`:'Change unavailable · No comparable recorded values yet';
-  $('portfolioChange').className='recorded-headline '+(summary.changeAvailable?(summary.change.startsWith('-')?'pv-negative':'pv-positive'):'');
+  // Home always compares compatible observations in the past day, independently
+  // of the chart range. The visible label states the actual span, never a made-up 24h.
+  const summary=visuals.scopedHistory({model:current,historyModels,rangeKey:'1D',now});
+  renderHeadline(headlineHelper({summary,currentModel:current,now}),current);
   for(const row of document.querySelectorAll('[data-coin-trend]'))row.innerHTML=visuals.renderCoinSparkline({model:current,historyModels,coinKey:row.dataset.coinTrend,rangeKey:visualRange});
   setPrivacyHidden(privacyHidden);
 }
+function renderHeadline(headline,current){
+  const change=$('portfolioChange'),freshness=$('portfolioFreshness');
+  change.className='recorded-headline';freshness.replaceChildren();
+  if(!current?.snapshot){change.textContent='Daily change unavailable · No comparable recorded values yet';return;}
+  if(headline.changeAvailable){
+    const percent=headline.percentAvailable?` (${headline.percentFormatted})`:' · % unavailable (zero starting value)';
+    change.innerHTML=`<strong class="${headline.direction==='up'?'pv-positive':headline.direction==='down'?'pv-negative':'headline-flat'}">${esc(headline.changeFormatted+percent)}</strong><span>${esc(headline.spanLabel)} observed · ${esc(headline.scopeLabel)}</span><small>Includes deposits, withdrawals and market changes</small>`;
+  }else{
+    const reason=visualBusy?'Loading recorded comparison…':visualError?'Recorded comparison could not be loaded':headline.reasonLabel.replaceAll('1D','past day');
+    change.innerHTML=`<strong>Daily change unavailable</strong><span>${esc(reason)}</span>`;
+  }
+  const dateLabel=(name,item)=>`${name} ${item.at?when(item.at):'time unavailable'}${item.stale?' · stale':''}`;
+  const balanceLabel=headline.balance.unavailable?'Last verified balances unavailable':`${headline.balance.carried?'Balances carried from':'Balances last verified'} ${when(headline.lastVerifiedAt)}`;
+  const badge=headline.stale?'Stale data':headline.freshnessReason?'Timing incomplete':'Saved observations';
+  freshness.innerHTML=`<p class="headline-verification"><span class="headline-badge${headline.stale?' is-stale':''}">${esc(badge)}</span><span>${esc(balanceLabel)}</span></p><p class="headline-sources"><span class="${headline.quote.stale?'is-stale':''}">${esc(dateLabel('Oldest price',headline.quote))}</span><span class="${headline.fx.stale?'is-stale':''}">${esc(dateLabel('FX',headline.fx))}</span></p>`;
+}
 async function renderHistory(){
   void renderVisuals();if(!model?.snapshot||visualBusy)return;
-  const current=model,cutoff=Date.now()-visualWindows[visualRange],wanted=(current.history||[]).filter(s=>Date.parse(s.observed_at)>=cutoff&&s.provenance?.valuation?.basis==='fresh_pinned_balances'&&s.provenance?.valuation?.balances_refreshed===true&&s.id!==current.snapshot.id&&!visualHistory.has(s.id));
+  const current=model,cutoff=Date.now()-Math.max(86400000,visualWindows[visualRange]),wanted=(current.history||[]).filter(s=>Date.parse(valuationContext(s).balanceStart)>=cutoff&&s.provenance?.valuation?.basis==='fresh_pinned_balances'&&s.provenance?.valuation?.balances_refreshed===true&&s.id!==current.snapshot.id&&!visualHistory.has(s.id));
   if(!wanted.length)return;const id=++visualRequest;visualBusy=true;visualError=false;void renderVisuals();
   try{const result=await adapter.readHistoryModels({...current,history:wanted});if(id!==visualRequest||model!==current)return;if(result.status==='signed-out'){++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;return;}if(result.status!=='ready'){visualError=true;return;}for(const item of result.models)visualHistory.set(item.snapshot.id,item);}
   catch{if(id===visualRequest)visualError=true;}
@@ -235,6 +252,7 @@ window.addEventListener('hashchange',route);
 const onAuthChange=(event,ownerId)=>{if(event==='SIGNED_IN'&&ownerId&&(!model||ownerId!==model.account.owner_id)){if(model&&ownerId!==model.account.owner_id)walletChooser?.clear();++requestId;busy=false;clearPrivate();}if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}};
 let subscription=adapter.subscribe(onAuthChange);
 window.addEventListener('pagehide',()=>{++requestId;busy=false;clearPrivate();$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;subscription.unsubscribe();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void renderVisuals();});
 window.addEventListener('pageshow',event=>{if(event.persisted){subscription=adapter.subscribe(onAuthChange);void refreshPortfolio();}});
 async function restoreSignIn(){
   if(!AUTH_CONFIG.enabled){void refreshPortfolio();return;}
