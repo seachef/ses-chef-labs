@@ -1,113 +1,166 @@
 {
   "schema": 1,
   "paperOnly": true,
-  "date": "2026-10-03",
-  "checkedAt": "2026-10-02T21:10:03Z",
-  "deadlineAt": "2026-10-02T22:00:00Z",
+  "date": "2026-10-04",
+  "checkedAt": "2026-10-03T21:10:24.692132Z",
+  "deadlineAt": "2026-10-03T22:00:00Z",
   "status": "partial",
-  "summary": "XRP bottom thesis renewed; 0G and AI-compute token demand in focus. QTC liquidity warning. No complete paper setup verified.",
+  "summary": "QTC: wait for NEAR trading; SafeTrade price may be overhyped. Evernorth is an equity/NAV idea, not an XRP buy call. No complete paper setup verified.",
   "sourceChecks": [
     {
       "name": "VirtualBacon Telegram",
       "url": "https://t.me/s/virtualbacon",
       "status": "checked",
-      "checkedAt": "2026-10-02T21:01:56.411Z",
-      "detail": "Full primary public feed2357–2377 covers prior checkpoint; new2375–2377 read in full. XRP2377 chart visually inspected, no entry/stop/target annotations. Livestream announcement and XRP social repost deduplicated. Collector excerpts/setup count not relied on."
+      "checkedAt": "2026-10-03T21:00:11Z",
+      "detail": "Full primary public feed 2359–2379 covers prior checkpoint. New 2378–2379 read in full. BTC chart2379 visually inspected: USD87000 and USD93500 resistance, not entry/stop/targets. Collector excerpts and zero-setup count not relied on."
     },
     {
       "name": "VB Trading Journal",
       "url": "https://t.me/s/vb_trade",
       "status": "checked",
-      "checkedAt": "2026-10-02T21:01:56.411Z",
-      "detail": "Full public feed433–452 inspected. Latest remains Sept22 02:53:38UTC security warning; no new post since checkpoint. Prior compromise-era solicitation excluded; collector settings unchanged."
+      "checkedAt": "2026-10-03T21:00:21Z",
+      "detail": "Full public feed433–452 inspected. No new post since checkpoint; latest remains Sept22 02:53:38UTC security warning. Prior compromise-era solicitation excluded; collector settings unchanged."
     },
     {
-      "name": "Official YouTube · Bitcoin Is Breaking Out. Are Altcoins the Better Buy Now?",
-      "url": "https://www.youtube.com/watch?v=VHCDMCPPPaA",
+      "name": "Official YouTube · recovered clip",
+      "url": "https://www.youtube.com/watch?v=dhPAtH7zZF8",
       "status": "partial",
-      "checkedAt": "2026-10-02T21:02:57Z",
-      "detail": "Full Firecrawl YouTube transcript available. Video chart playback at 1:17:18 in cloud browser black/buffering, though captions loaded; unable to verify screen ticker spellings or chart annotations. No stop loss instructions found."
+      "checkedAt": "2026-10-03T21:10:24.692132Z",
+      "detail": "Full actual public transcript reviewed and deduplicated under original stream. No video viewing claimed. Recovered older full clip transcript; same personal BTC USD175000 cycle objective and willingness to miss upside/accept drawdown, not a new current setup."
     },
     {
-      "name": "Official YouTube · Is It Too Late to Buy Altcoins in This Bitcoin Bull Run?",
-      "url": "https://www.youtube.com/watch?v=GRHh5mOLNrs",
+      "name": "Official YouTube · recovered clip",
+      "url": "https://www.youtube.com/watch?v=h_C-MbQRPWI",
       "status": "partial",
-      "checkedAt": "2026-10-02T21:05:53.178Z",
-      "detail": "Full transcript available. Recut of today's stream cycle section, not separate new setup. Same BTC-majority, narrative-alt trading and rotate gains to BTC view."
-    },
-    {
-      "name": "Official YouTube inventory",
-      "url": "https://www.youtube.com/@VirtualBacon/streams",
-      "status": "partial",
-      "checkedAt": "2026-10-02T21:07:20Z",
-      "detail": "Channel inventory pages returned malformed-request bodies despite HTTP200 metadata; browser shell did not expose complete inventory. Known Oct2 stream and official edited clip directly verified with full transcripts; exhaustive archive coverage unavailable."
-    },
-    {
-      "name": "Official recovery notice",
-      "url": "https://virtualbacon.com/",
-      "status": "checked",
-      "checkedAt": "2026-10-02T21:02:28Z",
-      "detail": "Domain still explicitly confirms Sept23 recovery, updated Sept23 22:02ET. No new compromise notice observed. Recovered official X assessed separately; legacy collector exclusion unchanged."
-    },
-    {
-      "name": "Official YouTube About provenance",
-      "url": "https://www.youtube.com/@VirtualBacon/about",
-      "status": "checked",
-      "checkedAt": "2026-10-02T21:02:28Z",
-      "detail": "Older Sept21 compromise warning remains; explicitly names this channel and virtualbacon.com as recovery-confirmation sources and links the official social profiles. Later dated domain recovery accepted; no claim of independently guaranteed account security."
-    },
-    {
-      "name": "Official X",
-      "url": "https://x.com/virtualbacon",
-      "status": "partial",
-      "checkedAt": "2026-10-02T21:04:41Z",
-      "detail": "Latest five profile posts plus two additional in-window individual posts reviewed. Not exhaustive replies/archive. New impersonator-channel warning does not say recovered X is compromised again. Attached social videos not watched; duplicate XRP chart checked on official Telegram."
-    },
-    {
-      "name": "Official Facebook",
-      "url": "https://www.facebook.com/virtualbacon0x",
-      "status": "partial",
-      "checkedAt": "2026-10-02T21:06:38Z",
-      "detail": "Four new/recent expanded public captions read down to a-day-ago material; related stream/clip crossposts grouped. Captions only, no video analysis. Publication labels relative only; exact timestamps not invented. Older cutoff-uncertain captions not counted as new calls."
-    },
-    {
-      "name": "Official Instagram",
-      "url": "https://www.instagram.com/virtualbacon0x",
-      "status": "partial",
-      "checkedAt": "2026-10-02T21:04:05Z",
-      "detail": "Verified public profile accessible; latest post required login/signup. No post/reel content reviewed; stopped at gate."
-    },
-    {
-      "name": "XRP public price",
-      "url": "https://api.coinbase.com/v2/prices/XRP-USD/spot",
-      "status": "checked",
-      "checkedAt": "2026-10-02T21:04:22Z",
-      "detail": "Fresh public Coinbase XRP/USD snapshot 1.4743 USD. No upstream quote timestamp. Context only, no complete setup qualified. Above retrospective sub-USD1 XRP bottom; not an entry or filled trade."
-    },
-    {
-      "name": "ETH public price",
-      "url": "https://api.coinbase.com/v2/prices/ETH-USD/spot",
-      "status": "checked",
-      "checkedAt": "2026-10-02T21:04:29Z",
-      "detail": "Fresh public Coinbase ETH/USD snapshot 2663.775 USD. No upstream quote timestamp. Context only, no complete setup qualified. No source-explicit executable levels verified."
+      "checkedAt": "2026-10-03T21:10:24.692132Z",
+      "detail": "Full actual public transcript reviewed and deduplicated under original stream. No video viewing claimed. Recovered older full clip transcript; same PCE-methodology/rate-expectation commentary already assessed in Sept30 stream, not a new call."
     },
     {
       "name": "BTC public price",
       "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
       "status": "checked",
-      "checkedAt": "2026-10-02T21:04:39Z",
-      "detail": "Fresh public Coinbase BTC/USD snapshot 84489.425 USD. No upstream quote timestamp. Context only, no complete setup qualified. Below discussed USD87000 BTC breakout condition at retrieval."
+      "checkedAt": "2026-10-03T21:02:48Z",
+      "detail": "Fresh public Coinbase BTC/USD 84732.275. No upstream quote timestamp supplied. Below discussed USD87000 resistance at retrieval. Context only; no complete setup qualified or filled."
+    },
+    {
+      "name": "XRP public price",
+      "url": "https://api.coinbase.com/v2/prices/XRP-USD/spot",
+      "status": "checked",
+      "checkedAt": "2026-10-03T21:05:45Z",
+      "detail": "Fresh public Coinbase XRP/USD1.48725. No upstream quote timestamp supplied. Retrospective sub-USD1 bottom opinion is not a current entry. Context only; no complete setup qualified or filled."
+    },
+    {
+      "name": "X recovery provenance",
+      "url": "https://virtualbacon.com/",
+      "status": "checked",
+      "checkedAt": "2026-10-03T21:06:35Z",
+      "detail": "Domain still explicitly confirms recovery on September 23 at 22:02 ET. Official verified YouTube About rechecked; it retains the older September 21 compromise notice but names this domain as a recovery-confirmation location. No newer compromise warning found on these checked sources. Research uses verified recovered X separately; collector exclusion/settings untouched."
+    },
+    {
+      "name": "Official X",
+      "url": "https://x.com/virtualbacon",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:06:35Z",
+      "detail": "Read full text of five latest public posts and three additional official posts found via public index search (six Oct 3 posts plus two missed Oct 2 posts). Profile exposes only latest five before a login gate; public search is not exhaustive for Oct 2 21:10 UTC onward. BTC chart cross-post handled via Telegram review by parent. Ponzu and El Salvador public inline media inspected; no complete setups. No login bypass."
+    },
+    {
+      "name": "Official Facebook",
+      "url": "https://www.facebook.com/virtualbacon0x",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:06:35Z",
+      "detail": "Read full public captions for latest Oct 3 GM post and preceding Oct 2 altcoin-ratio/replayed-livestream posts. Latest GM canonical permalink: https://www.facebook.com/virtualbacon0x/posts/pfbid028xAds4RimTtVq5FzBAJLhGtViAP741TjN3tWoNDNHzBnJSKqjz1S4wdW7oN1NdUrl . It duplicates Telegram 2378 market digest. Visible timestamp was 7 hours ago at 21:03 UTC; exact post time unavailable. Captions only; Facebook video not reviewed. Prior two captions match YouTube GRHh5mOLNrs and VHCDMCPPPaA."
+    },
+    {
+      "name": "Official Instagram",
+      "url": "https://www.instagram.com/virtualbacon0x",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:06:35Z",
+      "detail": "Verified profile metadata and public grid are readable; attempting displayed reel Dd-fvctAUgq led to sign-up/log-in gate. Reel content was not reviewed. No bypass."
+    },
+    {
+      "name": "Official YouTube inventory",
+      "url": "https://www.youtube.com/@VirtualBacon/videos",
+      "status": "checked",
+      "checkedAt": "2026-10-03T21:06:35Z",
+      "detail": "Cloud browser Latest Videos, Live and Shorts inventories checked. Newest video remains GRHh5mOLNrs (Oct 2); newest livestream VHCDMCPPPaA (Oct 2); newest Short OM0l4w-An3w metadata published Oct2 03:11:58UTC (description dated Oct1 local) and links rHMO89SM_Dk. No newer item visible. Attempted VHCDMCPPPaA at 1:17:18 for ambiguous microcap ticker chart: player stalled black with loading spinner, so visual token spellings remain unverified."
+    },
+    {
+      "name": "Official YouTube · How the Altcoin Rally Plays Out This Bull Run",
+      "url": "https://www.youtube.com/shorts/OM0l4w-An3w",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:05:41.906Z",
+      "detail": "All text returned by the live YouTube transcript extractor assessed; no visual or audio review claimed. Older recut linked explicitly to original livestream; deduplicated, no new setup.  Audio and visuals not reviewed."
+    },
+    {
+      "name": "Official YouTube · How to Spot a Legit Crypto Project When AI Codes Everything",
+      "url": "https://www.youtube.com/shorts/g7yWf2WtEko",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:05:30.325Z",
+      "detail": "All text returned by the live YouTube transcript extractor assessed; no visual or audio review claimed. Older recut linked explicitly to original livestream; deduplicated, no new setup.  Audio and visuals not reviewed."
+    },
+    {
+      "name": "Official YouTube · Why I Take Profit Into Bitcoin, Not Stablecoins",
+      "url": "https://www.youtube.com/shorts/UMPL8jcivO0",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:05:20.263Z",
+      "detail": "All text returned by the live YouTube transcript extractor assessed; no visual or audio review claimed. Older recut linked explicitly to original livestream; deduplicated, no new setup.  Audio and visuals not reviewed."
+    },
+    {
+      "name": "Official YouTube · Oct2 livestream",
+      "url": "https://www.youtube.com/watch?v=VHCDMCPPPaA",
+      "status": "partial",
+      "checkedAt": "2026-10-03T21:02:31Z",
+      "detail": "Fresh full actual transcript reviewed and compared with prior transcript; recognition/punctuation changed but no material trade change. Relevant BTC, AI-compute, QTC and microcap passages checked. Video at1:17:18 black/buffering; ticker identity remains unresolved. No executable stop found. Chart-only levels not claimed."
     },
     {
       "name": "Paid/private community",
       "url": "https://thecoiners.io",
       "status": "excluded",
-      "checkedAt": "2026-10-02T21:10:03Z",
+      "checkedAt": "2026-10-03T21:10:24.692132Z",
       "detail": "Not connected; paid/private content not accessed. Public research only."
     }
   ],
   "items": [],
   "watchlist": [
+    {
+      "id": "x:2106412160695804295:watch",
+      "symbol": "QTC",
+      "sourceUrl": "https://x.com/virtualbacon/status/2106412160695804295",
+      "sourceName": "VirtualBacon official X (recovered)",
+      "publishedAt": "2026-10-03T15:52:49.012Z",
+      "note": "Bacon warns SafeTrade pricing is overhyped and liquidity may not sustain it; waits for NEAR trading before deciding. Timing is his expectation, not verified listing confirmation. No actionable levels.",
+      "missing": [
+        "entry",
+        "stop",
+        "targets"
+      ]
+    },
+    {
+      "id": "x:2106416433122902459:watch",
+      "symbol": "XRP",
+      "sourceUrl": "https://x.com/virtualbacon/status/2106416433122902459",
+      "sourceName": "VirtualBacon official X (recovered)",
+      "publishedAt": "2026-10-03T16:09:47.638Z",
+      "note": "Evernorth clarification: share price versus its XRP holdings is the idea; explicitly not bullish or bearish for XRP alone. Coinbase XRP/USD1.48725 at21:05UTC is context only.",
+      "missing": [
+        "entry",
+        "stop",
+        "targets"
+      ]
+    },
+    {
+      "id": "telegram:virtualbacon:2379:watch",
+      "symbol": "BTC",
+      "sourceUrl": "https://t.me/virtualbacon/2379",
+      "sourceName": "VirtualBacon Telegram",
+      "publishedAt": "2026-10-03T20:50:22+00:00",
+      "note": "Market-health reference: USD87000–93500 resistance block, not a trade instruction. Weekly close under USD78000 is thesis caution, not a stop. Fresh USD84732.275 remains below block. No current BTC sale announced.",
+      "missing": [
+        "entry",
+        "stop",
+        "targets"
+      ]
+    },
     {
       "id": "youtube:VHCDMCPPPaA:0g",
       "symbol": "0G",
@@ -115,58 +168,6 @@
       "sourceName": "VirtualBacon official YouTube",
       "publishedAt": "2026-10-02T14:47:05Z",
       "note": "Research lead: Bacon prefers investigating 0G token-to-compute demand rather than chasing Venice after its large rally. Aethir/io.net/Akash token-value capture still uncertain in his analysis; independent diligence needed. No numerical trade plan.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "x:2106122393416839529:xrp",
-      "symbol": "XRP",
-      "sourceUrl": "https://x.com/virtualbacon/status/2106122393416839529",
-      "sourceName": "VirtualBacon X",
-      "publishedAt": "2026-10-02T20:41:23.000Z",
-      "note": "Bacon thinks XRP likely bottomed below USD1; repeats an earlier XRP/ETH/BNB relative-value ranking. Fresh Coinbase XRP/USD1.4743 at21:04UTC; USD1 is retrospective, not a current entry or stop.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "youtube:VHCDMCPPPaA:qtc",
-      "symbol": "QTC",
-      "sourceUrl": "https://www.youtube.com/watch?v=VHCDMCPPPaA&t=4486s",
-      "sourceName": "VirtualBacon official YouTube",
-      "publishedAt": "2026-10-02T14:47:05Z",
-      "note": "Quantus: Bacon discloses only a small bag, warns thin SafeTrade depth and large-order slippage. Possible NEAR Intents listing next week is hearsay, not confirmed. No verified trade plan; do not chase.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "youtube:VHCDMCPPPaA:tao",
-      "symbol": "TAO",
-      "sourceUrl": "https://www.youtube.com/watch?v=VHCDMCPPPaA&t=4486s",
-      "sourceName": "VirtualBacon official YouTube",
-      "publishedAt": "2026-10-02T14:47:05Z",
-      "note": "Bittensor remains his AI/proof-of-work research pick; Nockchain also discussed. Broad accumulation opinion lacks entry, executable stop and targets.",
-      "missing": [
-        "entry",
-        "stop",
-        "targets"
-      ]
-    },
-    {
-      "id": "x:2106064761633075655:ada",
-      "symbol": "ADA",
-      "sourceUrl": "https://x.com/virtualbacon/status/2106064761633075655",
-      "sourceName": "VirtualBacon X",
-      "publishedAt": "2026-10-02T16:52:22Z",
-      "note": "Bacon expects ADA may underperform most coins despite his 3x upside opinion. No base price or exact target; not a new purchase disclosure or complete setup.",
       "missing": [
         "entry",
         "stop",
