@@ -1,6 +1,6 @@
 import {calculateTradePlan,formatDraftTicket} from './trade-plan.mjs?v=20261003.desk1';
 import {readMarketReference,MARKET_DOCUMENTATION} from './market-reference.mjs?v=20261003.charts1';
-import {createMarketChart} from './market-chart.mjs?v=20261003.charts1';
+import {createMarketChart} from './market-chart.mjs?v=20261003.charts2';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=v=>v!==''&&v!=null&&Number.isFinite(Number(v))?Number(v):null;
 const fmt=v=>v==null?'—':new Intl.NumberFormat('en-AU',{maximumSignificantDigits:9}).format(v);

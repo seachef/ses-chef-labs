@@ -29,7 +29,7 @@ $('walletsButton').addEventListener('click',async()=>{const trigger=$('walletsBu
 let detailViews=null,detailLoad=null,tradePlanner=null,plannerLoad=null;
 async function loadTradePlanner(){
   if(tradePlanner){tradePlanner.refresh();return;}if(plannerLoad)return plannerLoad;
-  plannerLoad=import('./portfolio/trade-planner.mjs?v=20261003.charts1').then(({createTradePlanner})=>{tradePlanner=createTradePlanner({container:$('tradePlanner'),onRender:()=>setPrivacyHidden(privacyHidden)});setPrivacyHidden(privacyHidden);}).catch(()=>{$('tradePlanner').textContent='The planner could not be loaded. Return to Home and try again.';}).finally(()=>{plannerLoad=null;});return plannerLoad;
+  plannerLoad=import('./portfolio/trade-planner.mjs?v=20261003.charts2').then(({createTradePlanner})=>{tradePlanner=createTradePlanner({container:$('tradePlanner'),onRender:()=>setPrivacyHidden(privacyHidden)});setPrivacyHidden(privacyHidden);}).catch(()=>{$('tradePlanner').textContent='The planner could not be loaded. Return to Home and try again.';}).finally(()=>{plannerLoad=null;});return plannerLoad;
 }
 async function loadDetailViews(){
   if(detailViews)return detailViews;if(detailLoad)return detailLoad;

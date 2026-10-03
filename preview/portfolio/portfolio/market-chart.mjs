@@ -2,6 +2,7 @@
 const vendor=()=>import('../vendor/lightweight-charts-5.2.1.mjs');
 const positive=n=>Number.isFinite(n)&&n>0;
 export const formatChartPrice=n=>Number.isFinite(n)?new Intl.NumberFormat('en-AU',{maximumSignificantDigits:9}).format(n):'—';
+export function initialCandleRange(count,width){const visible=Math.max(40,Math.min(100,Math.floor(width/7)));return {from:Math.max(-2,count-visible),to:count+3};}
 export function candleSeriesData(market){
  return (market?.candles||[]).filter(c=>Number.isFinite(c.time)&&[c.open,c.high,c.low,c.close].every(positive)).map(c=>({time:c.time/1000,open:c.open,high:c.high,low:c.low,close:c.close,...(c.isForming?{color:c.close>=c.open?'#76c4b299':'#dd969f99',wickColor:'#afbfca',borderColor:'#b8d8d2'}:{})}));
 }
@@ -17,8 +18,9 @@ export function createMarketChart({container,onInspect=()=>{},onLevelChange=()=>
   if(editField&&!levels.some(l=>l.field===editField&&positive(l.value))){editField=null;drag=null;}
   positionEditor();
  }
+ function recentView(){chart.timeScale().fitContent();chart.timeScale().setVisibleLogicalRange?.(initialCandleRange(market?.candles?.length||0,size().width));}
  function render(){if(!chart||!market)return;
-  if(lastData!==market){series.setData(candleSeriesData(market));volume.setData(volumeSeriesData(market));lastData=market;const min=Math.min(...market.candles.map(c=>c.low));series.applyOptions({priceFormat:{type:'custom',formatter:formatChartPrice,minMove:Math.pow(10,Math.floor(Math.log10(min))-5)}});chart.timeScale().fitContent();}
+  if(lastData!==market){series.setData(candleSeriesData(market));volume.setData(volumeSeriesData(market));lastData=market;const min=Math.min(...market.candles.map(c=>c.low));series.applyOptions({priceFormat:{type:'custom',formatter:formatChartPrice,minMove:Math.pow(10,Math.floor(Math.log10(min))-5)}});recentView();}
   applyLevels();onStatus('ready');
  }
  function range(){const r=series?.priceScale().getVisibleRange();return r&&positive(r.to)&&Number.isFinite(r.from)&&r.to>r.from?r:null;}
@@ -41,5 +43,5 @@ export function createMarketChart({container,onInspect=()=>{},onLevelChange=()=>
    render();
   }catch{if(token===revision&&!destroyed){clearChart();onStatus('unavailable');}}finally{pending=null;if(!destroyed&&market&&token!==revision)void ensure();}})();return pending;
  }
- return {setMarket(value){if(destroyed)return;drag=null;editField=null;onInspect(null);market=value;lastData=null;if(!value?.candles?.length){++revision;clearChart();onStatus('empty');return;}if(chart)render();else void ensure();},setLevels(value){levels=(value||[]).filter(l=>positive(l.value));applyLevels();},setEditField(value){drag=null;editField=value&&levels.some(l=>l.field===value)?value:null;positionEditor();if(editField)editLayer?.focus();},reset(){drag=null;if(chart){series.priceScale().setAutoScale(true);chart.timeScale().fitContent();}},resize,clear(){++revision;market=null;levels=[];clearChart();onStatus('empty');},destroy(){destroyed=true;++revision;market=null;levels=[];clearChart();}};
+ return {setMarket(value){if(destroyed)return;drag=null;editField=null;onInspect(null);market=value;lastData=null;if(!value?.candles?.length){++revision;clearChart();onStatus('empty');return;}if(chart)render();else void ensure();},setLevels(value){levels=(value||[]).filter(l=>positive(l.value));applyLevels();},setEditField(value){drag=null;editField=value&&levels.some(l=>l.field===value)?value:null;positionEditor();if(editField)editLayer?.focus();},reset(){drag=null;if(chart){series.priceScale().setAutoScale(true);recentView();}},resize,clear(){++revision;market=null;levels=[];clearChart();onStatus('empty');},destroy(){destroyed=true;++revision;market=null;levels=[];clearChart();}};
 }
