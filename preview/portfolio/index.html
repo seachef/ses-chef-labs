@@ -13,7 +13,7 @@
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="portfolio.css?v=20261002.details2">
-  <script type="module" src="portfolio.mjs?v=20261002.details1"></script>
+  <script type="module" src="portfolio.mjs?v=20261003.personal1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -55,6 +55,11 @@
         <p class="sync-status" id="syncStatus" data-private>Not synced · Private connection pending</p><p class="refresh-status" id="refreshStatus" role="status" aria-live="polite"></p>
       </div>
     </div>
+    <section class="account-section" aria-label="Private accounts" id="accountSection" hidden>
+      <div id="accountList" class="account-list" data-private></div>
+      <div class="privacy-placeholder" data-privacy-placeholder hidden><p>Account details hidden</p></div>
+    </section>
+    <section id="portfolioVisuals" class="portfolio-visuals" aria-label="Portfolio visuals"><div id="portfolioVisualOutput" data-private><p class="fine-print">History starts after first sync</p></div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>Charts and allocation hidden</p></div></section>
     <div class="portfolio-grid">
       <section class="glass coins-panel" aria-labelledby="coinsTitle">
         <div class="panel-heading"><div><h2 id="coinsTitle">Your coins</h2><p id="coinsSubtitle" data-private>Combined balances, kept private</p></div><span class="small-badge" id="holdingsStatus">READ-ONLY</span></div>
@@ -71,14 +76,6 @@
         <div class="coins-footer" data-private><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
       </section>
       <aside class="support-panels">
-        <section class="glass history-panel" aria-labelledby="historyTitle">
-          <div class="panel-heading compact"><h2 id="historyTitle">Value history</h2><div data-private class="periods" role="group" aria-label="Value history range"><button data-range="7" aria-pressed="false">1W</button><button data-range="30" aria-pressed="true">1M</button><button data-range="90" aria-pressed="false">3M</button><button data-range="365" aria-pressed="false">1Y</button></div></div>
-          <div data-private>
-          <div class="history-empty" id="historyEmpty"><img src="assets/ui/lock-keyhole.svg" width="29" height="29" alt=""><p>History starts after first sync</p><span>Only verified snapshots. No estimated past returns.</span></div>
-          <div id="historyData" hidden><canvas id="historyChart" aria-label="Recorded portfolio values" role="img"></canvas><details><summary>View recorded values</summary><div id="historyTable"></div></details></div>
-          <p class="history-caption" id="historyCaption">No verified snapshots yet</p>
-          </div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>History hidden</p></div>
-        </section>
         <section class="glass watched-wallets" aria-labelledby="walletsTitle">
           <div class="panel-heading compact"><h2 id="walletsTitle" tabindex="-1">Watched wallets</h2><span class="small-badge">READ-ONLY</span></div>
           <div id="watchedWalletList" data-private><p>Private wallet addresses appear after sign-in.</p></div>

@@ -26,21 +26,34 @@ export function createPortfolioAdapter(client=null){
   async function sameUser(ownerId){const auth=await session();return auth.status==='authenticated'&&auth.user.id===ownerId;}
   return {
     session,
-    async readPortfolio(){
+    async readPortfolio(accountId=null){
       const auth=await session();if(auth.status!=='authenticated')return {status:auth.status,model:null};
       const owner_id=auth.user.id;
-      let accounts;try{accounts=await rows('portfolio_accounts',{owner_id,kind:'smsf'},{limit:2});}catch(error){if(['PGRST205','42P01'].includes(error.code))return {status:'setup-pending',model:null};throw error;}
+      let accounts;try{accounts=await rows('portfolio_accounts',{owner_id},{maxRows:20});}catch(error){if(['PGRST205','42P01'].includes(error.code))return {status:'setup-pending',model:null};throw error;}
+      accounts=accounts.filter(a=>['smsf','personal'].includes(a.kind)).sort((a,b)=>(a.kind==='smsf'?0:1)-(b.kind==='smsf'?0:1)||a.id.localeCompare(b.id));
       if(!accounts.length)return {status:'no-account',model:null};
-      if(accounts.length>1)throw Error('Choose a private account before loading balances');
-      const account=accounts[0],filter={owner_id,account_id:account.id};
-      const [wallets,history]=await Promise.all([rows('portfolio_wallets',filter),rows('portfolio_snapshots',filter,{order:['observed_at','completed_at','id'],limit:730})]);
-      const snapshot=history.find(s=>['complete','partial'].includes(s.status))||null;
-      let balances=[],stakes=[],rewardEstimates=[];
-      if(snapshot){const scoped={...filter,snapshot_id:snapshot.id};[balances,stakes,rewardEstimates]=await Promise.all([rows('portfolio_balance_snapshots',scoped),rows('portfolio_stake_snapshots',scoped),rows('portfolio_reward_estimates',scoped)]);}
-      // RLS is authoritative. Recheck session after every read batch; expired reads are never rendered.
+      if(new Set(accounts.map(a=>a.kind)).size!==accounts.length)throw Error('Choose a private account before loading balances');
+      const models=[],identities=new Set();
+      for(const account of accounts){
+        const filter={owner_id,account_id:account.id};
+        const [wallets,history]=await Promise.all([rows('portfolio_wallets',filter),rows('portfolio_snapshots',filter,{order:['observed_at','completed_at','id'],limit:730})]);
+        for(const wallet of wallets){
+          if(!wallet.address)continue;
+          const network=wallet.network||(wallet.chain_id===1?'ethereum':'chain-'+wallet.chain_id);
+          const address=network==='ethereum'?wallet.address.toLowerCase():wallet.address;
+          const identity=network+':'+address;
+          if(identities.has(identity))throw Error('Duplicate watched wallet scope');
+          identities.add(identity);
+        }
+        const snapshot=history.find(s=>['complete','partial'].includes(s.status))||null;
+        let balances=[],stakes=[],rewardEstimates=[];
+        if(snapshot){const scoped={...filter,snapshot_id:snapshot.id};[balances,stakes,rewardEstimates]=await Promise.all([rows('portfolio_balance_snapshots',scoped),rows('portfolio_stake_snapshots',scoped),rows('portfolio_reward_estimates',scoped)]);}
+        models.push({account,wallets,snapshot,balances,stakes,rewardEstimates,history});
+      }
+      // RLS is authoritative. A changed/expired owner never renders any fetched account.
       const after=await session();if(after.status==='auth-unavailable')return {status:'auth-unavailable',model:null};
       if(after.status!=='authenticated'||after.user.id!==owner_id)return {status:'signed-out',model:null};
-      return {status:'ready',model:{account,wallets,snapshot,balances,stakes,rewardEstimates,history}};
+      return {status:'ready',model:models.find(m=>m.account.id===accountId)||models[0],models};
     },
     // Lazy detail-only read. All rows stay in memory; no collector or provider is invoked.
     async readHistoryModels(model){
@@ -106,11 +119,11 @@ export function createPortfolioAdapter(client=null){
         return cleared('unavailable',error.code==='SNAPSHOT_TOO_LARGE'?'HISTORY_TOO_LARGE':'HISTORY_UNAVAILABLE');
       }finally{subscription?.unsubscribe();}
     },
-    async collectSnapshot(){
+    async collectSnapshot({accountId=null}={}){
       const auth=await session();if(auth.status!=='authenticated')return {status:auth.status};
       if(!client.functions?.invoke)return {status:'unavailable',code:'REFRESH_NOT_CONFIGURED'};
       let response;
-      try{response=await client.functions.invoke('portfolio-refresh',{body:{},timeout:100000});}
+      try{response=await client.functions.invoke('portfolio-refresh',{body:accountId?{account_id:accountId}:{},timeout:100000});}
       catch{response={error:{name:'FunctionsFetchError'}};}
       const {data,error}=response||{},status=error?.context?.status;
       if(status===401)return {status:'signed-out'};
@@ -122,7 +135,7 @@ export function createPortfolioAdapter(client=null){
       let body=null;
       try{if(error?.context?.json)body=await error.context.json();}catch{/* Never display raw upstream errors. */}
       if(status===429&&body?.error==='REFRESH_THROTTLED')return {status:'throttled',retryAfterSeconds:Math.max(1,Math.min(3600,Math.ceil(Number(body.retry_after_seconds)||300)))};
-      const allowed=['ALCHEMY_KEY_NOT_CONFIGURED','BACKEND_NOT_CONFIGURED','ALCHEMY_AUTH_OR_ACCESS_FAILED','ALCHEMY_CAPACITY_EXHAUSTED','ALCHEMY_RATE_LIMITED'];
+      const allowed=['ALCHEMY_UNAUTHORIZED_401','ALCHEMY_ACCESS_DENIED_403','ALCHEMY_ALLOWLIST_DENIED','ALCHEMY_APP_INACTIVE','ALCHEMY_KEY_NOT_CONFIGURED','BACKEND_NOT_CONFIGURED','ALCHEMY_AUTH_OR_ACCESS_FAILED','ALCHEMY_CAPACITY_EXHAUSTED','ALCHEMY_RATE_LIMITED'];
       return {status:'unavailable',code:allowed.includes(body?.error)?body.error:status===503?'COLLECTION_FAILED':'REFRESH_UNCONFIRMED'};
     },
     async getSocialLinks(){const auth=await session();if(auth.status!=='authenticated')return {};try{const result=await rows('portfolio_user_settings',{owner_id:auth.user.id},{limit:1});if(!await sameUser(auth.user.id))return {};return result[0]?.social_links||{};}catch{return {};}},
