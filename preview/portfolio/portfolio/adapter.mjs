@@ -119,6 +119,34 @@ export function createPortfolioAdapter(client=null){
         return cleared('unavailable',error.code==='SNAPSHOT_TOO_LARGE'?'HISTORY_TOO_LARGE':'HISTORY_UNAVAILABLE');
       }finally{subscription?.unsubscribe();}
     },
+    async readWalletHistory({accountId,walletIds,range='1d',currency='USD',signal}={}){
+      const auth=await session();if(auth.status!=='authenticated')return {status:auth.status};
+      const id=value=>typeof value==='string'&&value.length>0&&value.length<=100;
+      if(!id(accountId)||!['1h','1d','1w','1m','1y','max'].includes(range)||!['USD','AUD'].includes(currency)||walletIds!=null&&(!Array.isArray(walletIds)||!walletIds.length||walletIds.length>20||walletIds.some(v=>!id(v))||new Set(walletIds).size!==walletIds.length))return {status:'unavailable',code:'INVALID_HISTORY_SCOPE'};
+      if(signal?.aborted)return {status:'cancelled'};
+      if(!client.functions?.invoke)return {status:'unavailable',code:'HISTORY_NOT_CONFIGURED'};
+      let changed=false,response,subscription;
+      try{
+        subscription=client.auth.onAuthStateChange?.((event,value)=>{if(event==='SIGNED_OUT'||value?.user?.id!==auth.user.id)changed=true;})?.data?.subscription;
+        const body={account_id:accountId,range,currency,...(walletIds?{wallet_ids:[...walletIds]}:{})};
+        response=await client.functions.invoke('portfolio-history',{body,signal,timeout:100000});
+        const after=await session();
+        if(changed||after.status==='signed-out'||after.status==='authenticated'&&after.user.id!==auth.user.id)return {status:'signed-out'};
+        if(after.status!=='authenticated')return {status:'unavailable',code:'AUTH_UNAVAILABLE'};
+        if(signal?.aborted)return {status:'cancelled'};
+        const {data,error}=response||{},status=error?.context?.status;
+        if(status===401)return {status:'signed-out'};
+        if(status===403)return {status:'forbidden'};
+        if(status===429)return {status:'unavailable',code:'HISTORY_THROTTLED'};
+        if(error){
+          let body;try{body=await error.context?.json?.();}catch{}
+          const allowed=['HISTORY_PILOT_SINGLE_WALLET_REQUIRED','HISTORY_PILOT_RANGE_UNAVAILABLE','SOLANA_HISTORY_PENDING','HISTORY_PILOT_THROTTLED','HISTORY_SAFE_HEAD_STALE','HISTORY_PRICES_UNAVAILABLE'];
+          return {status:'unavailable',code:allowed.includes(body?.error)?body.error:'HISTORY_UNAVAILABLE'};
+        }
+        return {status:'ready',data};
+      }catch{return {status:signal?.aborted?'cancelled':'unavailable',code:'HISTORY_UNAVAILABLE'};}
+      finally{subscription?.unsubscribe();}
+    },
     async collectSnapshot({accountId=null}={}){
       const auth=await session();if(auth.status!=='authenticated')return {status:auth.status};
       if(!client.functions?.invoke)return {status:'unavailable',code:'REFRESH_NOT_CONFIGURED'};

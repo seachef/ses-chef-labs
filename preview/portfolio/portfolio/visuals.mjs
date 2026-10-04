@@ -1,5 +1,5 @@
 /** Display-only, account-scoped portfolio visuals. Never fetch, cache or synthesize history. */
-import {createHoldingsChart} from './holdings-chart.mjs?v=20261004.compact1';
+import {createHoldingsChart} from './holdings-chart.mjs?v=20261004.wallet-view1';
 import {groupHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext,displayValuation,valuationMoney} from './model.mjs?v=20261004.compact1';
 import {recordedHistorySummary,RANGE_OPTIONS,signedDecimalDifference} from './history.mjs?v=20261004.compact1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

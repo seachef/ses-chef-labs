@@ -12,10 +12,10 @@
   <title>Sea Chef Labs · Portfolio</title>
   <link rel="icon" href="assets/ui/waves.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="portfolio.css?v=20261004.compact1">
+  <link rel="stylesheet" href="portfolio.css?v=20261004.wallet-view1">
   <link rel="stylesheet" href="portfolio/visuals.css?v=20261004.compact1">
   <link rel="stylesheet" href="portfolio/trade-planner.css?v=20261003.charts1">
-  <script type="module" src="portfolio.mjs?v=20261004.portfolio-only1"></script>
+  <script type="module" src="portfolio.mjs?v=20261004.wallet-view1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -37,9 +37,10 @@
 <main id="main" tabindex="-1">
   <section id="portfolioView" class="view" aria-labelledby="portfolioTitle">
     <section class="account-section" aria-label="Private accounts" id="accountSection" hidden>
-      <div id="accountList" class="account-list" data-private></div>
+      <details id="walletScopePicker" class="wallet-scope-picker" data-private><summary id="walletScopeSummary"><img src="assets/ui/wallet.svg" width="20" height="20" alt=""><span id="walletScopeLabel">Choose wallets</span><img src="assets/ui/chevron-down.svg" width="18" height="18" alt=""></summary><div id="accountList" class="account-list" data-private></div></details>
       <div class="privacy-placeholder" data-privacy-placeholder hidden><p>Account details hidden</p></div>
     </section>
+    <div class="wallet-dashboard">
     <div class="glass portfolio-centrepiece">
     <div class="hero">
       <div class="hero-copy">
@@ -49,8 +50,8 @@
         <p class="hero-subtitle" id="walletSummary">Combined wallets · Ethereum</p>
         <div class="value-toolbar"><p class="value-label" id="portfolioValueLabel">Portfolio value</p><div class="currency-switch" role="group" aria-label="Display currency"><button type="button" data-display-currency="USD" aria-pressed="false">USD</button><button type="button" data-display-currency="AUD" aria-pressed="true">AUD</button></div></div><p class="portfolio-value" id="portfolioValue" aria-label="Portfolio value unavailable">A$ —</p>
         <p class="recorded-headline" id="portfolioChange">Daily change unavailable · No comparable recorded values yet</p>
-        <div class="headline-freshness" id="portfolioFreshness" aria-label="Observation freshness"></div>
-        <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p><p class="total-scope" id="portfolioScope">Includes held balances in Staking &amp; rewards. Unminted estimates are excluded.</p>
+        
+        <p class="hero-caption" id="portfolioCaption">Connect your private account to see verified balances</p><details class="portfolio-data-details"><summary>Data dates &amp; coverage</summary><div class="headline-freshness" id="portfolioFreshness" aria-label="Observation freshness"></div><p class="total-scope" id="portfolioScope">Includes held balances in Staking &amp; rewards. Unminted estimates are excluded.</p></details>
         </div><div class="privacy-placeholder privacy-hero" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Coins and values hidden</p></div>
       </div>
       <div class="hero-actions">
@@ -63,24 +64,24 @@
       </div>
     </div>
     <section id="portfolioVisuals" class="portfolio-visuals" aria-label="Portfolio visuals"><div id="portfolioVisualOutput" data-private><p class="fine-print">History starts after first sync</p></div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>Charts and allocation hidden</p></div></section>
-    </div>
-    <a class="plan-launcher" href="#plan"><span class="plan-launcher-icon" aria-hidden="true">↗</span><span><strong>Plan your next move</strong><small>Visual spot planner · Draft only</small></span><span class="plan-launcher-arrow" aria-hidden="true">→</span></a>
-    <div class="portfolio-grid">
-      <section class="glass coins-panel" aria-labelledby="coinsTitle">
+      <section class="coins-panel" aria-labelledby="coinsTitle">
         <div class="panel-heading"><div><h2 id="coinsTitle">Your coins</h2><p id="coinsSubtitle" data-private>Combined balances, kept private</p></div><span class="small-badge" id="holdingsStatus">READ-ONLY</span></div>
         <div class="holdings-scroll" data-private>
-          <table class="holdings-table"><caption class="sr-only">Supported assets. Balances are unavailable until a private account is connected.</caption>
-            <thead><tr><th scope="col">Asset</th><th scope="col">Combined balance</th><th scope="col">Indicative AUD</th></tr></thead>
+          <table class="holdings-table" data-unit-price><caption class="sr-only">Supported assets. Balances are unavailable until a private account is connected.</caption>
+            <thead><tr><th scope="col">Asset</th><th scope="col">Price</th><th scope="col">Balance</th><th scope="col">Indicative AUD</th></tr></thead>
             <tbody id="holdingsBody">
-              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/dragonx.png" width="58" height="58" alt=""><div><span class="asset-name">DragonX</span><span class="asset-symbol">DRAGONX</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
-              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/shogun.png" width="58" height="58" alt=""><div><span class="asset-name">SHOGUN</span><span class="asset-symbol">SHOGUN</span></div></div></th><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
+              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/dragonx.png" width="58" height="58" alt=""><div><span class="asset-name">DragonX</span><span class="asset-symbol">DRAGONX</span></div></div></th><td class="unit-price">—</td><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
+              <tr><th scope="row"><div class="asset"><img class="coin-icon" src="assets/coins/shogun.png" width="58" height="58" alt=""><div><span class="asset-name">SHOGUN</span><span class="asset-symbol">SHOGUN</span></div></div></th><td class="unit-price">—</td><td><span class="amount">—</span><span class="holding-detail">Private balance</span></td><td class="money">—</td></tr>
             </tbody>
           </table>
         </div>
         <div class="privacy-placeholder privacy-coins" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Your coins are hidden</p><span>Tap the eye to show them again</span></div>
         <div class="coins-footer" data-private><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
       </section>
+    </div>
       <aside class="support-panels">
+        <section class="glass wallet-activity" aria-labelledby="activityTitle"><h2 id="activityTitle">Activity</h2><div id="walletActivity" data-private><p>Choose your wallets to see activity.</p></div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>Activity hidden</p></div></section>
+
         <section aria-label="Holdings allocation"><div id="portfolioAllocation" data-private></div><div class="privacy-placeholder" data-privacy-placeholder hidden><p>Allocation hidden</p></div></section>
         <section class="glass watched-wallets" aria-labelledby="walletsTitle">
           <div class="panel-heading compact"><h2 id="walletsTitle" tabindex="-1">Watched wallets</h2><span class="small-badge">READ-ONLY</span></div>
@@ -91,6 +92,7 @@
         </section>
       </aside>
     </div>
+    <a class="plan-launcher" href="#plan"><span class="plan-launcher-icon" aria-hidden="true">↗</span><span><strong>Plan your next move</strong><small>Visual spot planner · Draft only</small></span><span class="plan-launcher-arrow" aria-hidden="true">→</span></a>
   </section>
   <section id="planView" class="view secondary-view" aria-labelledby="planTitle" hidden>
     <div class="page-heading"><div><p class="eyebrow">VISUAL SPOT PLANNER</p><h1 id="planTitle">Your next move</h1><p>Shape the idea. Check the risk. Place it yourself.</p></div><a class="button" href="#portfolio">Back to portfolio</a></div>

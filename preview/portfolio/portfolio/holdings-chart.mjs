@@ -1,9 +1,4 @@
-/**
- * Interactive rendering of saved holdings observations, never market returns.
- * The parent owns scoping, privacy masking, attribution, exact-value reading,
- * an accessible table/scrubber, and the observation-spaced-axis explanation.
- * No fetch, storage, timers, invented observations, or animated price updates.
- */
+/** Scoped observations only; caller owns exact readout, privacy and attribution. */
 const MIN_HEIGHT = 140;
 // A conservative display boundary, not a claim about collection frequency.
 export const HOLDINGS_CONNECTOR_LIMIT_MS = 36 * 60 * 60 * 1000;
@@ -37,6 +32,7 @@ function observationAutoscale(original) {
 /** Pure projection; exact strings and caller-owned rows are never changed. */
 export function holdingsChartData(summary) {
   const points = Array.isArray(summary?.points) ? summary.points : [];
+  const connectorLimit = Number.isFinite(summary?.connectorLimitMs) && summary.connectorLimitMs > 0 && summary.connectorLimitMs <= 366 * 86400000 ? summary.connectorLimitMs : HOLDINGS_CONNECTOR_LIMIT_MS;
   const dated = new Map();
   let undatedCount = 0;
   points.forEach((point, index) => {
@@ -58,7 +54,7 @@ export function holdingsChartData(summary) {
     const key = row.point.scopeKey;
     const joins = !undatedCount && previous && typeof key === 'string' && key.length > 0 &&
       key === previous.point.scopeKey && row.index === previous.index + 1 &&
-      (row.time - previous.time) * 1000 <= HOLDINGS_CONNECTOR_LIMIT_MS;
+      (row.time - previous.time) * 1000 <= connectorLimit;
     if (!joins) finishRun();
     run.push({ time: row.time, value: row.value });
     previous = row;
@@ -192,7 +188,7 @@ export function createHoldingsChart({ container, library, onInspect } = {}) {
         kineticScroll: { mouse: false, touch: false }
       });
       current.chart = chart;
-      const common = { color: '#82e5cb', lineType: lib.LineType?.Simple ?? 0, lineWidth: 2,
+      const common = { color: summary?.change?.startsWith('-') ? '#df6e75' : '#60ca97', lineType: lib.LineType?.Simple ?? 0, lineWidth: 2,
         priceScaleId: 'right', lastValueVisible: false, priceLineVisible: false, baseLineVisible: false,
         lastPriceAnimation: lib.LastPriceAnimationMode?.Disabled ?? 0,
         autoscaleInfoProvider: observationAutoscale,
@@ -202,7 +198,7 @@ export function createHoldingsChart({ container, library, onInspect } = {}) {
       // still connect values on either side in Lightweight Charts.
       for (const run of data.runs) chart.addSeries(lib.LineSeries, { ...common, lineStyle: lib.LineStyle?.Solid ?? 0,
         pointMarkersVisible: false, crosshairMarkerVisible: false }).setData(run);
-      chart.addSeries(lib.LineSeries, { ...common, lineVisible: false, pointMarkersVisible: true,
+      chart.addSeries(lib.LineSeries, { ...common, lineVisible: false, pointMarkersVisible: data.connectionCount === 0,
         pointMarkersRadius: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 4 }).setData(data.markers);
       const inspect = (event, source) => {
         if (destroyed || active !== current || ticket !== version) return;

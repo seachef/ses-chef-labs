@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "status": "partial",
+  "scope": {
+    "account_id": "00000000-0000-4000-8000-000000000001",
+    "wallet_ids": [
+      "00000000-0000-4000-8000-000000000003"
+    ],
+    "scope_key": "[\"00000000-0000-4000-8000-000000000001\",\"00000000-0000-4000-8000-000000000003\",\"ethereum\",\"liquid\",[\"native\",\"0x96a5399d07896f757bd4c6ef56461f58db951862\"]]",
+    "chain_ids": [
+      "ethereum"
+    ],
+    "positions": "liquid",
+    "asset_ids": [
+      "native",
+      "0x96a5399d07896f757bd4c6ef56461f58db951862"
+    ],
+    "label": "DRAGONX + ETH only"
+  },
+  "query": {
+    "range": "1d",
+    "currency": "USD"
+  },
+  "source": {
+    "provider": "Alchemy",
+    "method": "historical_block_balances_x_historical_prices",
+    "retrieved_at": "2026-10-04T12:00:00.000Z",
+    "attribution": "Ethereum archival balances and historical contract-price observations via Alchemy",
+    "provider_as_of": "2026-10-04T12:00:00.000Z",
+    "balance_as_of": "2026-10-04T12:00:00.000Z"
+  },
+  "window": {
+    "requested_from": "2026-10-03T12:00:00.000Z",
+    "requested_to": "2026-10-04T12:00:00.000Z",
+    "actual_from": "2026-10-03T12:00:00.000Z",
+    "actual_to": "2026-10-04T12:00:00.000Z",
+    "sample_interval_seconds": 7200,
+    "sampling": "13 evenly spaced block heights; actual timestamps preserved"
+  },
+  "coverage": {
+    "complete": false,
+    "requested_wallet_count": 1,
+    "included_wallet_count": 1,
+    "excluded_wallet_ids": [],
+    "included_asset_ids": [
+      "0x96a5399d07896f757bd4c6ef56461f58db951862",
+      "native"
+    ],
+    "exclusions": [
+      {
+        "code": "PILOT_ASSET_SUBSET"
+      },
+      {
+        "code": "PROTOCOL_HISTORY_UNSUPPORTED"
+      }
+    ],
+    "warnings": [
+      "This is the historical value of DRAGONX and ETH only, not the whole wallet or SMSF. Deposits and withdrawals affect value change."
+    ],
+    "quote_errors": []
+  },
+  "points": [
+    {
+      "at": "2026-10-03T12:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-03T14:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-03T16:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-03T18:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-03T20:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-03T22:00:00.000Z",
+      "value": "7000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T00:00:00.000Z",
+      "value": "8000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T02:00:00.000Z",
+      "value": "8000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T04:00:00.000Z",
+      "value": "8000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T06:00:00.000Z",
+      "value": "3000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T08:00:00.000Z",
+      "value": "3000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T10:00:00.000Z",
+      "value": "3000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    },
+    {
+      "at": "2026-10-04T12:00:00.000Z",
+      "value": "3000",
+      "coverage_key": "[[\"00000000-0000-4000-8000-000000000003\",\"[\\\"USD\\\",[\\\"0x96a5399d07896f757bd4c6ef56461f58db951862\\\",\\\"native\\\"]]\"]]",
+      "complete": true
+    }
+  ],
+  "change": {
+    "amount": "-4000",
+    "percent": "-57.14285714",
+    "from_at": "2026-10-03T12:00:00.000Z",
+    "to_at": "2026-10-04T12:00:00.000Z",
+    "basis": "portfolio_value_change",
+    "includes_external_flows": true
+  },
+  "error_code": null,
+  "metrics": {
+    "rpc_requests": 77,
+    "price_requests": 2,
+    "estimated_compute_units": 1756,
+    "maximum_compute_units": 1816,
+    "billing_plan_verified": false
+  }
+}
