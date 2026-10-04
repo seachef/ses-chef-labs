@@ -82,7 +82,8 @@ async function refreshPortfolio({announce=false,collect=false}={}){
       accountModels=result.models||[result.model];model=result.model;renderModel();
       const message=collected?.status==='saved'?(model.snapshot?.id===collected.snapshotId?'Fresh watched-wallet balances loaded. Prices may still be incomplete.':'New snapshot saved. Showing the latest available saved record.'):model.snapshot?'Stored balances loaded. Dollar values depend on available prices and AUD conversion.':'Private account connected. First verified sync pending.';
       $('connectionResult').textContent=message;if(collect)showRefreshStatus(message);
-      const links=await adapter.getSocialLinks();if(id===requestId&&model)renderSocials(links);
+      // Optional shortcuts must not hold wallet refresh or account selection open.
+      void adapter.getSocialLinks().then(links=>{if(id===requestId&&model)renderSocials(links);}).catch(()=>{});
       if(announce&&!collect)toast(model.snapshot?'Saved observations reloaded. Wallet balances were not refreshed.':'First verified sync is pending.');
     }else{
       const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':['no-account','setup-pending'].includes(result.status)?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
