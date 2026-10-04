@@ -4,7 +4,7 @@
  * an accessible table/scrubber, and the observation-spaced-axis explanation.
  * No fetch, storage, timers, invented observations, or animated price updates.
  */
-const MIN_HEIGHT = 260;
+const MIN_HEIGHT = 140;
 // A conservative display boundary, not a claim about collection frequency.
 export const HOLDINGS_CONNECTOR_LIMIT_MS = 36 * 60 * 60 * 1000;
 const DECIMAL = /^(0|[1-9]\d*)(\.\d+)?$/;
@@ -171,13 +171,13 @@ export function createHoldingsChart({ container, library, onInspect } = {}) {
       const chart = lib.createChart(host, {
         ...dimensions(), autoSize: false,
         layout: { background: { type: lib.ColorType?.Solid || 'solid', color: 'transparent' }, textColor: '#98a8a3',
-          fontFamily: 'system-ui, sans-serif', fontSize: 11, attributionLogo: true },
+          fontFamily: 'system-ui, sans-serif', fontSize: 10, attributionLogo: true },
         grid: { vertLines: { visible: false }, horzLines: { color: 'rgba(154, 180, 169, 0.1)' } },
         leftPriceScale: { visible: false },
         // Numeric library labels would round exact monetary strings. Exact
         // readings, low/high labels and the accessible fallback belong to parent.
         rightPriceScale: { visible: false, autoScale: true, borderVisible: false, scaleMargins: { top: 0.18, bottom: 0.18 } },
-        timeScale: { borderVisible: false, timeVisible: true, secondsVisible: true,
+        timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false,
           rightOffset: 0, shiftVisibleRangeOnNewBar: false, allowShiftVisibleRangeOnWhitespaceReplacement: false },
         localization: { locale: 'en-AU', timeFormatter: time => {
           const row = active === current ? current.rows.get(time) : null;
@@ -200,10 +200,10 @@ export function createHoldingsChart({ container, library, onInspect } = {}) {
         priceFormat: { type: 'custom', formatter: () => '', minMove: 0.00000001 } };
       // Separate series enforce real breaks; whitespace in one line series can
       // still connect values on either side in Lightweight Charts.
-      for (const run of data.runs) chart.addSeries(lib.LineSeries, { ...common, lineStyle: dashed,
+      for (const run of data.runs) chart.addSeries(lib.LineSeries, { ...common, lineStyle: lib.LineStyle?.Solid ?? 0,
         pointMarkersVisible: false, crosshairMarkerVisible: false }).setData(run);
       chart.addSeries(lib.LineSeries, { ...common, lineVisible: false, pointMarkersVisible: true,
-        pointMarkersRadius: 4, crosshairMarkerVisible: true, crosshairMarkerRadius: 6 }).setData(data.markers);
+        pointMarkersRadius: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 4 }).setData(data.markers);
       const inspect = (event, source) => {
         if (destroyed || active !== current || ticket !== version) return;
         const position = event?.point;

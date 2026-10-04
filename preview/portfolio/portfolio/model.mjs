@@ -58,10 +58,10 @@ export function pricedHoldingsSummary(holdings,currency='AUD'){
   return {value:priced.length?decimalSum(priced.map(h=>h[key])):null,pricedAssets:priced.length,unpricedAssets:held.length-priced.length};
 }
 /** Current saved valuation only; never fabricates FX, wallet coverage or a complete total. */
-export function displayValuation(model){
-  const currency=verifiedFx(model?.snapshot)?'AUD':'USD',holdings=groupHoldings(model),priced=pricedHoldingsSummary(holdings,currency),total=currency==='AUD'?portfolioTotal(model):null;
+export function displayValuation(model,requestedCurrency=null){
+  const currency=['AUD','USD'].includes(requestedCurrency)?requestedCurrency:!model?.snapshot||verifiedFx(model.snapshot)?'AUD':'USD',holdings=groupHoldings(model),priced=pricedHoldingsSummary(holdings,currency),total=currency==='AUD'?portfolioTotal(model):null;
   const pending=(model?.wallets||[]).filter(w=>w.provider_status==='provider_pending');
-  return {...priced,currency,total,value:total??priced.value,pendingWallets:pending.length,pendingNetworks:[...new Set(pending.map(w=>w.network==='solana'?'Solana':w.network||'Unknown network'))],incomplete:total==null||pending.length>0,label:total!=null?'Portfolio value':`Priced holdings subtotal · ${currency}`};
+  return {...priced,currency,total,fxUnavailable:currency==='AUD'&&!verifiedFx(model?.snapshot),value:total??priced.value,pendingWallets:pending.length,pendingNetworks:[...new Set(pending.map(w=>w.network==='solana'?'Solana':w.network||'Unknown network'))],incomplete:total==null||pending.length>0,label:total!=null?'Portfolio value':`Priced holdings subtotal · ${currency}`};
 }
 export function valuationMoney(value,currency='AUD'){return currency==='USD'?priceUsd(value):aud(value);}
 export function fxReferenceDate(snapshot){const date=snapshot?.provenance?.valuation?.fx?.provider_observation_date;return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(Date.parse(date+'T00:00:00Z'))&&new Date(date+'T00:00:00Z').toISOString().slice(0,10)===date?date:null;}

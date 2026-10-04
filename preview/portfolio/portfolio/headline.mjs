@@ -1,6 +1,6 @@
 /** Pure display helpers for recorded holdings changes; no fetch, storage or synthetic history. */
-import { signedDecimalDifference, recordedHistorySummary, signedUsd } from './history.mjs?v=20261004.value1';
-import { valuationContext, fxReferenceDate } from './model.mjs?v=20261004.value1';
+import { signedDecimalDifference, recordedHistorySummary, signedUsd } from './history.mjs?v=20261004.compact1';
+import { valuationContext, fxReferenceDate } from './model.mjs?v=20261004.compact1';
 
 const DAY = 86400000;
 const BALANCE_MAX_AGE = 36 * 3600000;

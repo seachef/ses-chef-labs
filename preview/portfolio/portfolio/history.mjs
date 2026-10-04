@@ -1,6 +1,6 @@
 /** Recorded observations only. These values are holdings changes, never investment returns. */
 import { multiplyDecimals, rawUnits } from './domain.mjs';
-import { COINS, decimalSum, fxReferenceDate } from './model.mjs?v=20261004.value1';
+import { COINS, decimalSum, fxReferenceDate } from './model.mjs?v=20261004.compact1';
 
 export const RANGE_OPTIONS = Object.freeze([
   { key: '1H', label: '1H' }, { key: '1D', label: '1D' },
@@ -209,8 +209,8 @@ function projectCoin(point, tokenIdentity, metric) {
  * Price graphs retain balance-observation x coordinates and expose priceAt separately.
  */
 export function recordedHistorySummary({ currentModel, models = [], rangeKey = '1D', now = Date.now(), coinKey = null, metric = 'value', historyLimited = false, currency = 'AUD', allowPartial = false } = {}) {
-  allowPartial = allowPartial === true && coinKey == null;
-  currency = allowPartial && currency === 'USD' ? 'USD' : 'AUD';
+  allowPartial = allowPartial === true;
+  currency = allowPartial && (currency === 'USD' || coinKey != null && metric === 'price') ? 'USD' : 'AUD';
   metric = coinKey != null && metric === 'price' ? 'price' : 'value';
   const range = Object.hasOwn(WINDOWS, rangeKey) ? rangeKey : '1D';
   const nowMs = now instanceof Date ? now.getTime() : typeof now === 'string' ? Date.parse(now) : now;
