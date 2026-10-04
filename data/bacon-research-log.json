@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-10-03T21:10:24.692132Z",
+  "updatedAt": "2026-10-04T21:05:45Z",
   "records": [
     {
       "id": "youtube:n9pYIQknYZ0:btc",
@@ -50,7 +50,7 @@
       "sourceName": "VirtualBacon official YouTube",
       "publishedAt": "2026-09-30T14:40:41+00:00",
       "firstSeenAt": "2026-09-30T21:10:35Z",
-      "lastSeenAt": "2026-10-03T21:10:24.692132Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
       "contentHash": "a2159f118c95651644bffbe2a15e8c886f7aa09f70aadfdc62fcf5d2764e5079",
       "summary": "Previously missing full transcript now reviewed: BTC USD90000 Q4 base case and rapid-October alt-to-BTC profit rotation confirmed. Existing XRP/XLM/HBAR/IOTA/ALGO longs were described as 2x. Aurora/RHEA holdings retained. Low-cap Robinhood and proof-of-verifiable-work/mining mentions lack verified token identity and complete levels. Historical WLFI loss discussion is not a current exit. No executable stop or complete setup verified; chart playback unavailable.",
       "symbols": [
@@ -202,6 +202,15 @@
           "retrievedAt": "2026-10-03T21:05:20.263Z",
           "contentHash": "05bf28a81225db40f5167b7f9c85ba635a11faf67f03dfcb518f51af6fa6ab31",
           "summary": "Older Sept30-stream recut repeating rotation of altcoin gains into a core Bitcoin holding during the creator's assumed bull run. Gives roughly 2x or at-best 2–3x cycle upside expectation and a personal risk/FOMO rationale, without source-explicit entry, stop or precise take-profit."
+        },
+        {
+          "id": "youtube:Uab0jAveKnI",
+          "url": "https://www.youtube.com/watch?v=Uab0jAveKnI",
+          "sourceName": "VirtualBacon YouTube",
+          "publishedAt": "2026-09-30T21:41:58Z",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "08e96be670573aa2656a420f1383dac72eadbd6b5d5c2e84daad4fc5ecc14461",
+          "summary": "Recovered full actual transcript of older54-second recut, explicitly links original Sept30stream. Same125000–220000USD cycle projection,150000–160000 no-sale threshold. No new current trade."
         }
       ],
       "crosspostUrls": [
@@ -701,7 +710,7 @@
       "sourceName": "VirtualBacon X",
       "publishedAt": "2026-10-01T18:23:23.141Z",
       "firstSeenAt": "2026-10-01T21:09:02Z",
-      "lastSeenAt": "2026-10-01T21:09:02Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
       "contentHash": "8047420bf9b7f574e25041f435e1e8c852f599651de24b666d93ccc7ec9b39ce",
       "summary": "Still bullish/holding Robinhood-chain bags but warns correlated exposure means one narrative bet.",
       "symbols": [],
@@ -716,7 +725,17 @@
       ],
       "publicationTimeBasis": "Firecrawl returned UTC seconds; ID timestamp decoded milliseconds agrees",
       "contentHashBasis": "SHA-256 whitespace-normalized full public source text.",
-      "crosspostObservations": []
+      "crosspostObservations": [
+        {
+          "id": "x:2106816973334310940",
+          "url": "https://x.com/virtualbacon/status/2106816973334310940",
+          "sourceName": "VirtualBacon official X",
+          "publishedAt": "2026-10-04T18:41:23.866Z",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "3ee4b92a4dd973f3397634916d7dc1f34cee79fed05c352c260e03fda2542cca",
+          "summary": "Says he expected no named meme-coin endorsement from Vlad Tenev; reads Robinhood-chain AI-agent trading as the narrative. Describes having avoided large caps and held very cheap coins. Assets remain unnamed, so this does not resolve earlier ambiguous token identities or establish new filled positions. No levels."
+        }
+      ]
     },
     {
       "id": "x:2105471097470960011",
@@ -808,7 +827,7 @@
       "sourceName": "VirtualBacon official YouTube",
       "publishedAt": "2026-10-02T14:47:05Z",
       "firstSeenAt": "2026-10-02T21:10:03Z",
-      "lastSeenAt": "2026-10-03T21:10:24.692132Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
       "contentHash": "aaa9522aeaff55151f6c91268f099012ad70c3156f976aae8af271c1210b66fb",
       "summary": "0G preferred as Venice-like token-to-compute narrative rather than chasing Venice; token-value capture of Aethir/io.net/Akash questioned. TAO and Nockchain privacy/PoW-AI discussed; QTC small holding disclosed with severe SafeTrade liquidity caveat, possible NEAR venue next week explicitly hearsay. Aurora/RHEA holdings retained. New launchpad-token purchase and another addition described, but transcript spellings PON/pawns/ponds and ZC/ZCT/ZZ cannot be safely mapped to token identities while video frames are unavailable. BTC needs USD87000 break for USD90000 objective; USD78000 support is not an executable stop. No complete numerical setup.",
       "symbols": [
@@ -961,6 +980,33 @@
           "retrievedAt": "2026-10-03T21:06:35Z",
           "contentHash": "81a4a3527cafc57f25fd21dd9befbce798f021b6a3550fc291495ad84955ea40",
           "summary": "Reiterates approximately 85% Bitcoin allocation and distinction between altcoin/BTC relative underperformance and absolute dollar losses. No allocation change established versus prior livestream."
+        },
+        {
+          "id": "telegram:virtualbacon:2382",
+          "url": "https://t.me/virtualbacon/2382",
+          "sourceName": "VirtualBacon Telegram",
+          "publishedAt": "2026-10-04T20:40:33+00:00",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "d0d8365f4007560fe1f7ceb45dd75be91cd0a68f9afbc00eb33f1fb91c7c1288",
+          "summary": "Reiterates Oct2 alt/BTC-relative-performance thesis: average alt only about10% ahead since BTC bottom; Venice/Quant outliers. TOTAL2ES/BTC image inspected,0.51 ratio marker is not a trade level."
+        },
+        {
+          "id": "x:2106844652007739481",
+          "url": "https://x.com/virtualbacon/status/2106844652007739481",
+          "sourceName": "VirtualBacon official X",
+          "publishedAt": "2026-10-04T20:31:22.976Z",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "d0d8365f4007560fe1f7ceb45dd75be91cd0a68f9afbc00eb33f1fb91c7c1288",
+          "summary": "Average altcoin has outperformed BTC by only about 10% since the bottom according to Bacon. Venice and Quant are named exceptions; he describes a move beginning rather than established altseason. Broad relative-value commentary, with no individual entry, executable stop or target."
+        },
+        {
+          "id": "x:2106827785847415190",
+          "url": "https://x.com/virtualbacon/status/2106827785847415190",
+          "sourceName": "VirtualBacon official X",
+          "publishedAt": "2026-10-04T19:24:21.770Z",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "2451eb9b20729abc719d881df126bb7b51363dd33ad6986580a80fc6b64a1109",
+          "summary": "Says staking 0G and Venice grants compute, connecting use to token demand. Warns network growth may not accrue to a token without that mechanism. Repeats the AI-compute thesis; not a new purchase or numerical setup. Mechanism is his claim, not independently technical-verified here."
         }
       ],
       "revisionNote": "Fresh actual transcript differs in punctuation and speech recognition from prior retrieval. No material call change verified; no claim the creator edited the video. Numeric transcription ambiguities remain unpromoted."
@@ -971,7 +1017,7 @@
       "sourceName": "VirtualBacon X",
       "publishedAt": "2026-10-02T20:41:23.000Z",
       "firstSeenAt": "2026-10-02T21:10:03Z",
-      "lastSeenAt": "2026-10-02T21:10:03Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
       "contentHash": "f5bf9ed21fe7fa5e5cddcda3e68f3e6657777cb8d73417fa16e9bf88274d31e7",
       "summary": "XRP under-$1 likely-bottom opinion; XRP/ETH/BNB relative value ranking explicitly recalls a stream one month earlier. No new purchase disclosure, entry, stop, or target.",
       "symbols": [
@@ -1000,6 +1046,15 @@
           "contentHash": "f5bf9ed21fe7fa5e5cddcda3e68f3e6657777cb8d73417fa16e9bf88274d31e7",
           "summary": "Same XRP relative-value statement. Attached XRP/USDT chart visually inspected: no trade annotations.",
           "chartAssessment": "XRP/TetherUS candlestick chart, right-side displayed last-price label 1.4749 and July/2026 axis. No drawn entry zone, stop, target, risk/reward tool, or directional annotations. Label 1.4749 is historical chart value, not current executable market quote."
+        },
+        {
+          "id": "x:2106733217776603154",
+          "url": "https://x.com/virtualbacon/status/2106733217776603154",
+          "sourceName": "VirtualBacon official X",
+          "publishedAt": "2026-10-04T13:08:34.985Z",
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "8d3e16db2d4d34f6bb225f35686529950e29e7ab16b1f1cddfe82d59c25fdeb8",
+          "summary": "Clarifies his valuation ranking at the bottom about one month earlier: XRP and Solana cheapest majors, Ethereum fairly cheap. Explicitly retrospective; not a fresh entry, current cheapest-major ranking, or new buy disclosure."
         }
       ]
     },
@@ -1285,6 +1340,129 @@
       ],
       "publicationTimeBasis": "Exact UTC decoded from observed X Snowflake post ID; corroborated against displayed Oct 2/3 date and hour/minute in cloud browser (UTC-7).",
       "contentHashBasis": "SHA-256 whitespace-normalized original author text; excludes quoted third-party posts and engagement counts."
+    },
+    {
+      "id": "telegram:virtualbacon:2380",
+      "canonicalUrl": "https://t.me/virtualbacon/2380",
+      "sourceName": "VirtualBacon Telegram",
+      "publishedAt": "2026-10-04T13:00:00+00:00",
+      "firstSeenAt": "2026-10-04T21:05:45Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
+      "contentHash": "1bceca997e6ee78dad0812795ff9dc71e513205d3b2caf70b820ebe7aa50bcca",
+      "summary": "Daily digest includes creator-reported HYPE USDC-reserve-yield buybacks of USD14.6M, Stellar TVL near USD273M and Midnight developer access with NIGHT up96.5% weekly. These are attributed research leads, not independently verified protocol facts or complete buy calls.",
+      "symbols": [
+        "HYPE",
+        "XLM",
+        "NIGHT",
+        "ZEC"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "1bceca997e6ee78dad0812795ff9dc71e513205d3b2caf70b820ebe7aa50bcca",
+          "summary": "Daily digest includes creator-reported HYPE USDC-reserve-yield buybacks of USD14.6M, Stellar TVL near USD273M and Midnight developer access with NIGHT up96.5% weekly. These are attributed research leads, not independently verified protocol facts or complete buy calls."
+        }
+      ],
+      "crosspostObservations": [
+        {
+          "id": "facebook:pfbid06F1pusuJ7bT158pxqiDH17LYWBSKnF6TJXaEmtKQ89rgQccZgCcKypvBcageEjaNl",
+          "url": "https://www.facebook.com/virtualbacon0x/posts/pfbid06F1pusuJ7bT158pxqiDH17LYWBSKnF6TJXaEmtKQ89rgQccZgCcKypvBcageEjaNl",
+          "sourceName": "VirtualBacon official Facebook",
+          "publishedAt": null,
+          "retrievedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "bd50f2882f4ca5c61a0d9e2eef3d577229c04c2267d8fa2d966eb2028e0503b5",
+          "summary": "Facebook digest crosspost of Telegram 2380. Crypto leads: $14.6M USDC reserve yield for HYPE buybacks via AQAv2; first ZCSH net-outflow week since late August after $35.2M prior-week intake; Stellar TVL near $273M after ~$265M; Midnight smart-contract opening and NIGHT +96.5% weekly; Visa stablecoin card commercial share ~17% and nearly 200% YoY volume growth; Saylor STRC volatility comparison. Macro leads cover Russia/Lukoil sanctions talks, US AI oversight, Ukraine refinery risk, OpenAI staff departure, $4.2B Vistra nuclear loan plan, and $47.5B Hong Kong equity issuance. All are creator-reported news leads, not independently verified facts or trades."
+        }
+      ]
+    },
+    {
+      "id": "telegram:virtualbacon:2381",
+      "canonicalUrl": "https://t.me/virtualbacon/2381",
+      "sourceName": "VirtualBacon Telegram",
+      "publishedAt": "2026-10-04T16:00:00+00:00",
+      "firstSeenAt": "2026-10-04T21:05:45Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
+      "contentHash": "172d72a0d2a66a0ef875dd6fe4f06c097dba1ba0bce714655b8adfa6c9854969",
+      "summary": "Brent weekly-price poll, not a crypto setup.",
+      "symbols": [],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "172d72a0d2a66a0ef875dd6fe4f06c097dba1ba0bce714655b8adfa6c9854969",
+          "summary": "Brent weekly-price poll, not a crypto setup."
+        }
+      ]
+    },
+    {
+      "id": "x:2106797335452029191",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106797335452029191",
+      "sourceName": "VirtualBacon official X",
+      "publishedAt": "2026-10-04T17:23:21.830Z",
+      "firstSeenAt": "2026-10-04T21:05:45Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
+      "contentHash": "ed345c99dd2c344d3f88f06590813b034c7b3abc3f2aeace5b8545732301c4d3",
+      "summary": "Calls Fetch and Render high-quality and cheap despite limited current news/popularity. Explicitly says he does not hold either and limits the number of positions. This is a qualitative watchlist opinion, not a purchase disclosure or complete trade.",
+      "symbols": [
+        "FET",
+        "RENDER"
+      ],
+      "classification": "watchlist",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "ed345c99dd2c344d3f88f06590813b034c7b3abc3f2aeace5b8545732301c4d3",
+          "summary": "Calls Fetch and Render high-quality and cheap despite limited current news/popularity. Explicitly says he does not hold either and limits the number of positions. This is a qualitative watchlist opinion, not a purchase disclosure or complete trade."
+        }
+      ]
+    },
+    {
+      "id": "x:2106783948655235267",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106783948655235267",
+      "sourceName": "VirtualBacon official X",
+      "publishedAt": "2026-10-04T16:30:10.169Z",
+      "firstSeenAt": "2026-10-04T21:05:45Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
+      "contentHash": "25ea7eaa4607dc06e92ad63340186615f74a4f2561cbed4edc3c3fea962371ed",
+      "summary": "In a quote-post about Bitcoin ten years earlier, says BTC remains his buy-and-hold asset, cheap relative to AI stocks and dismissed by much of traditional finance. Long-term preference only. The quoted third-party historical $612 price is not an entry level.",
+      "symbols": [
+        "BTC"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "25ea7eaa4607dc06e92ad63340186615f74a4f2561cbed4edc3c3fea962371ed",
+          "summary": "In a quote-post about Bitcoin ten years earlier, says BTC remains his buy-and-hold asset, cheap relative to AI stocks and dismissed by much of traditional finance. Long-term preference only. The quoted third-party historical $612 price is not an entry level."
+        }
+      ]
+    },
+    {
+      "id": "x:2106723110812618857",
+      "canonicalUrl": "https://x.com/virtualbacon/status/2106723110812618857",
+      "sourceName": "VirtualBacon official X",
+      "publishedAt": "2026-10-04T12:28:25.297Z",
+      "firstSeenAt": "2026-10-04T21:05:45Z",
+      "lastSeenAt": "2026-10-04T21:05:45Z",
+      "contentHash": "e1368ccddd93d373dab26fb8def6eaf81534c7d0b77549899eeab8583656e5a7",
+      "summary": "Reply states approximately 85% of his portfolio is Bitcoin and it stays put. This is a creator allocation disclosure, not a recommendation to copy an allocation or evidence of a new purchase. Parent-conversation cash statement in a search excerpt belongs to another poster and is not assigned to Bacon.",
+      "symbols": [
+        "BTC"
+      ],
+      "classification": "commentary",
+      "revision": 1,
+      "revisions": [
+        {
+          "observedAt": "2026-10-04T21:05:45Z",
+          "contentHash": "e1368ccddd93d373dab26fb8def6eaf81534c7d0b77549899eeab8583656e5a7",
+          "summary": "Reply states approximately 85% of his portfolio is Bitcoin and it stays put. This is a creator allocation disclosure, not a recommendation to copy an allocation or evidence of a new purchase. Parent-conversation cash statement in a search excerpt belongs to another poster and is not assigned to Bacon."
+        }
+      ]
     }
   ],
   "runs": [
@@ -1784,6 +1962,134 @@
       "revisedIds": [
         "youtube:VHCDMCPPPaA"
       ]
+    },
+    {
+      "checkedAt": "2026-10-04T21:05:45Z",
+      "date": "2026-10-05",
+      "status": "partial",
+      "summary": "Fetch and Render added as research candidates: Bacon praises both but holds neither. No complete paper setup. Hourly collector failed a test; direct primary-source review completed.",
+      "sourceChecks": [
+        {
+          "name": "VirtualBacon Telegram",
+          "url": "https://t.me/s/virtualbacon",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:58:53Z",
+          "detail": "Full primary posts2362–2382 span the prior checkpoint; new2380–2382 read in full. 2382 TOTAL2ES/BTC chart visually inspected:0.51 ratio marker, no entry/stop/target annotations. Collector excerpts and setup counts not relied on."
+        },
+        {
+          "name": "VB Trading Journal",
+          "url": "https://t.me/s/vb_trade",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:59:03Z",
+          "detail": "Full public feed433–452 inspected; latest remains September22 02:53:38UTC warning, no new post since checkpoint. Older compromised-source solicitation excluded; collector settings unchanged."
+        },
+        {
+          "name": "Official YouTube recovered Short",
+          "url": "https://www.youtube.com/watch?v=Uab0jAveKnI",
+          "status": "partial",
+          "checkedAt": "2026-10-04T21:02:06Z",
+          "detail": "Actual complete returned transcript read. Shorts-page metadata supplies September30 21:41:58UTC publication; watch-page description links Sept30 original stream. Deduplicated recut. No audio/video review claimed."
+        },
+        {
+          "name": "BTC public price",
+          "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:59:58Z",
+          "detail": "Fresh public Coinbase BTC/USD 85812.005. No upstream quote timestamp supplied. Context only; no complete setup qualified. No inferred fills or actionable entry. Below discussed USD87000 resistance."
+        },
+        {
+          "name": "FET public price",
+          "url": "https://api.coinbase.com/v2/prices/FET-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-04T21:01:00Z",
+          "detail": "Fresh public Coinbase FET/USD 0.255025. No upstream quote timestamp supplied. Context only; no complete setup qualified. No inferred fills or actionable entry. Source supplies no stop or numeric target to test for invalidation."
+        },
+        {
+          "name": "RENDER public price",
+          "url": "https://api.coinbase.com/v2/prices/RENDER-USD/spot",
+          "status": "checked",
+          "checkedAt": "2026-10-04T21:01:10Z",
+          "detail": "Fresh public Coinbase RENDER/USD 1.98115. No upstream quote timestamp supplied. Context only; no complete setup qualified. No inferred fills or actionable entry. Source supplies no stop or numeric target to test for invalidation."
+        },
+        {
+          "name": "Official domain account status",
+          "url": "https://virtualbacon.com/",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:57:56Z",
+          "detail": "Recovery confirmation still present, last updated Sept23 2026 10:02 PM ET; says account recovered Sept23 after Sept21 compromise. Official domain links X, YouTube and Telegram. No newer compromise warning found on domain."
+        },
+        {
+          "name": "Official YouTube About provenance",
+          "url": "https://www.youtube.com/@virtualbacon/about",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:58:19Z",
+          "detail": "Still carries old Sept21 compromise notice, support case ACCESS-15690804, and says domain/channel will confirm recovery. Domain confirmation is newer. Official About links Instagram VirtualBacon0x and Facebook VirtualBacon0x. Current account security cannot be independently guaranteed."
+        },
+        {
+          "name": "Official X profile and public posts",
+          "url": "https://x.com/virtualbacon",
+          "status": "partial",
+          "checkedAt": "2026-10-04T21:02:15Z",
+          "detail": "Latest five profile posts and two public search-discovered Oct4 replies fully read on exact public post pages. Public profile shows only latest five; Replies tab requires login. No login attempted. Exhaustive historical/reply coverage cannot be certified. Two pre-cutoff Oct3 posts also read in full and deduplicated. Research uses recovered official source separately; legacy collector exclusion unchanged."
+        },
+        {
+          "name": "Official Facebook",
+          "url": "https://www.facebook.com/virtualbacon0x",
+          "status": "partial",
+          "checkedAt": "2026-10-04T21:01:07Z",
+          "detail": "Newest profile digest is 7 hours ago, canonical permalink captured and full caption read. Next digest is a day ago and next video 2 days ago. Full caption of 2-days-old altcoin-cycle video also read: 3 of 4 historical comparisons favored alts; worst 2023 case -25% then +173%. Those numbers are historical examples, not current trade levels. Older video is outside new-content window; exact publication time not inferred from comments. Captions only; no Facebook video reviewed."
+        },
+        {
+          "name": "Official Instagram",
+          "url": "https://www.instagram.com/virtualbacon0x/",
+          "status": "partial",
+          "checkedAt": "2026-10-04T21:00:45Z",
+          "detail": "Verified profile SX Liu/virtualbacon0x, 142K followers, grid links public. First carousel click opened sign-up/log-in-to-see-post gate. Stopped without bypass. Search snippet about three quarter-long altcoin pumps is not treated as full-source new evidence."
+        },
+        {
+          "name": "YouTube main upload inventory",
+          "url": "https://www.youtube.com/@VirtualBacon/videos",
+          "status": "checked",
+          "checkedAt": "2026-10-04T20:59:51Z",
+          "detail": "Latest upload GRHh5mOLNrs Is It Too Late to Buy Altcoins in This Bitcoin Bull Run? marked 2 days ago; next dhPAtH7zZF8 and h_C-MbQRPWI 3 days ago. No post-cutoff long-form upload found in latest inventory."
+        },
+        {
+          "name": "YouTube live inventory",
+          "url": "https://www.youtube.com/@VirtualBacon/streams",
+          "status": "checked",
+          "checkedAt": "2026-10-04T21:00:45Z",
+          "detail": "Latest live VHCDMCPPPaA Bitcoin Is Breaking Out. Are Altcoins the Better Buy Now? streamed 2 days ago. Next rHMO89SM_Dk 3 days and HGh4qglSpEk 4 days. No new stream found."
+        },
+        {
+          "name": "YouTube Shorts inventory",
+          "url": "https://www.youtube.com/@VirtualBacon/shorts",
+          "status": "partial",
+          "checkedAt": "2026-10-04T21:01:07Z",
+          "detail": "Latest grid provides titles and IDs, not dates. Parent supplied Uab0jAveKnI actual transcript is Sept30 parent-video recut. Inventory alone cannot establish new post-cutoff shorts."
+        },
+        {
+          "name": "Hourly Telegram collector",
+          "url": "https://github.com/seachef/ses-chef-labs/actions/runs/37221358844",
+          "status": "unavailable",
+          "checkedAt": "2026-10-04T21:04:24Z",
+          "detail": "Existing17:39UTC run failed at retired-dashboard.test.cjs route harness: walletHistoryController is not defined. Public-channel collection step skipped. Full direct Telegram review completed independently in this research run; workflow/code unchanged."
+        },
+        {
+          "name": "Paid/private community",
+          "url": "https://thecoiners.io",
+          "status": "excluded",
+          "checkedAt": "2026-10-04T21:05:45Z",
+          "detail": "Not connected; no paid/private content accessed."
+        }
+      ],
+      "newIds": [
+        "telegram:virtualbacon:2380",
+        "telegram:virtualbacon:2381",
+        "x:2106797335452029191",
+        "x:2106783948655235267",
+        "x:2106723110812618857"
+      ],
+      "revisedIds": []
     }
   ]
 }
