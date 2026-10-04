@@ -53,10 +53,18 @@ export function groupHoldings(model){
   return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,unitPriceUsd:quote?.price_usd??null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
 export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;if(Array.isArray(model.wallets)){const ids=new Set([...(model.balances||[]),...(model.stakes||[])].map(r=>r.wallet_id));if(model.wallets.length!==s.expected_wallets||model.wallets.some(w=>w.provider_status==='provider_pending'||!ids.has(w.id))||ids.size!==model.wallets.length)return null;}return s.held_value_aud??null;}
-export function pricedHoldingsSummary(holdings){
-  const priced=holdings.filter(h=>h.aud!=null),held=holdings.filter(h=>h.quantity!=='0');
-  return {value:priced.length?decimalSum(priced.map(h=>h.aud)):null,pricedAssets:held.filter(h=>h.aud!=null).length,unpricedAssets:held.filter(h=>h.aud==null).length};
+export function pricedHoldingsSummary(holdings,currency='AUD'){
+  const key=currency==='USD'?'usd':'aud',held=holdings.filter(h=>h.quantity!=='0'),priced=held.filter(h=>h[key]!=null);
+  return {value:priced.length?decimalSum(priced.map(h=>h[key])):null,pricedAssets:priced.length,unpricedAssets:held.length-priced.length};
 }
+/** Current saved valuation only; never fabricates FX, wallet coverage or a complete total. */
+export function displayValuation(model){
+  const currency=verifiedFx(model?.snapshot)?'AUD':'USD',holdings=groupHoldings(model),priced=pricedHoldingsSummary(holdings,currency),total=currency==='AUD'?portfolioTotal(model):null;
+  const pending=(model?.wallets||[]).filter(w=>w.provider_status==='provider_pending');
+  return {...priced,currency,total,value:total??priced.value,pendingWallets:pending.length,pendingNetworks:[...new Set(pending.map(w=>w.network==='solana'?'Solana':w.network||'Unknown network'))],incomplete:total==null||pending.length>0,label:total!=null?'Portfolio value':`Priced holdings subtotal · ${currency}`};
+}
+export function valuationMoney(value,currency='AUD'){return currency==='USD'?priceUsd(value):aud(value);}
+export function fxReferenceDate(snapshot){const date=snapshot?.provenance?.valuation?.fx?.provider_observation_date;return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(Date.parse(date+'T00:00:00Z'))&&new Date(date+'T00:00:00Z').toISOString().slice(0,10)===date?date:null;}
 export function historyPoints(history,days,now=Date.now()){
   const cutoff=now-days*86400000;return (history||[]).filter(s=>Number.isFinite(Date.parse(s.observed_at))&&Date.parse(s.observed_at)>=cutoff&&Date.parse(s.observed_at)<=now+60000).sort((a,b)=>Date.parse(a.observed_at)-Date.parse(b.observed_at)).map(s=>({at:s.observed_at,value:!valuationContext(s).carried&&s.status==='complete'&&verifiedFx(s)&&s.observed_wallets===s.expected_wallets&&s.unpriced_assets===0?s.held_value_aud??null:null,status:s.status}));
 }

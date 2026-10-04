@@ -1,6 +1,6 @@
 /** Pure display helpers for recorded holdings changes; no fetch, storage or synthetic history. */
-import { signedDecimalDifference, recordedHistorySummary } from './history.mjs?v=20261002.details1';
-import { valuationContext } from './model.mjs?v=20261003.personal1';
+import { signedDecimalDifference, recordedHistorySummary, signedUsd } from './history.mjs?v=20261004.value1';
+import { valuationContext, fxReferenceDate } from './model.mjs?v=20261004.value1';
 
 const DAY = 86400000;
 const BALANCE_MAX_AGE = 36 * 3600000;
@@ -83,10 +83,12 @@ function freshness(currentModel, now) {
   const quote = dated(quoteTimes.length ? iso(Math.min(...quoteTimes)) : null,
     quoteTimes.length ? iso(Math.max(...quoteTimes)) : null, now, QUOTE_MAX_AGE);
   quote.label = quote.unavailable ? 'Quote time unavailable' : `${quote.stale ? 'Stale quotes' : 'Quotes observed'} · ${timestampLabel(quote.at)}`;
-  const fx = dated(positive(snapshot?.usd_to_aud) && hasText(snapshot?.fx_source) ? snapshot.fx_observed_at : null,
+  const referenceDate = fxReferenceDate(snapshot);
+  const fx = dated(positive(snapshot?.usd_to_aud) && hasText(snapshot?.fx_source) ? (referenceDate ? referenceDate+'T00:00:00Z' : snapshot.fx_observed_at) : null,
     null, now, FX_MAX_AGE);
   fx.source = hasText(snapshot?.fx_source) ? snapshot.fx_source : null;
-  fx.label = fx.unavailable ? 'FX time unavailable' : `${fx.stale ? 'Stale FX' : 'FX observed'} · ${timestampLabel(fx.at)}`;
+  fx.referenceDate = referenceDate;
+  fx.label = referenceDate ? `${fx.stale ? 'Stale FX' : 'FX'} reference date · ${referenceDate}` : fx.unavailable ? 'FX time unavailable' : `${fx.stale ? 'Stale FX' : 'FX observed'} · ${timestampLabel(fx.at)}`;
   return { balance, quote, fx, valuationAt: iso(time(context.valuedAt)),
     lastVerifiedAt: balance.at, stale: balance.stale || quote.stale || fx.stale };
 }
@@ -123,7 +125,7 @@ function comparison(summary, currentModel, now) {
   if (!endpoint || endpoint.at !== summary.endpointAt) return { reason: 'current_model_mismatch' };
   // A caller must not reuse another account's or an older model's summary just
   // because its snapshot ID/time matches. Revalidate the supplied endpoint.
-  const actual = recordedHistorySummary({ currentModel, models: [], rangeKey: '1D', now }).points
+  const actual = recordedHistorySummary({ currentModel, models: [], rangeKey: '1D', now, allowPartial:summary.partialCoverage===true, currency:summary.currency }).points
     .find(p => p.snapshotId === currentModel.snapshot.id);
   if (!actual?.eligible || actual.scopeKey !== endpoint.scopeKey || actual.value !== endpoint.value || actual.at !== endpoint.at)
     return { reason: 'current_model_mismatch' };
@@ -154,28 +156,28 @@ function comparison(summary, currentModel, now) {
 export function portfolioHeadline({ summary = null, currentModel = null, now } = {}) {
   const nowMs = now instanceof Date ? now.getTime() : typeof now === 'string' ? Date.parse(now) : now;
   if (!Number.isFinite(nowMs)) throw new TypeError('A valid current time is required');
-  const fresh = freshness(currentModel, nowMs), result = comparison(summary, currentModel, nowMs);
+  const fresh = freshness(currentModel, nowMs), result = comparison(summary, currentModel, nowMs), currency = summary?.partialCoverage===true&&summary.currency==='USD'?'USD':'AUD';
   const available = result.reason === null;
   const percent = available ? formatSignedPercent(result.change, result.baseline.value) : null;
   const observedSpan = available ? spanLabel(result.spanMs) : null;
   const freshnessReason = fresh.balance.unavailable ? 'balance_time_unavailable' :
-    fresh.quote.unavailable ? 'quote_time_unavailable' : fresh.fx.unavailable ? 'fx_time_unavailable' : null;
+    fresh.quote.unavailable ? 'quote_time_unavailable' : currency==='AUD'&&fresh.fx.unavailable ? 'fx_time_unavailable' : null;
   const status = fresh.stale ? 'stale' : available && !freshnessReason ? 'available' : 'unavailable';
   const stateLabel = status === 'stale' ? 'Stale data' : status === 'available' ? 'Recorded change' :
     available ? 'Observation time unavailable' : 'Change unavailable';
   return {
-    range: '1D', status, stateLabel, reason: result.reason, freshnessReason,
+    range: '1D', currency, status, stateLabel, reason: result.reason, freshnessReason,
     reasonLabel: available ? null : REASONS[result.reason] || 'Comparable 1D observations unavailable',
     changeAvailable: available, change: available ? result.change : null,
-    changeFormatted: available ? signedAud(result.change) : '—',
+    changeFormatted: available ? (currency==='USD'?signedUsd(result.change):signedAud(result.change)) : '—',
     percentAvailable: percent !== null, percentFormatted: percent ?? '—',
     percentReason: available && percent === null ? 'zero_baseline' : available ? null : result.reason,
     direction: !available ? null : parts(result.change, true).n === 0n ? 'flat' : result.change.startsWith('-') ? 'down' : 'up',
-    changeLabel: '1D holdings value change',
+    changeLabel: summary?.partialCoverage?`1D holdings value change · ${currency}`:'1D holdings value change',
     rangeLabel: observedSpan ? `1D · ${observedSpan} observed` : '1D · comparison unavailable',
     spanLabel: observedSpan, spanMs: available ? result.spanMs : null,
     baselineAt: available ? result.baseline.at : null, endpointAt: available ? result.endpoint.at : null,
-    scopeLabel: !available ? null : result.endpoint.scope?.valuationKind === 'complete_valuation' ? 'Complete observed holdings' : 'Priced holdings subtotal',
+    scopeLabel: !available ? null : result.endpoint.scope?.valuationKind === 'complete_valuation' ? 'Complete observed holdings' : summary?.partialCoverage?`Priced holdings subtotal · ${currency}`:'Priced holdings subtotal',
     note: 'Includes deposits, withdrawals and market changes; cash flows are not adjusted',
     ...fresh
   };

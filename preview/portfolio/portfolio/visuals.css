@@ -11,3 +11,5 @@
 @media(max-width:720px){.portfolio-centrepiece .pv-performance{padding:10px 19px 20px}.portfolio-centrepiece .pv-empty{min-height:220px}.portfolio-centrepiece .pv-chart{min-height:180px}.portfolio-centrepiece .pv-section-head h3{font-size:14px}.portfolio-centrepiece .pv-ranges{max-width:none}.portfolio-centrepiece .pv-note{font-size:10px!important}.pv-badge{letter-spacing:.05em}}
 
 .pv-interactive-chart{width:100%;height:340px;min-height:260px;position:relative;overflow:hidden;touch-action:pan-y}.pv-reset{font:650 11px var(--sans);min-height:38px;padding:7px 12px;background:#0b2026;border:1px solid #61827755;color:var(--aqua);border-radius:10px;margin-top:10px}.chart-attribution{font-size:9px;color:var(--muted);margin:12px 0 0;line-height:1.6}.pv-holdings-chart-canvas{position:relative}.pv-chart-wrap>svg[hidden]{display:none!important}@media(max-width:720px){.pv-interactive-chart{height:300px}.portfolio-centrepiece .pv-performance{padding-inline:14px}}
+
+.pv-current-value{font:750 clamp(23px,3vw,30px)/1.25 var(--sans,system-ui);margin:16px 0 5px}.pv-current-value span{display:block;font-size:11px;font-weight:500;line-height:1.6;color:#b6cbc8;margin-top:5px}

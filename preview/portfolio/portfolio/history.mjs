@@ -1,6 +1,6 @@
 /** Recorded observations only. These values are holdings changes, never investment returns. */
 import { multiplyDecimals, rawUnits } from './domain.mjs';
-import { COINS, decimalSum } from './model.mjs?v=20261002.details1';
+import { COINS, decimalSum, fxReferenceDate } from './model.mjs?v=20261004.value1';
 
 export const RANGE_OPTIONS = Object.freeze([
   { key: '1H', label: '1H' }, { key: '1D', label: '1D' },
@@ -62,12 +62,12 @@ function quoteProblem(row, valuedAt) {
   if (age < -60000 || age > 30 * 60000) return 'stale_price';
   return null;
 }
-function recordedPoint(model, now) {
+function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = {}) {
   const s = model?.snapshot, p = s?.provenance || {}, v = p.valuation || {};
   const atMs = time(v.balance_as_of_start) ?? time(s?.observed_at);
   const endMs = time(v.balance_as_of_end) ?? atMs;
   const result = {
-    snapshotId: s?.id || null, at: iso(atMs), balanceAt: iso(atMs), endAt: iso(endMs), value: null,
+    currency, snapshotId: s?.id || null, at: iso(atMs), balanceAt: iso(atMs), endAt: iso(endMs), value: null,
     eligible: false, reason: null, scope: null, scopeKey: null,
     completedAt: s?.completed_at || null, priceUsd: null, priceAt: null,
     coverage: { expectedWallets: s?.expected_wallets ?? null, observedWallets: s?.observed_wallets ?? null,
@@ -84,9 +84,13 @@ function recordedPoint(model, now) {
   const method = text(p.inventory_method) ? p.inventory_method : p.import_kind === 'read_only_collector' ? 'read_only_collector' : null;
   // New inventory methods must receive an explicit completeness rule before use.
   if (method !== 'read_only_collector' || typeof p.known_asset_inventory_only !== 'boolean') return fail('inventory_method_unknown');
-  const a = model.account, wallets = model.wallets;
+  const a = model.account, configuredWallets = model.wallets;
+  const pendingWallets = allowPartial && Array.isArray(configuredWallets) ? configuredWallets.filter(w => w?.provider_status === 'provider_pending') : [];
+  const wallets = Array.isArray(configuredWallets) ? configuredWallets.filter(w => !pendingWallets.includes(w)) : configuredWallets;
   if (!text(a?.id) || !text(a.owner_id) || s.account_id !== a.id || s.owner_id !== a.owner_id) return fail('account_scope_mismatch');
-  if (!Array.isArray(wallets) || !wallets.length || !Number.isInteger(s.expected_wallets) || s.expected_wallets !== wallets.length || s.observed_wallets !== s.expected_wallets) return fail('wallet_coverage_incomplete');
+  if (!Array.isArray(wallets) || !wallets.length || !Number.isInteger(s.expected_wallets) || s.expected_wallets !== configuredWallets.length || s.observed_wallets !== wallets.length) return fail('wallet_coverage_incomplete');
+  if (configuredWallets.some(w => !w || !text(w.id) || w.account_id !== a.id || w.owner_id !== a.owner_id) || new Set(configuredWallets.map(w => w.id)).size !== configuredWallets.length) return fail('wallet_scope_mismatch');
+  result.coverage.pendingWallets = pendingWallets.map(w => ({ id: w.id, network: w.network || 'unknown' })).sort((x, y) => x.id.localeCompare(y.id));
   if (wallets.some(w => !w || !text(w.id) || w.account_id !== a.id || w.owner_id !== a.owner_id)) return fail('wallet_scope_mismatch');
   const walletIds = unique(wallets.map(w => w.id));
   result.coverage.walletIds = walletIds;
@@ -99,9 +103,12 @@ function recordedPoint(model, now) {
   if (rows.some(r => r.snapshot_id !== s.id || r.account_id !== a.id || r.owner_id !== a.owner_id || !walletById.has(r.wallet_id) || walletById.get(r.wallet_id).chain_id !== r.chain_id)) return fail('row_scope_mismatch');
   const valuedAt = time(v.valued_at) ?? time(s.completed_at);
   if (valuedAt == null || valuedAt < endMs || valuedAt > now + 60000) return fail('valuation_time_unverified');
-  const fxAt = time(s.fx_observed_at);
-  if (!positive(s.usd_to_aud) || fxAt == null || !text(s.fx_source)) return fail('fx_unavailable');
-  if (valuedAt - fxAt < -60000 || valuedAt - fxAt > 7 * 86400000) return fail('stale_fx');
+  const referenceDate = fxReferenceDate(s);
+  const fxAt = referenceDate ? time(referenceDate + 'T00:00:00Z') : v.fx?.provider_observation_date != null ? null : time(s.fx_observed_at);
+  if (currency === 'AUD') {
+    if (!positive(s.usd_to_aud) || fxAt == null || !text(s.fx_source)) return fail('fx_unavailable');
+    if (valuedAt - fxAt < -60000 || valuedAt - fxAt > 7 * 86400000) return fail('stale_fx');
+  }
 
   const groups = new Map(), seenBalances = new Set(), seenStakes = new Set();
   const perWallet = new Map(walletIds.map(id => [id, []]));
@@ -135,7 +142,12 @@ function recordedPoint(model, now) {
     result.coverage.inventory = inventory;
     // A known collector always emits all six liquid rows for every wallet, including zeros.
     // A dropped zero or liquid row must not turn into a silently smaller subtotal.
-    if (method === 'read_only_collector' && wallets.some(w => !equal(unique(perWallet.get(w.id)), COLLECTOR_INVENTORY))) return fail('asset_rows_incomplete');
+    if (method === 'read_only_collector' && wallets.some(w => {
+      const recorded = unique(perWallet.get(w.id));
+      return allowPartial ? COLLECTOR_INVENTORY.some(id => !recorded.includes(id)) : !equal(recorded, COLLECTOR_INVENTORY);
+    })) return fail('asset_rows_incomplete');
+    if (allowPartial && balances.some(row => !COLLECTOR_INVENTORY.includes(identity(row)) &&
+      (row.provenance?.token_discovery !== true || row.provenance?.balance_block_scope !== 'read_window' || !['complete', 'partial'].includes(p.token_discovery?.status)))) return fail('inventory_method_unknown');
     const assets = [...groups.values()].sort((x, y) => x.identity.localeCompare(y.identity)).map(g => {
       // Individual rows are uint256, but their cross-wallet sum may exceed uint256.
       const liquid = fromParts(g.liquidRaw, g.decimals), staked = fromParts(g.stakedRaw, g.decimals);
@@ -146,7 +158,7 @@ function recordedPoint(model, now) {
       if (quote && quotes.some(q => time(q.price_observed_at) === time(quote.price_observed_at) && signedDecimalDifference(q.price_usd, quote.price_usd) !== '0')) reason = 'conflicting_prices';
       const usd = !reason && quote ? multiplyDecimals(quantity, quote.price_usd) : null;
       return { identity: g.identity, key: g.key, symbol: g.symbol, decimals: g.decimals, liquid, staked, quantity,
-        usd, value: usd == null ? null : multiplyDecimals(usd, s.usd_to_aud), priceUsd: reason ? null : quote?.price_usd ?? null,
+        usd, value: usd == null ? null : currency === 'USD' ? usd : multiplyDecimals(usd, s.usd_to_aud), priceUsd: reason ? null : quote?.price_usd ?? null,
         priceAt: reason ? null : quote?.price_observed_at ?? null, priceSource: reason ? null : quote?.price_source ?? null, reason };
     });
     result.assets = assets;
@@ -154,16 +166,17 @@ function recordedPoint(model, now) {
     result.coverage.excluded = assets.filter(a => a.value == null).map(a => ({ identity: a.identity, reason: a.reason }));
     result.coverage.pricedAssets = assets.filter(a => a.value != null && a.quantity !== '0').length;
     result.coverage.unpricedAssets = assets.filter(a => a.value == null && a.quantity !== '0').length;
-    const scope = { ownerId: a.owner_id, accountId: a.id, walletIds, inventory,
+    const scope = { currency, partialCoverageAllowed: allowPartial, ownerId: a.owner_id, accountId: a.id, walletIds, inventory,
+      pendingWallets: result.coverage.pendingWallets, discoveryStatus: p.token_discovery?.status || null,
       walletInventory: walletIds.map(id => ({ walletId: id, inventory: unique(perWallet.get(id)) })),
       included: result.coverage.included, excluded: result.coverage.excluded,
       knownAssetInventoryOnly: p.known_asset_inventory_only, inventoryMethod: method, basis: v.basis,
-      valuationKind: s.status === 'complete' && v.full_valuation_available === true ? 'complete_valuation' : 'priced_holdings_subtotal',
+      valuationKind: allowPartial ? 'priced_observed_subtotal' : s.status === 'complete' && v.full_valuation_available === true ? 'complete_valuation' : 'priced_holdings_subtotal',
       excludedCoverage: result.coverage.excludedCoverage };
     result.scope = scope; result.scopeKey = JSON.stringify(scope);
     const unexpected = assets.find(a => a.value == null && a.identity !== SHOGUN);
-    if (unexpected) return fail(unexpected.reason || 'price_unavailable');
-    if (!result.coverage.included.length) return fail('no_priced_holdings');
+    if (!allowPartial && unexpected) return fail(unexpected.reason || 'price_unavailable');
+    if (!result.coverage.included.length || allowPartial && assets.some(a => a.quantity !== '0') && !assets.some(a => a.value != null && a.quantity !== '0')) return fail('no_priced_holdings');
     result.value = decimalSum(assets.filter(a => a.value != null).map(a => a.value));
     result.eligible = true;
     return result;
@@ -195,7 +208,9 @@ function projectCoin(point, tokenIdentity, metric) {
  * never borrow an out-of-range baseline. A change is the endpoint minus baseline.
  * Price graphs retain balance-observation x coordinates and expose priceAt separately.
  */
-export function recordedHistorySummary({ currentModel, models = [], rangeKey = '1D', now = Date.now(), coinKey = null, metric = 'value', historyLimited = false } = {}) {
+export function recordedHistorySummary({ currentModel, models = [], rangeKey = '1D', now = Date.now(), coinKey = null, metric = 'value', historyLimited = false, currency = 'AUD', allowPartial = false } = {}) {
+  allowPartial = allowPartial === true && coinKey == null;
+  currency = allowPartial && currency === 'USD' ? 'USD' : 'AUD';
   metric = coinKey != null && metric === 'price' ? 'price' : 'value';
   const range = Object.hasOwn(WINDOWS, rangeKey) ? rangeKey : '1D';
   const nowMs = now instanceof Date ? now.getTime() : typeof now === 'string' ? Date.parse(now) : now;
@@ -206,7 +221,7 @@ export function recordedHistorySummary({ currentModel, models = [], rangeKey = '
   for (const model of Array.isArray(models) ? models : []) if (model?.snapshot?.id) byId.set(model.snapshot.id, model);
   if (currentId) byId.set(currentId, currentModel);
   const tokenIdentity = coinKey == null ? null : coinIdentity(currentModel, coinKey);
-  let observations = [...byId.values()].map(model => recordedPoint(model, nowMs));
+  let observations = [...byId.values()].map(model => recordedPoint(model, nowMs, { currency, allowPartial }));
   if (coinKey != null) observations = observations.map(point => projectCoin(point, tokenIdentity, metric));
   const undated = observations.filter(p => p.at == null);
   const byTime = new Map();
@@ -234,8 +249,8 @@ export function recordedHistorySummary({ currentModel, models = [], rangeKey = '
   }
   const change = reason ? null : signedDecimalDifference(endpoint.value, baseline.value);
   return {
-    range, cutoffAt: Number.isFinite(cutoff) ? iso(cutoff) : null, points, change,
-    changeAvailable: change !== null, changeFormatted: change == null ? '—' : metric === 'price' ? signedUsd(change) : signedAud(change),
+    currency, partialCoverage: allowPartial, range, cutoffAt: Number.isFinite(cutoff) ? iso(cutoff) : null, points, change,
+    changeAvailable: change !== null, changeFormatted: change == null ? '—' : metric === 'price' || currency === 'USD' ? signedUsd(change) : signedAud(change),
     baselineAt: baseline?.at || null, baselineEndAt: baseline?.endAt || null,
     endpointAt: endpoint?.at || null, endpointEndAt: endpoint?.endAt || null,
     spanMs: baseline && endpoint ? time(endpoint.at) - time(baseline.at) : null,
