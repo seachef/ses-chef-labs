@@ -14,7 +14,7 @@ let privacyHidden=false;
 const currencyStorageKey='seaChef.display.currency.v1';let preferredCurrency=null;
 try{const saved=globalThis.sessionStorage?.getItem(currencyStorageKey);if(['USD','AUD'].includes(saved))preferredCurrency=saved;}catch{}
 const currentCurrency=()=>preferredCurrency||(model?displayValuation(model).currency:'AUD');
-function syncCurrencyControls(){for(const button of document.querySelectorAll('[data-display-currency]'))button.setAttribute('aria-pressed',String(button.dataset.displayCurrency===currentCurrency()));for(const heading of document.querySelectorAll('.holdings-table thead th:last-child'))heading.textContent='Indicative '+currentCurrency();}
+function syncCurrencyControls(){if(!model?.snapshot)$('portfolioValue').textContent=(currentCurrency()==='USD'?'US$':'A$')+' —';for(const button of document.querySelectorAll('[data-display-currency]'))button.setAttribute('aria-pressed',String(button.dataset.displayCurrency===currentCurrency()));for(const heading of document.querySelectorAll('.holdings-table thead th:last-child'))heading.textContent='Indicative '+currentCurrency();}
 document.addEventListener('click',event=>{const button=event.target.closest('[data-display-currency]');if(!button)return;const next=button.dataset.displayCurrency;if(!['USD','AUD'].includes(next))return;preferredCurrency=next;try{globalThis.sessionStorage?.setItem(currencyStorageKey,next);}catch{}syncCurrencyControls();if(model)renderModel();else void renderVisuals();detailViews?.update({force:true});});
 function setPrivacyHidden(hidden){
   privacyHidden=hidden;
