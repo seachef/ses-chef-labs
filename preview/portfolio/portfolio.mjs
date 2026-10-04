@@ -1,6 +1,6 @@
 import { AUTH_CONFIG } from './portfolio/auth-config.mjs?v=20261001.data2';
 import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs?v=20261001.data2';
-import { COINS, SOCIALS, safeURL, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate } from './portfolio/model.mjs?v=20261004.compact1';
+import { COINS, SOCIALS, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate } from './portfolio/model.mjs?v=20261004.compact1';
 import { formatUnits } from './portfolio/domain.mjs?v=20261001.data2';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261003.personal1';
 const $=id=>document.getElementById(id);
@@ -44,7 +44,7 @@ function openDetailRoute(){if(!detailViews&&['#overview','#holdings'].includes(l
 document.addEventListener('click',event=>{const launcher=event.target.closest('a[href="#overview"],a[href="#holdings"]'),coin=event.target.closest('[data-coin-key]'),before=location.hash,shownModel=model;if(launcher){event.preventDefault();const target=launcher.getAttribute('href');void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openPortfolio(launcher,target);});}else if(coin&&!detailViews){event.preventDefault();void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openCoin(coin.dataset.coinKey,coin);});}});
 window.addEventListener('hashchange',openDetailRoute);
 let visibleView='portfolio',stakingReturnView='portfolio';
-let model=null,accountModels=[],requestId=0,busy=false,toastTimer=null,authStatus='not-configured',researchBusy=false;
+let model=null,accountModels=[],requestId=0,busy=false,toastTimer=null,authStatus='not-configured';
 function toast(message){$('statusToast').textContent=message;$('statusToast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{$('statusToast').hidden=true;},7000);}
 function clearPrivate({keepAccounts=false}={}){
   if(!keepAccounts){accountModels=[];$('accountList').replaceChildren();$('accountSection').hidden=true;}
@@ -230,32 +230,21 @@ function route(){
   if(staking){
     if(!$('stakingDialog').open){stakingReturnView=visibleView;$('stakingDialog').showModal();}
   }else{
-    visibleView=['portfolio','research','tools','plan'].includes(name)?name:'portfolio';
+    visibleView=['portfolio','tools','plan'].includes(name)?name:'portfolio';
     if($('stakingDialog').open)$('stakingDialog').close();
   }
-  for(const v of ['portfolio','research','tools','plan'])$(v+'View').hidden=v!==visibleView;
+  for(const v of ['portfolio','tools','plan'])$(v+'View').hidden=v!==visibleView;
   document.querySelectorAll('[data-route]').forEach(link=>{if(link.dataset.route===(staking?'staking':visibleView))link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-  document.title=`Sea Chef Labs · ${staking?'Staking & rewards':{portfolio:'Portfolio',research:'Research',tools:'Wallets & trading',plan:'Spot trade plan'}[visibleView]}`;
+  document.title=`Sea Chef Labs · ${staking?'Staking & rewards':{portfolio:'Portfolio',tools:'Wallets & trading',plan:'Spot trade plan'}[visibleView]}`;
   if(visibleView==='plan')void loadTradePlanner();
-  if(visibleView==='research')void loadResearch();if(visibleView==='portfolio'&&model)renderHistory();
+  if(visibleView==='portfolio'&&model)renderHistory();
 }
 $('closeStakingWindow').addEventListener('click',closeStakingWindow);
 $('stakingDialog').addEventListener('cancel',event=>{event.preventDefault();closeStakingWindow();});
-async function loadResearch(){
-  if(researchBusy)return;researchBusy=true;$('refreshResearch').disabled=true;
-  try{const response=await fetch('../../data/bacon-shortlist.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(!response.ok)throw Error();const d=await response.json();if(d.schema!==1||d.paperOnly!==true||!Array.isArray(d.sourceChecks)||!Array.isArray(d.watchlist)||!Number.isFinite(Date.parse(d.checkedAt)))throw Error();
-    const age=Date.now()-Date.parse(d.checkedAt),stale=age>26*3600000||age< -60000;
-    $('researchChecked').textContent=`Checked ${when(d.checkedAt)} · ${stale?'Stale record':d.status==='partial'?'Partial source coverage':d.status==='unavailable'?'Source check unavailable':'Saved source check'}`;
-    $('researchSummary').textContent=d.summary||'No complete current paper setup verified.';
-    $('researchCards').innerHTML=d.watchlist.slice(0,3).map(r=>`<article class="research-card"><h3>${esc(r.symbol)}</h3><small>Incomplete research · Not a buy call</small><p>${esc(r.note)}</p>${safeURL(r.sourceUrl)?`<a href="${esc(safeURL(r.sourceUrl))}" target="_blank" rel="noopener noreferrer">Original source</a>`:''}</article>`).join('')||'<p>No additional source-linked watch notes in this record.</p>';
-    $('researchSources').innerHTML=d.sourceChecks.map(s=>`<p>${safeURL(s.url)?`<a href="${esc(safeURL(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.name)}</a>`:esc(s.name)} · ${esc(s.status)}<br>${esc(s.detail||'')}<br>${esc(when(s.checkedAt))}</p>`).join('');
-  }catch{$('researchChecked').textContent='Saved research unavailable';$('researchSummary').textContent='The research record could not be loaded. Try again or open the paper desk.';$('researchCards').replaceChildren();$('researchSources').replaceChildren();}
-  finally{researchBusy=false;$('refreshResearch').disabled=false;}
-}
 function renderSocials(links={}){document.querySelectorAll('[data-social]').forEach(link=>{const item=SOCIALS.find(s=>s.id===link.dataset.social);link.href=socialURL(item.id,links[item.id])||item.url;});}
 $('accountButton').addEventListener('click',openConnection);$('manageWallets').addEventListener('click',()=>{if(!model)openConnection();else{$('walletsTitle').scrollIntoView({block:'center',behavior:'auto'});$('walletsTitle').focus();}});document.addEventListener('click',event=>{if(event.target.closest('[data-connection]'))openConnection();});
 for(const id of ['closeConnection','dismissConnection'])$(id).addEventListener('click',()=>$('connectionDialog').close());
-$('refreshPortfolio').addEventListener('click',()=>void refreshPortfolio({announce:true,collect:true}));$('checkConnection').addEventListener('click',()=>void refreshPortfolio({announce:true}));$('refreshResearch').addEventListener('click',()=>void loadResearch());
+$('refreshPortfolio').addEventListener('click',()=>void refreshPortfolio({announce:true,collect:true}));$('checkConnection').addEventListener('click',()=>void refreshPortfolio({announce:true}));
 $('signOut').addEventListener('click',async()=>{++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;try{await adapter.signOut();$('connectionResult').textContent='Signed out. Private balances cleared.';}catch{$('connectionResult').textContent='Balances cleared from this page. Service sign-out could not be confirmed.';}});
 window.addEventListener('hashchange',route);
 const onAuthChange=(event,ownerId)=>{if(event==='SIGNED_IN'&&ownerId&&(!model||ownerId!==model.account.owner_id)){if(model&&ownerId!==model.account.owner_id)walletChooser?.clear();++requestId;busy=false;clearPrivate();}if(['SIGNED_OUT','USER_DELETED'].includes(event)){++requestId;busy=false;walletChooser?.clear();clearPrivate();connectionCopy('signed-out');$('refreshPortfolio').disabled=false;$('checkConnection').disabled=false;$('refreshPortfolio').removeAttribute('aria-busy');$('refreshPortfolio').innerHTML=initialRefreshButton;}else if(['SIGNED_IN','TOKEN_REFRESHED'].includes(event)){queueMicrotask(()=>void refreshPortfolio());}};

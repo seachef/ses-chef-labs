@@ -30,7 +30,7 @@ jobs:
         run: python -m unittest discover -s scripts -p 'test_*.py'
       - name: Test paper shortlist
         run: |
-          node --test scripts/bacon-shortlist.test.cjs
+          node --test scripts/bacon-shortlist.test.cjs scripts/retired-dashboard.test.cjs
           node scripts/validate-bacon-shortlist.cjs
       - name: Check Bacon public channels
         run: python scripts/bacon-feed.py
@@ -45,9 +45,11 @@ jobs:
           fi
       - name: Prepare public site
         run: |
-          mkdir -p /tmp/bacon-site/data
+          mkdir -p /tmp/bacon-site/data /tmp/bacon-site/preview/portfolio
           cp index.html bacon-shortlist.js /tmp/bacon-site/
           cp data/*.json /tmp/bacon-site/data/
+          cp preview/portfolio/index.html preview/portfolio/portfolio.css preview/portfolio/portfolio.mjs /tmp/bacon-site/preview/portfolio/
+          cp -R preview/portfolio/assets preview/portfolio/portfolio preview/portfolio/vendor /tmp/bacon-site/preview/portfolio/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: /tmp/bacon-site
