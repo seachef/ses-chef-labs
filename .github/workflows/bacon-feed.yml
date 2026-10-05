@@ -1,7 +1,5 @@
 name: Bacon public feed
 on:
-  schedule:
-    - cron: '23 * * * *'
   workflow_dispatch:
   push:
     paths:
