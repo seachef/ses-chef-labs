@@ -26,11 +26,12 @@ export function createPortfolioAdapter(client=null){
   async function sameUser(ownerId){const auth=await session();return auth.status==='authenticated'&&auth.user.id===ownerId;}
   return {
     session,
-    async readPortfolio(accountId=null){
+    async readPortfolio(accountId=null,{accountKind=null}={}){
+      if(accountKind!==null&&!['smsf','personal'].includes(accountKind))throw TypeError('Unsupported account kind');
       const auth=await session();if(auth.status!=='authenticated')return {status:auth.status,model:null};
       const owner_id=auth.user.id;
-      let accounts;try{accounts=await rows('portfolio_accounts',{owner_id},{maxRows:20});}catch(error){if(['PGRST205','42P01'].includes(error.code))return {status:'setup-pending',model:null};throw error;}
-      accounts=accounts.filter(a=>['smsf','personal'].includes(a.kind)).sort((a,b)=>(a.kind==='smsf'?0:1)-(b.kind==='smsf'?0:1)||a.id.localeCompare(b.id));
+      let accounts;try{accounts=await rows('portfolio_accounts',{owner_id,...(accountKind?{kind:accountKind}:{})},{maxRows:20});}catch(error){if(['PGRST205','42P01'].includes(error.code))return {status:'setup-pending',model:null};throw error;}
+      accounts=accounts.filter(a=>['smsf','personal'].includes(a.kind)&&(!accountKind||a.kind===accountKind)).sort((a,b)=>(a.kind==='smsf'?0:1)-(b.kind==='smsf'?0:1)||a.id.localeCompare(b.id));
       if(!accounts.length)return {status:'no-account',model:null};
       if(new Set(accounts.map(a=>a.kind)).size!==accounts.length)throw Error('Choose a private account before loading balances');
       const models=[],identities=new Set();
