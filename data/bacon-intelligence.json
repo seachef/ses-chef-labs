@@ -151,6 +151,12 @@
   "tradeSetup": null,
   "posts": [
     {
+      "url": "https://t.me/virtualbacon/2382",
+      "channel": "virtualbacon",
+      "text": "Since Bitcoin bottomed, the average altcoin is only about 10% ahead of it. Venice and Quant ran, but most coins are still cheap. That's the start of a move, not alt season yet",
+      "publishedAt": "2026-10-04T20:40:33+00:00"
+    },
+    {
       "url": "https://t.me/virtualbacon/2380",
       "channel": "virtualbacon",
       "text": "☕️ GM! Here are the most important market events over the last 24 hours:\n\n🌍Market Overview:\n\n🔸 US-Russia talks on ending the Ukraine war now include a multibillion-dollar deal for Lukoil's global oil assets, with Todd Boehly in the buying group, per the NYT. A sanctions-relief path for Russian oil.\n\n🔸 DNI Jay Clayton is the Trump administration's new AI czar, leading a new \"Super Intelligence Force\" with 120 days to report on AI risks. A fresh policy overhang for AI stocks.\n\n🔸 German Chancellor Friedrich Merz arrived in Kyiv under air-raid sirens to release $1.13B in military aid, as Ukraine vowed to double down on hitting Russian oil refineries. More risk to Russian fuel exports.\n\n🔸 OpenAI safety staffer David Robinson, who led its safety reports, quit after three and a half years, saying its culture is broken. More pressure for oversight of the AI labs investors are pricing.\n\n🔸 The US plans to lend Vistra about $4.2B to uprate at least three of its four nuclear plants, with Energy Secretary Chris Wright set to announce it Monday. Federal money chasing AI-era power demand.\n\n🔸 Hong Kong equity markets raised a record $47.5B from July to September on AI deals. Capital for AI is going global.\n\n🪙Crypto Updates:\n\n🔸 Hyperliquid received $14.6M in USDC reserve yield for $HYPE buybacks, headed to its Assistance Fund through AQAv2, a recurring buyback source on top of trading fees.\n\n🔸 Grayscale's Zcash ETF (ZCSH) posted its first net-outflow week since the end of August, reversing the prior week's $35.2M intake, per Farside.\n\n🔸 Stellar's DeFi TVL hit a record of nearly $273M per DeFiLlama, a week after first climbing to about $265M.\n\n🔸 Midnight opened smart-contract deployment to more developers, and its $NIGHT token nearly doubled on the week, up 96.5%.\n\n🔸 Visa said business and commercial programs drove about 17% of its stablecoin-linked card volume in fiscal 2026 to date, as volume across 160+ programs grew nearly 200% year over year.\n\n🔸 Michael Saylor said Strategy's STRC preferred now runs 9% 30-day volatility vs 10% for SPY, calling it \"a milestone for Digital Credit.\"",
@@ -452,12 +458,12 @@
       "publishedAt": "2026-06-08T18:01:47+00:00"
     }
   ],
-  "checkedAt": "2026-10-04T13:18:11.303555+00:00",
+  "checkedAt": "2026-10-05T01:02:38.443276+00:00",
   "feedHealth": [
     {
       "channel": "virtualbacon",
       "ok": true,
-      "count": 19
+      "count": 18
     },
     {
       "channel": "vb_trade",
