@@ -52,6 +52,16 @@ export function groupHoldings(model){
   const fx=verifiedFx(model.snapshot);
   return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,unitPriceUsd:quote?.price_usd??null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
+/** List visibility only. Aggregate each selected asset before applying the exact $5 threshold. */
+export function visibleHoldings(holdings,currency='AUD'){
+  const key=currency==='USD'?'usd':'aud';
+  return holdings.filter(h=>{
+    if(/^0+(?:\.0+)?$/.test(h.quantity))return false;
+    const value=h[key];
+    // An unknown value cannot be classified as dust, including missing AUD conversion.
+    return typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value)||BigInt(value.split('.')[0])>=5n;
+  });
+}
 export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;if(Array.isArray(model.wallets)){const ids=new Set([...(model.balances||[]),...(model.stakes||[])].map(r=>r.wallet_id));if(model.wallets.length!==s.expected_wallets||model.wallets.some(w=>w.provider_status==='provider_pending'||!ids.has(w.id))||ids.size!==model.wallets.length)return null;}return s.held_value_aud??null;}
 export function pricedHoldingsSummary(holdings,currency='AUD'){
   const key=currency==='USD'?'usd':'aud',held=holdings.filter(h=>h.quantity!=='0'),priced=held.filter(h=>h[key]!=null);
