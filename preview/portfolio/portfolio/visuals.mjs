@@ -1,6 +1,5 @@
-/** Display-only, account-scoped portfolio visuals. Never fetch, cache or synthesize history. */
 import {createHoldingsChart} from './holdings-chart.mjs?v=20261004.wallet-view1';
-import {groupHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext,displayValuation,valuationMoney} from './model.mjs?v=20261004.compact1';
+import {groupHoldings,visibleHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext,displayValuation,valuationMoney} from './model.mjs?v=20261005.minimum2';
 import {recordedHistorySummary,RANGE_OPTIONS,signedDecimalDifference} from './history.mjs?v=20261004.compact1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const positive=v=>typeof v==='string'&&/^\d+(\.\d+)?$/.test(v)&&/[1-9]/.test(v);
@@ -24,7 +23,6 @@ export function allocationSummary(model,currencyChoice=null){
  const assets=priced.sort((a,b)=>{const d=signedDecimalDifference(b[key],a[key]);return d==='0'?a.key.localeCompare(b.key):d.startsWith('-')?-1:1;}).map((h,i)=>{const share=ratio(h[key],total);return {...h,share,percent:positive(h[key])&&share<.001?'<0.1%':(share*100).toFixed(1)+'%',color:colors[i%colors.length]};});
  return {currency,hasSnapshot:scope(model),pendingWallets,assets,total,pricedAssets:priced.length,unpricedAssets:held.length-priced.length,incomplete:pendingWallets>0||portfolioTotal(model)==null||model?.snapshot?.provenance?.known_asset_inventory_only===true,heldAssets:held.length,carried:valuationContext(model?.snapshot).carried};
 }
-/** Actual observation coordinates only; invalid rows remain explicit gaps. */
 export function chartGeometry(summary,{width=680,height=210,padding=22}={}){
  const points=summary?.points||[],dated=points.filter(p=>Number.isFinite(Date.parse(p.at))),eligible=dated.filter(p=>p.eligible&&valid(p.value));
  if(!eligible.length)return {points:[],gaps:dated.map(p=>({at:p.at})),undated:points.length-dated.length};
@@ -60,7 +58,7 @@ export function bindRecordedChart(container,summary){
 export function renderAllocation(model,currencyChoice=null){
  const a=allocationSummary(model,currencyChoice);let offset=0;
  const arcs=a.assets.filter(h=>h.share>0).map(h=>{const arc=`<circle class="pv-arc" cx="80" cy="80" r="62" pathLength="100" stroke="${h.color}" stroke-dasharray="${h.share*100} ${100-h.share*100}" stroke-dashoffset="${-offset}"/>`;offset+=h.share*100;return arc;}).join('');
- return `<section class="pv-allocation"><div class="pv-section-head"><h3>Allocation</h3><span class="pv-badge">PRICED HOLDINGS · ${a.currency}</span></div><div class="pv-allocation-body"><div class="pv-donut"><svg viewBox="0 0 160 160" aria-hidden="true" focusable="false"><circle class="pv-ring" cx="80" cy="80" r="62"/>${arcs}</svg><div><strong>${a.hasSnapshot?a.pricedAssets:'—'}</strong><span>${a.hasSnapshot?'priced '+(a.pricedAssets===1?'asset':'assets'):'Awaiting snapshot'}</span></div></div><ul class="pv-legend">${a.assets.map(h=>`<li><span class="pv-key" style="--pv-color:${h.color}"></span><span>${esc(h.symbol||'Token')}</span><strong>${esc(h.percent)}</strong></li>`).join('')||(a.hasSnapshot?'<li>No priced held assets yet</li>':'<li>No verified holdings snapshot</li>')}</ul></div><p class="pv-note">${a.incomplete?'Incomplete valuation. ':''}${a.pendingWallets?`${a.pendingWallets} wallet ${a.pendingWallets===1?'provider is':'providers are'} pending; those balances are unknown. `:''}${a.unpricedAssets?`${a.unpricedAssets} held ${a.unpricedAssets===1?'asset is':'assets are'} unpriced or excluded. `:''}Percentages use ${a.currency}-priced liquid holdings + staked principal only. Unminted rewards are excluded.${a.carried?' Balances are carried forward, not refreshed.':''}</p></section>`;
+ return `<section class="pv-allocation"><div class="pv-section-head"><h3>Allocation</h3><span class="pv-badge">PRICED HOLDINGS · ${a.currency}</span></div><div class="pv-allocation-body"><div class="pv-donut"><svg viewBox="0 0 160 160" aria-hidden="true" focusable="false"><circle class="pv-ring" cx="80" cy="80" r="62"/>${arcs}</svg><div><strong>${a.hasSnapshot?a.pricedAssets:'—'}</strong><span>${a.hasSnapshot?'priced '+(a.pricedAssets===1?'asset':'assets'):'Awaiting snapshot'}</span></div></div><ul class="pv-legend">${visibleHoldings(a.assets,a.currency).map(h=>`<li><span class="pv-key" style="--pv-color:${h.color}"></span><span>${esc(h.symbol||'Token')}</span><strong>${esc(h.percent)}</strong></li>`).join('')||(a.hasSnapshot?'<li>No priced holdings above $5</li>':'<li>No verified holdings snapshot</li>')}</ul></div><p class="pv-note">${a.incomplete?'Incomplete valuation. ':''}${a.pendingWallets?`${a.pendingWallets} wallet ${a.pendingWallets===1?'provider is':'providers are'} pending; those balances are unknown. `:''}${a.unpricedAssets?`${a.unpricedAssets} held ${a.unpricedAssets===1?'asset is':'assets are'} unpriced or excluded. `:''}Includes smaller holdings. Percentages use ${a.currency}-priced liquid holdings + staked principal only. Unminted rewards are excluded.${a.carried?' Balances are carried forward, not refreshed.':''}</p></section>`;
 }
 export function renderCoinSparkline(options={}){return renderRecordedChart(scopedHistory({...options,metric:'value'}),{compact:true});}
 const bindings=new WeakMap();
@@ -94,3 +92,4 @@ export function renderVisuals({container,model,historyModels=[],rangeKey='1D',no
  }
  const destroy=()=>{live=false;interactiveChart?.destroy();unbind();container.removeEventListener('click',click);if(bindings.get(container)===destroy)bindings.delete(container);};bindings.set(container,destroy);return {summary,allocation:a,destroy};
 }
+

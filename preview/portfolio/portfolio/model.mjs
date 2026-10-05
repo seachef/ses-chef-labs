@@ -59,7 +59,9 @@ export function visibleHoldings(holdings,currency='AUD'){
     if(/^0+(?:\.0+)?$/.test(h.quantity))return false;
     const value=h[key];
     // An unknown value cannot be classified as dust, including missing AUD conversion.
-    return typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value)||BigInt(value.split('.')[0])>=5n;
+    if(typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value))return true;
+    const [whole,fraction='']=value.split('.');
+    return BigInt(whole)>5n||(BigInt(whole)===5n&&/[1-9]/.test(fraction));
   });
 }
 export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;if(Array.isArray(model.wallets)){const ids=new Set([...(model.balances||[]),...(model.stakes||[])].map(r=>r.wallet_id));if(model.wallets.length!==s.expected_wallets||model.wallets.some(w=>w.provider_status==='provider_pending'||!ids.has(w.id))||ids.size!==model.wallets.length)return null;}return s.held_value_aud??null;}
@@ -104,3 +106,4 @@ export function compactQuantity(value){
   return roundedDisplay(normal,first+4);
 }
 export function priceUsd(value){if(value==null||!/^\d+(\.\d+)?$/.test(String(value)))return 'Unavailable';return BigInt(String(value).split('.')[0])>0n?aud(value).replace('A$','US$'):'US$'+compactQuantity(value);}
+
