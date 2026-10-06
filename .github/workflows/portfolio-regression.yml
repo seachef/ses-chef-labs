@@ -26,4 +26,7 @@ jobs:
         with:
           node-version: 22
       - name: Run portfolio regression tests
-        run: node --test preview/portfolio/scripts/*.test.mjs scripts/retired-dashboard.test.cjs
+        working-directory: preview/portfolio
+        run: node --test scripts/*.test.mjs
+      - name: Check retired dashboard routing
+        run: node --test scripts/retired-dashboard.test.cjs

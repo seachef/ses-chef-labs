@@ -56,10 +56,10 @@ export function groupHoldings(model){
 export function visibleHoldings(holdings,currency='AUD'){
   const key=currency==='USD'?'usd':'aud';
   return holdings.filter(h=>{
-    if(/^0+(?:\.0+)?$/.test(h.quantity))return false;
+    if(typeof h.quantity!=='string'||!/^\d+(?:\.\d+)?$/.test(h.quantity)||!/[1-9]/.test(h.quantity)||h.unreliable===true)return false;
     const value=h[key];
-    // An unknown value cannot be classified as dust, including missing AUD conversion.
-    if(typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value))return true;
+    // List only holdings whose selected-currency value is known to exceed the threshold.
+    if(typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value))return false;
     const [whole,fraction='']=value.split('.');
     return BigInt(whole)>5n||(BigInt(whole)===5n&&/[1-9]/.test(fraction));
   });
