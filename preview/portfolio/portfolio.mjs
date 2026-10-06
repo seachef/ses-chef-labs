@@ -1,6 +1,6 @@
 import { AUTH_CONFIG } from './portfolio/auth-config.mjs?v=20261001.data2';
 import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs?v=20261001.data2';
-import { COINS, SOCIALS, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, visibleHoldings, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate, verifiedFx, priceUsd } from './portfolio/model.mjs?v=20261006.known1';
+import { COINS, SOCIALS, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, visibleHoldings, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate, verifiedFx, priceUsd } from './portfolio/model.mjs?v=20261006.minimum50';
 import { createWalletProjection } from './portfolio/wallet-scope.mjs?v=20261004.wallet-view1';
 import { formatUnits, multiplyDecimals } from './portfolio/domain.mjs?v=20261001.data2';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261005.smsf1';
@@ -42,7 +42,7 @@ async function loadTradePlanner(){
 }
 async function loadDetailViews(){
   if(detailViews)return detailViews;if(detailLoad)return detailLoad;
-  detailLoad=import('./portfolio/details.mjs?v=20261006.clean1').then(({createDetails})=>{detailViews=createDetails({getModel:displayModel,getCurrency:currentCurrency,renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
+  detailLoad=import('./portfolio/details.mjs?v=20261006.minimum50').then(({createDetails})=>{detailViews=createDetails({getModel:displayModel,getCurrency:currentCurrency,renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
 }
 function openDetailRoute(){if(!detailViews&&['#overview','#holdings'].includes(location.hash))void loadDetailViews().then(view=>view?.route());}
 document.addEventListener('click',event=>{const launcher=event.target.closest('a[href="#overview"],a[href="#holdings"]'),coin=event.target.closest('[data-coin-key]'),before=location.hash,shownModel=model;if(launcher){event.preventDefault();const target=launcher.getAttribute('href');void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openPortfolio(launcher,target);});}else if(coin&&!detailViews){event.preventDefault();void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openCoin(coin.dataset.coinKey,coin);});}});
@@ -86,19 +86,18 @@ async function refreshPortfolio({announce=false,collect=false}={}){
       if(collected.status!=='saved'){keepSavedDisplay(refreshFailureCopy(collected));return;}
       showRefreshStatus('New snapshot saved. Loading the verified balances…');
     }
-    const result=await adapter.readPortfolio(model?.account.id,{accountKind:'smsf'});if(id!==requestId)return;
+    const result=await adapter.readPortfolio(model?.account.id);if(id!==requestId)return;
     if(result.status==='auth-unavailable'){if(!model)connectionCopy('error');keepSavedDisplay('Sign-in could not be checked because the service is unavailable.');return;}
-    if(result.status==='ready'&&result.model?.account?.kind!=='smsf')throw Error('Unexpected account scope');
     const previousWallet=selectedWalletId,previousAccount=model?.account.id;clearPrivate();if(result.status==='not-configured'&&AUTH_CONFIG.enabled)result.status='signed-out';connectionCopy(result.status);
     if(result.status==='ready'){
-      accountModels=(result.models||[result.model]).filter(item=>item.account.kind==='smsf');model=result.model;if(model.account.id===previousAccount&&model.wallets.some(w=>w.id===previousWallet))selectedWalletId=previousWallet;renderModel();
+      accountModels=result.models||[result.model];model=result.model;if(model.account.id===previousAccount&&model.wallets.some(w=>w.id===previousWallet))selectedWalletId=previousWallet;renderModel();
       const message=collected?.status==='saved'?(model.snapshot?.id===collected.snapshotId?'Fresh watched-wallet balances loaded. Prices may still be incomplete.':'New snapshot saved. Showing the latest available saved record.'):model.snapshot?'Stored balances loaded. Dollar values depend on available prices and AUD conversion.':'Private account connected. First verified sync pending.';
       $('connectionResult').textContent=message;if(collect)showRefreshStatus(message);
       // Optional shortcuts must not hold wallet refresh or account selection open.
       void adapter.getSocialLinks().then(links=>{if(id===requestId&&model)renderSocials(links);}).catch(()=>{});
       if(announce&&!collect)toast(model.snapshot?'Saved observations reloaded. Wallet balances were not refreshed.':'First verified sync is pending.');
     }else{
-      const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':result.status==='no-account'?'Signed in. No SMSF account is available.':result.status==='setup-pending'?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
+      const message=result.status==='signed-out'?'No signed-in session. Your balances remain private.':result.status==='no-account'?'Signed in. No private portfolio account is available.':result.status==='setup-pending'?'Signed in. Private owner access and snapshots are still pending.':'Private connection is not configured yet. No balances have been loaded.';
       $('connectionResult').textContent=message;if(announce)toast(message);
     }
   }catch(error){
@@ -158,7 +157,7 @@ function renderModel(){
   $('stakeList').classList.toggle('empty-detail',!stakes.length);
   $('stakeList').innerHTML=stakes.length?`<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Stake</th><th>Principal · HEX</th><th>Maturity</th><th>Status</th></tr></thead><tbody>${stakes.map(s=>`<tr><td>${esc(s.stake_id)}</td><td>${displayDecimal(formatUnits(s.principal_raw,s.decimals))}</td><td>${esc(s.maturity_date||'Unverified')}</td><td>${esc(({pending:'Pending',good_accounted:'Good Accounting recorded',active:'Active',matured:'Matured'})[s.status]||s.status)}</td></tr>`).join('')}</tbody></table></div><p class="fine-print">Principal only. Future payout is not estimated. Ending stakes is never performed here.</p>`:'<h2>No active HEX stakes recorded</h2><p>The latest snapshot has no active HEX stake observations.</p>';
   const listedKeys=new Set(visibleHoldings(holdings,display.currency).map(h=>h.key));
-  $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);if(!row||!listedKeys.has(row.key))return '';return `<p>${symbol}<span>${displayDecimal(row.liquid)}</span></p>`;}).join('')||'<p>No priced reward holdings above $5.</p>';
+  $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);if(!row||!listedKeys.has(row.key))return '';return `<p>${symbol}<span>${displayDecimal(row.liquid)}</span></p>`;}).join('')||'<p>No priced reward holdings over $50.</p>';
   $('rewardEstimates').innerHTML=shown.rewardEstimates.length?shown.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${r.provenance?.carried_forward_estimate?'Saved estimate · not refreshed. ':''}${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
   loadHeadlineComparison();detailViews?.update();
 
@@ -168,11 +167,11 @@ function renderHoldings(bodyId,holdings){
   holdings=visibleHoldings(holdings,currency);
   $(bodyId).innerHTML=holdings.length?holdings.map(h=>{
     const unit=h.unitPriceUsd==null?null:currency==='USD'?h.unitPriceUsd:fx?multiplyDecimals(h.unitPriceUsd,fx):null;const unitCopy=unit==null?'—':priceUsd(unit).replace('US$',currency==='USD'?'US$':'A$');
-    const valueCopy=valuationMoney(h[key],currency),listedValue=h[key]!=null&&valueCopy===valuationMoney('5',currency)?'>'+valueCopy:valueCopy;
+    const valueCopy=valuationMoney(h[key],currency),listedValue=h[key]!=null&&valueCopy===valuationMoney('50',currency)?'>'+valueCopy:valueCopy;
     const coin=coinMetadata(h),image=coin?`<img class="coin-icon" src="assets/coins/${coin.icon}" width="58" height="58" alt="">`:'',staked=h.staked!=='0';
     return `<tr><th scope="row"><button class="asset asset-button" data-coin-key="${esc(h.key)}" aria-label="Open ${esc(coin?.name||h.symbol||'Token')} details">${image}<span><span class="asset-name">${esc(coin?.name||h.symbol||'Token')}</span><span class="asset-symbol">${esc(h.symbol)}${!coin?' · Unlisted asset':''}</span></span></button></th>${showPrice?`<td class="unit-price" title="${esc(unit==null?'Price unavailable':currency+' '+unit)}">${esc(unitCopy)}</td>`:''}<td><span class="amount" title="${esc(h.quantity)}">${displayDecimal(h.quantity)}</span><span class="holding-detail">${staked?`${displayDecimal(h.liquid)} liquid · ${displayDecimal(h.staked)} staked`:'Liquid tokens'}</span></td><td class="money" title="${esc(h[key]==null?'Value unavailable':currency+' '+h[key])}">${esc(listedValue)}${h[key]==null?`<span class="holding-detail" title="${esc(h.priceSource||'Price unavailable')}">${currency==='AUD'&&h.usd!=null?'AUD FX unavailable · USD available':h.unreliable?'Price unreliable · excluded':'Price unavailable'}</span>`:''}${h.quote?.low_liquidity===true?'<span class="holding-detail quote-warning">Low liquidity · indicative</span>':h.quote?.confidence==='low'?'<span class="holding-detail quote-warning">Low confidence · indicative</span>':''}</td></tr>`;
-  }).join(''):`<tr><td colspan="${showPrice?4:3}">No priced holdings above ${currency} 5 in this view. Unpriced holdings are hidden; totals include smaller priced holdings.</td></tr>`;
-  $(bodyId).closest('table').querySelector('caption').textContent=`Saved held balances in this view, combined by chain and token contract. Holdings worth ${currency} 5 or less are hidden from this list only. Unpriced holdings are hidden. Totals include smaller priced holdings.`;
+  }).join(''):`<tr><td colspan="${showPrice?4:3}">No priced holdings over ${currency} 50 in this view. Unpriced holdings are hidden; totals include smaller priced holdings.</td></tr>`;
+  $(bodyId).closest('table').querySelector('caption').textContent=`Saved held balances in this view, combined by chain and token contract. Holdings worth ${currency} 50 or less are hidden from this list only. Unpriced holdings are hidden. Totals include smaller priced holdings.`;
 }
 function renderValuationDetails(snapshot,holdings,timing,prefix=''){
   const target=id=>$(prefix?prefix+id[0].toUpperCase()+id.slice(1):id);
