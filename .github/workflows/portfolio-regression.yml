@@ -1,0 +1,29 @@
+name: Portfolio regression tests
+
+on:
+  push:
+    paths:
+      - 'preview/portfolio/**'
+      - 'index.html'
+      - 'scripts/retired-dashboard.test.cjs'
+  pull_request:
+    paths:
+      - 'preview/portfolio/**'
+      - 'index.html'
+      - 'scripts/retired-dashboard.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  portfolio-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run portfolio regression tests
+        run: node --test preview/portfolio/scripts/*.test.mjs scripts/retired-dashboard.test.cjs
