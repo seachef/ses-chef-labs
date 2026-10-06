@@ -1,21 +1,23 @@
-# Overnight Bacon paper research
+# Bacon paper research
 
-The published desk reads `data/bacon-shortlist.json` every five minutes while open,
-on return to the tab, and when **Check Bacon** is pressed. It does not route these
-items to paper-order or exchange controls. The existing HBAR position is unchanged.
+The Bacon collector is manual-only. In GitHub Actions, select **Bacon public
+feed** and **Run workflow** when a collection is explicitly wanted. Pushes and
+scheduled timers do not run it. The retired Bacon desk is not restored; existing
+public-source research records remain available in `data/`.
 
-## Ownership and schedule
+## Ownership and run modes
 
-- The existing hourly public-Telegram collector owns `bacon-intelligence.json` and
-  `bacon-history.json`. Its :23 schedule is unchanged.
+- The manual public-Telegram collector owns `bacon-intelligence.json` and
+  `bacon-history.json`. Its only trigger is `workflow_dispatch`.
 - The existing overnight market screen owns `daily-snapshot.json` and
   `research-state.json`. Its schedule is unchanged.
-- The daily research publisher owns only `bacon-shortlist.json` and
-  `bacon-research-log.json`. Its 05:00 Australia/Perth run targets a report by 06:00.
-  Scheduled execution may be delayed; `checkedAt` is the actual research time.
+- The separate daily Morning Shortlist automation was disabled on 2026-10-05.
+  Existing `bacon-shortlist.json` and `bacon-research-log.json` are preserved; this
+  manual collector does not restart research or update those two files.
 - Before publication, read the latest main revision, merge new observations into
   the ledger, validate both files, and commit them together without force-pushing.
-  Preserve concurrent edits. Do not change code or these schedules during a data run.
+  Preserve concurrent edits. Do not change code, triggers or the separate market
+  screen schedule during a data run.
 - These are public market-source records. Never include personal data, credentials,
   paid/private source content, or user portfolio details in them.
 
@@ -69,6 +71,21 @@ node --test scripts/bacon-shortlist.test.cjs
 node scripts/validate-bacon-shortlist.cjs
 ```
 
-The hourly feed publication copies the module and all JSON data, so a later feed
-refresh cannot drop the shortlist. Verify the published JSON and visible UI after
-publication; a green workflow alone is not evidence that the display is current.
+## Read-only workflow guard and Pages publishing
+
+The separate **Bacon manual-only guard** workflow runs on relevant pushes and pull
+requests with `contents: read`. It runs only this static, dependency-free check:
+
+```sh
+python -m unittest discover -s scripts -p 'test_bacon_workflow.py'
+```
+
+The check reads workflow configuration without importing or executing the Bacon
+collector, fetching news, changing data, or deploying Pages. It rejects automatic
+collector triggers and redundant Pages permissions/deployment steps.
+
+Native GitHub Pages publishing remains independent and unchanged. The manual
+collector retains `contents: write` only to commit its two owned data files; it
+has no Pages environment, artifact upload or deployment steps. Verify published
+data after an authorized refresh; a green job alone does not prove freshness.
+

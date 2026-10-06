@@ -1,0 +1,29 @@
+name: Bacon manual-only guard
+
+on:
+  push:
+    paths:
+      - .github/workflows/bacon-feed.yml
+      - .github/workflows/bacon-workflow-guard.yml
+      - scripts/test_bacon_workflow.py
+  pull_request:
+    paths:
+      - .github/workflows/bacon-feed.yml
+      - .github/workflows/bacon-workflow-guard.yml
+      - scripts/test_bacon_workflow.py
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify manual-only collector without running it
+        run: python -m unittest discover -s scripts -p 'test_bacon_workflow.py'
+

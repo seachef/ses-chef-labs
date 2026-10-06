@@ -38,10 +38,4 @@ test('background research data and collector remain available independently of t
   for(const path of ['data/bacon-intelligence.json','data/bacon-history.json','data/bacon-shortlist.json','data/bacon-research-log.json'])assert.ok(JSON.parse(fs.readFileSync(path,'utf8')),path);
   assert.ok(fs.existsSync('scripts/bacon-feed.py'));
 });
-test('scheduled publication explicitly packages the redirect destination and its runtime assets',()=>{
-  const workflow=fs.readFileSync('.github/workflows/bacon-feed.yml','utf8');
-  assert.ok(workflow.includes('cp preview/portfolio/index.html preview/portfolio/portfolio.css preview/portfolio/portfolio.mjs /tmp/bacon-site/preview/portfolio/'));
-  assert.ok(workflow.includes('cp -R preview/portfolio/assets preview/portfolio/portfolio preview/portfolio/vendor /tmp/bacon-site/preview/portfolio/'));
-  assert.equal(/cp -R (?:\. |preview\/portfolio\/ )/.test(workflow),false);
-  for(const secret of ['.env','private','auth-build','node_modules'])assert.equal(workflow.slice(workflow.indexOf('      - name: Prepare public site')).includes(secret),false,secret);
-});
+
