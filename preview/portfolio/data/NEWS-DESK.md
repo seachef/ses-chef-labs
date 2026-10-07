@@ -66,3 +66,19 @@ The current ledger alone cannot prove append-only history. Runtime cross-record 
 - `validateEntryWatch(value, { now = Date.now(), previous } = {})`: returns the original object or throws; with `previous`, also validates the immutable prefix
 
 The validators never mutate their inputs, contact the network, place orders or schedule work. All fixtures in automated tests are synthetic and stay outside the live feeds.
+
+## Compact top shortlist
+
+The top strip shows only a coin and its status. Fresh observed records display
+`Watch`; old observations display `Stale`; missing or invalid data displays
+`No data`. Each coin opens its existing research history. This public strip
+contains no portfolio allocation or account information.
+
+An independent, optional `data/entry-setups.json` feed can mark a coin green as
+`Review entry` only when its complete research setup passes the separate entry
+setup validator and its supporting history is current. A lower daily low never
+qualifies an entry by itself. Empty, invalid, stale, unchecked or mismatched
+setup data cannot create a green status. The initial setup feed is empty, so
+all five coins remain Watch. See `ENTRY-SETUPS.md` for the contract and freshness
+limits. Green still requires the user to review current execution prices, fees,
+exit rules and risks; it does not place an order or guarantee safety.

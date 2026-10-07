@@ -1,0 +1,82 @@
+/* Reading sizes use rem so browser text preferences and zoom remain effective. */
+body{font-size:1.0625rem;line-height:1.6}
+.news-desk .news-desk-heading>p,.launch-research .launch-heading>p{font-size:1rem;line-height:1.6;max-width:34rem}
+.news-desk .news-item-heading h3{font-size:1.25rem;line-height:1.4}
+.news-desk .news-bullets p{font-size:1.125rem;line-height:1.7;max-width:70ch;margin-top:12px}
+.news-desk .news-bullets>li{padding-block:22px}
+.news-desk .news-bullets .news-risk{font-size:1rem;line-height:1.65}
+.news-desk .news-check,.news-desk .news-coins,.news-desk .news-bullets .news-source,.news-desk .news-desk-note{font-size:.9375rem;line-height:1.65}
+.news-desk .news-source a{display:inline-block;padding-block:5px}
+.news-desk .entry-watch>summary{font-size:1.125rem;min-height:48px;padding-block:12px}
+.news-desk .watch-explainer,.news-desk .watch-records p,.news-desk .watch-note,.news-desk .news-empty{font-size:1.0625rem;line-height:1.7}
+.news-desk .watch-coin>summary{font-size:1.0625rem;grid-template-columns:6rem minmax(0,1fr);gap:8px 14px;min-height:48px;align-items:start}
+.news-desk .watch-coin>summary small{font-size:.9375rem;line-height:1.6}
+.news-desk .watch-records .news-source{font-size:.9375rem;line-height:1.65}
+.news-desk .watch-records{max-height:32rem;margin-top:18px;padding-left:24px}
+.news-desk .watch-records>li{padding-block:18px}
+.news-desk .watch-coins{gap:12px}
+.news-desk .watch-coin{padding:16px}
+.news-desk .watch-records p,.news-desk summary{overflow-wrap:anywhere}
+.launch-research .launch-summary,.launch-research .launch-access,.launch-research .launch-empty,.launch-research .launch-details{font-size:1.0625rem;line-height:1.7}
+.launch-research .launch-summary{max-width:70ch}
+.launch-research .launch-date,.launch-research .launch-venues{font-size:1rem;line-height:1.65}
+.launch-research .launch-meta,.launch-research .launch-symbol,.launch-research .launch-status,.launch-research .launch-sources small,.launch-research .launch-footnote,.launch-research .launch-card>.launch-eligibility{font-size:.9375rem;line-height:1.6}
+.launch-research .launch-status{max-width:10rem;white-space:normal;flex-shrink:1}
+.launch-research .launch-details summary{min-height:44px;padding-block:10px}
+.launch-research .launch-card-heading{flex-wrap:wrap}
+.news-retry,.launch-retry{font-size:1rem;min-height:44px}
+.wallet-dashboard .hero-subtitle,.wallet-dashboard .hero-caption,.wallet-dashboard .sync-status,.wallet-dashboard .hero-actions .refresh-status,.wallet-activity #walletActivity,#watchedWalletList>p{font-size:1rem;line-height:1.6}
+.wallet-dashboard .hero-actions{position:static;max-width:none;margin-top:16px;padding:0}
+.wallet-dashboard .hero-actions .sync-status{max-width:none;text-align:left}
+.wallet-dashboard .button-row .button,.button-row .button,.dialog-actions .button,.wallets-launcher{font-size:1rem;min-height:44px;white-space:normal;padding:10px 14px}
+.wallet-dashboard .hero-actions .button-row{flex-wrap:wrap;width:100%;gap:10px;justify-content:flex-start}
+.wallet-dashboard .asset-name,.wallet-dashboard .amount,.wallet-dashboard .money,.wallet-dashboard .unit-price,.staking-window .asset-name,.staking-window .amount,.staking-window .money{font-size:1rem;line-height:1.55}
+.wallet-dashboard .holdings-table thead th,.staking-window .holdings-table thead th,.wallet-dashboard .asset-symbol,.wallet-dashboard .holding-detail,.staking-window .asset-symbol,.holding-detail{font-size:.875rem;line-height:1.5}
+.wallet-dashboard .asset>span,.staking-window .asset>span{min-width:0;overflow-wrap:anywhere}
+.wallet-dashboard .asset,.staking-window .asset{flex-wrap:wrap;row-gap:5px}
+.wallet-dashboard .coins-footer>.fine-print,.wallet-dashboard .valuation-note,.coins-footer .fine-print,.privacy-note,.coins-footer details,.total-scope,.portfolio-data-details,.site-footer,.connection-detail,.wallet-address,.watched-wallet summary,.watched-wallets .read-only-note{font-size:.9375rem;line-height:1.65}
+.wallet-dashboard .recorded-headline,.wallet-dashboard .recorded-headline strong{font-size:1rem;line-height:1.6}
+.wallet-dashboard .recorded-headline span,.wallet-dashboard .recorded-headline small,.headline-freshness,.headline-sources,.headline-badge,.value-label,.eyebrow{font-size:.875rem;line-height:1.6}
+.wallet-scope-picker>summary,.wallet-scope-picker .account-copy strong,.wallet-scope-options button,.main-nav a{font-size:1rem;min-height:44px}
+.wallet-scope-options small,.account-copy small,.account-value small,.wallet-network{font-size:.875rem;line-height:1.55}
+.wallet-scope-picker>summary,.wallet-scope-options button{white-space:normal;overflow-wrap:anywhere}
+.wallet-scope-picker>.account-list{max-width:calc(100vw - 24px)}
+.currency-switch button{font-size:1rem;min-width:48px;min-height:44px}
+.account-tools .icon-button{width:44px;height:44px}
+.plan-launcher small,.plan-notice p,.wallet-tool small,.wallet-app-links a,.shortcut-note,.shortcut-group h3,.shortcut-group a,.shortcut-shelf>h2{font-size:.9375rem;line-height:1.55}
+.shortcut-group a{min-height:64px}
+body .wallet-chooser p,body .wallet-chooser .button,body .wallet-choice .wallet-account{font-size:1rem;line-height:1.65}
+body .wallet-chooser .wallet-kind,body .wallet-choice .wallet-network,body .wallet-chooser .wallet-note,body .wallet-site-link{font-size:.9375rem;line-height:1.6}
+body .wallet-choice-heading,body .wallet-chooser .dialog-heading{flex-wrap:wrap}
+body .wallet-chooser .button{min-height:44px;white-space:normal}
+body .portfolio-window .fine-print,body .coin-window .fine-print,body .wallet-breakdown,body .token-facts,body .detail-tabs a,body .detail-tabs button,body .all-holdings .holdings-table thead th{font-size:.9375rem;line-height:1.6}
+.tp-toolbar-note,.tp-market-message,.tp-chart-heading>div>p:last-child,.tp-checkpoint p,.tp-checkpoint strong,.tp-field>span,.tp-exit-choice legend,.tp-exit-choice label,.tp-validation,.tp-ticket>p{font-size:1rem;line-height:1.65}
+.tp-field small,.tp-field input::placeholder,.tp-exit-note,.tp-costs>p,.tp-execution-warning,.tp-validation p,.tp-metrics>div,.tp-market-details,.tp-currency-note,.tp-readout,.tp-level-key,.tp-chart-panel>.fine-print,.tp-edit-mode,.tp-candle-data,.tp-data-table,.chart-attribution{font-size:.875rem;line-height:1.65}
+.tp-metrics strong,.tp-ticket textarea,.tp-intervals button,.tp-chart-control,.tp-edit-mode select{font-size:1rem}
+.tp-intervals button,.tp-chart-control,.tp-edit-mode select,.tp-costs summary{min-height:44px}
+.tp-costs summary{font-size:1rem}
+.tp-exit-choice label,.watched-wallet summary,.portfolio-data-details>summary{min-height:44px}
+.tp-field input,.tp-field select{height:auto;min-height:48px}
+.tp-chart-tools,.tp-form-heading{flex-wrap:wrap}
+@media(max-width:650px){
+ .news-desk-heading,.launch-heading{display:block}
+ .news-desk .news-bullets{padding-left:18px}
+ .news-desk .watch-coin>summary{grid-template-columns:minmax(0,1fr);gap:6px}
+ .news-desk .watch-coin>summary small{grid-column:1}
+ .news-desk .news-item-heading{gap:5px 10px}
+ .news-desk .watch-records{padding-left:20px}
+ .wallet-dashboard .hero-actions{margin-top:14px}
+ .value-toolbar{flex-wrap:wrap;gap:8px}
+ .topbar-inner{column-gap:12px}
+ .main-nav{height:auto;min-height:50px;flex-wrap:wrap}
+ .main-nav a{padding-block:10px}
+ .plan-launcher{padding-inline:16px;gap:10px}
+ .plan-launcher>span{min-width:0}
+ .tp-fields{grid-template-columns:minmax(0,1fr)}
+ .holdings-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+ .wallet-dashboard .holdings-table,.staking-window .holdings-table,.portfolio-window .holdings-table{min-width:520px}
+ .shortcut-group nav,.shortcut-group:first-child nav,.shortcut-group:last-child nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .shortcut-group a{min-width:0;overflow-wrap:anywhere}
+ body .token-facts{grid-template-columns:minmax(0,1fr);gap:5px}
+ body .token-facts dd{margin-bottom:12px}
+}
