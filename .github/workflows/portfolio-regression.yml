@@ -30,3 +30,9 @@ jobs:
         run: node --test scripts/*.test.mjs
       - name: Check retired dashboard routing
         run: node --test scripts/retired-dashboard.test.cjs
+      - name: Validate checked-in news data
+        working-directory: preview/portfolio
+        run: node scripts/validate-news-data.mjs
+      - name: Validate checked-in launch research
+        working-directory: preview/portfolio
+        run: node scripts/validate-launch-research.mjs
