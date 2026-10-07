@@ -59,12 +59,14 @@ export function groupHoldings(model){
   const fx=verifiedFx(model.snapshot);
   return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,unitPriceUsd:quote?.price_usd??null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
-/** List visibility only. Aggregate each selected asset before applying the exact $50 threshold. */
-export function visibleHoldings(holdings,currency='AUD'){
+/** Wallet inventory keeps all positive balances; combined views retain the exact $50 threshold. */
+export function visibleHoldings(holdings,currency='AUD',{walletView=false}={}){
   const key=currency==='USD'?'usd':'aud';
   return holdings.filter(h=>{
     if(isExcludedPortfolioAsset(h.chainId,h.assetId))return false;
-    if(typeof h.quantity!=='string'||!/^\d+(?:\.\d+)?$/.test(h.quantity)||!/[1-9]/.test(h.quantity)||h.unreliable===true)return false;
+    if(typeof h.quantity!=='string'||!/^\d+(?:\.\d+)?$/.test(h.quantity)||!/[1-9]/.test(h.quantity))return false;
+    if(walletView)return true;
+    if(h.unreliable===true)return false;
     const value=h[key];
     // List only holdings whose selected-currency value is known to exceed the threshold.
     if(typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value))return false;

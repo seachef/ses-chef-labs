@@ -16,8 +16,10 @@
   <link rel="stylesheet" href="portfolio/visuals.css?v=20261004.compact1">
   <link rel="stylesheet" href="portfolio/trade-planner.css?v=20261003.charts1">
   <link rel="stylesheet" href="portfolio/launch-research.css?v=20261007.launches1">
-  <script type="module" src="portfolio.mjs?v=20261007.wallets1"></script>
+  <script type="module" src="portfolio.mjs?v=20261007.inventory1"></script>
   <script type="module" src="portfolio/launch-research.mjs?v=20261007.launches1"></script>
+  <link rel="stylesheet" href="portfolio/news-desk.css?v=20261007.news1">
+  <script type="module" src="portfolio/news-desk.mjs?v=20261007.news1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to portfolio</a>
@@ -74,7 +76,7 @@
           </table>
         </div>
         <div class="privacy-placeholder privacy-coins" data-privacy-placeholder hidden><p class="privacy-dots" aria-hidden="true">••••••</p><p>Your coins are hidden</p><span>Tap the eye to show them again</span></div>
-        <div class="coins-footer" data-private><p class="fine-print">Only priced holdings over $50 in the selected currency are listed. Totals include smaller priced holdings; unpriced holdings are hidden.</p><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
+        <div class="coins-footer" data-private><p class="fine-print" data-holdings-policy>Only priced holdings over $50 in the selected currency are listed. Totals include smaller priced holdings; unpriced holdings are hidden.</p><p class="privacy-note" id="coinPrivacy"><img src="assets/ui/lock-keyhole.svg" width="18" height="18" alt="">Balances appear only after authentication</p><p class="valuation-note" id="valuationStatus" hidden></p><details id="valuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="valuationSources"></div></details><p class="fine-print">Values are indicative, before fees and slippage. Low liquidity may limit sale value.</p></div>
       </section>
     </div>
       <aside class="support-panels">
@@ -89,6 +91,12 @@
         </section>
       </aside>
     </div>
+    <section id="news" class="news-desk" aria-labelledby="newsDeskTitle">
+      <div class="news-desk-heading"><div><p class="eyebrow">RECENT DEVELOPMENTS</p><h2 id="newsDeskTitle">News desk</h2></div><p>What happened, which coin it affects, and why it matters. In plain English.</p></div>
+      <div id="newsDeskContent" aria-live="polite"><p class="news-empty">Loading source-checked news…</p></div>
+      <details class="entry-watch"><summary>Entry watch · five-coin history</summary><div id="entryWatchContent"><p class="news-empty">Loading verified daily records…</p></div></details>
+      <p class="news-desk-note">Public research only. These are facts and risks to review, not instructions to buy.</p>
+    </section>
     <section id="launches" class="launch-research" aria-labelledby="launchResearchTitle">
       <div class="launch-heading"><div><p class="eyebrow">OPPORTUNITIES</p><h2 id="launchResearchTitle">Launch research</h2></div><p>Public token-launch research, with official dates, venue links and risks.</p></div>
       <div id="launchResearchContent" aria-live="polite"><p class="launch-empty">Loading public launch research…</p></div>
@@ -117,7 +125,7 @@
     <section class="glass detail-panel staking-balances" aria-labelledby="stakingBalancesTitle">
       <h3 id="stakingBalancesTitle">Held balances</h3><p>Liquid tokens and staked principal</p>
       <div class="holdings-scroll"><table class="holdings-table"><caption class="sr-only">Private HEX, Hedron and Icosa balances</caption><thead><tr><th scope="col">Asset</th><th scope="col">Combined balance</th><th scope="col">Indicative AUD</th></tr></thead><tbody id="stakingHoldingsBody"><tr><td colspan="3">Sign in to view holdings valued over $50.</td></tr></tbody></table></div>
-      <div class="coins-footer"><p class="fine-print">Only priced holdings over $50 in the selected currency are listed. Totals include smaller priced holdings; unpriced holdings are hidden.</p><p class="privacy-note" id="stakingCoinPrivacy">Balances appear only after authentication</p><p class="valuation-note" id="stakingValuationStatus" hidden></p><details id="stakingValuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="stakingValuationSources"></div></details><p class="fine-print">Staked principal is locked. Values are indicative, before fees and slippage. The ladder below is a breakdown of these holdings, not an additional balance.</p></div>
+      <div class="coins-footer"><p class="fine-print" data-holdings-policy>Only priced holdings over $50 in the selected currency are listed. Totals include smaller priced holdings; unpriced holdings are hidden.</p><p class="privacy-note" id="stakingCoinPrivacy">Balances appear only after authentication</p><p class="valuation-note" id="stakingValuationStatus" hidden></p><details id="stakingValuationDetails" hidden><summary>Price dates &amp; sources</summary><div id="stakingValuationSources"></div></details><p class="fine-print">Staked principal is locked. Values are indicative, before fees and slippage. The ladder below is a breakdown of these holdings, not an additional balance.</p></div>
     </section>
     <section class="glass detail-panel" aria-labelledby="ladderTitle"><h3 id="ladderTitle">HEX ladder</h3><p class="staking-date-note" id="maturitySummary">Your stake maturities will appear after sync</p><div class="empty-detail" id="stakeList"><p>Sign in to view the saved ladder.</p><p class="fine-print">Ending stakes is never performed here.</p><button class="button" data-connection>Connection details</button></div></section>
     <div class="reward-grid"><section class="glass detail-panel"><h3>Liquid Hedron &amp; Icosa</h3><div id="liquidRewardBalances" class="reward-balances"><p>Sign in to load priced reward holdings.</p></div><p class="fine-print">A breakdown of the held balances above, not an additional balance.</p></section><section class="glass detail-panel"><h3>Unminted rewards</h3><p>Estimates, not a wallet balance</p><div id="rewardEstimates" class="empty-detail"><p>Private reward estimates are not connected yet.</p></div><p class="fine-print">Excluded from held balances and the portfolio total. Minting is never performed here.</p></section></div>

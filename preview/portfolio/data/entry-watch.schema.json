@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sea Chef Labs public entry-watch observations",
+  "description": "Append-only public OHLCV evidence. Runtime validation in portfolio/news-data.mjs is authoritative for UTC complete-day boundaries, exact decimal comparisons, series identity, chronology, revision chains and immutable prefixes. No forecast, automatic order, private budget or wallet data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assets",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "assets": {
+      "const": [
+        "RENDER",
+        "POL",
+        "TAO",
+        "APT",
+        "AKT"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 5000,
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "plainText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s$)(?!.*(?:\\*\\*|__|\\[[^\\]]*\\]\\s*\\())(?!#{1,6}\\s)[^<>`\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u206f\\ufeff]+$",
+      "description": "Trimmed plain text; runtime also rejects all Unicode control/format/surrogate characters and obvious assurances of investment returns."
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$",
+      "description": "Real UTC time, at most five minutes after validation time. Runtime enforces chronology."
+    },
+    "publicHttpsUrl": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://[^/@\\s<>\\\\]+(?:[/?#][^\\s<>\\\\]*)?$",
+      "description": "Public DNS hostname only; runtime rejects IP/local hosts, credentials and credential query parameters. Syntax does not establish primary-source provenance."
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+    },
+    "positiveDecimal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^(?!0(?:\\.0+)?$)(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "asset",
+        "status",
+        "venue",
+        "pair",
+        "quote_currency",
+        "interval",
+        "candle_open_at",
+        "candle_close_at",
+        "low",
+        "close",
+        "volume",
+        "observed_at",
+        "source_url",
+        "assessment",
+        "compared_with",
+        "supersedes",
+        "note"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "asset": {
+          "enum": [
+            "RENDER",
+            "POL",
+            "TAO",
+            "APT",
+            "AKT"
+          ]
+        },
+        "status": {
+          "enum": [
+            "observed",
+            "unavailable"
+          ]
+        },
+        "venue": {
+          "$ref": "#/$defs/plainText",
+          "maxLength": 80
+        },
+        "pair": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[A-Z0-9]+(?:[/.:_-][A-Z0-9]+)*$"
+        },
+        "quote_currency": {
+          "enum": [
+            "USD",
+            "USDT",
+            "USDC"
+          ]
+        },
+        "interval": {
+          "const": "1d"
+        },
+        "candle_open_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/utcTimestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candle_close_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/utcTimestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "low": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/positiveDecimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "close": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/positiveDecimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_at": {
+          "$ref": "#/$defs/utcTimestamp"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/publicHttpsUrl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assessment": {
+          "enum": [
+            "baseline",
+            "lower_low",
+            "not_lower_low",
+            "unknown"
+          ]
+        },
+        "compared_with": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "$ref": "#/$defs/plainText",
+          "maxLength": 600
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "unavailable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "candle_open_at": {
+                "type": "null"
+              },
+              "candle_close_at": {
+                "type": "null"
+              },
+              "low": {
+                "type": "null"
+              },
+              "close": {
+                "type": "null"
+              },
+              "volume": {
+                "type": "null"
+              },
+              "compared_with": {
+                "type": "null"
+              },
+              "supersedes": {
+                "type": "null"
+              },
+              "assessment": {
+                "const": "unknown"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "candle_open_at": {
+                "$ref": "#/$defs/utcTimestamp"
+              },
+              "candle_close_at": {
+                "$ref": "#/$defs/utcTimestamp"
+              },
+              "low": {
+                "$ref": "#/$defs/positiveDecimal"
+              },
+              "close": {
+                "$ref": "#/$defs/positiveDecimal"
+              },
+              "volume": {
+                "$ref": "#/$defs/decimal"
+              },
+              "source_url": {
+                "$ref": "#/$defs/publicHttpsUrl"
+              },
+              "assessment": {
+                "enum": [
+                  "baseline",
+                  "lower_low",
+                  "not_lower_low"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "assessment": {
+                "const": "baseline"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "compared_with": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "assessment": {
+                "enum": [
+                  "lower_low",
+                  "not_lower_low"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "compared_with": {
+                "$ref": "#/$defs/identifier"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
