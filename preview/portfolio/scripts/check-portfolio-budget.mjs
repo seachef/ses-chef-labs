@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {gzipSync} from 'node:zlib';
-const files=['portfolio/market-condition.mjs','portfolio/market-universe.mjs','portfolio/market-meter.mjs','portfolio/market-meter.css','portfolio/entry-setups.mjs','portfolio/entry-shortlist.mjs','portfolio/entry-shortlist.css','portfolio/readability.css','portfolio/news-desk.mjs','portfolio/news-data.mjs','portfolio/news-desk.css','portfolio/visuals.css','portfolio/trade-planner.css','index.html','portfolio.css','portfolio.mjs','portfolio/model.mjs','portfolio/domain.mjs','portfolio/adapter.mjs','portfolio/wallet-scope.mjs','portfolio/auth-config.mjs','portfolio/auth-client.mjs'];
+const files=['portfolio/holding-daily-view.mjs','portfolio/holding-day-change.mjs','portfolio/exact-decimal.mjs','portfolio/market-condition.mjs','portfolio/market-universe.mjs','portfolio/market-meter.mjs','portfolio/market-meter.css','portfolio/entry-setups.mjs','portfolio/entry-shortlist.mjs','portfolio/entry-shortlist.css','portfolio/readability.css','portfolio/news-desk.mjs','portfolio/news-data.mjs','portfolio/news-desk.css','portfolio/visuals.css','portfolio/trade-planner.css','index.html','portfolio.css','portfolio.mjs','portfolio/model.mjs','portfolio/domain.mjs','portfolio/adapter.mjs','portfolio/wallet-scope.mjs','portfolio/auth-config.mjs','portfolio/auth-client.mjs'];
 function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(x=>x.isDirectory()?walk(path.join(dir,x.name)):[path.join(dir,x.name)]);}
 const lazyFiles=['portfolio/details.mjs','portfolio/history.mjs','portfolio/details.css','portfolio/wallets.mjs','portfolio/wallets.css'];
 const headlineFiles=['portfolio/headline.mjs'];
