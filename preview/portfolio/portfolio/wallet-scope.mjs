@@ -1,5 +1,5 @@
 /** A view over owner-verified stored rows; never writes or invents an observation. */
-import { groupHoldings } from './model.mjs';
+import { groupHoldings } from './model.mjs?v=20261007.exclusions1';
 
 export function projectWalletModel(model, walletId = null) {
   if (!model || walletId == null) return model;

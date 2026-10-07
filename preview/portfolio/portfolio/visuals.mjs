@@ -1,6 +1,6 @@
 import {createHoldingsChart} from './holdings-chart.mjs?v=20261004.wallet-view1';
-import {groupHoldings,visibleHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext,displayValuation,valuationMoney} from './model.mjs?v=20261006.minimum50';
-import {recordedHistorySummary,RANGE_OPTIONS,signedDecimalDifference} from './history.mjs?v=20261004.compact1';
+import {groupHoldings,visibleHoldings,decimalSum,aud,priceUsd,portfolioTotal,valuationContext,displayValuation,valuationMoney} from './model.mjs?v=20261007.exclusions1';
+import {recordedHistorySummary,RANGE_OPTIONS,signedDecimalDifference} from './history.mjs?v=20261007.exclusions1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const positive=v=>typeof v==='string'&&/^\d+(\.\d+)?$/.test(v)&&/[1-9]/.test(v);
 const valid=v=>typeof v==='string'&&/^\d+(\.\d+)?$/.test(v);

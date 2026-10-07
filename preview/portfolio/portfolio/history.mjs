@@ -1,6 +1,6 @@
 /** Recorded observations only. These values are holdings changes, never investment returns. */
 import { multiplyDecimals, rawUnits } from './domain.mjs';
-import { COINS, decimalSum, fxReferenceDate } from './model.mjs?v=20261004.compact1';
+import { COINS, decimalSum, fxReferenceDate, isExcludedPortfolioAsset, PORTFOLIO_EXCLUDED_ASSETS } from './model.mjs?v=20261007.exclusions1';
 
 export const RANGE_OPTIONS = Object.freeze([
   { key: '1H', label: '1H' }, { key: '1D', label: '1D' },
@@ -116,7 +116,7 @@ function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = 
     const group = row => {
       const id = identity(row);
       if (!groups.has(id)) groups.set(id, { identity: id, key: `${row.chain_id}:${row.asset_id.toLowerCase()}`, symbol: row.symbol,
-        decimals: row.decimals, liquidRaw: 0n, stakedRaw: 0n, quotes: [], quoteProblems: [] });
+        decimals: row.decimals, portfolioExcluded:isExcludedPortfolioAsset(row.chain_id,row.asset_id), liquidRaw: 0n, stakedRaw: 0n, quotes: [], quoteProblems: [] });
       return groups.get(id);
     };
     for (const row of balances) {
@@ -138,7 +138,8 @@ function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = 
       const principal = BigInt(rawUnits(row.principal_raw));
       if (row.status !== 'unlocked') g.stakedRaw += principal;
     }
-    const inventory = [...groups.keys()].sort();
+    const excludedIdentities = new Set([...groups.values()].filter(g=>g.portfolioExcluded).map(g=>g.identity));
+    const inventory = [...groups.keys()].filter(id=>!excludedIdentities.has(id)).sort();
     result.coverage.inventory = inventory;
     // A known collector always emits all six liquid rows for every wallet, including zeros.
     // A dropped zero or liquid row must not turn into a silently smaller subtotal.
@@ -148,7 +149,7 @@ function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = 
     })) return fail('asset_rows_incomplete');
     if (allowPartial && balances.some(row => !COLLECTOR_INVENTORY.includes(identity(row)) &&
       (row.provenance?.token_discovery !== true || row.provenance?.balance_block_scope !== 'read_window' || !['complete', 'partial'].includes(p.token_discovery?.status)))) return fail('inventory_method_unknown');
-    const assets = [...groups.values()].sort((x, y) => x.identity.localeCompare(y.identity)).map(g => {
+    const assets = [...groups.values()].filter(g=>!g.portfolioExcluded).sort((x, y) => x.identity.localeCompare(y.identity)).map(g => {
       // Individual rows are uint256, but their cross-wallet sum may exceed uint256.
       const liquid = fromParts(g.liquidRaw, g.decimals), staked = fromParts(g.stakedRaw, g.decimals);
       const quantity = decimalSum([liquid, staked]);
@@ -168,11 +169,11 @@ function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = 
     result.coverage.unpricedAssets = assets.filter(a => a.value == null && a.quantity !== '0').length;
     const scope = { currency, partialCoverageAllowed: allowPartial, ownerId: a.owner_id, accountId: a.id, walletIds, inventory,
       pendingWallets: result.coverage.pendingWallets, discoveryStatus: p.token_discovery?.status || null,
-      walletInventory: walletIds.map(id => ({ walletId: id, inventory: unique(perWallet.get(id)) })),
+      walletInventory: walletIds.map(id => ({ walletId: id, inventory: unique(perWallet.get(id)).filter(asset=>!excludedIdentities.has(asset)) })),
       included: result.coverage.included, excluded: result.coverage.excluded,
       knownAssetInventoryOnly: p.known_asset_inventory_only, inventoryMethod: method, basis: v.basis,
       valuationKind: allowPartial ? 'priced_observed_subtotal' : s.status === 'complete' && v.full_valuation_available === true ? 'complete_valuation' : 'priced_holdings_subtotal',
-      excludedCoverage: result.coverage.excludedCoverage };
+      excludedCoverage: result.coverage.excludedCoverage, portfolioExclusions: PORTFOLIO_EXCLUDED_ASSETS.map(asset=>'1:'+asset) };
     result.scope = scope; result.scopeKey = JSON.stringify(scope);
     const unexpected = assets.find(a => a.value == null && a.identity !== SHOGUN);
     if (!allowPartial && unexpected) return fail(unexpected.reason || 'price_unavailable');
@@ -187,7 +188,7 @@ function recordedPoint(model, now, { currency = 'AUD', allowPartial = false } = 
 
 function coinIdentity(currentModel, coinKey) {
   const matches = unique([...(currentModel?.balances || []), ...(currentModel?.stakes || [])].flatMap(row => {
-    try { const id = identity(row); return id === coinKey || `${row.chain_id}:${row.asset_id.toLowerCase()}` === coinKey ? [id] : []; }
+    try { if(isExcludedPortfolioAsset(row.chain_id,row.asset_id))return [];const id = identity(row); return id === coinKey || `${row.chain_id}:${row.asset_id.toLowerCase()}` === coinKey ? [id] : []; }
     catch { return []; }
   }));
   return matches.length === 1 ? matches[0] : null;

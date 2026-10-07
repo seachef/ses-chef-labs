@@ -1,6 +1,6 @@
 /** Pure display helpers for recorded holdings changes; no fetch, storage or synthetic history. */
-import { signedDecimalDifference, recordedHistorySummary, signedUsd } from './history.mjs?v=20261004.compact1';
-import { valuationContext, fxReferenceDate } from './model.mjs?v=20261004.compact1';
+import { signedDecimalDifference, recordedHistorySummary, signedUsd } from './history.mjs?v=20261007.exclusions1';
+import { valuationContext, fxReferenceDate, isExcludedPortfolioAsset } from './model.mjs?v=20261007.exclusions1';
 
 const DAY = 86400000;
 const BALANCE_MAX_AGE = 36 * 3600000;
@@ -73,7 +73,7 @@ function freshness(currentModel, now) {
   // Quote dates are never used as balance observation dates.
   const quotes = new Map();
   for (const row of Array.isArray(currentModel?.balances) ? currentModel.balances : []) {
-    if (!row || row.price_status !== 'observed' || row.provenance?.quote?.held_valuation_eligible === false ||
+    if (!row || isExcludedPortfolioAsset(row.chain_id,row.asset_id) || row.price_status !== 'observed' || row.provenance?.quote?.held_valuation_eligible === false ||
         !positive(row.price_usd) || !hasText(row.price_source) || time(row.price_observed_at) == null) continue;
     const key = `${row.chain_id}:${String(row.asset_id).toLowerCase()}:${row.decimals}`;
     const at = time(row.price_observed_at);

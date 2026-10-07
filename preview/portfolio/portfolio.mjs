@@ -1,7 +1,7 @@
 import { AUTH_CONFIG } from './portfolio/auth-config.mjs?v=20261001.data2';
 import { resumeAuthentication, beginGitHubSignIn } from './portfolio/auth-client.mjs?v=20261001.data2';
-import { COINS, SOCIALS, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, visibleHoldings, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate, verifiedFx, priceUsd } from './portfolio/model.mjs?v=20261006.minimum50';
-import { createWalletProjection } from './portfolio/wallet-scope.mjs?v=20261004.wallet-view1';
+import { COINS, SOCIALS, socialURL, compactQuantity as displayDecimal, aud, groupHoldings, visibleHoldings, isExcludedPortfolioAsset, portfolioTotal, coinMetadata, snapshotFreshness, valuationContext, partitionHoldings, pricedHoldingsSummary, displayValuation, valuationMoney, fxReferenceDate, verifiedFx, priceUsd } from './portfolio/model.mjs?v=20261007.exclusions1';
+import { createWalletProjection } from './portfolio/wallet-scope.mjs?v=20261007.exclusions1';
 import { formatUnits, multiplyDecimals } from './portfolio/domain.mjs?v=20261001.data2';
 import { createPortfolioAdapter } from './portfolio/adapter.mjs?v=20261005.smsf1';
 const $=id=>document.getElementById(id);
@@ -42,7 +42,7 @@ async function loadTradePlanner(){
 }
 async function loadDetailViews(){
   if(detailViews)return detailViews;if(detailLoad)return detailLoad;
-  detailLoad=import('./portfolio/details.mjs?v=20261006.minimum50').then(({createDetails})=>{detailViews=createDetails({getModel:displayModel,getCurrency:currentCurrency,renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
+  detailLoad=import('./portfolio/details.mjs?v=20261007.exclusions1').then(({createDetails})=>{detailViews=createDetails({getModel:displayModel,getCurrency:currentCurrency,renderHoldings,setPrivacyHidden,isPrivacyHidden:()=>privacyHidden,esc,when});return detailViews;}).catch(()=>{toast('Portfolio details could not be loaded. Please try again.');return null;}).finally(()=>{detailLoad=null;});return detailLoad;
 }
 function openDetailRoute(){if(!detailViews&&['#overview','#holdings'].includes(location.hash))void loadDetailViews().then(view=>view?.route());}
 document.addEventListener('click',event=>{const launcher=event.target.closest('a[href="#overview"],a[href="#holdings"]'),coin=event.target.closest('[data-coin-key]'),before=location.hash,shownModel=model;if(launcher){event.preventDefault();const target=launcher.getAttribute('href');void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openPortfolio(launcher,target);});}else if(coin&&!detailViews){event.preventDefault();void loadDetailViews().then(view=>{if(location.hash===before&&model===shownModel)view?.openCoin(coin.dataset.coinKey,coin);});}});
@@ -152,13 +152,14 @@ function renderModel(){
   const views=partitionHoldings(holdings);
   renderValuationDetails(snapshot,views.main,timing);renderValuationDetails(snapshot,views.staking,timing,'staking');
   renderHoldings('holdingsBody',views.main.filter(h=>h.quantity!=='0'));renderHoldings('stakingHoldingsBody',views.staking);
-  const stakes=shown.stakes.filter(s=>s.protocol==='hex'&&s.status!=='unlocked').sort((a,b)=>(a.maturity_date||'z').localeCompare(b.maturity_date||'z'));
+  const stakes=shown.stakes.filter(s=>s.protocol==='hex'&&s.status!=='unlocked'&&!isExcludedPortfolioAsset(s.chain_id,s.asset_id)).sort((a,b)=>(a.maturity_date||'z').localeCompare(b.maturity_date||'z'));
   $('maturitySummary').textContent=stakes.length?`${stakes.length} recorded stake${stakes.length===1?'':'s'} · ${stakes[0].maturity_date?'Earliest maturity '+stakes[0].maturity_date:'Maturity date pending'}`:'No active HEX stakes in the latest snapshot';
   $('stakeList').classList.toggle('empty-detail',!stakes.length);
   $('stakeList').innerHTML=stakes.length?`<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Stake</th><th>Principal · HEX</th><th>Maturity</th><th>Status</th></tr></thead><tbody>${stakes.map(s=>`<tr><td>${esc(s.stake_id)}</td><td>${displayDecimal(formatUnits(s.principal_raw,s.decimals))}</td><td>${esc(s.maturity_date||'Unverified')}</td><td>${esc(({pending:'Pending',good_accounted:'Good Accounting recorded',active:'Active',matured:'Matured'})[s.status]||s.status)}</td></tr>`).join('')}</tbody></table></div><p class="fine-print">Principal only. Future payout is not estimated. Ending stakes is never performed here.</p>`:'<h2>No active HEX stakes recorded</h2><p>The latest snapshot has no active HEX stake observations.</p>';
   const listedKeys=new Set(visibleHoldings(holdings,display.currency).map(h=>h.key));
   $('liquidRewardBalances').innerHTML=['HDRN','ICSA'].map(symbol=>{const coin=COINS.find(c=>c.symbol===symbol),row=holdings.find(h=>h.chainId===1&&h.assetId.toLowerCase()===coin.assetId);if(!row||!listedKeys.has(row.key))return '';return `<p>${symbol}<span>${displayDecimal(row.liquid)}</span></p>`;}).join('')||'<p>No priced reward holdings over $50.</p>';
-  $('rewardEstimates').innerHTML=shown.rewardEstimates.length?shown.rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${r.provenance?.carried_forward_estimate?'Saved estimate · not refreshed. ':''}${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
+  const rewardEstimates=shown.rewardEstimates.filter(r=>!isExcludedPortfolioAsset(r.chain_id,r.asset_id));
+  $('rewardEstimates').innerHTML=rewardEstimates.length?rewardEstimates.map(r=>`<div><p>${r.estimate_status==='estimated_unminted'&&r.amount_raw!=null?displayDecimal(formatUnits(r.amount_raw,r.decimals))+' HDRN':'Estimate unavailable'}</p><p class="fine-print">Stake ${esc(r.source_stake_id)} · ${esc(when(r.observed_at))}</p><p class="fine-print">${r.provenance?.carried_forward_estimate?'Saved estimate · not refreshed. ':''}${esc(r.caveat)}</p></div>`).join(''):'<p>No verified unminted reward estimates recorded.</p>';
   loadHeadlineComparison();detailViews?.update();
 
 }
@@ -196,7 +197,7 @@ let summaryHelper=null,headlineHelper=null,summaryLoad=null,comparisonBusy=false
 const comparisonHistory=new Map();
 async function renderPortfolioSummary(){
   if(!summaryHelper){
-    if(!summaryLoad)summaryLoad=Promise.all([import('./portfolio/history.mjs?v=20261004.compact1'),import('./portfolio/headline.mjs?v=20261004.compact1')]).then(([module,headline])=>{
+    if(!summaryLoad)summaryLoad=Promise.all([import('./portfolio/history.mjs?v=20261007.exclusions1'),import('./portfolio/headline.mjs?v=20261007.exclusions1')]).then(([module,headline])=>{
       summaryHelper=module.recordedHistorySummary;headlineHelper=headline.portfolioHeadline;
     }).catch(()=>{$('portfolioChange').textContent='Recorded comparison unavailable.';}).finally(()=>{summaryLoad=null;});
     await summaryLoad;if(!summaryHelper)return;

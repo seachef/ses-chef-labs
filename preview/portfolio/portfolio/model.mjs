@@ -44,11 +44,18 @@ export function valuationContext(snapshot){
   const balanceEnd=validTime(v.balance_as_of_end)||(carried?balanceStart:validTime(snapshot?.read_window_end)||balanceStart);
   return {carried,balanceStart,balanceEnd,valuedAt:validTime(v.valued_at),fxAt:verifiedFx(snapshot)?validTime(snapshot.fx_observed_at):null,fxSource:snapshot?.fx_source||null};
 }
+// View-only exclusions. Stored observations and token balances are never changed.
+export const PORTFOLIO_EXCLUDED_ASSETS=Object.freeze([
+  '0x66a3c2fa3e467aa586e90912f977e648589cabaf',
+  '0x514b9e5467b9eb811519e316263c9099eae546ca'
+]);
+export function isExcludedPortfolioAsset(chainId,assetId){return chainId===1&&typeof assetId==='string'&&PORTFOLIO_EXCLUDED_ASSETS.includes(assetId.toLowerCase());}
+const hasPortfolioExclusions=model=>[...(model?.balances||[]),...(model?.stakes||[])].some(r=>isExcludedPortfolioAsset(r?.chain_id,r?.asset_id));
 export function groupHoldings(model){
   if(!model?.snapshot)return [];const groups=new Map();
   const get=row=>{const key=`${row.chain_id}:${String(row.asset_id).toLowerCase()}`;if(!groups.has(key))groups.set(key,{key,assetId:row.asset_id,chainId:row.chain_id,symbol:row.symbol,decimals:row.decimals,liquidRaw:0n,stakedRaw:0n,quotes:[],unreliable:false});const g=groups.get(key);if(g.decimals!==row.decimals)throw Error('Inconsistent token decimals');return g;};
-  for(const row of model.balances||[]){const g=get(row);g.liquidRaw+=BigInt(rawUnits(row.balance_raw));if(row.price_status==='unreliable')g.unreliable=true;if(row.price_status==='observed'&&row.price_usd!=null&&Number.isFinite(Date.parse(row.price_observed_at))&&row.price_source&&row.provenance?.quote?.held_valuation_eligible!==false)g.quotes.push(row);}
-  for(const row of model.stakes||[]){if(row.status==='unlocked')continue;get(row).stakedRaw+=BigInt(rawUnits(row.principal_raw));}
+  for(const row of model.balances||[]){if(isExcludedPortfolioAsset(row.chain_id,row.asset_id))continue;const g=get(row);g.liquidRaw+=BigInt(rawUnits(row.balance_raw));if(row.price_status==='unreliable')g.unreliable=true;if(row.price_status==='observed'&&row.price_usd!=null&&Number.isFinite(Date.parse(row.price_observed_at))&&row.price_source&&row.provenance?.quote?.held_valuation_eligible!==false)g.quotes.push(row);}
+  for(const row of model.stakes||[]){if(row.status==='unlocked'||isExcludedPortfolioAsset(row.chain_id,row.asset_id))continue;get(row).stakedRaw+=BigInt(rawUnits(row.principal_raw));}
   const fx=verifiedFx(model.snapshot);
   return [...groups.values()].map(g=>{const quote=g.quotes.sort((a,b)=>Date.parse(b.price_observed_at)-Date.parse(a.price_observed_at))[0];const liquid=formatUnits(g.liquidRaw.toString(),g.decimals),staked=formatUnits(g.stakedRaw.toString(),g.decimals),quantity=decimalSum([liquid,staked]);const usd=quote?multiplyDecimals(quantity,quote.price_usd):null;return {...g,liquidRaw:undefined,stakedRaw:undefined,quotes:undefined,liquid,staked,quantity,usd,aud:usd!=null&&fx?multiplyDecimals(usd,fx):null,unitPriceUsd:quote?.price_usd??null,priceAt:quote?.price_observed_at||null,priceSource:quote?.price_source||null,quote:quote?.provenance?.quote||null};}).sort((a,b)=>{const order=s=>{const i=COINS.findIndex(c=>c.symbol===s);return i<0?99:i;};return order(a.symbol)-order(b.symbol)||a.key.localeCompare(b.key);});
 }
@@ -56,6 +63,7 @@ export function groupHoldings(model){
 export function visibleHoldings(holdings,currency='AUD'){
   const key=currency==='USD'?'usd':'aud';
   return holdings.filter(h=>{
+    if(isExcludedPortfolioAsset(h.chainId,h.assetId))return false;
     if(typeof h.quantity!=='string'||!/^\d+(?:\.\d+)?$/.test(h.quantity)||!/[1-9]/.test(h.quantity)||h.unreliable===true)return false;
     const value=h[key];
     // List only holdings whose selected-currency value is known to exceed the threshold.
@@ -64,21 +72,26 @@ export function visibleHoldings(holdings,currency='AUD'){
     return BigInt(whole)>50n||(BigInt(whole)===50n&&/[1-9]/.test(fraction));
   });
 }
-export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;if(Array.isArray(model.wallets)){const ids=new Set([...(model.balances||[]),...(model.stakes||[])].map(r=>r.wallet_id));if(model.wallets.length!==s.expected_wallets||model.wallets.some(w=>w.provider_status==='provider_pending'||!ids.has(w.id))||ids.size!==model.wallets.length)return null;}return s.held_value_aud??null;}
+export function portfolioTotal(model){const s=model?.snapshot;if(!s||valuationContext(s).carried||s.status!=='complete'||s.observed_wallets!==s.expected_wallets||s.unpriced_assets!==0||!verifiedFx(s))return null;if(Array.isArray(model.wallets)){const ids=new Set([...(model.balances||[]),...(model.stakes||[])].map(r=>r.wallet_id));if(model.wallets.length!==s.expected_wallets||model.wallets.some(w=>w.provider_status==='provider_pending'||!ids.has(w.id))||ids.size!==model.wallets.length)return null;}if(hasPortfolioExclusions(model)){
+  if(!Array.isArray(model.wallets)||!Array.isArray(model.balances)||!Array.isArray(model.stakes))return null;
+  const retained=groupHoldings(model).filter(h=>h.quantity!=='0');
+  return retained.some(h=>h.aud==null)?null:decimalSum(retained.map(h=>h.aud));
+}return s.held_value_aud??null;}
 export function pricedHoldingsSummary(holdings,currency='AUD'){
-  const key=currency==='USD'?'usd':'aud',held=holdings.filter(h=>h.quantity!=='0'),priced=held.filter(h=>h[key]!=null);
+  const key=currency==='USD'?'usd':'aud',held=holdings.filter(h=>h.quantity!=='0'&&!isExcludedPortfolioAsset(h.chainId,h.assetId)),priced=held.filter(h=>h[key]!=null);
   return {value:priced.length?decimalSum(priced.map(h=>h[key])):null,pricedAssets:priced.length,unpricedAssets:held.length-priced.length};
 }
 /** Current saved valuation only; never fabricates FX, wallet coverage or a complete total. */
 export function displayValuation(model,requestedCurrency=null){
   const currency=['AUD','USD'].includes(requestedCurrency)?requestedCurrency:!model?.snapshot||verifiedFx(model.snapshot)?'AUD':'USD',holdings=groupHoldings(model),priced=pricedHoldingsSummary(holdings,currency),total=currency==='AUD'?portfolioTotal(model):null;
   const pending=(model?.wallets||[]).filter(w=>w.provider_status==='provider_pending');
-  return {...priced,currency,total,fxUnavailable:currency==='AUD'&&!verifiedFx(model?.snapshot),value:total??priced.value,pendingWallets:pending.length,pendingNetworks:[...new Set(pending.map(w=>w.network==='solana'?'Solana':w.network||'Unknown network'))],incomplete:total==null||pending.length>0,label:total!=null?'Portfolio value':`Priced holdings subtotal · ${currency}`};
+  return {...priced,currency,total,fxUnavailable:currency==='AUD'&&!verifiedFx(model?.snapshot),value:total??(priced.value==null&&hasPortfolioExclusions(model)&&portfolioTotal(model)==='0'?'0':priced.value),pendingWallets:pending.length,pendingNetworks:[...new Set(pending.map(w=>w.network==='solana'?'Solana':w.network||'Unknown network'))],incomplete:total==null||pending.length>0,label:total!=null?'Portfolio value':`Priced holdings subtotal · ${currency}`};
 }
 export function valuationMoney(value,currency='AUD'){return currency==='USD'?priceUsd(value):aud(value);}
 export function fxReferenceDate(snapshot){const date=snapshot?.provenance?.valuation?.fx?.provider_observation_date;return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(Date.parse(date+'T00:00:00Z'))&&new Date(date+'T00:00:00Z').toISOString().slice(0,10)===date?date:null;}
+// Snapshot-only cached totals cannot apply token-level exclusions; preserve dates as gaps.
 export function historyPoints(history,days,now=Date.now()){
-  const cutoff=now-days*86400000;return (history||[]).filter(s=>Number.isFinite(Date.parse(s.observed_at))&&Date.parse(s.observed_at)>=cutoff&&Date.parse(s.observed_at)<=now+60000).sort((a,b)=>Date.parse(a.observed_at)-Date.parse(b.observed_at)).map(s=>({at:s.observed_at,value:!valuationContext(s).carried&&s.status==='complete'&&verifiedFx(s)&&s.observed_wallets===s.expected_wallets&&s.unpriced_assets===0?s.held_value_aud??null:null,status:s.status}));
+  const cutoff=now-days*86400000;return (history||[]).filter(s=>Number.isFinite(Date.parse(s.observed_at))&&Date.parse(s.observed_at)>=cutoff&&Date.parse(s.observed_at)<=now+60000).sort((a,b)=>Date.parse(a.observed_at)-Date.parse(b.observed_at)).map(s=>({at:s.observed_at,value:null,status:s.status}));
 }
 
 export function coinMetadata(holding){return COINS.find(c=>holding.chainId===1&&c.assetId===String(holding.assetId).toLowerCase()&&c.decimals===holding.decimals)||null;}
