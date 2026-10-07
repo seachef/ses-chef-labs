@@ -1,5 +1,5 @@
 /** A view over owner-verified stored rows; never writes or invents an observation. */
-import { groupHoldings } from './model.mjs?v=20261007.exclusions1';
+import { groupHoldings, partitionHoldings } from './model.mjs?v=20261007.exclusions1';
 
 export function projectWalletModel(model, walletId = null) {
   if (!model || walletId == null) return model;
@@ -37,4 +37,10 @@ export function createWalletProjection() {
     },
     clear(){cache=new WeakMap();}
   };
+}
+
+/** A selected wallet shows every asset; the combined home view keeps its staking split. */
+export function walletHoldingsView(holdings,walletId=null){
+  const views=partitionHoldings(holdings);
+  return walletId==null?views:{...views,main:holdings};
 }
