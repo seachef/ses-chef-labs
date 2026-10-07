@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-07T05:05:25Z",
+  "candidates": [
+    {
+      "id": "variational-var",
+      "name": "Variational",
+      "symbol": "VAR",
+      "status": "watch",
+      "summary": "Official documentation targets a Q4 2026 token launch, without an exact date. Variational operates an on-chain derivatives product. No public token sale or confirmed listing venue was identified in the official sources checked. This is a research candidate, not a current purchase opportunity.",
+      "risks": [
+        "32% of total supply is allocated to a genesis airdrop and is fully unlocked at launch, creating potential selling pressure.",
+        "50% is allocated jointly to team and investors, locked for 12 months after launch and then vesting over at least three years; the separate team and investor shares remain undisclosed.",
+        "Launch price, fully diluted valuation, initial circulating supply and token eligibility remain unconfirmed. Using derivatives to earn points carries separate loss and liquidation risk."
+      ],
+      "official_url": "https://www.variational.io/en",
+      "launch": {
+        "date": null,
+        "time_utc": null,
+        "source_url": "https://docs.variational.io/token/usdvar.md"
+      },
+      "venues": [],
+      "sources": [
+        {
+          "label": "Official VAR launch window and token allocations",
+          "url": "https://docs.variational.io/token/usdvar.md",
+          "checked_at": "2026-10-07T05:04:24Z"
+        },
+        {
+          "label": "Official product, team and investors",
+          "url": "https://www.variational.io/en",
+          "checked_at": "2026-10-07T05:04:01Z"
+        },
+        {
+          "label": "Official restricted-person policy; token eligibility remains unverified",
+          "url": "https://docs.variational.io/legal/restricted-persons",
+          "checked_at": "2026-10-07T05:04:14Z"
+        }
+      ],
+      "australia_eligibility": "unverified"
+    }
+  ]
+}

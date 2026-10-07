@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {gzipSync} from 'node:zlib';
-const files=['portfolio/visuals.css','portfolio/trade-planner.css','index.html','portfolio.css','portfolio.mjs','portfolio/model.mjs','portfolio/domain.mjs','portfolio/adapter.mjs','portfolio/wallet-scope.mjs','portfolio/auth-config.mjs','portfolio/auth-client.mjs'];
+const files=['portfolio/launch-research.mjs','portfolio/launch-research-data.mjs','portfolio/launch-research.css','portfolio/visuals.css','portfolio/trade-planner.css','index.html','portfolio.css','portfolio.mjs','portfolio/model.mjs','portfolio/domain.mjs','portfolio/adapter.mjs','portfolio/wallet-scope.mjs','portfolio/auth-config.mjs','portfolio/auth-client.mjs'];
 function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(x=>x.isDirectory()?walk(path.join(dir,x.name)):[path.join(dir,x.name)]);}
 const lazyFiles=['portfolio/details.mjs','portfolio/history.mjs','portfolio/details.css','portfolio/wallets.mjs','portfolio/wallets.css'];
 const headlineFiles=['portfolio/headline.mjs'];

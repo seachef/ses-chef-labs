@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sea Chef Labs public launch research revisions",
+  "description": "Public candidate revisions only. Runtime validation requires chronological entries and unique candidate_id plus observation instant; an earlier content fingerprint may recur at a later instant. No private notification history.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "plainText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "pattern": "^(?!\\s)(?!.*(?:\\*\\*|__|\\[[^\\]]*\\]\\s*\\())(?!#{1,6}\\s)[^<>`\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u206f\\ufeff]*[^\\s<>`\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u206f\\ufeff]$"
+    },
+    "candidateId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$",
+      "description": "Actual UTC observation time, at most five minutes after validation time; candidate observations cannot exceed root checked_at."
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "checked_at",
+        "event",
+        "fingerprint",
+        "note"
+      ],
+      "properties": {
+        "candidate_id": {
+          "$ref": "#/$defs/candidateId"
+        },
+        "checked_at": {
+          "$ref": "#/$defs/utcTimestamp"
+        },
+        "event": {
+          "enum": [
+            "added",
+            "updated",
+            "closed",
+            "removed"
+          ]
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "note": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/plainText"
+            }
+          ],
+          "maxLength": 600
+        }
+      }
+    }
+  }
+}
