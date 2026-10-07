@@ -1,6 +1,7 @@
 // Public research and historical market observations only. Validation cannot
 // establish source ownership or that prose is supported by the cited evidence.
 export const ENTRY_WATCH_ASSETS = Object.freeze(['RENDER', 'POL', 'TAO', 'APT', 'AKT']);
+export const NEWS_VISIBLE_MS = 24 * 60 * 60 * 1000;
 export const NEWS_STALE_AFTER_MS = 36 * 60 * 60 * 1000;
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
 const DAY_MS = 86_400_000;
@@ -93,18 +94,19 @@ function compareDecimal(left, right) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-export function validateNewsDesk(raw, { now = Date.now() } = {}) {
+export function validateNewsDesk(raw, { now = Date.now(), previous } = {}) {
   nowValue(now);
   object(raw, ['schema_version', 'checked_at', 'items'], 'root');
-  if (raw.schema_version !== 1) fail('schema_version', 'must equal 1');
+  if (raw.schema_version !== 2) fail('schema_version', 'must equal 2');
   list(raw.items, 0, 5, 'items');
   const checked = raw.checked_at === null ? null : timestamp(raw.checked_at, now, 'checked_at');
   if (checked === null && raw.items.length) fail('checked_at', 'may be null only for an empty initial feed');
   const ids = new Set();
   raw.items.forEach((item, index) => {
     const path = `items[${index}]`;
-    object(item, ['id', 'coins', 'headline', 'what_happened', 'why_it_matters', 'risk', 'source'], path);
+    object(item, ['id', 'coins', 'headline', 'what_happened', 'why_it_matters', 'risk', 'source', 'first_displayed_at'], path);
     identifier(item.id, `${path}.id`);
+    timestamp(item.first_displayed_at, now, `${path}.first_displayed_at`);
     if (ids.has(item.id)) fail(`${path}.id`, 'must be unique');
     ids.add(item.id);
     list(item.coins, 1, 5, `${path}.coins`);
@@ -128,7 +130,17 @@ export function validateNewsDesk(raw, { now = Date.now() } = {}) {
       if (item.source.published_at.slice(0, 10) !== item.source.published_date) fail(`${sourcePath}.published_date`, 'must match the UTC date in published_at');
     }
   });
+  if(previous!==undefined){
+    validateNewsDesk(previous,{now});
+    const prior=new Map(previous.items.map(item=>[item.id,item.first_displayed_at]));
+    for(const item of raw.items)if(prior.has(item.id)&&prior.get(item.id)!==item.first_displayed_at)fail('first_displayed_at','must preserve the original display time for the same story');
+  }
   return raw;
+}
+
+export function visibleNewsItems(data,now=Date.now()){
+  validateNewsDesk(data,{now});
+  return data.items.filter(item=>{const first=Date.parse(item.first_displayed_at);return first<=now&&now<first+NEWS_VISIBLE_MS;});
 }
 
 export function newsFreshness(data, now = Date.now()) {

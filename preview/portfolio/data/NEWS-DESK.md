@@ -13,17 +13,18 @@ node scripts/validate-news-data.mjs
 node --test scripts/news-data.test.mjs
 ```
 
-The validator defaults to `data/news-desk.json` and `data/entry-watch.json`. Optional flags are `--news path`, `--watch path`, `--previous path`, and `--now UTC_ISO`. File paths supplied as flags resolve from the current working directory. `--previous` verifies that the earlier watch ledger is an unchanged prefix of the new ledger, comparing JSON values regardless of object key order. Use the actual previous published ledger from the trusted base revision; a newly generated or edited baseline does not establish immutability. Do not skip this check when updating history. `--now` exists for repeatable tests and replays; production validation uses the real current time.
+The validator defaults to `data/news-desk.json` and `data/entry-watch.json`. Optional flags are `--news path`, `--watch path`, `--previous path`, `--previous-news path`, and `--now UTC_ISO`. File paths supplied as flags resolve from the current working directory. `--previous` verifies that the earlier watch ledger is an unchanged prefix of the new ledger, comparing JSON values regardless of object key order. Use the actual previous published ledger from the trusted base revision; a newly generated or edited baseline does not establish immutability. Do not skip this check when updating history. `--now` exists for repeatable tests and replays; production validation uses the real current time.
 
 All object keys are exact and required. All arrays are dense and bounded. Text is trimmed and excludes markup, control characters and obvious promises of investment safety or returns. URLs must use public HTTPS DNS hosts, with no IP address, local hostname, user credentials or credential query parameters. This is a syntax check, not a DNS resolution or source-authenticity check. UTC timestamps end in `Z`, include seconds, may have 1–3 fractional digits and must represent real dates. Observations cannot be more than five minutes ahead of validation time.
 
 ## News feed
 
-The root has exactly `schema_version: 1`, `checked_at`, and `items`. There are 0–5 items. `checked_at` is the actual time the researcher finished checking the feed; it may be null only for an empty initial feed. An empty checked feed means no material verified items were selected. Do not fabricate a check timestamp.
+The root has exactly `schema_version: 2`, `checked_at`, and `items`. There are 0–5 items. `checked_at` is the actual time the researcher finished checking the feed; it may be null only for an empty initial feed. An empty checked feed means no material verified items were selected. Do not fabricate a check timestamp.
 
 Every item has exactly:
 
 - `id`: unique lowercase hyphenated identifier, at most 64 characters
+- `first_displayed_at`: immutable UTC time this story first appeared in an app edition
 - `coins`: 1–5 unique uppercase alphanumeric tickers, 2–12 characters each
 - `headline`: plain text, at most 140 characters
 - `what_happened`, `why_it_matters`, `risk`: each plain text at most 360 characters; keep each to one or two short sentences
@@ -32,6 +33,10 @@ Every item has exactly:
 Use a primary source, such as the project's own announcement, an exchange announcement, a regulatory publication or the original study. `published_date` is the real source publication date (`YYYY-MM-DD`). `published_at` is a verified precise UTC timestamp, or null when the source gives only a date. Never invent midnight. If a precise timestamp is present, its UTC date must match `published_date`. Publication must not be after retrieval, and retrieval must not be after the feed check. Render the publication date separately from the check timestamp; rechecking an older article does not make it today's news. When displaying non-UTC source dates without precise times, preserve the stated calendar date and leave the timestamp null.
 
 `newsFreshness(data, now)` returns `{ status, checkedAt, ageMs }`. The status is `never` for an initial unchecked feed, `fresh` through 36 hours after the oldest timestamp among `checked_at` and every source's `retrieved_at`, and `stale` once that oldest check exceeds 36 hours. `checkedAt` remains the report's check timestamp; `ageMs` measures the oldest check and is clamped to zero within permitted clock skew. Publication dates do not drive freshness. This reports evidence-check freshness, not article recency or guaranteed continued availability. Writers must actually recheck retained sources before advancing their retrieval timestamps; changing only the report's `checked_at` cannot conceal stale source checks. Never label an unverified or stale report current. A stale feed remains valid so the UI can show its warning honestly.
+
+A story is visible from `first_displayed_at` until exactly 24 hours later. Rechecking sources, correcting copy, reloading the app, or updating `checked_at` must never reset that time. Keep the same stable story ID for the same event. Pass the trusted prior feed with `--previous-news` to enforce retained-story timestamps. New IDs are reserved for genuinely new developments, not a way to recycle expired headlines. The initial three stories were first published at the verified release commit time, 2026-10-07T11:39:07Z. The UI removes expired stories on a timer and on return to the tab. News expiry does not remove entry history or the launch ledger.
+
+Promising launch leads and verified launch-date changes remain in `launch-research-ledger.json`; preserve its immutable prefix. Every meaningful event note must retain the actual reported launch date or an explicit unconfirmed-date statement, with its official source URL. Do not invent a date. The current lead summaries and full revision ledger remain accessible under the compact Saved launch leads disclosure. New material launch developments can appear among the same maximum five News items; do not recreate a separate large opportunities panel.
 
 ## Entry-watch ledger
 
@@ -61,7 +66,7 @@ The current ledger alone cannot prove append-only history. Runtime cross-record 
 
 - `ENTRY_WATCH_ASSETS`: frozen array of the five supported assets
 - `NEWS_STALE_AFTER_MS`: 36 hours in milliseconds
-- `validateNewsDesk(value, { now = Date.now() } = {})`: returns the original object or throws a path-specific error
+- `validateNewsDesk(value, { now = Date.now(), previous } = {})`: returns the original object or throws a path-specific error
 - `newsFreshness(value, now = Date.now())`: validates and returns the check-freshness object
 - `validateEntryWatch(value, { now = Date.now(), previous } = {})`: returns the original object or throws; with `previous`, also validates the immutable prefix
 
@@ -70,14 +75,13 @@ The validators never mutate their inputs, contact the network, place orders or s
 ## Compact top shortlist
 
 The top strip shows only a coin and its status. Fresh observed records display
-`Watch`; old observations display `Stale`; missing or invalid data displays
+`Lower low` when the latest exact completed-candle comparison verifies it, otherwise `Watch`; old observations display `Stale`; missing or invalid data displays
 `No data`. Each coin opens its existing research history. This public strip
 contains no portfolio allocation or account information.
 
 An independent, optional `data/entry-setups.json` feed can mark a coin green as
 `Review entry` only when its complete research setup passes the separate entry
-setup validator and its supporting history is current. A lower daily low never
-qualifies an entry by itself. Empty, invalid, stale, unchecked or mismatched
+setup validator and its supporting history is current. The amber Lower low label never qualifies an entry by itself. Corrections to its comparison remove the label until rechecked. No “Basing”, “Crowd interest” or all-time-low claim is generated from daily low data. Those need separate verified research evidence. Empty, invalid, stale, unchecked or mismatched
 setup data cannot create a green status. The initial setup feed is empty, so
 all five coins remain Watch. See `ENTRY-SETUPS.md` for the contract and freshness
 limits. Green still requires the user to review current execution prices, fees,

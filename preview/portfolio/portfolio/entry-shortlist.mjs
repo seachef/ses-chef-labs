@@ -1,4 +1,4 @@
-import {ENTRY_WATCH_ASSETS,validateEntryWatch} from './news-data.mjs?v=20261007.news1';
+import {ENTRY_WATCH_ASSETS,validateEntryWatch} from './news-data.mjs?v=20261007.edition1';
 import {validateEntrySetups,evaluateEntrySetup,ENTRY_SETUP_MAX_AGE_MS,ENTRY_QUOTE_MAX_AGE_MS} from './entry-setups.mjs?v=20261007.shortlist1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const when=value=>new Date(value).toISOString().replace('T',' ').replace(/\.\d{3}Z$/,' UTC');
@@ -15,9 +15,10 @@ export function shortlistStates(data,now=Date.now(),setups=null){
   const lastAttempt=rows.at(-1),latest=lastAttempt?.status==='unavailable'?lastAttempt:observed.at(-1);
   if(!latest||latest.status==='unavailable')return {asset,status:'unavailable',label:'No data'};
   const stale=now-Date.parse(latest.observed_at)>36*3600000||now-Date.parse(latest.candle_close_at)>48*3600000;
+  const comparisonChanged=latest.compared_with&&superseded.has(latest.compared_with);
   const setup=entries.find(item=>item.asset===asset);
-  if(!stale&&setup&&evaluateEntrySetup(setup,now).status==='review')return {asset,status:'review',label:'Review entry'};
-  return {asset,status:stale?'stale':'watch',label:stale?'Stale':'Watch'};
+  if(!stale&&!comparisonChanged&&setup&&evaluateEntrySetup(setup,now).status==='review')return {asset,status:'review',label:'Review entry'};
+  return {asset,status:stale?'stale':'watch',label:stale?'Stale':!comparisonChanged&&latest.assessment==='lower_low'?'Lower low':'Watch'};
  });
 }
 

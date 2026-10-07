@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "checked_at": "2026-10-07T11:24:45Z",
   "items": [
     {
@@ -17,7 +17,8 @@
         "published_at": null,
         "published_date": "2026-10-01",
         "retrieved_at": "2026-10-07T11:24:45Z"
-      }
+      },
+      "first_displayed_at": "2026-10-07T11:39:07Z"
     },
     {
       "id": "x402-solana-refund-fix-20261002",
@@ -34,7 +35,8 @@
         "published_at": null,
         "published_date": "2026-10-02",
         "retrieved_at": "2026-10-07T11:24:45Z"
-      }
+      },
+      "first_displayed_at": "2026-10-07T11:39:07Z"
     },
     {
       "id": "aave-september-update-20261001",
@@ -51,7 +53,8 @@
         "published_at": null,
         "published_date": "2026-10-01",
         "retrieved_at": "2026-10-07T11:24:45Z"
-      }
+      },
+      "first_displayed_at": "2026-10-07T11:39:07Z"
     }
   ]
 }

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { ENTRY_WATCH_ASSETS, NEWS_STALE_AFTER_MS, validateNewsDesk, validateEntryWatch, newsFreshness } from '../portfolio/news-data.mjs';
+import { ENTRY_WATCH_ASSETS, NEWS_STALE_AFTER_MS, NEWS_VISIBLE_MS, visibleNewsItems, validateNewsDesk, validateEntryWatch, newsFreshness } from '../portfolio/news-data.mjs';
 
 // Synthetic unit-test evidence, never used to populate the public feed.
 const NOW_ISO = '2026-10-07T11:00:00Z';
@@ -13,13 +13,13 @@ const now = Date.parse(NOW_ISO);
 const checked = '2026-10-07T10:59:00Z';
 const sourceUrl = 'https://project.example.org/news/public-update';
 const item = () => ({
-  id: 'synthetic-public-update', coins: ['RENDER'], headline: 'A project publishes an update',
+  id: 'synthetic-public-update', first_displayed_at: checked, coins: ['RENDER'], headline: 'A project publishes an update',
   what_happened: 'The project published a public technical update.',
   why_it_matters: 'The announcement describes a change in network usage.',
   risk: 'An announcement does not establish future adoption or a price outcome.',
   source: { name: 'Project publication', url: sourceUrl, published_at: null, published_date: '2026-10-01', retrieved_at: checked },
 });
-const news = () => ({ schema_version: 1, checked_at: checked, items: [item()] });
+const news = () => ({ schema_version: 2, checked_at: checked, items: [item()] });
 const record = (options = {}) => ({
   id: 'render-day-one', asset: 'RENDER', status: 'observed', venue: 'Example Spot', pair: 'RENDERUSDT', quote_currency: 'USDT', interval: '1d',
   candle_open_at: '2026-10-05T00:00:00Z', candle_close_at: '2026-10-06T00:00:00Z',
@@ -47,7 +47,7 @@ test('public feed and empty initial state validate without mutation', () => {
   const value = news(), before = structuredClone(value);
   assert.equal(validNews(value), value);
   assert.deepEqual(value, before);
-  const empty = { schema_version: 1, checked_at: null, items: [] };
+  const empty = { schema_version: 2, checked_at: null, items: [] };
   assert.equal(validNews(empty), empty);
   assert.deepEqual(newsFreshness(empty, now), { status: 'never', checkedAt: null, ageMs: null });
   invalidNews(value => { value.checked_at = null; }, /empty initial feed/);
@@ -65,7 +65,7 @@ test('every news object has exact required keys and plain JSON descriptors', () 
 });
 
 test('news count, unique IDs and unique ticker bounds are enforced', () => {
-  invalidNews(value => { value.schema_version = '1'; }, /equal 1/);
+  invalidNews(value => { value.schema_version = '2'; }, /equal 2/);
   invalidNews(value => { value.items.push(item()); }, /unique/);
   invalidNews(value => { value.items = Array.from({ length: 6 }, (_, i) => ({ ...item(), id: `item-${i}` })); }, /0–5/);
   for (const coins of [[], ['RENDER', 'RENDER'], ['btc'], ['A'], ['BTC USD'], ['A'.repeat(13)], ['A0', 'A1', 'A2', 'A3', 'A4', 'A5']]) invalidNews((_, entry) => { entry.coins = coins; });
@@ -142,7 +142,7 @@ test('freshness measures truthful feed checks, preserves old publication dates a
   assert.equal(newsFreshness(refreshedReport, now).status, 'stale');
   assert.equal(newsFreshness(refreshedReport, now).checkedAt, checked);
   assert.equal(newsFreshness(refreshedReport, now).ageMs, NEWS_STALE_AFTER_MS + 1000);
-  const empty = { schema_version: 1, checked_at: '2020-01-01T00:00:00Z', items: [] };
+  const empty = { schema_version: 2, checked_at: '2020-01-01T00:00:00Z', items: [] };
   validNews(empty); assert.equal(newsFreshness(empty, now).status, 'stale');
 });
 
@@ -279,4 +279,28 @@ test('CLI validates both files, checks trusted history, reports stale state and 
     await writeFile(newsPath, '{'); assert.notEqual(run().status, 0);
     assert.equal(run(['--help']).status, 0);
   } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+
+test('news disappears exactly 24 hours after first display, independent of later source checks', () => {
+  const value = news(), first = Date.parse(checked);
+  assert.equal(visibleNewsItems(value, first).length, 1);
+  assert.equal(visibleNewsItems(value, first + NEWS_VISIBLE_MS - 1).length, 1);
+  assert.equal(visibleNewsItems(value, first + NEWS_VISIBLE_MS).length, 0);
+  value.checked_at = value.items[0].source.retrieved_at = new Date(first + NEWS_VISIBLE_MS).toISOString();
+  assert.equal(visibleNewsItems(value, first + NEWS_VISIBLE_MS).length, 0);
+  const future = news(); future.items[0].first_displayed_at = NOW_ISO;
+  assert.equal(visibleNewsItems(future, now - 1).length, 0);
+});
+
+test('retained story first display times are immutable and missing or future times are rejected', () => {
+  const previous = news(), changed = news();
+  validateNewsDesk(changed, {now, previous});
+  changed.items[0].first_displayed_at = NOW_ISO;
+  assert.throws(() => validateNewsDesk(changed, {now, previous}), /original display time/);
+  delete changed.items[0].first_displayed_at;
+  assert.throws(() => validNews(changed), /required/);
+  changed.items[0].first_displayed_at = '2026-10-08T00:00:00Z';
+  assert.throws(() => validNews(changed), /future/);
+  assert.equal(visibleNewsItems(news(), now + 72 * 3600000).length, 0);
 });
