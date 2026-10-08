@@ -47,8 +47,8 @@
  <div class="paper-teaching"><strong>What’s happening?</strong><p id="paperTeaching">Waiting for a real server report.</p></div>
  <div class="paper-metrics"><div><span>Virtual equity · USD</span><strong id="paperEquity">—</strong></div><div><span>Total P&amp;L · USD</span><strong id="paperTotal">—</strong></div><div><span>Open P&amp;L · USD</span><strong id="paperOpen">—</strong></div><div><span>Realized P&amp;L · USD</span><strong id="paperRealized">—</strong></div></div>
  <div class="paper-costs"><div><span>Fees paid so far · USD</span><strong id="paperFees">—</strong></div><div><span id="paperSpreadLabel">Current bid / ask gap</span><strong id="paperSpread">—</strong></div><div><span>Estimated move to cover costs</span><strong id="paperBreakeven">—</strong></div><p id="paperCostNote">Waiting for fee, spread and slippage data. This is a cost estimate, never an expected profit.</p></div>
- <div class="paper-detail"><p><span>Position</span><strong id="paperPosition">Awaiting server report</strong></p><p><span>Latest reported quote · USD per coin</span><strong id="paperQuote">—</strong></p><p><span>Server heartbeat · UTC</span><strong id="paperHeartbeat">—</strong></p><p><span>Quote checked · UTC</span><strong id="paperQuoteTime">—</strong></p></div>
- <div class="paper-detail paper-secondary"><p><span>Campaign safety deadline · UTC</span><strong id="paperDeadline">—</strong></p><p><span>Last signal · UTC</span><strong id="paperSignal">—</strong></p><p><span>Last simulated fill · UTC</span><strong id="paperLastFill">—</strong></p><p><span>Simulated fills reported</span><strong id="paperFills">—</strong></p><p><span>Entry price · USD per PEPE</span><strong id="paperEntry">—</strong></p><p><span>Modeled costs</span><strong id="paperCosts">Awaiting server report</strong></p></div>
+ <div class="paper-detail"><p><span>Position</span><strong id="paperPosition">Awaiting server report</strong></p><p><span id="paperQuoteLabel">Latest reported quote · USD per BTC</span><strong id="paperQuote">—</strong></p><p><span>Server heartbeat · UTC</span><strong id="paperHeartbeat">—</strong></p><p><span>Quote checked · UTC</span><strong id="paperQuoteTime">—</strong></p></div>
+ <div class="paper-detail paper-secondary"><p><span>Campaign safety deadline · UTC</span><strong id="paperDeadline">—</strong></p><p><span>Last signal · UTC</span><strong id="paperSignal">—</strong></p><p><span>Last simulated fill · UTC</span><strong id="paperLastFill">—</strong></p><p><span>Simulated fills reported</span><strong id="paperFills">—</strong></p><p><span id="paperEntryLabel">Entry price · USD per BTC</span><strong id="paperEntry">—</strong></p><p><span>Modeled costs</span><strong id="paperCosts">Awaiting server report</strong></p></div>
  <details class="paper-chart-detail"><summary>Show this coin’s recent price context</summary><p id="paperChartCaption">No confirmed completed candles yet.</p><canvas id="paperChart" role="img" aria-label="Selected coin recent completed fifteen-minute candles, not a backtest"></canvas></details>
  <p id="paperDepth" class="paper-depth">Entry and exit order-book checks: awaiting server report.</p>
  <p id="paperTrigger" class="paper-depth">Next trigger: awaiting server report.</p>
@@ -162,6 +162,9 @@ function createPaperPanel(root,{readStatus,onStatus=()=>{},onEvent=()=>{},now=()
  function render() {
   const view=paperView(report,connected,now()); panel.dataset.paperStatus=view.status;
   text('paperTitle',`${selected} · virtual USD ledger`);
+  const coin=selected.split('/')[0];
+  text('paperQuoteLabel',`Latest reported quote · USD per ${coin}`);
+  text('paperEntryLabel',`Entry price · USD per ${coin}`);
   for(const symbol of markets){const id=symbol.split('/')[0],item=reports.get(symbol),button=$('paperSelect'+id);button.setAttribute('aria-pressed',String(selected===symbol));const state=paperView(item,connected&&!!item,now());const net=finite(item?.equity)&&finite(item?.initial_cash)?usd(item.equity-item.initial_cash):'—';text('paperSummary'+id,`${net} net · ${state.label}`);}
   text('paperStatus',view.label);text('paperReason',view.reason);
   text('paperTeaching',teachPaper(report,view));
