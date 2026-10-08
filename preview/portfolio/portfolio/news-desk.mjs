@@ -1,4 +1,4 @@
-import {createEntryShortlist} from './entry-shortlist.mjs?v=20261007.edition1';
+import {createEntryShortlist} from './entry-shortlist.mjs?v=20261008.low1';
 import {validateNewsDesk,validateEntryWatch,newsFreshness,visibleNewsItems,NEWS_VISIBLE_MS,ENTRY_WATCH_ASSETS} from './news-data.mjs?v=20261007.edition1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const day=v=>new Intl.DateTimeFormat('en-AU',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(v.slice(0,10)+'T12:00:00Z'));
@@ -45,7 +45,7 @@ export function createNewsDesk({newsContainer,watchContainer,fetchImpl=globalThi
  return {load:()=>Promise.all([load('news'),load('watch')]),recheck:renderNews,destroy(){disposed=true;clearTimeout(expiryTimer);newsData=null;for(const controller of active.values())controller.abort();for(const container of [newsContainer,watchContainer]){container.removeEventListener('click',click);container.removeAttribute('aria-busy');}}};
 }
 const doc=globalThis.document,newsContainer=doc?.getElementById('newsDeskContent'),watchContainer=doc?.getElementById('entryWatchContent');
-if(newsContainer&&watchContainer){const makeShortlist=()=>doc.getElementById('entryShortlist')?createEntryShortlist({container:doc.getElementById('entryShortlist'),historyContainer:watchContainer}):null;let shortlist=makeShortlist();const options={newsContainer,watchContainer,onWatch:data=>shortlist?.update(data)};let desk=createNewsDesk(options);void desk.load();void shortlist?.loadSetups();globalThis.addEventListener?.('pagehide',()=>{desk.destroy();shortlist?.destroy();});globalThis.addEventListener?.('pageshow',event=>{if(event.persisted){shortlist=makeShortlist();desk=createNewsDesk(options);void desk.load();void shortlist?.loadSetups();}});doc.addEventListener('visibilitychange',()=>{if(!doc.hidden){desk.recheck();shortlist?.recheck();}});}
+if(newsContainer&&watchContainer){const makeShortlist=()=>doc.getElementById('entryShortlist')?createEntryShortlist({container:doc.getElementById('entryShortlist'),historyContainer:watchContainer}):null;let shortlist=makeShortlist();const options={newsContainer,watchContainer,onWatch:data=>shortlist?.update(data)};let desk=createNewsDesk(options);void desk.load();void shortlist?.loadSetups();void shortlist?.loadCycles();globalThis.addEventListener?.('pagehide',()=>{desk.destroy();shortlist?.destroy();});globalThis.addEventListener?.('pageshow',event=>{if(event.persisted){shortlist=makeShortlist();desk=createNewsDesk(options);void desk.load();void shortlist?.loadSetups();void shortlist?.loadCycles();}});doc.addEventListener('visibilitychange',()=>{if(!doc.hidden){desk.recheck();shortlist?.recheck();}});}
 
 const savedDetails=doc?.getElementById('savedLaunchLeads'),savedContainer=doc?.getElementById('savedLaunchContent');
 if(savedDetails&&savedContainer){let view=null,generation=0;

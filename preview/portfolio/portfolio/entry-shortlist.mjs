@@ -1,3 +1,4 @@
+import {readCycleReference,CYCLE_QUOTE_AGE} from './entry-cycle.mjs?v=20261008.low1';
 import {ENTRY_WATCH_ASSETS,validateEntryWatch} from './news-data.mjs?v=20261007.edition1';
 import {validateEntrySetups,evaluateEntrySetup,ENTRY_SETUP_MAX_AGE_MS,ENTRY_QUOTE_MAX_AGE_MS} from './entry-setups.mjs?v=20261007.shortlist1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -24,7 +25,34 @@ export function shortlistStates(data,now=Date.now(),setups=null){
 
 export function createEntryShortlist({container,historyContainer,now=()=>Date.now(),fetchImpl=globalThis.fetch?.bind(globalThis),timeoutMs=8000}={}){
  if(!container||!historyContainer)throw Error('Shortlist and history containers required');
- let data=null,setups=null,controller=null,timer=null,disposed=false;
+ let data=null,setups=null,controller=null,timer=null,cycleTimer=null,disposed=false,expanded=null;
+ const cycles=new Map(),cycleRequests=new Map(),cycleFailures=new Set();
+ const detail=container.ownerDocument.createElement('div');detail.id='entryCycleDetails';detail.className='entry-cycle-detail';detail.hidden=true;container.append(detail);
+ const price=value=>Number(value).toLocaleString('en-AU',{maximumSignificantDigits:5});
+ const date=value=>new Date(value).toISOString().slice(0,10);
+ function renderCycle(state,button){
+  const saved=cycles.get(state.asset),fresh=saved&&now()-saved.retrievedAt>=0&&now()-saved.retrievedAt<CYCLE_QUOTE_AGE,quote=fresh?saved:null;
+  const loading=cycleRequests.has(state.asset);button.dataset.cycleState=fresh?'current':loading?'loading':'unavailable';
+  for(const [field,value] of Object.entries({current:quote?price(quote.current):loading?'…':'—',low:quote?price(quote.low):'—',percent:quote?quote.percentLabel:saved?'Refresh':'—'})){const node=button.querySelector('[data-cycle-'+field+']');if(node)node.textContent=value;}
+  button.setAttribute('aria-expanded',String(expanded===state.asset));button.setAttribute('aria-controls',detail.id);
+  button.setAttribute('aria-label',state.asset+': '+state.label+'. '+(quote?'Current '+quote.current+' '+quote.currency+', bear-cycle low '+quote.low+', '+quote.percentLabel+' above low. ':'Cycle prices unavailable. ')+'Toggle compact price details');
+ }
+ function renderCycleDetail(){
+  detail.hidden=!expanded;if(!expanded)return;
+  const quote=cycles.get(expanded),fresh=quote&&now()-quote.retrievedAt>=0&&now()-quote.retrievedAt<CYCLE_QUOTE_AGE;
+  detail.innerHTML=fresh?`<p><strong>${esc(expanded)}</strong> · ${esc(quote.venue)} ${esc(quote.currency)} · Low week ${date(quote.lowAt)} · Checked ${esc(when(quote.retrievedAt))}</p><p>Lowest traded wick after the strongest weekly close (${date(quote.peakAt)}) in available history since Jan 2024.${quote.startsAt>Date.parse('2024-01-08')?' History starts '+date(quote.startsAt)+'.':''}${quote.migration?' Includes the 1:1 token rename; trading paused during migration.':''} A wick may be brief; this is not a guaranteed bottom.</p><p>${quote.sources.map((url,i)=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${quote.sources.length>1?'History '+(i+1):'Price source'}</a>`).join(' · ')}${quote.migration?` · <a href="${esc(quote.migration)}" target="_blank" rel="noopener noreferrer">Token rename</a>`:''} · <button type="button" data-entry-history="${expanded}">Research history</button></p>`:`<p>${esc(expanded)} · ${cycleRequests.has(expanded)?'Checking cycle prices…':quote?'Price check expired. Tap the coin to refresh.':cycleFailures.has(expanded)?'Cycle prices unavailable. Tap the coin to retry.':'Cycle prices are loading.'}</p>`;
+ }
+ async function loadCycles(){
+  if(disposed)return;
+  await Promise.all(ENTRY_WATCH_ASSETS.map(async asset=>{
+   const saved=cycles.get(asset);if(cycleRequests.has(asset)||saved&&now()-saved.retrievedAt<CYCLE_QUOTE_AGE)return;
+   const active=new AbortController();cycleRequests.set(asset,active);cycleFailures.delete(asset);const timeout=setTimeout(()=>active.abort(),timeoutMs);
+   render();
+   try{const result=await readCycleReference(asset,{fetchImpl,signal:active.signal,now});if(!disposed&&!active.signal.aborted)cycles.set(asset,result);}
+   catch{if(!disposed){cycles.delete(asset);cycleFailures.add(asset);}}
+   finally{clearTimeout(timeout);cycleRequests.delete(asset);if(!disposed)render();}
+  }));
+ }
  function setupDetails(asset){
   const setup=setups?.setups.find(item=>item.asset===asset);
   if(!setup)return '<p>No reviewed entry setup is available.</p>';
@@ -37,9 +65,10 @@ export function createEntryShortlist({container,historyContainer,now=()=>Date.no
   try{if(setups)validateEntrySetups(setups,{now:now()});}catch{setups=null;}
   clearTimeout(timer);timer=null;
   let states;try{states=shortlistStates(data,now(),setups);}catch{data=null;states=shortlistStates(null,now());}
-  for(const state of states){const button=container.querySelector(`[data-entry-coin="${state.asset}"]`);if(!button)continue;button.dataset.entryStatus=state.status;button.querySelector('[data-entry-label]').textContent=state.label;button.setAttribute('aria-label',state.asset+': '+state.label+'. Open research details');
+  for(const state of states){const button=container.querySelector(`[data-entry-coin="${state.asset}"]`);if(!button)continue;button.dataset.entryStatus=state.status;button.querySelector('[data-entry-label]').textContent=state.label;renderCycle(state,button);
    const target=historyContainer.querySelector(`[data-entry-asset="${state.asset}"]`);if(target){let panel=target.querySelector('[data-entry-setup]');if(!panel){panel=target.ownerDocument.createElement('section');panel.setAttribute('data-entry-setup','');panel.className='entry-setup';target.insertBefore(panel,target.querySelector('.watch-records'));}panel.innerHTML=setupDetails(state.asset);}
   }
+  renderCycleDetail();clearTimeout(cycleTimer);const nextExpiry=[...cycles.values()].map(q=>q.retrievedAt+CYCLE_QUOTE_AGE).filter(t=>t>now());if(nextExpiry.length){cycleTimer=setTimeout(render,Math.min(...nextExpiry)-now()+1);cycleTimer?.unref?.();}
   const green=states.filter(state=>state.status==='review').map(state=>setups.setups.find(setup=>setup.asset===state.asset));
   if(green.length){const deadline=Math.min(...green.flatMap(setup=>[Date.parse(setup.expires_at),Date.parse(setup.checked_at)+ENTRY_SETUP_MAX_AGE_MS,Date.parse(setup.quote.observed_at)+ENTRY_QUOTE_MAX_AGE_MS]));timer=setTimeout(render,Math.max(1,deadline-now()+1));timer?.unref?.();}
  }
@@ -52,13 +81,11 @@ export function createEntryShortlist({container,historyContainer,now=()=>Date.no
   try{const response=await fetchImpl(new URL('../data/entry-setups.json',import.meta.url),{credentials:'omit',cache:'no-store',redirect:'error',signal:active.signal});if(!response.ok||Number(response.headers?.get('content-length')||0)>65536)throw Error('Setup unavailable');const text=await response.text();if(new TextEncoder().encode(text).length>65536)throw Error('Setup too large');if(!disposed&&!active.signal.aborted)updateSetups(JSON.parse(text));}catch{if(!disposed)updateSetups(null);}finally{clearTimeout(timeout);if(controller===active)controller=null;}
  }
  function click(event){
+  const research=event.target.closest('[data-entry-history]');
+  if(research){const parent=historyContainer.closest('details');if(parent)parent.open=true;const target=historyContainer.querySelector(`[data-entry-asset="${research.dataset.entryHistory}"]`);if(target){target.open=true;target.querySelector('summary')?.focus();target.scrollIntoView({block:'start',behavior:'auto'});}return;}
   const button=event.target.closest('[data-entry-coin]');if(!button)return;
-  render();
-  const parent=historyContainer.closest('details');if(parent)parent.open=true;
-  const target=historyContainer.querySelector(`[data-entry-asset="${button.dataset.entryCoin}"]`);
-  if(target){target.open=true;const summary=target.querySelector('summary');summary?.focus();target.scrollIntoView({block:'start',behavior:'auto'});}
-  else{historyContainer.setAttribute('tabindex','-1');historyContainer.focus();historyContainer.scrollIntoView({block:'center',behavior:'auto'});}
+  expanded=expanded===button.dataset.entryCoin?null:button.dataset.entryCoin;render();void loadCycles();
  }
  container.addEventListener('click',click);
- return {update,updateSetups,loadSetups,recheck:render,destroy(){data=null;setups=null;render();disposed=true;controller?.abort();clearTimeout(timer);container.removeEventListener('click',click);}};
+ return {update,updateSetups,loadSetups,loadCycles,recheck(){render();void loadCycles();},destroy(){disposed=true;data=null;setups=null;cycles.clear();for(const active of cycleRequests.values())active.abort();cycleRequests.clear();controller?.abort();clearTimeout(timer);clearTimeout(cycleTimer);detail.remove();container.removeEventListener('click',click);}};
 }
