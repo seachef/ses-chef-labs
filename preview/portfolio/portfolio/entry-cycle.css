@@ -25,3 +25,8 @@
 @media(max-width:1000px){.entry-shortlist{grid-template-columns:1fr}}
 @media(max-width:480px){.entry-shortlist{top:auto;margin:12px 0;padding:6px;gap:4px}.entry-shortlist button[data-entry-coin]{grid-template-columns:49px 45px repeat(2,minmax(51px,1fr)) minmax(56px,1fr);gap:5px;padding:6px;min-height:46px}.entry-shortlist .entry-symbol,.entry-shortlist .entry-metric b{font-size:.75rem}.entry-shortlist button[data-entry-coin]>[data-entry-label]{font-size:.625rem}.entry-shortlist .market-meter{min-height:38px}.watch-coin{scroll-margin-top:20px}}
 @media(prefers-reduced-motion:reduce){.entry-shortlist button[data-entry-status="watch"]{animation:none;border-color:#e8bc72}}
+
+.entry-shortlist .entry-ath{grid-column:4;grid-row:2}
+.entry-shortlist .entry-ath-below{grid-column:5;grid-row:2}
+.entry-shortlist .entry-ath b{font-size:.6875rem}
+.entry-shortlist .entry-ath b{white-space:normal;overflow-wrap:anywhere;max-width:100%}

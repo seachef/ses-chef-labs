@@ -1,4 +1,4 @@
-import {createEntryShortlist} from './entry-shortlist.mjs?v=20261008.lows2';
+import {createEntryShortlist} from './entry-shortlist.mjs?v=20261008.ath1';
 import {validateNewsDesk,validateEntryWatch,newsFreshness,visibleNewsItems,NEWS_VISIBLE_MS,ENTRY_WATCH_ASSETS} from './news-data.mjs?v=20261007.edition1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const day=v=>new Intl.DateTimeFormat('en-AU',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(v.slice(0,10)+'T12:00:00Z'));
