@@ -20,9 +20,9 @@ test('missing, expired and future quotes never qualify',()=>{
  assert.equal(isNearCycleLow(quote(),NOW-1),false);
  assert.equal(isNearCycleLow({...quote(),retrievedAt:NaN},NOW),false);
 });
-test('replacement pool excludes all five superseded watch coins',()=>{
- assert.ok(LOW_WATCH_ASSETS.length>0);
- for(const asset of ['RENDER','POL','TAO','APT','AKT'])assert.equal(LOW_WATCH_ASSETS.includes(asset),false);
+test('active shortlist is empty and excludes all rejected watch coins',()=>{
+ assert.deepEqual(LOW_WATCH_ASSETS,[]);
+ for(const asset of ['2Z','OPEN','RENDER','POL','TAO','APT','AKT'])assert.equal(LOW_WATCH_ASSETS.includes(asset),false);
  assert.throws(()=>watchMarketSources('RENDER'),/Unsupported/);
 });
 test('spot check uses the fresh exact price without mutating history',()=>{

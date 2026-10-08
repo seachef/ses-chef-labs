@@ -1,13 +1,9 @@
 import { readCycleReference, CYCLE_QUOTE_AGE } from './entry-cycle.mjs?v=20261008.lows2';
 import { decimal, decimalText, compare, multiply, subtract, percentageChange } from './exact-decimal.mjs';
 
-// A reviewed candidate pool, not a market-wide scanner or an entry approval.
-// The five superseded coins remain in the historical research ledger only.
-// 8 Oct 2026 screen: 235 Binance USDT markets with >= 1m daily turnover;
-// 181 had >= 52 weekly candles and >= 13 weeks after their peak weekly close.
-// Selected 2Z/OPEN near post-peak lows. Stablecoin XUSD and shallow TRX drawdown
-// were excluded. Runtime prices/liquidity are rechecked; these notes are dated.
-export const LOW_WATCH_ASSETS = Object.freeze(['2Z', 'OPEN']);
+// No active candidates passed the deeper liquidity-and-quality review.
+// Removed 2Z and OPEN on 8 October 2026; retain dated research below only.
+export const LOW_WATCH_ASSETS = Object.freeze([]);
 export const LOW_WATCH_RESEARCH = Object.freeze({
   OPEN: Object.freeze({
     name: 'OpenLedger', checkedAt: '2026-10-08', flag: 'Unlock risk',
@@ -31,14 +27,14 @@ export const LOW_WATCH_RESEARCH = Object.freeze({
 });
 
 export function watchMarketSources(asset) {
-  if (!LOW_WATCH_ASSETS.includes(asset)) throw Error('Unsupported low-watch coin');
+  if (!Object.hasOwn(LOW_WATCH_RESEARCH, asset)) throw Error('Unsupported low-watch coin');
   return ['ticker/24hr', 'exchangeInfo'].map(path => 'https://data-api.binance.vision/api/v3/' + path + '?symbol=' + asset + 'USDT');
 }
 
 /** Require a fresh spot quote, daily turnover >= 1m USDT and spread <= 1%. */
 export function applyWatchMarket(quote, ticker, info, now = Date.now()) {
   const asset = quote?.asset, pair = asset + 'USDT';
-  if (!LOW_WATCH_ASSETS.includes(asset) || ticker?.symbol !== pair || !Number.isSafeInteger(ticker.closeTime) || ticker.closeTime > now || now - ticker.closeTime >= CYCLE_QUOTE_AGE) throw Error('Current spot quote unavailable');
+  if (!Object.hasOwn(LOW_WATCH_RESEARCH, asset) || ticker?.symbol !== pair || !Number.isSafeInteger(ticker.closeTime) || ticker.closeTime > now || now - ticker.closeTime >= CYCLE_QUOTE_AGE) throw Error('Current spot quote unavailable');
   const listing = info?.symbols?.find(row => row.symbol === pair);
   if (listing?.status !== 'TRADING' || listing.isSpotTradingAllowed !== true || listing.baseAsset !== asset || listing.quoteAsset !== 'USDT') throw Error('Spot market unavailable');
   const value = field => decimal(ticker[field], { positive: true });

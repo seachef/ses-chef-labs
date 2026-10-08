@@ -32,3 +32,25 @@ test('higher lows do not imply basing, crowd interest or an all-time low',()=>{
  const data=ledger();for(const row of data.records)if(row.assessment==='lower_low'){row.low='2';row.assessment='not_lower_low';}
  assert.ok(shortlistStates(data,now).every(row=>row.label==='Watch'));
 });
+
+test('empty shortlist stays empty on refresh and never requests removed coin prices',async()=>{
+ const {createEntryShortlist}=await import('../portfolio/entry-shortlist.mjs');
+ const nodes=[];
+ const element=()=>({hidden:false,append(){},insertBefore(){},remove(){},querySelector(selector){return this.children?.[selector]||null;},set innerHTML(value){this.children={'[role="status"]':{textContent:''},button:{hidden:false,disabled:false}};}});
+ const doc={createElement(){const node=element();nodes.push(node);return node;}};
+ const container={ownerDocument:doc,append(){},insertBefore(){},querySelector(){return null;},addEventListener(){},removeEventListener(){}};
+ let requests=0;
+ const shortlist=createEntryShortlist({container,historyContainer:{querySelector(){return null;}},fetchImpl:()=>{requests++;throw Error('No coin request allowed');}});
+ const filter=nodes[1];
+ assert.equal(filter.querySelector('[role="status"]').textContent,'No qualifying coins shortlisted.');
+ assert.equal(filter.querySelector('button').hidden,true);
+ await shortlist.loadCycles();await shortlist.loadCycles({force:true});shortlist.recheck();
+ assert.equal(requests,0);assert.equal(filter.querySelector('[role="status"]').textContent,'No qualifying coins shortlisted.');shortlist.destroy();
+});
+
+test('HTML has no active rejected coin cards and preserves the market meter',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+ assert.doesNotMatch(html,/data-entry-coin=/);
+ assert.match(html,/id="marketMeter"/);
+});

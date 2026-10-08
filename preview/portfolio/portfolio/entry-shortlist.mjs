@@ -1,6 +1,6 @@
 import {ATH_MAX_AGE,isFreshATH,readATHMarkets} from './entry-ath.mjs?v=20261008.ath1';
 import {CYCLE_QUOTE_AGE,NEAR_LOW_PERCENT,isNearCycleLow} from './entry-cycle.mjs?v=20261008.lows2';
-import {LOW_WATCH_ASSETS,LOW_WATCH_RESEARCH,readLowWatch} from './near-low-watch.mjs?v=20261008.lows2';
+import {LOW_WATCH_ASSETS,LOW_WATCH_RESEARCH,readLowWatch} from './near-low-watch.mjs?v=20261008.empty1';
 import {ENTRY_WATCH_ASSETS,validateEntryWatch} from './news-data.mjs?v=20261007.edition1';
 import {validateEntrySetups,evaluateEntrySetup,ENTRY_SETUP_MAX_AGE_MS,ENTRY_QUOTE_MAX_AGE_MS} from './entry-setups.mjs?v=20261007.shortlist1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -55,11 +55,12 @@ detail.innerHTML=`<p><strong>${esc(expanded)} · ${esc(research.name)}</strong> 
 function renderFilter(){
 const fresh=LOW_WATCH_ASSETS.filter(asset=>{const q=cycles.get(asset);return q&&now()>=q.retrievedAt&&now()-q.retrievedAt<CYCLE_QUOTE_AGE;});
 const shown=fresh.filter(asset=>isNearCycleLow(cycles.get(asset),now())).length,loading=cycleRequests.size;
-filter.querySelector('[role="status"]').textContent=`Near lows · ≤${NEAR_LOW_PERCENT}% above bear low · `+(loading?'Checking…':shown?`${shown} watch candidate${shown===1?'':'s'}`:fresh.length===LOW_WATCH_ASSETS.length?'No tracked candidate close enough':'No verified matches · refresh prices');
+filter.querySelector('[role="status"]').textContent=!LOW_WATCH_ASSETS.length?'No qualifying coins shortlisted.':`Near lows · ≤${NEAR_LOW_PERCENT}% above bear low · `+(loading?'Checking…':shown?`${shown} watch candidate${shown===1?'':'s'}`:fresh.length===LOW_WATCH_ASSETS.length?'No tracked candidate close enough':'No verified matches · refresh prices');
 filter.querySelector('button').disabled=loading>0;
+filter.querySelector('button').hidden=!LOW_WATCH_ASSETS.length;
 }
 async function loadATHs({force=false}={}){
-if(disposed||athReq||!force&&LOW_WATCH_ASSETS.every(freshATH))return;
+if(disposed||!LOW_WATCH_ASSETS.length||athReq||!force&&LOW_WATCH_ASSETS.every(freshATH))return;
 const active=new AbortController();athReq=active;const timeout=setTimeout(()=>active.abort(),timeoutMs);
 try{const result=await readATHMarkets({fetchImpl,signal:active.signal,now});if(!disposed&&!active.signal.aborted)aths=result;}
 catch{if(!disposed)aths.clear();}
