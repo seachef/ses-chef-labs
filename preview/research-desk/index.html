@@ -4,13 +4,13 @@
 .chef-dock{margin-top:17px;border-top:1px solid #1c3944;padding-top:8px;display:grid;grid-template-columns:170px 1fr auto;align-items:center;gap:12px;min-height:132px}
 .chef-scene{position:relative;width:170px;height:122px;overflow:hidden;border-radius:10px;background:radial-gradient(ellipse at 48% 75%,#163e46aa,transparent 65%);pointer-events:none}
 .chef-scene:after{content:'';position:absolute;left:20px;bottom:3px;width:140px;height:14px;border-radius:50%;background:#021016;z-index:0}
-.chef-reaction{position:absolute;left:-21px;bottom:-2px;width:153px;height:153px;z-index:1;transform-origin:58% 78%}
+.chef-reaction{position:absolute;left:-4px;bottom:0;width:120px;height:120px;z-index:1;transform-origin:58% 78%}
 .chef-figure{display:block;width:100%;height:100%;object-fit:contain;transform-origin:55% 85%;animation:chef-breathe 6s ease-in-out infinite}
-.chef-console{position:absolute;right:3px;top:41px;width:68px;height:50px;background:#09202c;border:3px solid #34616b;border-radius:4px;transform:skewY(-8deg);box-shadow:-4px 2px 0 #031019,0 0 16px #63e8d515;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:7px}
+.chef-console{position:absolute;right:3px;top:17px;width:68px;height:50px;background:#09202c;border:3px solid #34616b;border-radius:4px;transform:skewY(-8deg);box-shadow:-4px 2px 0 #031019,0 0 16px #63e8d515;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:7px}
 .chef-console:before{content:'';position:absolute;left:29px;top:47px;width:6px;height:15px;background:#395663}
 .chef-console:after{content:'';position:absolute;left:13px;top:61px;width:40px;height:3px;background:#395663;border-radius:3px}
 .chef-console span{font:6px monospace;letter-spacing:.3px;color:#91dcd6;white-space:nowrap}.chef-console i{height:2px;background:#3c777f;width:83%;display:block}.chef-console i:last-child{width:58%}
-.chef-table{position:absolute;left:78px;top:99px;width:87px;height:5px;background:#527580;border-radius:2px;z-index:3;transform:skewY(-5deg)}
+.chef-table{position:absolute;left:78px;top:81px;width:87px;height:5px;background:#527580;border-radius:2px;z-index:3;transform:skewY(-5deg)}
 .chef-table:after{content:'';position:absolute;right:8px;top:4px;height:20px;width:4px;background:#2c4e59}
 .chef-copy strong{display:block;font-size:13px;color:#c5e7e8}.chef-copy p{font-size:11px;color:#8faebc;line-height:1.5;margin-top:5px;max-width:210px}.chef-copy small{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#76949f;margin-top:6px}
 .chef-toggle{font-size:11px;padding:7px 10px;align-self:start;margin-top:8px;white-space:nowrap;min-height:44px}
@@ -21,8 +21,8 @@
 @keyframes chef-breathe{0%,100%{transform:translateY(0) rotate(0)}45%{transform:translateY(-1.5px) rotate(.5deg)}65%{transform:translateY(-.6px) rotate(-.3deg)}}
 @keyframes chef-attend{0%,100%{transform:rotate(0)}45%{transform:rotate(2deg) translateX(1px)}}
 @keyframes chef-consider{0%,100%{transform:rotate(0)}45%{transform:rotate(-2deg) translateY(-1px)}}
-@media(max-width:1100px){.chef-dock{grid-template-columns:143px 1fr;gap:8px;position:relative;padding-right:0}.chef-scene{width:143px}.chef-reaction{left:-30px}.chef-console{right:0}.chef-table{left:70px;width:70px}.chef-toggle{position:absolute;right:0;top:6px;min-height:44px;margin:0}.chef-copy{padding-top:54px}.chef-copy p{font-size:10px}.chef-dock[data-chef-hidden=true] .chef-toggle{position:static}}
-@media(max-width:380px){.chef-dock{grid-template-columns:127px 1fr;gap:7px}.chef-scene{width:127px}.chef-reaction{left:-40px}.chef-console{right:0;width:61px}.chef-table{left:60px;width:64px}.chef-copy strong{font-size:12px}}
+@media(max-width:1100px){.chef-dock{grid-template-columns:143px 1fr;gap:8px;position:relative;padding-right:0}.chef-scene{width:143px}.chef-reaction{left:-13px}.chef-console{right:0}.chef-table{left:70px;width:70px}.chef-toggle{position:absolute;right:0;top:6px;min-height:44px;margin:0}.chef-copy{padding-top:54px}.chef-copy p{font-size:10px}.chef-dock[data-chef-hidden=true] .chef-toggle{position:static}}
+@media(max-width:380px){.chef-dock{grid-template-columns:127px 1fr;gap:7px}.chef-scene{width:127px}.chef-reaction{left:-23px}.chef-console{right:0;width:61px}.chef-table{left:60px;width:64px}.chef-copy strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.chef-figure,.chef-reaction{animation:none!important}}
 </style></head><body>
 <a class="skip" href="#main">Skip to research desk</a><header><a class="brand" href="#main">sea chef <b>labs</b><span>RESEARCH DESK</span></a><div class="header-status"><i id="connectionDot"></i><span id="connection">Offline sample review</span></div><button id="motion" aria-pressed="true">Motion on</button></header>
