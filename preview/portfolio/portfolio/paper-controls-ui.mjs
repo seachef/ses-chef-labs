@@ -1,5 +1,5 @@
 import {getAuthClient} from './auth-client.mjs?v=20261001.data2';
-import {createPaperControl,paperControlCopy,canResumePaper} from './paper-control.mjs?v=20261008.server1';
+import {createPaperControl,paperControlCopy,canResumePaper} from './paper-control.mjs?v=20261008.terminal1';
 const root=document.getElementById('serverPaperControls');
 if(root){
   const status=root.querySelector('[data-paper-status]'),message=root.querySelector('[data-paper-message]'),stop=root.querySelector('[data-paper-stop]'),resume=root.querySelector('[data-paper-resume]'),check=root.querySelector('[data-paper-check]'),signIn=root.querySelector('[data-paper-signin]');
