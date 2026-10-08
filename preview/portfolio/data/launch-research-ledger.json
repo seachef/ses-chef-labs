@@ -7,6 +7,13 @@
       "event": "added",
       "fingerprint": "cd07d03353e1df99412285ba9262cf52f6712d37d3e6717bf5f1509a3a6a9ada",
       "note": "Variational added to watch only. No public sale or confirmed listing venue identified in the official sources checked."
+    },
+    {
+      "candidate_id": "variational-var",
+      "checked_at": "2026-10-08T21:10:54Z",
+      "event": "updated",
+      "fingerprint": "cd07d03353e1df99412285ba9262cf52f6712d37d3e6717bf5f1509a3a6a9ada",
+      "note": "Clarification of the saved lead: official documentation targets Q4 2026; exact launch date and time remain unconfirmed. Source: https://docs.variational.io/token/usdvar.md . Watch only; no public sale or confirmed listing venue identified in the official sources checked."
     }
   ]
 }
