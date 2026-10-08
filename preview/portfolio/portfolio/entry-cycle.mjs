@@ -1,8 +1,18 @@
-import { decimal, decimalText, compare, percentageChange } from './exact-decimal.mjs';
+import { decimal, decimalText, compare, multiply, percentageChange } from './exact-decimal.mjs';
 
 const WEEK = 7 * 86400000;
 export const CYCLE_START = Date.parse('2024-01-01T00:00:00Z');
 export const CYCLE_QUOTE_AGE = 5 * 60000;
+export const NEAR_LOW_PERCENT = 10;
+
+/** Price proximity only: never an entry approval. Compare unrounded decimals. */
+export function isNearCycleLow(quote, now = Date.now()) {
+  try {
+    if (!quote || !Number.isSafeInteger(now) || !Number.isSafeInteger(quote.retrievedAt) || now < quote.retrievedAt || now - quote.retrievedAt >= CYCLE_QUOTE_AGE) return false;
+    const current = decimal(quote.current, { positive: true }), low = decimal(quote.low, { positive: true });
+    return compare(current, low) >= 0 && compare(current, multiply(low, decimal('1.1'))) <= 0;
+  } catch { return false; }
+}
 const BINANCE = 'https://data-api.binance.vision/api/v3/klines';
 const KRAKEN = 'https://api.kraken.com/0/public/OHLC';
 export const CYCLE_ASSETS = Object.freeze({
@@ -11,6 +21,8 @@ export const CYCLE_ASSETS = Object.freeze({
   TAO: { venue: 'Binance', currency: 'USDT', pairs: ['TAOUSDT'], earliest: Date.parse('2024-04-08T00:00:00Z') },
   APT: { venue: 'Binance', currency: 'USDT', pairs: ['APTUSDT'], earliest: CYCLE_START },
   AKT: { venue: 'Kraken', currency: 'USD', pairs: ['AKTUSD'], earliest: CYCLE_START },
+  '2Z': { venue: 'Binance', currency: 'USDT', pairs: ['2ZUSDT'], earliest: Date.parse('2025-09-29T00:00:00Z') },
+  OPEN: { venue: 'Binance', currency: 'USDT', pairs: ['OPENUSDT'], earliest: Date.parse('2025-09-08T00:00:00Z') },
 });
 
 function positive(value) {
