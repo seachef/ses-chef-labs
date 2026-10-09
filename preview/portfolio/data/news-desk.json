@@ -1,5 +1,44 @@
 {
   "schema_version": 2,
-  "checked_at": "2026-10-08T21:10:54Z",
-  "items": []
+  "checked_at": "2026-10-09T20:48:24Z",
+  "items": [
+    {
+      "id": "unichain-op-enterprise-upgrade-20261009",
+      "coins": [
+        "UNI",
+        "OP"
+      ],
+      "headline": "Unichain schedules its next upgrade",
+      "what_happened": "Uniswap Labs says Unichain will move to OP Enterprise, with testnet migration on 13 October and mainnet on 29 October.",
+      "why_it_matters": "The move prepares Unichain for native transfers between OP Stack chains. Existing contracts, balances and Uniswap deployments stay the same.",
+      "risk": "Native interoperability is still to come. The announcement does not quantify extra revenue or token-holder benefit from this upgrade.",
+      "source": {
+        "name": "Uniswap Labs",
+        "url": "https://blog.uniswap.org/unichain-is-upgrading-to-op-enterprise",
+        "published_at": "2026-10-09T14:15:30.537Z",
+        "published_date": "2026-10-09",
+        "retrieved_at": "2026-10-09T20:46:04Z"
+      },
+      "first_displayed_at": "2026-10-09T20:48:24Z"
+    },
+    {
+      "id": "chainlink-ccip-vault-adapters-20261008",
+      "coins": [
+        "LINK",
+        "AAVE"
+      ],
+      "headline": "Chainlink opens a simpler route into DeFi vaults",
+      "what_happened": "Chainlink says its CCIP Vault Adapters are live, letting vaults accept deposits from more than 80 supported blockchains. Aave is among the adopters.",
+      "why_it_matters": "Vault providers can reach users on other chains while keeping the vault and its accounting on one home chain.",
+      "risk": "The announcement does not quantify new fees or LINK demand. Vault strategy, smart-contract and cross-chain risks remain.",
+      "source": {
+        "name": "Chainlink",
+        "url": "https://chain.link/blog/introducing-ccip-vault-adapters",
+        "published_at": null,
+        "published_date": "2026-10-08",
+        "retrieved_at": "2026-10-09T20:46:07Z"
+      },
+      "first_displayed_at": "2026-10-09T20:48:24Z"
+    }
+  ]
 }

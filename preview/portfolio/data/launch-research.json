@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-08T21:10:54Z",
+  "checked_at": "2026-10-09T20:46:56Z",
   "candidates": [
     {
       "id": "variational-var",
@@ -24,17 +24,17 @@
         {
           "label": "Official VAR launch window and token allocations",
           "url": "https://docs.variational.io/token/usdvar.md",
-          "checked_at": "2026-10-08T21:08:08.309Z"
+          "checked_at": "2026-10-09T20:46:56Z"
         },
         {
           "label": "Official product, team and investors",
           "url": "https://www.variational.io/en",
-          "checked_at": "2026-10-08T21:08:08.309Z"
+          "checked_at": "2026-10-09T20:46:56Z"
         },
         {
           "label": "Official restricted-person policy; token eligibility remains unverified",
           "url": "https://docs.variational.io/legal/restricted-persons",
-          "checked_at": "2026-10-08T21:08:08.309Z"
+          "checked_at": "2026-10-09T20:46:56Z"
         }
       ],
       "australia_eligibility": "unverified"
