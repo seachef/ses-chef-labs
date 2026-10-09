@@ -1,5 +1,5 @@
-import {NATIVE_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-20261009';
-import {validateNativeHistoryRow} from './native-history-validation.mjs?v=neptune-native-20261009';
+import {NATIVE_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-r2-20261009';
+import {validateNativeHistoryRow} from './native-history-validation.mjs?v=neptune-native-r2-20261009';
 import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-native-20261009';
 import {csvRows} from './csv-safe.mjs?v=neptune-native-20261009';
 export const HISTORY_PAGE_SIZE=100;

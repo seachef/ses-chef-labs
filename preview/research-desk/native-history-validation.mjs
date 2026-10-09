@@ -1,4 +1,4 @@
-import {NATIVE_FIELDS,DECIMAL_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-20261009';
+import {NATIVE_FIELDS,DECIMAL_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-r2-20261009';
 const decimal=v=>typeof v==='string'&&v.length<=128&&/^-?\d+(\.\d+)?$/.test(v);
 const zero=v=>decimal(v)&&/^-?0+(\.0+)?$/.test(v);
 const positive=v=>decimal(v)&&!v.startsWith('-')&&!zero(v);
@@ -13,6 +13,8 @@ export function validateNativeHistoryRow(r){
   if(['verified_fee_dust','sold_entire_sellable_inventory'].includes(k)&&v!==null&&typeof v!=='boolean')throw Error('Boolean proof required');
   if(DECIMAL_FIELDS.includes(k)&&v!==null&&!decimal(v))throw Error('Exact decimal required');
  }
+ for(const k of ['native_model_hash','exit_native_model_hash'])if(p[k]!=null&&!hash(p[k]))throw Error('Invalid native model hash');
+ if(p.native_model_version!=null&&(typeof p.native_model_version!=='string'||!p.native_model_version.trim()||p.native_model_version.length>128))throw Error('Invalid native model version');
  const spec=p.asset==='binance:SOLUSDT'?['binance','USDT','SOL']:p.asset==='hyperliquid:@107'?['hyperliquid','USDC','HYPE']:null;
  if(!spec||p.quote_currency!==spec[1]||p.venue!=null&&p.venue!==spec[0]||p.currency!=null&&p.currency!==spec[1]||p.specialist_id!=null&&p.specialist_id!==spec[0])throw Error('Native instrument mismatch');
  for(const k of ['source_hash','config_hash'])if(p[k]!=null&&p[k]!==r[k])throw Error('Native history hash mismatch');

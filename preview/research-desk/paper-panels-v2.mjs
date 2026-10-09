@@ -1,8 +1,8 @@
 import {formatNativeHistory} from './native-history-display.mjs?v=neptune-native-20261009';
-import {NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-20261009';
+import {NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-r2-20261009';
 import {renderNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
 import {renderSpecialistAccounts} from './specialist-accounts.mjs?v=neptune-native-20261009';
-import {createHistory} from './paper-history-v2.mjs?v=neptune-native-20261009';
+import {createHistory} from './paper-history-v2.mjs?v=neptune-native-r2-20261009';
 import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-native-20261009';
 export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,getClient}={}){
  const $=id=>document.getElementById(id);let report=null,historyStarted=false,exporting=false,authSubscription;
