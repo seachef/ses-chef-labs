@@ -1,0 +1,15 @@
+{
+  "currency": "AUD",
+  "initial_cash": 10000,
+  "entry_risk": 0.0025,
+  "max_notional": 0.1,
+  "max_positions": 3,
+  "aggregate_risk": 0.0075,
+  "daily_dd": 0.02,
+  "total_dd": 0.05,
+  "fee": 0.008,
+  "crypto_slip": 0.0025,
+  "fx_adverse": 0.0025,
+  "fx_model": "Frankfurter ECB reference",
+  "version": 2
+}

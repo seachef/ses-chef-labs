@@ -1,0 +1,22 @@
+name: NEPTUNE paper backend tests
+on:
+  push:
+    paths: ['backend/neptune-paper/**', '.github/workflows/neptune-backend-tests.yml']
+  pull_request:
+    paths: ['backend/neptune-paper/**', '.github/workflows/neptune-backend-tests.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/neptune-paper/package-lock.json
+      - run: npm ci
+        working-directory: backend/neptune-paper
+      - run: npm test
+        working-directory: backend/neptune-paper

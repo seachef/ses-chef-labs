@@ -1,0 +1,12 @@
+{
+  "version": "neptune-native-paper-1",
+  "mode": "PAPER",
+  "real_orders": false,
+  "binance": {"instrument":"SOLUSDT","base":"SOL","quote":"USDT","taker_fee":0.001,"fee_basis":"assumed public base tier, no discounts","buy_fee_currency":"SOL","sell_fee_currency":"USDT","denomination_basis":"official received-asset fee rule"},
+  "hyperliquid": {"instrument":"@107","base":"HYPE","quote":"USDC","taker_fee":0.0007,"fee_basis":"assumed public spot base tier, no discounts","buy_fee_currency":"HYPE","sell_fee_currency":"USDC","denomination_basis":"documented inference from official spot fee documentation"},
+  "crypto_adverse_slippage":0.0025,
+  "stablecoin_reference_conversion":{"source":"Kraken public stablecoin/USD depth","side_and_size_dependent":true,"assume_peg":false,"adverse_allowance":0.0025,"synthetic_accounting":true,"real_venue_transfer_costs":"excluded; no real assets or transfers"},
+  "usd_aud_reference_conversion":{"source":"Frankfurter ECB reference","adverse_allowance":0.0025},
+  "unknown_costs":"block execution unless explicitly bounded in this paper model",
+  "dust":"received-asset fee residue retained with cost basis; only verified post-sale sub-lot dust may use explicit conservative zero liquidation floor"
+}

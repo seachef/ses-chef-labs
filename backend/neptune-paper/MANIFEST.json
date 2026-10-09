@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "build": 6,
+  "base_source_hash": "1e1907c0fca5ffcd54a2f25e957b081be4815e097dbbbaf9073e97951c7fb5af",
+  "source_hash": "86a41220930d1ffde29a910e9d5579dfe2add0ec2e225d937585b03600282bb9",
+  "files": {
+    "schema.sql": "7f65245f1c9dfb030ef17404562824a550c10b5103562be0e181bf617cb69975",
+    "core.sql": "cd839aeaa83645ed9b5cbff33541441850969d7263727ef21d9578edc87c898f",
+    "owner-access.sql": "6c5432acab9392af26073c74c4ade6a0a06cc74df205bb5b2523b1ee8c906611",
+    "collector.sql": "f92f9278d6e1b42c4e26269a1158a03efbfbb8e6c7d40fe5fa550528c8fef031",
+    "native-economics.sql": "37b7698267cc2342b1ddd465f749873081a9197cfaa1ec0d61a57fd0317851e2",
+    "native-ledger.sql": "7f2dd187badda792f895d4caf90c1338769261378c2eb44fee0d675c9652aa3c",
+    "native-order-rules.sql": "e0c501516841a39a4511ff631dd5494d48cb5f4ba77f15868897e33d12b658f8",
+    "native-scanner-helpers.sql": "c831201147091e6ed48a33ff3ef8311794168e9c00f16b167b7cf33deb52bb8e",
+    "native-public-projection.sql": "0adf9f8afe362ff73588602f2277f121a47886f67b683cfc76b9738c7d9922bb",
+    "native-collector.sql": "524d51c6991d43993411fce3a5377934aba1736491747ca2b8d1bd8b37fc8c3b",
+    "collector-integration.sql": "03463d2fc27d00402c69140620d2cbd9f244064e40867c6762151a09e26c576d",
+    "native-audit.sql": "9417eb2497727c89b7edac54d4566232e91aa6ad0e73208d1c19a3349d55a28b",
+    "config.json": "00f878a855d0b8f65b57473bc0d2c89efde617b72ca5643b14ed05aa55afa8f8",
+    "native-config.json": "786fdae6b8f7c7e599181015cab5196591d633d6a455fd062be2f0c1af8a9180"
+  },
+  "native_model_hash": "786fdae6b8f7c7e599181015cab5196591d633d6a455fd062be2f0c1af8a9180",
+  "hash_method": "SHA256 of UTF-8 compact JSON sorted file-name to SHA256 mapping",
+  "upgrade_sha256": "339470bba6ea4ab03c515ca33c1c1fb6ded7f4c3b8272d484ceafe001e938d1e"
+}
