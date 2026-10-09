@@ -1,5 +1,6 @@
-import {createHistory} from './paper-history-v2.mjs?v=neptune-frame-20261009';
-import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-frame-20261009';
+import {renderSpecialistAccounts} from './specialist-accounts.mjs?v=neptune-specialists-20261009';
+import {createHistory} from './paper-history-v2.mjs?v=neptune-specialists-20261009';
+import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-specialists-20261009';
 export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,getClient}={}){
  const $=id=>document.getElementById(id);let report=null,historyStarted=false,exporting=false,authSubscription;
  const short=v=>v===null||v===undefined?'—':String(v);
@@ -34,5 +35,5 @@ export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,
  });
  $('ownerCheck').addEventListener('click',()=>owner.refresh());$('ownerStop').addEventListener('click',()=>owner.requestEnabled(false));$('ownerResume').addEventListener('click',()=>owner.requestEnabled(true));
  renderHistory(history.getState());renderOwner(owner.getState());
- return {observe(next){report=next;owner.observe(next);},history,owner};
+ return {observe(next){report=next;owner.observe(next);renderSpecialistAccounts(document,next);},history,owner};
 }

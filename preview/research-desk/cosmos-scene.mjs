@@ -1,7 +1,7 @@
-import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-frame-20261009';
-export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-frame-20261009';
-import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-frame-20261009';
-import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-frame-20261009';
+import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-specialists-20261009';
+export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-specialists-20261009';
+import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-specialists-20261009';
+import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-specialists-20261009';
 export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:6,companions:0,maxDpr:1.25,maxPixels:1800000});
 export const ASSETS=['cosmos-ocean-background.webp','neptune-run-atlas.png','neptune-braced-aim.png','cosmos-ocean-phone.webp','neptune-tucked-roll.png','neptune-transition-atlas.png'];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -22,8 +22,8 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
  const actor=choreography(reduced?0:actorTime,width,height,{reduced,eventId:verified?.eventId,target,cue:verified,now,actionVariant});drawCharacter(ctx,images,actor);const feet=actor.feet,eyes=actor.eyes,p=actor;
  const shown=verified?nodes.filter((n,i)=>i<3||n===target):nodes.slice(0,3);
  for(const n of shown){const active=n===target;ctx.fillStyle=active?'rgba(137,230,245,.85)':'rgba(203,213,231,.7)';ctx.beginPath();ctx.arc(n.x,n.y,active?3.5:2.5,0,Math.PI*2);ctx.fill();if(showMarketLabels){ctx.fillStyle='rgba(3,12,28,.8)';ctx.fillRect(n.x+6,n.y-10,45,19);ctx.fillStyle=active?'#d6fbff':'#d0daec';ctx.font=`${l.mobile?10:12}px sans-serif`;ctx.fillText(n.label,n.x+10,n.y+4);}}
- const color=verified?(verified.kind==='buy'?'255,191,70':verified.kind==='sell'?'255,100,174':'186,153,255'):'80,225,255';drawEyeBeams(ctx,actor,target,{color,strength:1});
- const caption=verified?(verified.kind==='review'?'PAPER REVIEW · UNVALIDATED · ':'SIMULATED '+verified.kind.toUpperCase()+' · ')+target.label:'AMBIENT SCAN · NOT A TRADE SIGNAL';
+ const color=verified?(verified.kind==='buy'?'255,191,70':verified.kind==='sell'?'255,100,174':'186,153,255'):'80,225,255';const beamCount=drawEyeBeams(ctx,actor,target,{color,strength:1});
+ const caption=verified?(verified.kind==='profit'?'SIMULATED NET PROFIT · AUD '+verified.pnl_base.toFixed(2)+' · ':verified.kind==='review'?'PAPER REVIEW · UNVALIDATED · ':'SIMULATED '+verified.kind.toUpperCase()+' · ')+target.label:'AMBIENT SCAN · NOT A TRADE SIGNAL';
  if(showCaption){ctx.fillStyle='rgba(3,12,28,.78)';ctx.fillRect(width*.04-5,height*.06-14,l.mobile?246:295,22);ctx.fillStyle='rgba(215,232,245,.95)';ctx.font=`${l.mobile?9:11}px sans-serif`;ctx.fillText(caption,width*.04,height*.06);}
- return {feet,eyes,target,pose:p,stage:l,verified:!!verified};
+ return {beamCount,beamKey:verified?.eventId??('ambient:'+actor.episode+':'+actor.variant),feet,eyes,target,pose:p,stage:l,verified:!!verified};
 }

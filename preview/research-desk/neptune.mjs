@@ -1,4 +1,4 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-frame-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-frame-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-frame-20261009'; import {readResearchV1} from './research-v1.mjs?v=neptune-frame-20261009';
+import {createLaserAudio} from './laser-audio.mjs?v=neptune-specialists-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-specialists-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-specialists-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-specialists-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-specialists-20261009'; import {readResearchV1} from './research-v1.mjs?v=neptune-specialists-20261009';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -43,7 +43,7 @@ function list(id,items,format,empty){
  if(!nodes.length){const li=document.createElement('li');li.textContent=empty;nodes.push(li);}
  $(id).replaceChildren(...nodes);
 }
-function sceneCue(){const cue=cueBridge.current(),label=cue?(cue.kind==='review'?'PAPER REVIEW · UNVALIDATED':'SIMULATED '+cue.kind.toUpperCase())+' · '+cue.asset:'Ambient scene · not a trade signal';if($('sceneCue').textContent!==label)$('sceneCue').textContent=label;return cue;}
+function sceneCue(){const cue=cueBridge.current(),label=cue?(cue.kind==='profit'?'SIMULATED NET PROFIT · '+money(cue.pnl_base,'AUD'):cue.kind==='review'?'PAPER REVIEW · UNVALIDATED':'SIMULATED '+cue.kind.toUpperCase())+' · '+cue.asset:'Ambient scene · not a trade signal';if($('sceneCue').textContent!==label)$('sceneCue').textContent=label;return cue;}
 function renderStreams(view){
  const current=view.status==='running',research=readResearchV1(report);
  const set=(id,text)=>{if($(id).textContent!==text)$(id).textContent=text;};
@@ -63,12 +63,18 @@ function renderStreams(view){
  const last=runtimeEvents[0];
  show('watch',busy?'CHECKING':polls===0?'WAITING':connected?'RECEIVED':'UNAVAILABLE',last?.message||'First interface check pending.',last?.at);
 }
+function renderPortfolio(view){
+ const a=report?.account,current=view.status==='running'&&fresh(a?.valuation_at,Date.now(),90000),value=n=>current&&Number.isFinite(n)?new Intl.NumberFormat('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n):'—';
+ const exposure=Number.isFinite(a?.equity)&&Number.isFinite(a?.cash)&&a.equity>=a.cash&&a.unsettled_usd===0?a.equity-a.cash:null;
+ $('portfolioBalance').textContent=value(a?.equity);$('portfolioCash').textContent=value(a?.cash);$('portfolioExposure').textContent=value(exposure);const daily=readDailyPerformance(report,connected),signed=n=>new Intl.NumberFormat('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2,signDisplay:'always'}).format(n);$('portfolioPnl').textContent=daily.available?signed(daily.pnl):'—';$('portfolioPct').textContent=daily.available?signed(daily.pct)+'%':'Unavailable';$('portfolioSince').textContent=daily.available?'Since '+daily.since+' Perth':'Perth day';$('dailyDetails').textContent=daily.available?'Today: AUD '+signed(daily.pnl)+' ('+signed(daily.pct)+'%) since first observed today at '+daily.since+' Perth. Server baseline AUD '+daily.baselineEquity.toFixed(2)+'; net external virtual cash flows AUD '+daily.netExternalFlows.toFixed(2)+'. This is not a full midnight-to-now return.':daily.reason+'. No zero return is inferred.';
+ $('portfolioState').textContent=current?'Sampled · '+sampleAge(a.valuation_at):view.status==='loading'?'Waiting':view.status==='running'?'Valuation unavailable':view.label;
+}
 function render(){
  sceneCue();atmosphere.refresh();
  panels.observe(connected?report:null);
  const view=polls===0?{status:'loading',label:'Connecting to paper feed',reason:'Awaiting the first verified report.'}:paperViewV2(report,connected),a=report?.account,ccy=report?.currency;
  const amount=v=>money(v,ccy),positions=report?.positions||[],position=positions.find(p=>p.asset===selected);
- renderStreams(view);
+ renderStreams(view);renderPortfolio(view);
  $('connection').textContent=view.label+' · '+selected.split('/')[0]; $('agentPulse').textContent=view.status==='running'?'CORE ONLINE':view.label.toUpperCase();
  $('feedSummary').textContent=polls===0?'Awaiting first verified report':connected?(report?'One paper account · 10s refresh':'Account not created · awaiting v2'):'Data unavailable · awaiting v2';
  $('feedState').textContent=view.label.toUpperCase();
@@ -100,13 +106,16 @@ $('refresh').addEventListener('click',refreshFeed);
 document.querySelectorAll('[data-market]').forEach(node=>node.addEventListener('click',()=>{selected=node.dataset.market;$('marketSelect').value=selected;render();}));
 $('about').addEventListener('click',()=>$('aboutDialog').showModal());
 $('closeAbout').addEventListener('click',()=>$('aboutDialog').close());
+$('openPortfolio').addEventListener('click',()=>$('historyDialog').showModal());
 for(const [stream,name] of [['Scout','Scout'],['Depth','Depth'],['Pulse','Findings'],['Shield','Shield'],['Ledger','History'],['Watch','Runtime']]){const dialog=$(name.toLowerCase()+'Dialog');$('open'+stream+'Stream').addEventListener('click',()=>dialog.showModal());$('close'+name).addEventListener('click',()=>dialog.close());}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let motion=!reduced.matches,inView=true,scenePageVisible=true;
+let audioContext,soundOn=true,audioVisible=true,audioRevision=0;
+const laserAudio=createLaserAudio({getContext:()=>audioContext,canPlay:()=>soundOn&&audioVisible&&motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible});
 const canvas=$('atmosphere'),ctx=canvas.getContext('2d');
-const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
+const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,onBeam:frame=>laserAudio.observe(frame),showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
  getMasks:box=>[...document.querySelectorAll('header,.horizon,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
-function syncMotion(){cueBridge.setActive(motion&&!document.hidden&&inView&&scenePageVisible);sceneCue();document.body.classList.toggle('still',!motion||document.hidden||!inView||!scenePageVisible);$('accessMotion').textContent=motion?'Pause motion':'Enable motion';$('accessMotion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion,visible:!document.hidden&&scenePageVisible,inView});}
+function syncMotion(){if(!motion||reduced.matches||document.hidden||!inView||!scenePageVisible)laserAudio.stop();cueBridge.setActive(motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible);sceneCue();document.body.classList.toggle('still',!motion||document.hidden||!inView||!scenePageVisible);$('accessMotion').textContent=motion?'Pause motion':'Enable motion';$('accessMotion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion&&!reduced.matches,visible:!document.hidden&&scenePageVisible,inView});}
 
 $('accessMotion').addEventListener('click',()=>{motion=!motion;syncMotion();});
 reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
@@ -115,12 +124,13 @@ let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
 window.addEventListener('pagehide',()=>{audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
 window.addEventListener('pageshow',()=>{audioVisible=true;scenePageVisible=true;atmosphere.resize();syncMotion();void syncSound();});
-let audioContext,soundOn=true,audioVisible=true,audioRevision=0;
+
 async function syncSound(){
+ if(!soundOn||!audioVisible||document.hidden)laserAudio.stop();
  $('accessSound').textContent=soundOn?'Mute sound':'Enable sound';$('accessSound').setAttribute('aria-pressed',String(soundOn));
- if(!audioContext){$('audioStatus').textContent=soundOn?'Sound starts after your first tap or key press.':'Ocean sound muted.';return;}
+ if(!audioContext){$('audioStatus').textContent=soundOn?'Sound starts after your first tap or key press.':'Ocean and laser sounds muted.';return;}
  const revision=++audioRevision,active=soundOn&&audioVisible&&!document.hidden;
- try{await audioContext[active?'resume':'suspend']();if(revision!==audioRevision)return;$('audioStatus').textContent=active?'Ocean sound on.':soundOn?'Ocean sound paused while the page is hidden.':'Ocean sound muted.';}
+ try{await audioContext[active?'resume':'suspend']();if(revision!==audioRevision)return;$('audioStatus').textContent=active?'Ocean and laser sounds on. Ambient lasers are decorative.':soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';}
  catch{if(revision!==audioRevision)return;soundOn=false;$('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent='Sound unavailable in this browser session.';armSound();}
 }
 async function beginSound(event){

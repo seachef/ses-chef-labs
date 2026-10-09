@@ -19,7 +19,7 @@ export function choreography(time,width,height,{reduced=false,eventId=null,cue=n
  let begin=0,progress=0,state=plan[0],previous='crouch',u=0;
  for(const step of plan){if(q<step.end){state=step;u=clamp((q-begin)/(step.end-begin),0,1);if(step.travel!==undefined)progress=progress+(step.travel-progress)*smooth(u);break;}if(step.travel!==undefined)progress=step.travel;previous=step.kind;begin=step.end;}
  const ambientKind=state.kind;let receiptProgress=1,receiptVariant=-1;
- if(cue&&!reduced){const e=clamp((now-cue.createdAt)/Math.max(1,cue.until-cue.createdAt),0,1),v=Number.isInteger(actionVariant)?actionVariant%4:hash(eventId)%4;receiptProgress=e;receiptVariant=v;state={kind:e<.20?['brace','turn','kneel','crouch'][v]:e<.35?(v===1||v===2?'recover':v===0?'brace':'crouch'):'fire'};u=clamp(e/.35,0,1);}if(reduced){state={kind:'crouch'};progress=0;}
+ if(cue?.kind==='profit'&&!reduced){const e=clamp((now-cue.createdAt)/Math.max(1,cue.until-cue.createdAt),0,1);receiptProgress=e;receiptVariant=hash(eventId)%4;state={kind:'victory'};u=e;}else if(cue&&!reduced){const e=clamp((now-cue.createdAt)/Math.max(1,cue.until-cue.createdAt),0,1),v=Number.isInteger(actionVariant)?actionVariant%4:hash(eventId)%4;receiptProgress=e;receiptVariant=v;state={kind:e<.20?['brace','turn','kneel','crouch'][v]:e<.35?(v===1||v===2?'recover':v===0?'brace':'crouch'):'fire'};u=clamp(e/.35,0,1);}if(reduced){state={kind:'crouch'};progress=0;}
  const x=width*(start+(end-start)*progress),travelFacing=end>=start?1:-1,aimFacing=target.x>=x?1:-1;
  let facing=state.kind==='run'||state.kind==='roll'?travelFacing:aimFacing;
  const frame=Math.floor(t*14)%6,kind=state.kind,turn=1;const samePlanted=['crouch','fire','brace'].includes(previous)&&['crouch','fire','brace'].includes(kind);const transition=!cue&&!reduced&&!samePlanted&&q-begin<.32&&previous!==kind;const blend=transition?clamp((q-begin)/.32,0,1):1;
@@ -36,6 +36,7 @@ function shadow(ctx,a){ctx.fillStyle='rgba(0,0,0,.42)';for(const f of a.feet){ct
 export const TRANSITION_POSES=Object.freeze([[0,0,610,606,313.5,588],[610,0,644,606,940.5,598],[0,606,627,620,313.5,1202],[627,606,627,620,940.5,1202]].map(Object.freeze));
 function drawTransition(ctx,image,index,size){const [sx,sy,sw,sh,rootX,footY]=TRANSITION_POSES[index],k=size/627;ctx.drawImage(image,sx,sy,sw,sh,(sx-rootX)*k,(sy-footY)*k,sw*k,sh*k);}
 export function drawCharacter(ctx,images,a){shadow(ctx,a);ctx.save();ctx.translate(a.x,a.ground);ctx.scale(a.facing*a.turn,1);
+ if(a.kind==='victory'){const beat=Math.floor(a.u*12),routines=[[0,2,3,2],[1,3,2,3],[3,0,2,0],[2,3,1,3]],pose=routines[a.receiptVariant%4][beat%4];ctx.scale(1,1-.035*Math.sin(a.u*Math.PI*12)**2);ctx.scale(pose===2?a.facing:1,1);drawTransition(ctx,images[5],pose,a.size);ctx.restore();return;}
  if(a.kind==='brace')ctx.transform(1,0,.10*a.preparation,1,0,0);if(a.kind==='crouch'&&a.receiptVariant===3)ctx.scale(1,1-.13*a.preparation);
  if(a.kind==='recover'){drawTransition(ctx,images[5],3,a.size);}
  else if(a.transition){const frame=a.transitionFrame;ctx.scale(frame===2?a.facing:1,1);drawTransition(ctx,images[5],frame,a.size);}

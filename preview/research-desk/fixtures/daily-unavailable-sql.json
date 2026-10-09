@@ -1,0 +1,15 @@
+{
+  "day": "2026-10-09",
+  "pct": null,
+  "reason": "Unclassified cash movement; daily return unavailable",
+  "status": "unavailable",
+  "net_pnl": null,
+  "coverage": "since_first_observation",
+  "timezone": "Australia/Perth",
+  "baseline_at": "2026-10-09T12:55:20.667+00:00",
+  "observed_at": "2026-10-09T12:55:20.669+00:00",
+  "current_equity": 10100,
+  "baseline_equity": 10000,
+  "source_revision": 0,
+  "net_external_flows": null
+}

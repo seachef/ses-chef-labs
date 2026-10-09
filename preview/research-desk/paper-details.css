@@ -10,3 +10,6 @@ body.still .agent-node,body.still .agent-core:after{animation:none!important}
 .horizon{padding:10px 12px;background:rgba(3,12,28,.62);border-radius:4px}.identity{padding:4px 7px;background:rgba(3,12,28,.45);border-radius:4px}
 /* Transparent deck padding must not intercept the underlying market buttons. */
 .lower-deck{pointer-events:none}.lower-deck>.deck-bar,.lower-deck>.mobile-tabs,.lower-deck>.windows,.lower-deck>footer{pointer-events:auto}
+
+/* Account detail only: the six-pane ocean frame keeps its existing geometry. */
+.specialist-accounts{margin:18px 0}.specialist-accounts ol{list-style:none;padding:0}.specialist-accounts li{white-space:pre-line;overflow-wrap:anywhere;padding:10px 0;border-top:1px solid #35515d;line-height:1.65}.specialist-accounts p{overflow-wrap:anywhere}
