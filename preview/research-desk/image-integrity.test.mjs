@@ -23,10 +23,10 @@ test('image integrity rejects truncation, encoded text and byte corruption',()=>
  const corrupted=Buffer.from(bytes);corrupted[100]^=1;
  for(const bad of [bytes.subarray(0,-1),Buffer.from('Warning: truncated output '+bytes.toString('base64')),corrupted])assert.throws(()=>verifyApprovedImage(bad));
 });
-test('About has an accessible name and event scrolling is keyboard reachable',()=>{
+test('About and full findings have accessible names and explicit keyboard controls',()=>{
  assert.match(html,/<dialog id="aboutDialog" aria-labelledby="aboutTitle">/);
  assert.match(html,/<h2 id="aboutTitle">NEPTUNE<\/h2>/);
- assert.match(html,/<div class="pane-scroll" tabindex="0" role="region" aria-label="Paper event stream"><p id="scanState">/);
+ assert.match(html,/<dialog id="findingsDialog" class="detail-dialog" aria-labelledby="findingsTitle">/);assert.match(html,/id="openPulseStream"[^>]*aria-haspopup="dialog"/);assert.match(html,/id="closeFindings"/);
 });
 
 test('all generated scene assets retain complete reviewed PNG bytes and inflate correctly',async()=>{

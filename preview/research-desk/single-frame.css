@@ -1,0 +1,78 @@
+/* A single viewport for the observatory. Long evidence lives in explicit dialogs.
+   No body clipping: exceptional zoom/keyboard sizes retain natural access. */
+.observatory{height:100vh;height:100dvh;min-height:580px;overflow:visible;display:grid;grid-template-rows:auto minmax(110px,1fr) auto}
+.world{position:absolute;inset:0}
+header{padding:calc(14px + env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));align-items:center}
+.identity p{font-size:10px}.header-right{gap:18px}.header-right button,.mode{font-size:12px}
+.horizon{align-self:start;margin:16px 0 0 24px;max-width:300px;padding:10px 12px}
+.horizon .overline{font-size:10px;margin-bottom:6px}.horizon h2{font-size:26px;max-width:none}.horizon #connection{font-size:13px;line-height:1.4;margin-top:9px;max-width:none}.horizon #agentPulse{font-size:11px;margin-top:6px;max-width:none}
+.lower-deck{margin:0;padding:0 max(24px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));min-width:0}
+.deck-bar{font-size:11px;letter-spacing:0;gap:16px}.deck-bar button{font-size:12px;min-height:36px}.deck-bar>span:nth-child(2){max-width:none;text-align:right}
+#sceneCue{font-size:11px;margin:0 0 8px;line-height:1.3}
+.windows{grid-template-columns:1fr 1.1fr 1fr;gap:12px}
+.instrument{height:280px;padding:15px 16px 12px;background:rgba(3,12,23,.9);border:1px solid #72979c38;border-radius:6px;box-shadow:0 10px 35px #0003}
+.window-title{min-height:26px;margin-bottom:10px;gap:6px}.window-title h3{font-size:11px;letter-spacing:.075em;white-space:normal}.window-title>span{font-size:10px;max-width:110px}
+.pane-content{min-height:0;flex:1;overflow-wrap:anywhere}.pane-caption,#scanState{font:11px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b8cdd6;margin:0 0 9px}
+.instrument ol{font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;overflow:visible;list-style:none;padding:0;margin:0;flex:none}.instrument li{margin:0 0 8px}
+.runtime-log li{color:#abdfce;border-left:2px solid #6dbaa45c;padding-left:8px}
+#recentFindings li{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} /* Full text via All findings. */
+.ledger{gap:12px;justify-content:space-between;margin-bottom:10px}.ledger span{font-size:11px;line-height:1.3;margin-bottom:5px}.ledger strong{font-size:clamp(17px,1.6vw,24px)}
+#position,#lastFill{font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;margin-bottom:8px}
+#lastFill{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.market-label{font-size:11px}.market-label select{font-size:12px;min-height:34px;max-width:118px}
+.detail-trigger{font-size:12px;color:#eed3a0;min-height:36px;text-align:left;padding:4px 0;flex-shrink:0}
+.window-foot{font-size:10px;line-height:1.4;margin-top:4px;min-height:28px}.instrument .window-foot{overflow-wrap:anywhere}
+footer{font-size:10px;padding-top:3px}footer a,footer button{font-size:12px;min-height:32px}footer>span{line-height:1.4}
+.coin{font-size:12px}.coin span{font-size:10px}.btc{left:12%;top:39%}.eth{left:76%;top:24%}.sol{left:83%;top:43%}
+.detail-dialog{width:min(720px,calc(100vw - 24px));max-width:720px;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:0 22px 22px;overflow:auto;overscroll-behavior:contain;border:1px solid #466069;border-radius:8px}
+.dialog-heading{position:sticky;top:0;z-index:1;background:#0a1824;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #466069;margin-bottom:16px}.dialog-heading h2{font:22px/1.3 Georgia,serif;letter-spacing:0;margin:0}.dialog-heading button{font-size:14px;min-width:66px;flex-shrink:0}
+.detail-dialog p,.detail-dialog li,.detail-dialog details{font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.detail-dialog ol{padding-left:20px}.detail-dialog li{margin-bottom:12px}.detail-dialog summary{cursor:pointer;min-height:44px;padding:10px 0;color:#eed3a0}.detail-dialog pre{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;overflow:visible}.detail-dialog h4{font-size:15px}.detail-dialog button,.history-actions button,#ownerCheck,#ownerActions button{font-size:13px;min-height:44px}.detail-dialog a{color:#b3f5ec;text-decoration:underline}
+#aboutDialog{max-height:calc(100dvh - 32px);overflow:auto}#aboutDialog .atmosphere-note{font-size:13px;max-width:none}
+@media(max-width:1050px){.windows{gap:8px}.instrument{padding:12px}.window-title>span{font-size:9px;max-width:84px}.market-label{font-size:0}.ledger strong{font-size:17px}.instrument ol,#position,#lastFill{font-size:11px}.horizon{max-width:260px}.horizon h2{font-size:23px}}
+@media(max-width:760px),(max-height:640px){
+ .observatory{min-height:490px;grid-template-rows:auto minmax(100px,1fr) auto}
+ header{padding:calc(8px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left))}.header-right{gap:2px;max-width:150px}.header-right button{min-height:36px;padding:0 6px;font-size:11px}.mode{font-size:10px}
+ h1{font-size:25px}.identity p{font-size:8px;margin-top:6px}
+ .horizon{margin:10px 14px 0;max-width:235px;padding:8px 10px}.horizon .overline{display:none}.horizon h2{font-size:22px}.horizon #connection{font-size:12px;margin-top:6px}.horizon #agentPulse{font-size:10px;margin-top:4px}
+ .lower-deck{padding:0 max(12px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ .deck-bar{font-size:10px;gap:8px}.deck-bar>span:nth-child(2){max-width:150px}.deck-bar button{font-size:11px;white-space:nowrap}.deck-bar #clock{display:none}
+ #sceneCue{font-size:10px;margin-bottom:5px}
+ .mobile-tabs{display:flex;background:#051321e6;border:1px solid #72979c38;border-bottom:0;border-radius:6px 6px 0 0}.mobile-tabs button{font-size:12px;min-height:40px;flex:1;color:#c3d3dc}.mobile-tabs button[aria-pressed=true]{background:#25454d70;color:#f1d3a0}
+ .windows{display:block}.instrument{display:none;height:244px;padding:12px 14px;border-radius:0 0 6px 6px}.instrument.active{display:flex}.window-title{margin-bottom:8px;min-height:24px}.window-title>span{font-size:10px;max-width:none}.window-title h3{font-size:11px}.market-label{font-size:11px}.market-label select{min-height:32px}
+ .instrument ol,#position,#lastFill{font-size:12px}.ledger strong{font-size:21px}.ledger span{font-size:11px}.ledger{gap:16px;margin-bottom:8px}.pane-caption,#scanState{font-size:11px;margin-bottom:7px}.instrument li{margin-bottom:7px}.detail-trigger{min-height:34px}.window-foot{font-size:10px;min-height:0;padding-top:0;margin-top:3px}
+ footer{font-size:9px;align-items:center}footer>span{max-width:none;padding:0}footer>div{gap:14px}footer a,footer button{font-size:11px;min-height:32px}
+ .btc{left:6%;top:33%}.eth{left:76%;top:21%}.sol{left:76%;top:36%}.coin{font-size:11px;min-width:54px}.coin span{font-size:9px}
+}
+@media(max-width:760px) and (min-height:740px){.instrument{height:260px}.horizon{margin-top:18px}.btc{top:38%}.sol{top:42%}.eth{top:29%}}
+@media(max-height:640px) and (min-width:761px){.observatory{grid-template-columns:1fr 1.2fr;grid-template-rows:auto 1fr;min-height:380px}header{grid-column:1 / -1}.horizon{grid-column:1;grid-row:2;max-width:240px}.lower-deck{grid-column:2;grid-row:2;align-self:end}.instrument{height:240px}.btc{left:8%;top:72%}.eth{left:34%;top:47%}.sol{left:34%;top:77%}}
+@media(max-height:520px) and (max-width:760px){.observatory{min-height:530px}} /* Zoom/keyboard safety: content may scroll instead of being clipped. */
+/* Six genuine evidence streams: all remain visible, and every tile opens detail. */
+.observatory{grid-template-columns:1fr;grid-template-rows:auto minmax(110px,1fr) auto;min-height:570px}header{grid-column:auto}.horizon{grid-column:auto;grid-row:auto}.lower-deck{grid-column:auto;grid-row:auto;align-self:stretch}
+.windows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,116px);gap:8px}
+.stream-window{display:flex;flex-direction:column;align-items:stretch;text-align:left;min-width:0;min-height:0;padding:11px 13px;background:rgba(2,12,22,.91);border:1px solid #518e9766;border-radius:4px;box-shadow:inset 0 1px #a1efec0c,0 5px 22px #0003;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b8ded8;overflow-wrap:anywhere}
+.stream-window:hover{background:rgba(6,28,39,.96);border-color:#83c6c9;color:#e0f8ef}.stream-window:focus-visible{outline:2px solid #b3f5ec;outline-offset:2px}
+.stream-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#96abb7;white-space:nowrap}.stream-name{font-size:11px;color:#a2cfc7}.stream-name:before{content:'› ';color:#70dab6}.stream-status{font-size:9px;letter-spacing:.045em}
+.stream-output{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;min-height:35px}.stream-time{font-size:10px;color:#91abbc;margin-top:auto;padding-top:5px;white-space:nowrap}
+@media(max-width:760px){.observatory{min-height:560px;grid-template-rows:auto minmax(90px,1fr) auto}.windows{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,100px);gap:6px}.stream-window{padding:8px 9px;font-size:11px}.stream-top{margin-bottom:5px;gap:4px}.stream-status{font-size:8px;letter-spacing:0}.stream-name{font-size:10px}.stream-output{min-height:32px}.stream-time{font-size:9px}.horizon h2{font-size:20px}.horizon{max-width:215px}.horizon #agentPulse{display:none}.coin{font-size:10px}.coin span{font-size:8px}.eth{left:76%;top:23%}.btc{left:5%;top:32%}.sol{left:76%;top:35%}}
+@media(max-width:360px){.stream-status{font-size:7px}.stream-window{padding:8px}.stream-time{font-size:8px}.header-right{max-width:128px}.identity p{font-size:7px}}
+@media(max-height:640px) and (min-width:761px){.observatory{min-height:510px}.windows{grid-template-rows:repeat(2,100px)}.horizon{margin-top:6px}.horizon h2{font-size:20px}.horizon #agentPulse{display:none}.stream-window{padding:8px 11px}.stream-top{margin-bottom:4px}.btc{left:12%;top:37%}.eth{left:76%;top:25%}.sol{left:83%;top:40%}}
+@media(prefers-reduced-motion:reduce){.stream-window{transition:none}}
+/* Keep the complete moving character above the terminal bank. Scene renderer and
+   approved artwork are untouched; only its available viewport is reserved. */
+#atmosphere{height:calc(100% - 230px)}
+.horizon{background:none;padding:0;max-width:310px;margin-top:12px}.horizon #connection{margin-top:0;text-shadow:0 2px 6px #000}.horizon #agentPulse{display:none}
+@media(max-width:760px){#atmosphere{height:calc(100% - 325px)}.horizon{max-width:250px;margin:10px 14px 0}.horizon #connection{font-size:11px}.eth{top:17%}.btc{top:28%}.sol{top:31%}}
+/* Phone landscape uses the same six simultaneous streams, compact 3×2.
+   Smaller-than-supported zoom/keyboard viewports still flow naturally. */
+@media(max-height:500px) and (min-width:540px){
+ .observatory{min-height:340px;grid-template-rows:auto minmax(42px,1fr) auto}
+ header{padding-top:max(4px,env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}h1{font-size:23px}.identity{padding:2px 7px}
+ .horizon{margin:4px 14px 0;max-width:310px}.horizon #connection{font-size:11px}
+ .lower-deck{padding:0 max(12px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ .deck-bar{font-size:10px;gap:8px}.deck-bar #clock{display:none}.deck-bar button{min-height:26px;font-size:11px}.deck-bar>span:nth-child(2){max-width:none}
+ #sceneCue{font-size:10px;min-height:0;margin:0 0 3px;line-height:1.3}
+ .windows{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,78px);gap:6px}
+ .stream-window{padding:6px 9px;font-size:11px}.stream-top{font-size:9px;margin-bottom:3px;gap:4px}.stream-name{font-size:10px}.stream-status{font-size:8px;letter-spacing:0}.stream-output{min-height:31px;line-height:1.4}.stream-time{font-size:9px;margin-top:auto;padding-top:1px}
+ footer{font-size:9px;padding-top:0;align-items:center}footer a,footer button{min-height:26px;font-size:11px}footer>span{padding:0;max-width:none}
+ #atmosphere{height:calc(100% - 180px)}.btc{left:8%;top:28%}.eth{left:76%;top:17%}.sol{left:85%;top:33%}
+}

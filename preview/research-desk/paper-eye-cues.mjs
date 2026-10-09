@@ -1,4 +1,4 @@
-import {validateV2,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r9';
+import {validateV2,fresh} from './status-v2.mjs?v=neptune-frame-20261009';
 const trusted=new WeakSet();
 export const CUE_LIMITS=Object.freeze({capacity:8,durationMs:900,backlogMs:6000,eventAgeMs:90000});
 export function isVerifiedCue(cue,now=Date.now()){return !!cue&&trusted.has(cue)&&Number.isFinite(now)&&now>=cue.createdAt&&now<cue.until;}

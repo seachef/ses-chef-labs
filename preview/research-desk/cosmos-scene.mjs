@@ -1,8 +1,8 @@
-import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-v2-20261009-r9';
-export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-v2-20261009-r9';
-import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-v2-20261009-r9';
-import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-v2-20261009-r9';
-export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:6,companions:3,maxDpr:1.25,maxPixels:1800000});
+import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-frame-20261009';
+export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-frame-20261009';
+import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-frame-20261009';
+import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-frame-20261009';
+export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:6,companions:0,maxDpr:1.25,maxPixels:1800000});
 export const ASSETS=['cosmos-ocean-background.webp','neptune-run-atlas.png','neptune-braced-aim.png','cosmos-ocean-phone.webp','neptune-tucked-roll.png','neptune-transition-atlas.png'];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function layout(width,height){const mobile=width<620,rock={x:width*.06,y:height*.60,w:width*.88,h:height*.40};return{mobile,rock,contact:{x:width*.5,y:height*.70}};}
@@ -23,12 +23,6 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
  const shown=verified?nodes.filter((n,i)=>i<3||n===target):nodes.slice(0,3);
  for(const n of shown){const active=n===target;ctx.fillStyle=active?'rgba(137,230,245,.85)':'rgba(203,213,231,.7)';ctx.beginPath();ctx.arc(n.x,n.y,active?3.5:2.5,0,Math.PI*2);ctx.fill();if(showMarketLabels){ctx.fillStyle='rgba(3,12,28,.8)';ctx.fillRect(n.x+6,n.y-10,45,19);ctx.fillStyle=active?'#d6fbff':'#d0daec';ctx.font=`${l.mobile?10:12}px sans-serif`;ctx.fillText(n.label,n.x+10,n.y+4);}}
  const color=verified?(verified.kind==='buy'?'255,191,70':verified.kind==='sell'?'255,100,174':'186,153,255'):'80,225,255';drawEyeBeams(ctx,actor,target,{color,strength:1});
- // Three quiet system-role companions. Their orbit is decorative; pulse needs a trusted cue.
- const companionCenter={x:actor.x,y:actor.ground-actor.size*.55},roles=['Scout','Risk','Trades'];
- for(let i=0;i<3;i++){const role=roles[i],angle=t*.26+i*Math.PI*2/3,x=companionCenter.x+Math.cos(angle)*(l.mobile?70:86),y=companionCenter.y+Math.sin(angle)*(l.mobile?31:42),pulse=verified?.role===role?Math.sin(clamp((now-verified.createdAt)/Math.max(1,verified.until-verified.createdAt),0,1)*Math.PI)**2:0;
-  for(let j=2;j>=0;j--){ctx.fillStyle=`rgba(${i===0?'128,213,247':i===1?'196,177,238':'234,208,144'},${(.10+.09*(2-j)+pulse*.13)})`;ctx.beginPath();ctx.arc(x,y,3.5+j*2+pulse*2,0,Math.PI*2);ctx.fill();}
-  const labelX=companionCenter.x+(x>=companionCenter.x?(l.mobile?80:100):-(l.mobile?115:135));ctx.fillStyle='rgba(3,12,28,.72)';ctx.fillRect(labelX-3,y-9,role==='Trades'?41:35,17);ctx.fillStyle='rgba(206,224,236,.88)';ctx.font=`${l.mobile?9:10}px sans-serif`;ctx.fillText(role,labelX,y+3);
- }
  const caption=verified?(verified.kind==='review'?'PAPER REVIEW · UNVALIDATED · ':'SIMULATED '+verified.kind.toUpperCase()+' · ')+target.label:'AMBIENT SCAN · NOT A TRADE SIGNAL';
  if(showCaption){ctx.fillStyle='rgba(3,12,28,.78)';ctx.fillRect(width*.04-5,height*.06-14,l.mobile?246:295,22);ctx.fillStyle='rgba(215,232,245,.95)';ctx.font=`${l.mobile?9:11}px sans-serif`;ctx.fillText(caption,width*.04,height*.06);}
  return {feet,eyes,target,pose:p,stage:l,verified:!!verified};

@@ -1,6 +1,6 @@
-import {createActionSelector} from './character-motion.mjs?v=neptune-v2-20261009-r9';
-import {ASSETS,SCENE_LIMITS,renderScene} from './cosmos-scene.mjs?v=neptune-v2-20261009-r9';
-export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-v2-20261009-r9';
+import {createActionSelector} from './character-motion.mjs?v=neptune-frame-20261009';
+import {ASSETS,SCENE_LIMITS,renderScene} from './cosmos-scene.mjs?v=neptune-frame-20261009';
+export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-frame-20261009';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),finite=(v,d=0)=>Number.isFinite(v)?v:d;
 export function makeCosmosScene({canvas,ctx,request,cancel,getDpr=()=>1,getCue=()=>null,showCaption=true,showMarketLabels=true,getMarketPositions=()=>[],createImage=()=>new Image()}){
  let width=0,height=0,frame=0,last=null,time=0,actorTime=0,enabled=false,visible=true,inView=true,destroyed=false,failed=!ctx;
