@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {csvCell,csvRows} from './csv-safe.mjs';
+test('CSV formula prefixes are neutralized including whitespace and invisible marks',()=>{for(const value of ['=HYPERLINK("x")','+1+1','-1+1','@SUM(1)',' \t=1','\uFEFF=1','\u200b@SUM(1)','\n=1'])assert.ok(csvCell(value).startsWith('"\''));});
+test('CSV preserves typed numeric losses and safely quotes delimiters/newlines',()=>{assert.equal(csvCell(-5),'"-5"');assert.equal(csvCell('a,"b"\nc'),'"a,""b""\nc"');assert.equal(csvCell(null),'""');assert.equal(csvCell(Infinity),'""');assert.equal(csvRows(['id','pnl'],[['fill1',-10]]),'"id","pnl"\r\n"fill1","-10"\r\n');});
+test('CSV does not serialize opaque objects or extra unmapped fields',()=>{assert.throws(()=>csvCell({user_id:'private'}));assert.throws(()=>csvRows(['id'],[['fill1','private']]));});

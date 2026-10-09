@@ -14,5 +14,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test preview/research-desk/status.test.mjs
+      - run: node --test preview/research-desk/*.test.mjs
       - run: node --check preview/research-desk/neptune.mjs
+
