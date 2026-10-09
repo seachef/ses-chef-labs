@@ -2,7 +2,7 @@ import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
-const publicKey='sb_publishable_spuSGf1hTwSfAxZoC6FGzQ_umB2RB07';
+const publicKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoc3JibXZtanRpaGx4bmJydmJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NDc4MjAsImV4cCI6MjEwNjQyMzgyMH0.fAhJqVZ6bf7sdPAGhX_Jq7o5rzROKIvXtUnTWtnHHIg';
 const panels=setupPaperPanels({document,endpointRoot:'https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1',publicKey});
 let selected='ETH/USD',report=null,connected=false,busy=false,polls=0,seenDecisions=null;
 const safe=v=>typeof v==='string'?v.slice(0,1000):'';
