@@ -44,7 +44,7 @@
 <section class="panel paper-panel" aria-labelledby="paperTitle">
  <div class="panel-head"><div><p class="eyebrow">LIVE FORWARD EXPERIMENT · PAPER ONLY</p><h2 id="paperTitle">BTC / USD · virtual USD ledger</h2></div><span class="pill" id="paperStatus" role="status">Not connected</span></div>
  <p class="paper-intro">Four separate experimental paper accounts using current public market data. Each keeps its own money and results. No historical qualification, real orders or wallet access.</p>
- <div class="paper-select" role="group" aria-label="Choose a separate paper account"><button type="button" id="paperSelectBTC" aria-pressed="true"><strong>BTC</strong><small>Main group</small><span id="paperSummaryBTC">Awaiting report</span></button><button type="button" id="paperSelectETH" aria-pressed="false"><strong>ETH</strong><small>Main group</small><span id="paperSummaryETH">Awaiting report</span></button><button type="button" id="paperSelectSOL" aria-pressed="false"><strong>SOL</strong><small>Main group</small><span id="paperSummarySOL">Awaiting report</span></button><button type="button" id="paperSelectPEPE" aria-pressed="false"><strong>PEPE</strong><small>Speculative comparison</small><span id="paperSummaryPEPE">Awaiting report</span></button></div>
+ <div class="paper-select" role="group" aria-label="Choose a separate paper account"><button type="button" id="paperSelectBTC" aria-pressed="true"><strong>BTC</strong><small>Main group</small><span id="paperSummaryBTC">Awaiting report</span></button><button type="button" id="paperSelectETH" aria-pressed="false"><strong>ETH</strong><small>Main group</small><span id="paperSummaryETH">Awaiting report</span></button><button type="button" id="paperSelectSOL" aria-pressed="false"><strong>SOL</strong><small>Main group</small><span id="paperSummarySOL">Awaiting report</span></button></div>
  <div class="paper-teaching"><strong>What’s happening?</strong><p id="paperTeaching">Waiting for a real server report.</p></div>
  <div class="paper-metrics"><div><span>Virtual equity · USD</span><strong id="paperEquity">—</strong></div><div><span>Total P&amp;L · USD</span><strong id="paperTotal">—</strong></div><div><span>Open P&amp;L · USD</span><strong id="paperOpen">—</strong></div><div><span>Realized P&amp;L · USD</span><strong id="paperRealized">—</strong></div></div>
  <div class="paper-costs"><div><span>Fees paid so far · USD</span><strong id="paperFees">—</strong></div><div><span id="paperSpreadLabel">Current bid / ask gap</span><strong id="paperSpread">—</strong></div><div><span>Estimated move to cover costs</span><strong id="paperBreakeven">—</strong></div><p id="paperCostNote">Waiting for fee, spread and slippage data. This is a cost estimate, never an expected profit.</p></div>
@@ -153,7 +153,7 @@ function teachPaper(report,view) {
 function createPaperPanel(root,{readStatus,onStatus=()=>{},onEvent=()=>{},now=()=>Date.now()}) {
  const $=id=>root.getElementById(id), panel=$('paperTitle').closest('.paper-panel');
  let report=null, connected=false, busy=false, selected='BTC/USD';
- const markets=['BTC/USD','ETH/USD','SOL/USD','PEPE/USD'];
+ const markets=['BTC/USD','ETH/USD','SOL/USD'];
  let reports=new Map();
  const changed=new Map(markets.map(symbol=>[symbol,eventTracker()]));
  const text=(id,value)=>{$(id).textContent=value;};
