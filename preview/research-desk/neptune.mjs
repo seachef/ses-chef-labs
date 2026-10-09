@@ -1,4 +1,4 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r3'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r3'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r3';
+import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r4'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r4'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r4';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -39,7 +39,7 @@ function render(){
  panels.observe(connected?report:null);
  const view=paperViewV2(report,connected),a=report?.account,ccy=report?.currency;
  const amount=v=>money(v,ccy),positions=report?.positions||[],position=positions.find(p=>p.asset===selected);
- $('connection').textContent=view.label+' · '+selected.split('/')[0];
+ $('connection').textContent=view.label+' · '+selected.split('/')[0]; $('agentPulse').textContent=connected?(report?.status==='running'?'CORE ONLINE':(report?.status||'CORE WAITING').toUpperCase()):'CORE OFFLINE';
  $('feedSummary').textContent=connected?(report?'One paper account · 10s refresh':'Account not created · awaiting v2'):'Data unavailable · awaiting v2';
  $('feedState').textContent=view.label.toUpperCase();
  $('equity').textContent=amount(a?.equity);
