@@ -14,3 +14,13 @@ test('CAS conflict or denied owner remains unconfirmed, raw error never rendered
 test('Stop remains requestable without the public feed and exposure is not prematurely frozen',async()=>{const m=clientMock(),o=createOwnerControl({getClient:async()=>m.client,now:()=>now});await o.refresh();o.observe(null);await o.requestEnabled(false);assert.match(o.getState().message,/not yet confirmed frozen/);assert.equal(m.log.filter(l=>l.write).length,1);});
 
 test('actual SQL control projection acknowledges after its earlier heartbeat timestamp',()=>{const r=JSON.parse(fs.readFileSync(new URL('./fixtures/engine-control-v2.json',import.meta.url)));const c={id:'neptune-paper-v2',enabled:r.control.requested_enabled,epoch:r.control.requested_epoch,changed_at:r.heartbeat_at};assert.equal(controlAcknowledgement(c,r,Date.parse(r.control.ack_at)+1000).applied,true);});
+test('client initialization timeout unlocks controls and permits an explicit retry without writes',async()=>{
+ let release,attempt=0;const m=clientMock(),o=createOwnerControl({getClient:()=>++attempt===1?new Promise(r=>release=r):Promise.resolve(m.client),timeoutMs:5,now:()=>now});
+ const first=o.refresh();assert.equal(o.getState().busy,true);assert.match(o.getState().message,/Checking/);await first;
+ assert.equal(o.getState().busy,false);assert.equal(o.getState().access,'unavailable');assert.equal(m.log.length,0);
+ await o.refresh();assert.equal(o.getState().access,'owner');release(m.client);await new Promise(r=>setImmediate(r));assert.equal(m.log.filter(x=>x.write).length,0);
+});
+test('late client initialization after timeout or sign-out cannot send a requested write',async()=>{
+ let release,attempt=0;const m=clientMock(),o=createOwnerControl({getClient:()=>++attempt===1?Promise.resolve(m.client):new Promise(r=>release=r),timeoutMs:5,now:()=>now});
+ await o.refresh();const pending=o.requestEnabled(true);await pending;assert.equal(o.getState().busy,false);o.invalidate();release(m.client);await new Promise(r=>setImmediate(r));assert.equal(o.getState().access,'signed-out');assert.equal(m.log.filter(x=>x.write).length,0);
+});

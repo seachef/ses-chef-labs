@@ -1,4 +1,4 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r6'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r6'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r6';
+import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r7'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r7'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r7';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -37,10 +37,10 @@ function list(id,items,format,empty){
 }
 function render(){
  panels.observe(connected?report:null);
- const view=paperViewV2(report,connected),a=report?.account,ccy=report?.currency;
+ const view=polls===0?{status:'loading',label:'Connecting to paper feed',reason:'Awaiting the first verified report.'}:paperViewV2(report,connected),a=report?.account,ccy=report?.currency;
  const amount=v=>money(v,ccy),positions=report?.positions||[],position=positions.find(p=>p.asset===selected);
  $('connection').textContent=view.label+' · '+selected.split('/')[0]; $('agentPulse').textContent=view.status==='running'?'CORE ONLINE':view.label.toUpperCase();
- $('feedSummary').textContent=connected?(report?'One paper account · 10s refresh':'Account not created · awaiting v2'):'Data unavailable · awaiting v2';
+ $('feedSummary').textContent=polls===0?'Awaiting first verified report':connected?(report?'One paper account · 10s refresh':'Account not created · awaiting v2'):'Data unavailable · awaiting v2';
  $('feedState').textContent=view.label.toUpperCase();
  $('equity').textContent=amount(a?.equity);
  $('pnl').textContent=amount(Number.isFinite(a?.equity)&&Number.isFinite(a?.initial_cash)?a.equity-a.initial_cash:undefined);
@@ -48,9 +48,9 @@ function render(){
  $('position').textContent=position?`${selected} · ${position.qty.toPrecision(5)} virtual · ${positions.length} open account-wide`:a?.initial_cash?`${selected} · flat · ${positions.length} open account-wide`:view.status==='uncreated'?'Account not created. No verified position.':'No verified account or position available.';
  const fill=report?.fills.find(f=>f.asset===selected);
  $('lastFill').textContent=fill?`SIMULATED ${fill.side.toUpperCase()} · ${quote(fill.price)} · ${stamp(fill.at)} Perth`:'No verified simulated buy or sell received.';
- $('valuation').textContent=view.status==='running'?`Last sampled ${stamp(report.quote_at)} Perth · ${sampleAge(report.quote_at)} · not a live quote`:report&&a?.initial_cash?'LAST REPORT · NOT A CURRENT VALUATION':view.status==='uncreated'?'AUD chosen · account not created. No real orders.':'Data unavailable. No real orders or wallet access.';
+ $('valuation').textContent=view.status==='running'?`Last sampled ${stamp(report.quote_at)} Perth · ${sampleAge(report.quote_at)} · not a live quote`:report&&a?.initial_cash?'LAST REPORT · NOT A CURRENT VALUATION':view.status==='uncreated'?'AUD chosen · account not created. No real orders.':polls===0?'Awaiting first verified valuation. No real orders.':'Data unavailable. No real orders or wallet access.';
  $('heartbeat').textContent='Server heartbeat '+stamp(report?.heartbeat_at)+' Perth';
- $('execution').textContent=`refreshFeed() · ${polls} checks · ${connected?(report?'v2 report validated':'awaiting v2 activation'):'data unavailable'}`;
+ $('execution').textContent=`refreshFeed() · ${polls} checks · ${polls===0?'first check pending':connected?(report?'v2 report validated':'awaiting v2 activation'):'data unavailable'}`;
  $('scanState').textContent=(report?.scan_at?`Last scan ${stamp(report.scan_at)} Perth · ${sampleAge(report.scan_at)} · `:'')+view.reason+' · Latest 50 decisions';
  $('accountDetails').textContent=a?.initial_cash?`One ${ccy} account · starting ${amount(a.initial_cash)} · settled cash ${amount(a.cash)} · available ${amount(a.available_cash)} · reserved ${amount(a.reserved_cash)} · realized ${amount(a.realized_pnl)} · unrealized ${amount(a.unrealized_pnl)} · fees ${amount(a.fees)} · modeled FX costs ${amount(a.fx_costs)} · unsettled proceeds ${quote(a.unsettled_usd)} · valuation ${stamp(a.valuation_at)} Perth · FX reference ${a.fx??'—'} / applied ${a.fx_applied_rate??'—'} AUD/USD · ${safe(a.fx_source)||'unavailable'} · rate date ${safe(a.fx_rate_date)||'—'} · retrieved ${stamp(a.fx_retrieved_at)} Perth`:view.reason;
  $('riskDetails').textContent=report?`Experimental / confidence unvalidated. Config ${safe(report.config_version)||'unavailable'} · source ${safe(report.source_hash)||'unavailable'} · config hash ${safe(report.config_hash)||'unavailable'}. Entry risk ${report.risk.per_entry_pct}% · max ${report.risk.max_positions} positions · aggregate risk ${report.risk.aggregate_pct}% · daily drawdown ${report.risk.daily_drawdown_pct}% · total drawdown ${report.risk.total_drawdown_pct}%. Entries ${report.risk.entry_paused?'paused':'enabled'} · ${safe(report.risk.pause_reason)||'no pause'}. Modeled fee ${report.cost_model.fee_per_side_pct}% and slippage ${report.cost_model.slippage_per_side_pct}% each side; adverse FX ${report.cost_model.fx_adverse_per_side_pct??'—'}% each side; ${safe(report.cost_model.fx_model)||'FX model unavailable'}; actual fee tier unverified. Display samples may be up to 90s old; server execution still requires quotes no older than 30s.`:'Engine configuration unavailable. This window shows actual interface source, not AI reasoning.';
@@ -81,15 +81,21 @@ reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
 window.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
 let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
-window.addEventListener('pagehide',()=>{atmosphere.setState({visible:false});if(audioContext)void audioContext.suspend();});
-window.addEventListener('pageshow',()=>{atmosphere.resize();syncMotion();});
-let audioContext,soundOn=false;
+window.addEventListener('pagehide',()=>{audioVisible=false;atmosphere.setState({visible:false});void syncSound();});
+window.addEventListener('pageshow',()=>{audioVisible=true;atmosphere.resize();syncMotion();void syncSound();});
+let audioContext,soundOn=false,audioVisible=true,audioRevision=0;
+async function syncSound(){
+ if(!audioContext)return;
+ const revision=++audioRevision,active=soundOn&&audioVisible&&!document.hidden;
+ try{await audioContext[active?'resume':'suspend']();if(revision!==audioRevision)return;$('sound').textContent=soundOn?(active?'Sound on':'Sound paused'):'Sound off';$('sound').setAttribute('aria-pressed',String(soundOn));}
+ catch{if(revision!==audioRevision)return;soundOn=false;$('sound').textContent='Sound unavailable';$('sound').setAttribute('aria-pressed','false');}
+}
 $('sound').addEventListener('click',async()=>{try{
  if(!audioContext){const Audio=window.AudioContext||window.webkitAudioContext;audioContext=new Audio();const buffer=audioContext.createBuffer(1,audioContext.sampleRate*4,audioContext.sampleRate),data=buffer.getChannelData(0);let v=0;for(let i=0;i<data.length;i++){v=(v+(Math.random()*2-1)*.035)/1.025;data[i]=v;}const source=audioContext.createBufferSource();source.buffer=buffer;source.loop=true;const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=500;const gain=audioContext.createGain();gain.gain.value=.23;source.connect(filter).connect(gain).connect(audioContext.destination);source.start();}
- soundOn=!soundOn;await audioContext[soundOn?'resume':'suspend']();$('sound').textContent=soundOn?'Sound on':'Sound off';$('sound').setAttribute('aria-pressed',String(soundOn));
- }catch{$('sound').textContent='Sound unavailable';}});
+ soundOn=!soundOn;await syncSound();
+ }catch{soundOn=false;$('sound').textContent='Sound unavailable';$('sound').setAttribute('aria-pressed','false');}});
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
 clock();setInterval(clock,1000);render();void refreshFeed();
 setInterval(()=>{render();if(!document.hidden)void refreshFeed();},10000);
-document.addEventListener('visibilitychange',()=>{syncMotion();if(document.hidden){if(audioContext)void audioContext.suspend();}else{if(soundOn&&audioContext)void audioContext.resume();void refreshFeed();}});
+document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(!document.hidden)void refreshFeed();});
 

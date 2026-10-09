@@ -1,5 +1,5 @@
-import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-v2-20261009-r6';
-import {csvRows} from './csv-safe.mjs?v=neptune-v2-20261009-r6';
+import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-v2-20261009-r7';
+import {csvRows} from './csv-safe.mjs?v=neptune-v2-20261009-r7';
 export const HISTORY_PAGE_SIZE=100;
 export const HISTORY_FIELDS=Object.freeze(['id','at','asset','action','side','price','qty','quote_currency','reason','source','observation_id','risk_base','stop','target','invalidation','confidence','result','config_version','config_hash','source_hash','origin_order_id','origin_decision_id','decision_id','order_id','initial_risk_base','fx','fx_source','fx_at','gross_base','fee_base','cash_delta_base','slippage_pct','gross_usd','fee_usd','net_usd','settlement_status','fx_rate_date','fx_retrieved_at','fx_applied_rate','fx_cost_base','closed_at','settled_at','entry_fill_id','exit_fill_id','pnl_base','net_r','status','usd_amount','fill_id','delta','balance']);
 const hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);

@@ -17,7 +17,7 @@ export function createOwnerControl({getClient,onChange=()=>{},now=()=>Date.now()
  const emit=patch=>{state={...state,...patch};onChange({...state});};
  async function timed(promise){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('timeout')),timeoutMs);})]);}finally{clearTimeout(timer);}}
  async function authority(){
-  const client=await getClient();if(!client)return {access:'signed-out'};
+  const client=await timed(Promise.resolve().then(getClient));if(!client)return {access:'signed-out'};
   const auth=await timed(client.auth.getUser());if(auth.error||!auth.data?.user){if(auth.error&&!denied(auth.error)&&auth.error.name!=='AuthSessionMissingError')throw Error('unavailable');return {access:'signed-out'};}
   const result=await timed(client.from(TABLE).select(FIELDS).eq('id',ACCOUNT));
   if(result.error){if(denied(result.error))return {access:'denied'};throw Error('unavailable');}
@@ -26,7 +26,7 @@ export function createOwnerControl({getClient,onChange=()=>{},now=()=>Date.now()
  }
  function invalidate(){epoch++;emit({access:'signed-out',control:null,busy:false,report:null,message:'Owner session ended. No controls are enabled.'});}
  function observe(report){state.report=report;if(state.access==='owner'&&state.control&&!state.busy)emit({message:controlAcknowledgement(state.control,report,now()).message});}
- async function refresh(){if(state.busy)return;const request=++epoch;emit({busy:true});try{const {client,...verified}=await authority();if(request!==epoch)return;emit({...verified,control:verified.control||null,message:verified.access==='owner'?controlAcknowledgement(verified.control,state.report,now()).message:verified.access==='signed-out'?'Sign in through the existing Portfolio page, then return to check owner access.':'This session does not have owner control access.'});}catch{if(request===epoch)emit({access:'unavailable',control:null,message:'Owner access is unavailable. No change was sent.'});}finally{if(request===epoch)emit({busy:false});}}
+ async function refresh(){if(state.busy)return;const request=++epoch;emit({busy:true,message:'Checking owner access…'});try{const {client,...verified}=await authority();if(request!==epoch)return;emit({...verified,control:verified.control||null,message:verified.access==='owner'?controlAcknowledgement(verified.control,state.report,now()).message:verified.access==='signed-out'?'Sign in through the existing Portfolio page, then return to check owner access.':'This session does not have owner control access.'});}catch{if(request===epoch)emit({access:'unavailable',control:null,message:'Owner access is unavailable. No change was sent.'});}finally{if(request===epoch)emit({busy:false});}}
  async function requestEnabled(enabled){
   if(state.busy||state.access!=='owner'||typeof enabled!=='boolean')return;
   const request=++epoch;emit({busy:true,message:enabled?'Requesting Resume…':'Requesting Stop…'});
