@@ -1,0 +1,6 @@
+// Optional local pixel verification; CI geometry/lifecycle tests require no package install.
+import {createRequire} from 'node:module';import fs from 'node:fs';
+let native=null;if(process.env.NEPTUNE_TRACE_ONLY!=='1'){try{native=createRequire(import.meta.url)('@napi-rs/canvas');}catch{}}
+export const hasNativeCanvas=!!native;
+export function createCanvas(width,height){if(native)return native.createCanvas(width,height);const canvas={width,height};const gradient=()=>({addColorStop(){}}),ctx=new Proxy({canvas,getImageData:()=>({data:new Uint8ClampedArray(width*height*4)}),createLinearGradient:gradient,createRadialGradient:gradient},{get(o,k){return k in o?o[k]:()=>{};},set(o,k,v){o[k]=v;return true;}});canvas.getContext=()=>ctx;return canvas;}
+export async function loadImage(path){if(native)return native.loadImage(path);const data=fs.readFileSync(path);if(data.toString('hex',0,8)==='89504e470d0a1a0a')return {width:data.readUInt32BE(16),height:data.readUInt32BE(20)};if(data.toString('ascii',0,4)==='RIFF'&&data.toString('ascii',8,16)==='WEBPVP8L'&&data[20]===47){const bits=data.readUInt32LE(21);return {width:1+(bits&16383),height:1+((bits>>>14)&16383)};}throw Error('Unsupported image test fixture');}

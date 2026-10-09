@@ -11,5 +11,7 @@ test('bookmarked legacy page is fail-closed with all original demonstration code
  assert.doesNotMatch(html,/\.content\.cloneNode|appendChild\([^)]*\.content/);
 });
 test('active observatory labels decorative orbit and does not link to legacy demonstration',()=>{
- const html=read('index.html');assert.match(html,/Ambient eye beams and Scout, Risk and Trades orbs are decorative art, not worker telemetry/);assert.match(html,/Solid eye cues follow verified simulated fills or unvalidated paper reviews/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);
+ const html=read('index.html');assert.match(html,/Ambient eye beams and Scout, Risk and Trades orbs are decorative art, not worker telemetry/);assert.match(html,/Cyan beams are decorative\. Gold\/pink fill cues and violet unvalidated reviews require fresh verified paper records/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);
 });
+
+test("continuous ambient beams cannot imply verified trading",()=>{const html=read("index.html");assert.doesNotMatch(html,/Solid eye cues (?:follow|require)/);assert.match(html,/Cyan ambient beams are decorative/);assert.match(html,/No eye cue submits an order/);});

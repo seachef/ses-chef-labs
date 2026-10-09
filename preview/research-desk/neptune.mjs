@@ -1,4 +1,4 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r8'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r8'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-v2-20261009-r8';
+import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r9'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r9'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-v2-20261009-r9';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -74,18 +74,18 @@ document.querySelectorAll('.mobile-tabs button').forEach(button=>button.addEvent
 $('about').addEventListener('click',()=>$('aboutDialog').showModal());
 $('closeAbout').addEventListener('click',()=>$('aboutDialog').close());
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-let motion=!reduced.matches,inView=true;
+let motion=!reduced.matches,inView=true,scenePageVisible=true;
 const canvas=$('atmosphere'),ctx=canvas.getContext('2d');
 const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
  getMasks:box=>[...document.querySelectorAll('header,.horizon,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
-function syncMotion(){document.body.classList.toggle('still',!motion||document.hidden||!inView);$('motion').textContent=motion?'Motion on':'Motion off';$('motion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion,visible:!document.hidden,inView});}
+function syncMotion(){cueBridge.setActive(motion&&!document.hidden&&inView&&scenePageVisible);sceneCue();document.body.classList.toggle('still',!motion||document.hidden||!inView||!scenePageVisible);$('motion').textContent=motion?'Motion on':'Motion off';$('motion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion,visible:!document.hidden&&scenePageVisible,inView});}
 $('motion').addEventListener('click',()=>{motion=!motion;syncMotion();});
 reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
 window.addEventListener('resize',()=>atmosphere.resize());window.visualViewport?.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
 let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
-window.addEventListener('pagehide',()=>{audioVisible=false;atmosphere.setState({visible:false});void syncSound();});
-window.addEventListener('pageshow',()=>{audioVisible=true;atmosphere.resize();syncMotion();void syncSound();});
+window.addEventListener('pagehide',()=>{audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
+window.addEventListener('pageshow',()=>{audioVisible=true;scenePageVisible=true;atmosphere.resize();syncMotion();void syncSound();});
 let audioContext,soundOn=false,audioVisible=true,audioRevision=0;
 async function syncSound(){
  if(!audioContext)return;

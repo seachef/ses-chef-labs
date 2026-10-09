@@ -31,7 +31,7 @@ test('About has an accessible name and event scrolling is keyboard reachable',()
 
 test('all generated scene assets retain complete reviewed PNG bytes and inflate correctly',async()=>{
  const {inflateSync}=await import('node:zlib');
- const assets={'cosmos-ocean-background.png':'501be0eb268efd9924d8ac13f57ccb8480b92605933ba69bc62ae047eb183cae','cosmos-ocean-phone.png':'5b37db5e7524c77f0363178db3b4f34cc28517919a3accbdd9a13d62640db01a','neptune-body-clean.png':'9aae33e7a960f272c4769d2466d4c6fc95e7a22d35796f8cf859296a88fa1691','neptune-head-clean.png':'84166f43f42410676f26d4e65c0a36ffd6629de65243327fc923635763d8e554'};
+ const assets={'neptune-run-atlas.png':'d31603023937fbb3b3bf0f2860bb19b90f16cfd6a290754ef8d87c8eb31ea9e5','neptune-braced-aim.png':'fe8227db951a9fc70881851afe9c49db588a40374726b99cf885bc2ccc5e40b2','neptune-tucked-roll.png':'942384e70fff33e8c2ab20a04d17693689cfc9f739e614e6a7c48e8b76a13c13','neptune-transition-atlas.png':'569930f17db4ed9af461f34c288019fea523230aed436c0e25903aca3b99aee7','cosmos-ocean-background.png':'501be0eb268efd9924d8ac13f57ccb8480b92605933ba69bc62ae047eb183cae','cosmos-ocean-phone.png':'5b37db5e7524c77f0363178db3b4f34cc28517919a3accbdd9a13d62640db01a','neptune-body-clean.png':'9aae33e7a960f272c4769d2466d4c6fc95e7a22d35796f8cf859296a88fa1691','neptune-head-clean.png':'84166f43f42410676f26d4e65c0a36ffd6629de65243327fc923635763d8e554'};
  for(const [name,hash]of Object.entries(assets)){
   const bytes=fs.readFileSync(new URL('./assets/'+name,import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),hash);assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
   let offset=8,width,height,channels,ended=false;const compressed=[];
@@ -39,3 +39,4 @@ test('all generated scene assets retain complete reviewed PNG bytes and inflate 
   assert.ok(ended);assert.equal(offset,bytes.length);assert.equal(inflateSync(Buffer.concat(compressed),{maxOutputLength:10000000}).length,(width*channels+1)*height);
  }
 });
+test('pixel-equivalent opaque WebP backgrounds retain exact reviewed lossless binaries',()=>{for(const[name,hash,w,h]of[['cosmos-ocean-background.webp','6cbfc1991b88f2bb6678c5ecbc81276a082c145f48f2120a2b32682c9b4caaf9',1672,941],['cosmos-ocean-phone.webp','eff69b35d50aa7cb2415b01d9dbe1b80c136005d2683e1cf80ebf19052748bb2',1024,1536]]){const b=fs.readFileSync(new URL('./assets/'+name,import.meta.url));assert.equal(createHash('sha256').update(b).digest('hex'),hash);assert.equal(b.toString('ascii',0,4),'RIFF');assert.equal(b.readUInt32LE(4)+8,b.length);assert.equal(b.toString('ascii',8,16),'WEBPVP8L');assert.equal(b[20],47);const bits=b.readUInt32LE(21);assert.equal(1+(bits&16383),w);assert.equal(1+((bits>>>14)&16383),h);}});
