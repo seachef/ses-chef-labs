@@ -1,6 +1,6 @@
-# Sea Chef Labs
+# NEPTUNE
 
-A static HTML dashboard for live crypto price tracking, deep-liquidity pair management, and draft limit-order tracking.
+NEPTUNE is an art-led crypto intelligence and paper-trading research desk.
 
 ## Run locally
 
@@ -36,7 +36,7 @@ https://seachef.github.io/ses-chef-labs/
 - GitHub Pages hosting: free
 - On-chain execution: not free; blockchain gas/network fees apply when you actually submit a trade
 
-## App links
+## NEPTUNE links
 
 - Repo: https://github.com/seachef/ses-chef-labs
 - Local app: http://localhost:8000/index.html
