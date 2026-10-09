@@ -1,0 +1,14 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {paperView,validateReports} from './status.mjs';
+const now=Date.now();
+const report={symbol:'BTC/USD',version:1,mode:'PAPER',currency:'USD',experimental:true,historically_validated:false,enabled:true,status:'waiting',heartbeat_at:new Date(now).toISOString(),last_quote_at:new Date(now).toISOString()};
+test('empty feed is waiting, not live trading',()=>{assert.deepEqual(validateReports([]),[]);assert.equal(paperView(null,true,now).status,'waiting');});
+test('independent reports do not require four accounts',()=>assert.equal(validateReports([{payload:report}]).length,1));
+test('unverified reports and duplicates rejected',()=>{assert.throws(()=>validateReports([{payload:{...report,mode:'LIVE'}}]));assert.throws(()=>validateReports([{payload:report},{payload:report}]));});
+test('unknown assets never appear in the app',()=>assert.deepEqual(validateReports([{payload:{...report,symbol:'PEPE/USD'}}]),[]));
+test('fresh paper feed is monitoring',()=>assert.equal(paperView(report,true,now).status,'running'));
+test('stale, future and missing heartbeat are never live',()=>{for(const heartbeat_at of [new Date(now-100000).toISOString(),new Date(now+60000).toISOString(),null])assert.equal(paperView({...report,heartbeat_at},true,now).status,'stale');});
+test('offline retains last-report warning',()=>assert.equal(paperView(report,false,now).label,'Offline · last report'));
+test('terminal campaign cannot appear running',()=>assert.equal(paperView({...report,capacity_paused:true,enabled:false,status:'capacity_paused'},true,now).status,'ended'));
+test('pause and feed errors remain explicit',()=>{assert.equal(paperView({...report,enabled:false},true,now).status,'paused');assert.equal(paperView({...report,status:'feed_error'},true,now).status,'error');});

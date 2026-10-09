@@ -20,7 +20,7 @@
       const announced=announcedWallets.find(item=>item.info?.rdns==='io.rabby' || item.provider?.isRabby);
       const provider=announced?.provider || (window.ethereum?.isRabby ? window.ethereum : null);
       if (!provider) {
-        alert('Rabby is not available in this browser. On Windows, open Sea Chef Labs in the browser containing the Rabby extension. On mobile, open this page from Rabby\'s own dapp browser if your Rabby version provides one. Nothing was connected.');
+        alert('Rabby is not available in this browser. On Windows, open NEPTUNE in the browser containing the Rabby extension. On mobile, open this page from Rabby\'s own dapp browser if your Rabby version provides one. Nothing was connected.');
         return;
       }
       try {
@@ -38,7 +38,7 @@
           location.href=`https://phantom.app/ul/browse/${encodeURIComponent(here)}?ref=${encodeURIComponent(ref)}`;
           return;
         }
-        alert('Phantom is not available in this browser. Open Sea Chef Labs in the browser containing the Phantom extension. Nothing was connected.');
+        alert('Phantom is not available in this browser. Open NEPTUNE in the browser containing the Phantom extension. Nothing was connected.');
         return;
       }
       try {
@@ -431,7 +431,7 @@
         if(!saved||saved.version!==1||!Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||Date.now()-saved.savedAt>MARKET_SNAPSHOT_MAX_AGE)return false;
         const rows=validMarketRows(saved.rows,true);if(!rows.length)return false;
         market=rows;marketReceivedAt=0;renderTickerPrices();render();buildBuySetups();
-        $('tickerStatus').textContent=`Last open ${localClock(saved.savedAt)} - tap Sea Chef Sonar when you want fresh prices`;
+        $('tickerStatus').textContent=`Last open ${localClock(saved.savedAt)} - tap NEPTUNE Sonar when you want fresh prices`;
         return true;
       } catch(_) {return false;}
     }

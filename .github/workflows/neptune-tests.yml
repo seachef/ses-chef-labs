@@ -1,0 +1,18 @@
+name: NEPTUNE interface tests
+on:
+  push:
+    paths: ['preview/research-desk/**', '.github/workflows/neptune-tests.yml']
+  pull_request:
+    paths: ['preview/research-desk/**', '.github/workflows/neptune-tests.yml']
+permissions:
+  contents: read
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test preview/research-desk/status.test.mjs
+      - run: node --check preview/research-desk/neptune.mjs

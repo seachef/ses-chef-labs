@@ -3,14 +3,14 @@ const root=fs.readFileSync('index.html','utf8');
 const html=fs.readFileSync('preview/portfolio/index.html','utf8');
 const source=fs.readFileSync('preview/portfolio/portfolio.mjs','utf8');
 
-test('legacy root replaces browser history with the portfolio at both supported base paths',()=>{
+test('root replaces browser history with NEPTUNE at both supported base paths',()=>{
   const script=root.match(/<script>([\s\S]*?)<\/script>/)[1];
   for(const base of ['https://seachef.github.io/ses-chef-labs/','https://seachef.github.io/ses-chef-labs/index.html','http://localhost:8000/']){
     let destination;vm.runInNewContext(script,{window:{location:{replace(path){destination=new URL(path,base);}}}});
-    assert.equal(destination.pathname,base.includes('/ses-chef-labs/')?'/ses-chef-labs/preview/portfolio/':'/preview/portfolio/');
+    assert.equal(destination.pathname,base.includes('/ses-chef-labs/')?'/ses-chef-labs/preview/research-desk/':'/preview/research-desk/');
   }
-  assert.match(root,/<noscript><meta http-equiv="refresh" content="0; url=\.\/preview\/portfolio\/">/);
-  assert.match(root,/<a href="\.\/preview\/portfolio\/">Open portfolio<\/a>/);
+  assert.match(root,/<noscript><meta http-equiv="refresh" content="0; url=\.\/preview\/research-desk\/">/);
+  assert.match(root,/<a href="\.\/preview\/research-desk\/">Open NEPTUNE<\/a>/);
 });
 test('retired paper example cannot reload and no stored data is deleted or transmitted',()=>{
   for(const forbidden of ['const stake=1000','0.10283','paperPortfolio','HBAR','localStorage','sessionStorage','indexedDB','fetch(','XMLHttpRequest','sendBeacon','bacon-shortlist.js'])assert.equal(root.includes(forbidden),false,forbidden);
@@ -38,4 +38,5 @@ test('background research data and collector remain available independently of t
   for(const path of ['data/bacon-intelligence.json','data/bacon-history.json','data/bacon-shortlist.json','data/bacon-research-log.json'])assert.ok(JSON.parse(fs.readFileSync(path,'utf8')),path);
   assert.ok(fs.existsSync('scripts/bacon-feed.py'));
 });
+
 

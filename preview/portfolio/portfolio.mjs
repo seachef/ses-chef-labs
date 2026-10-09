@@ -263,7 +263,7 @@ function route(){
   }
   for(const v of ['portfolio','tools','plan'])$(v+'View').hidden=v!==visibleView;
   document.querySelectorAll('[data-route]').forEach(link=>{if(link.dataset.route===(staking?'staking':visibleView))link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-  document.title=`Sea Chef Labs · ${staking?'Staking & rewards':{portfolio:'Portfolio',tools:'Wallets & trading',plan:'Spot trade plan'}[visibleView]}`;
+  document.title=`NEPTUNE · ${staking?'Staking & rewards':{portfolio:'Portfolio',tools:'Wallets & trading',plan:'Spot trade plan'}[visibleView]}`;
   if(visibleView==='plan')void loadTradePlanner();
   if(visibleView==='portfolio'&&model)loadHeadlineComparison();
 }
@@ -289,4 +289,5 @@ async function restoreSignIn(){
 $('signIn').addEventListener('click',async()=>{$('signIn').disabled=true;$('connectionResult').textContent='Opening GitHub sign-in…';try{await beginGitHubSignIn();}catch(error){$('connectionResult').textContent=error.message;$('signIn').disabled=false;}});
 // Load the SMSF summary and read-only saved observations.
 route();openDetailRoute();void renderPortfolioSummary();void restoreSignIn();
+
 
