@@ -5,3 +5,8 @@
 /* Preserve the current agent orbit while honoring both motion controls. */
 body.still .agent-node,body.still .agent-core:after{animation:none!important}
 @media(prefers-reduced-motion:reduce){.agent-node,.agent-core:after{animation:none!important}}
+
+/* Keep interface text legible over the approved brighter cosmic scene. */
+.horizon{padding:10px 12px;background:rgba(3,12,28,.62);border-radius:4px}.identity{padding:4px 7px;background:rgba(3,12,28,.45);border-radius:4px}
+/* Transparent deck padding must not intercept the underlying market buttons. */
+.lower-deck{pointer-events:none}.lower-deck>.deck-bar,.lower-deck>.mobile-tabs,.lower-deck>.windows,.lower-deck>footer{pointer-events:auto}

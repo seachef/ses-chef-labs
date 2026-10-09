@@ -1,9 +1,10 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r7'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r7'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r7';
+import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r8'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r8'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-v2-20261009-r8';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
 const publicKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoc3JibXZtanRpaGx4bmJydmJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NDc4MjAsImV4cCI6MjEwNjQyMzgyMH0.fAhJqVZ6bf7sdPAGhX_Jq7o5rzROKIvXtUnTWtnHHIg';
 const panels=setupPaperPanels({document,endpointRoot:'https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1',publicKey});
+const cueBridge=createPaperCueBridge();
 let selected='ETH/USD',report=null,connected=false,busy=false,polls=0,seenDecisions=null;
 const safe=v=>typeof v==='string'?v.slice(0,1000):'';
 const stamp=v=>Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('en-AU',{timeZone:'Australia/Perth',hour12:false}):'—';
@@ -18,7 +19,7 @@ async function readReports(){
 async function refreshFeed(){
  if(busy)return;
  busy=true;$('refresh').disabled=true;
- try{report=await readReports();connected=true;igniteDecisions();}catch{connected=false;}
+ try{report=await readReports();cueBridge.observe(report);connected=true;igniteDecisions();}catch{connected=false;cueBridge.disconnect();}
  finally{polls++;busy=false;$('refresh').disabled=false;render();}
 }
 function igniteDecisions(){
@@ -35,7 +36,9 @@ function list(id,items,format,empty){
  if(!nodes.length){const li=document.createElement('li');li.textContent=empty;nodes.push(li);}
  $(id).replaceChildren(...nodes);
 }
+function sceneCue(){const cue=cueBridge.current(),label=cue?(cue.kind==='review'?'PAPER REVIEW · UNVALIDATED':'SIMULATED '+cue.kind.toUpperCase())+' · '+cue.asset:'Ambient scene · not a trade signal';if($('sceneCue').textContent!==label)$('sceneCue').textContent=label;return cue;}
 function render(){
+ sceneCue();atmosphere.refresh();
  panels.observe(connected?report:null);
  const view=polls===0?{status:'loading',label:'Connecting to paper feed',reason:'Awaiting the first verified report.'}:paperViewV2(report,connected),a=report?.account,ccy=report?.currency;
  const amount=v=>money(v,ccy),positions=report?.positions||[],position=positions.find(p=>p.asset===selected);
@@ -73,12 +76,12 @@ $('closeAbout').addEventListener('click',()=>$('aboutDialog').close());
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let motion=!reduced.matches,inView=true;
 const canvas=$('atmosphere'),ctx=canvas.getContext('2d');
-const atmosphere=makeAtmosphere({canvas,ctx,request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
+const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
  getMasks:box=>[...document.querySelectorAll('header,.horizon,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
 function syncMotion(){document.body.classList.toggle('still',!motion||document.hidden||!inView);$('motion').textContent=motion?'Motion on':'Motion off';$('motion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion,visible:!document.hidden,inView});}
 $('motion').addEventListener('click',()=>{motion=!motion;syncMotion();});
 reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
-window.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
+window.addEventListener('resize',()=>atmosphere.resize());window.visualViewport?.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
 let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
 window.addEventListener('pagehide',()=>{audioVisible=false;atmosphere.setState({visible:false});void syncSound();});

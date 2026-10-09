@@ -28,3 +28,14 @@ test('About has an accessible name and event scrolling is keyboard reachable',()
  assert.match(html,/<h2 id="aboutTitle">NEPTUNE<\/h2>/);
  assert.match(html,/<div class="pane-scroll" tabindex="0" role="region" aria-label="Paper event stream"><p id="scanState">/);
 });
+
+test('all generated scene assets retain complete reviewed PNG bytes and inflate correctly',async()=>{
+ const {inflateSync}=await import('node:zlib');
+ const assets={'cosmos-ocean-background.png':'501be0eb268efd9924d8ac13f57ccb8480b92605933ba69bc62ae047eb183cae','cosmos-ocean-phone.png':'5b37db5e7524c77f0363178db3b4f34cc28517919a3accbdd9a13d62640db01a','neptune-body-clean.png':'9aae33e7a960f272c4769d2466d4c6fc95e7a22d35796f8cf859296a88fa1691','neptune-head-clean.png':'84166f43f42410676f26d4e65c0a36ffd6629de65243327fc923635763d8e554'};
+ for(const [name,hash]of Object.entries(assets)){
+  const bytes=fs.readFileSync(new URL('./assets/'+name,import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),hash);assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  let offset=8,width,height,channels,ended=false;const compressed=[];
+  while(offset<bytes.length){const length=bytes.readUInt32BE(offset),kind=bytes.toString('ascii',offset+4,offset+8),data=bytes.subarray(offset+8,offset+8+length);assert.ok(offset+length+12<=bytes.length);if(kind==='IHDR'){width=data.readUInt32BE(0);height=data.readUInt32BE(4);assert.equal(data[8],8);channels=data[9]===2?3:data[9]===6?4:0;assert.ok(channels);assert.equal(data[12],0);}if(kind==='IDAT')compressed.push(data);offset+=length+12;if(kind==='IEND'){ended=true;break;}}
+  assert.ok(ended);assert.equal(offset,bytes.length);assert.equal(inflateSync(Buffer.concat(compressed),{maxOutputLength:10000000}).length,(width*channels+1)*height);
+ }
+});

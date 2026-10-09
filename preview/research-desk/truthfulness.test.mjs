@@ -11,5 +11,5 @@ test('bookmarked legacy page is fail-closed with all original demonstration code
  assert.doesNotMatch(html,/\.content\.cloneNode|appendChild\([^)]*\.content/);
 });
 test('active observatory labels decorative orbit and does not link to legacy demonstration',()=>{
- const html=read('index.html');assert.match(html,/Weather and orbit nodes are decorative art, not market signals or worker activity/);assert.match(html,/aria-label="Decorative orbit; no worker telemetry"/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);
+ const html=read('index.html');assert.match(html,/Ambient eye beams and Scout, Risk and Trades orbs are decorative art, not worker telemetry/);assert.match(html,/Solid eye cues follow verified simulated fills or unvalidated paper reviews/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);
 });
