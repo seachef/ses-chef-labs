@@ -1,4 +1,4 @@
-import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r1'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r1'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r1';
+import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-v2-20261009-r2'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-v2-20261009-r2'; import {makeAtmosphere} from './depth-motion.mjs?v=neptune-v2-20261009-r2';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
