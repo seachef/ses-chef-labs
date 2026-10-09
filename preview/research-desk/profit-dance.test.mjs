@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
-import {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-specialists-20261009';
-import {choreography} from './character-motion.mjs?v=neptune-specialists-20261009';
-import {createLaserAudio,LASER_LIMITS} from './laser-audio.mjs?v=neptune-specialists-20261009';
+import {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
+import {choreography} from './character-motion.mjs?v=neptune-native-20261009';
+import {createLaserAudio,LASER_LIMITS} from './laser-audio.mjs?v=neptune-native-20261009';
 const now=Date.parse('2026-10-09T12:00:00Z'),iso=t=>new Date(t).toISOString();
 function base(){const p=JSON.parse(fs.readFileSync(new URL('./fixtures/engine-running-v2.json',import.meta.url)));p.heartbeat_at=iso(now);p.decisions=[];p.results=[];p.settlements=[];p.positions=[];p.fills=[fill('buy',100,now-10000)];p.account.fills=1;return p;}
 function fill(side,price,at){const gross=price,fee=gross*.008,net=side==='buy'?-gross-fee:gross-fee,fx=1.5,applied=fx*(side==='buy'?1.0025:.9975);return{id:side,order_id:side,decision_id:side,observation_id:side,at:iso(at),asset:'ETH/USD',side,qty:1,price,quote_currency:'USD',slippage_pct:.25,gross_usd:gross,fee_usd:fee,net_usd:net,settlement_status:'settled',fx,fx_source:'Frankfurter ECB reference',fx_at:iso(at),fx_rate_date:'2026-10-09',fx_retrieved_at:iso(at),fx_applied_rate:applied,fx_cost_base:Math.abs(net)*Math.abs(applied-fx),gross_base:gross*fx,fee_base:fee*fx,cash_delta_base:net*applied};}

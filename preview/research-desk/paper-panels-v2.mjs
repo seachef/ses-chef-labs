@@ -1,6 +1,9 @@
-import {renderSpecialistAccounts} from './specialist-accounts.mjs?v=neptune-specialists-20261009';
-import {createHistory} from './paper-history-v2.mjs?v=neptune-specialists-20261009';
-import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-specialists-20261009';
+import {formatNativeHistory} from './native-history-display.mjs?v=neptune-native-20261009';
+import {NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-20261009';
+import {renderNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
+import {renderSpecialistAccounts} from './specialist-accounts.mjs?v=neptune-native-20261009';
+import {createHistory} from './paper-history-v2.mjs?v=neptune-native-20261009';
+import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-native-20261009';
 export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,getClient}={}){
  const $=id=>document.getElementById(id);let report=null,historyStarted=false,exporting=false,authSubscription;
  const short=v=>v===null||v===undefined?'—':String(v);
@@ -17,11 +20,11 @@ export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,
  }),onChange:renderOwner});
  function renderOwner(state){$('ownerStatus').textContent=state.message;$('ownerActions').hidden=state.access!=='owner';$('ownerCheck').disabled=state.busy;$('ownerStop').disabled=state.busy||state.access!=='owner';$('ownerResume').disabled=state.busy||state.access!=='owner'||report?.status==='capacity_paused';}
  function renderHistory(state){
-  const visible=state.rows.filter(r=>['fills','results','settlements'].includes(r.kind)).slice(-100);
-  const nodes=visible.map(r=>{const li=document.createElement('li'),p=r.payload;li.textContent=r.kind==='fills'?`${r.at} · SIMULATED ${short(p.side).toUpperCase()} ${short(p.asset)} · ${short(p.qty)} @ USD ${short(p.price)} · ${short(p.settlement_status)} · AUD cash ${short(p.cash_delta_base)} · fee AUD ${short(p.fee_base)} · FX cost AUD ${short(p.fx_cost_base)} · fill ${r.id}`:r.kind==='results'?`${r.at} · ${short(p.asset)} · ${short(p.status)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`:`${r.at} · FX settlement · USD ${short(p.usd_amount)} → AUD ${short(p.cash_delta_base)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`;return li;});
+  const visible=state.rows.filter(r=>['fills','results','settlements'].includes(r.kind)||NATIVE_KINDS.includes(r.kind)).slice(-100);
+  const nodes=visible.map(r=>{const li=document.createElement('li'),p=r.payload;li.textContent=NATIVE_KINDS.includes(r.kind)?formatNativeHistory(r):r.kind==='fills'?`${r.at} · SIMULATED ${short(p.side).toUpperCase()} ${short(p.asset)} · ${short(p.qty)} @ USD ${short(p.price)} · ${short(p.settlement_status)} · AUD cash ${short(p.cash_delta_base)} · fee AUD ${short(p.fee_base)} · FX cost AUD ${short(p.fx_cost_base)} · fill ${r.id}`:r.kind==='results'?`${r.at} · ${short(p.asset)} · ${short(p.status)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`:`${r.at} · FX settlement · USD ${short(p.usd_amount)} → AUD ${short(p.cash_delta_base)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`;return li;});
   if(!nodes.length){const li=document.createElement('li');li.textContent=state.complete?'No execution/result/settlement records in this snapshot.':'No execution records loaded yet. More may follow.';nodes.push(li);}
   $('completeHistory').replaceChildren(...nodes);
-  $('historyStatus').textContent=state.error||(state.watermark===null?'Complete history has not been loaded.':`${state.rows.length} audit records loaded · ${state.complete?'complete fixed snapshot':'more records available'} · ${visible.length} latest execution/result/settlement records shown. CSV includes every audit kind.`);
+  $('historyStatus').textContent=state.error||(state.watermark===null?'Complete history has not been loaded.':`${state.rows.length} audit records loaded · ${state.complete?'complete fixed snapshot':'more records available'} · ${visible.length} latest execution/result/settlement/native audit records shown. CSV includes every audit kind.`);
   $('historyMore').disabled=state.busy||exporting||state.complete;$('historyExport').disabled=state.busy||exporting;$('historyReset').disabled=state.busy||exporting;
  }
  function beginHistory(){if(!historyStarted){if(!Number.isSafeInteger(report?.history_seq)||report.history_seq<0)throw Error('History snapshot unavailable');history.reset(report.history_seq);historyStarted=true;}}
@@ -35,5 +38,5 @@ export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,
  });
  $('ownerCheck').addEventListener('click',()=>owner.refresh());$('ownerStop').addEventListener('click',()=>owner.requestEnabled(false));$('ownerResume').addEventListener('click',()=>owner.requestEnabled(true));
  renderHistory(history.getState());renderOwner(owner.getState());
- return {observe(next){report=next;owner.observe(next);renderSpecialistAccounts(document,next);},history,owner};
+ return {observe(next){report=next;owner.observe(next);renderSpecialistAccounts(document,next);renderNativePaper(document,next);},history,owner};
 }

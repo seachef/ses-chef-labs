@@ -1,4 +1,4 @@
-import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-valuation-20261009';
+import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009';
 // Read-only daily return: server-persisted Perth observation, never browser session P&L.
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const timestamp=s=>typeof s==='string'&&Number.isFinite(Date.parse(s));

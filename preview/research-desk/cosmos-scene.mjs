@@ -1,7 +1,7 @@
-import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-specialists-20261009';
-export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-specialists-20261009';
-import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-specialists-20261009';
-import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-specialists-20261009';
+import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-native-20261009';
+export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
+import {choreography,drawCharacter,drawEyeBeams} from './character-motion.mjs?v=neptune-native-20261009';
+import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-native-20261009';
 export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:6,companions:0,maxDpr:1.25,maxPixels:1800000});
 export const ASSETS=['cosmos-ocean-background.webp','neptune-run-atlas.png','neptune-braced-aim.png','cosmos-ocean-phone.webp','neptune-tucked-roll.png','neptune-transition-atlas.png'];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));

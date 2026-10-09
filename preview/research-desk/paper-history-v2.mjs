@@ -1,12 +1,15 @@
-import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-specialists-20261009';
-import {csvRows} from './csv-safe.mjs?v=neptune-specialists-20261009';
+import {NATIVE_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-20261009';
+import {validateNativeHistoryRow} from './native-history-validation.mjs?v=neptune-native-20261009';
+import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-native-20261009';
+import {csvRows} from './csv-safe.mjs?v=neptune-native-20261009';
 export const HISTORY_PAGE_SIZE=100;
-export const HISTORY_FIELDS=Object.freeze(['id','at','asset','action','side','price','qty','quote_currency','reason','source','observation_id','risk_base','stop','target','invalidation','confidence','result','config_version','config_hash','source_hash','origin_order_id','origin_decision_id','decision_id','order_id','initial_risk_base','fx','fx_source','fx_at','gross_base','fee_base','cash_delta_base','slippage_pct','gross_usd','fee_usd','net_usd','settlement_status','fx_rate_date','fx_retrieved_at','fx_applied_rate','fx_cost_base','closed_at','settled_at','entry_fill_id','exit_fill_id','pnl_base','net_r','status','usd_amount','fill_id','delta','balance']);
+export const HISTORY_FIELDS=Object.freeze(['id','at','asset','action','side','price','qty','quote_currency','reason','source','observation_id','risk_base','stop','target','invalidation','confidence','result','config_version','config_hash','source_hash','origin_order_id','origin_decision_id','decision_id','order_id','initial_risk_base','fx','fx_source','fx_at','gross_base','fee_base','cash_delta_base','slippage_pct','gross_usd','fee_usd','net_usd','settlement_status','fx_rate_date','fx_retrieved_at','fx_applied_rate','fx_cost_base','closed_at','settled_at','entry_fill_id','exit_fill_id','pnl_base','net_r','status','usd_amount','fill_id','delta','balance','venue','market_type','specialist_id']);
 const hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 const seq=v=>Number.isSafeInteger(v)&&v>=0;
 const kinds=['decisions','orders','fills','results','settlements','order_events','cash_ledger','usd_ledger'];
 const stamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 export function validateHistoryRow(row){
+ if(NATIVE_KINDS.includes(row?.kind))return validateNativeHistoryRow(row);
  if(!row||!seq(row.seq)||row.seq===0||!kinds.includes(row.kind)||typeof row.id!=='string'||!row.id||row.id.length>1000||!stamp(row.at)||!hash(row.source_hash)||!hash(row.config_hash)||!row.payload||typeof row.payload!=='object'||Array.isArray(row.payload))throw Error('Invalid history row');
  const p=row.payload;
  for(const [key,value] of Object.entries(p))if(!HISTORY_FIELDS.includes(key)||(value!==null&&!['string','number','boolean'].includes(typeof value))||typeof value==='number'&&!Number.isFinite(value)||typeof value==='string'&&value.length>1000)throw Error('Non-public history field');
@@ -18,7 +21,7 @@ export function validateHistoryRow(row){
 export function createHistory({fetchPage,onChange=()=>{}}){
  let state={watermark:null,cursor:0,rows:[],busy:false,complete:false,error:null},epoch=0;
  const bySeq=new Map(),byId=new Map();
- const snapshot=()=>({...state,rows:state.rows.slice()});
+ const snapshot=()=>structuredClone(state);
  const emit=patch=>{state={...state,...patch};onChange(snapshot());};
  function reset(watermark){if(!seq(watermark))throw Error('History snapshot unavailable');epoch++;bySeq.clear();byId.clear();emit({watermark,cursor:0,rows:[],busy:false,complete:watermark===0,error:null});}
  async function more(){
@@ -47,6 +50,14 @@ export function createHistory({fetchPage,onChange=()=>{}}){
   return snapshot();
  }
  async function exportAll(){if(state.busy)throw Error('History request in progress');const exportEpoch=epoch;while(!state.complete){const before=state.cursor;await more();if(epoch!==exportEpoch||state.error||state.cursor===before)throw Error('Complete history export unavailable');}return historyCsv(state.rows);}
- return {reset,more,exportAll,getState:snapshot};
+ function checkpoint(){return {version:3,watermark:state.watermark,rows:state.rows.map(r=>structuredClone(r))};}
+ function restore(saved){
+  if(!saved||saved.version!==3||!seq(saved.watermark)||!Array.isArray(saved.rows))throw Error('Invalid history checkpoint');
+  const rows=saved.rows.map(validateHistoryRow);let prior=0;const ids=new Set();
+  for(const r of rows){const id=r.kind+':'+r.id;if(r.seq<=prior||r.seq>saved.watermark||ids.has(id))throw Error('Invalid history checkpoint order');prior=r.seq;ids.add(id);}
+  // Local cache is never completeness evidence. Replay from zero against the frozen watermark.
+  reset(saved.watermark);return snapshot();
+ }
+ return {reset,more,exportAll,checkpoint,restore,getState:snapshot};
 }
-export function historyCsv(rows){const columns=['mode','account_currency','seq','kind','history_id','history_at','history_source_hash','history_config_hash',...HISTORY_FIELDS];return csvRows(columns,rows.map(validateHistoryRow).map(r=>['PAPER_SIMULATED',ACCOUNT_CURRENCY,r.seq,r.kind,r.id,r.at,r.source_hash,r.config_hash,...HISTORY_FIELDS.map(k=>r.payload[k])]));}
+export function historyCsv(rows){const fields=[...new Set([...HISTORY_FIELDS,...NATIVE_FIELDS])];const columns=['mode','account_currency','seq','kind','history_id','history_at','history_source_hash','history_config_hash',...fields];return csvRows(columns,rows.map(validateHistoryRow).map(r=>['PAPER_SIMULATED',ACCOUNT_CURRENCY,r.seq,r.kind,r.id,r.at,r.source_hash,r.config_hash,...fields.map(k=>r.payload[k])]));}

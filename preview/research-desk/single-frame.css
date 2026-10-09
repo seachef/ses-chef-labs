@@ -85,3 +85,6 @@ footer{font-size:10px;padding-top:3px}footer a,footer button{font-size:12px;min-
 @media(max-height:500px) and (min-width:540px){.portfolio-strip{display:flex;min-height:42px;margin-bottom:5px;padding:5px 9px;gap:12px}.portfolio-title{display:flex;flex-direction:column;align-items:flex-start;margin:0;min-width:160px}.portfolio-title>span:last-child{max-width:none;text-align:left}.portfolio-metrics{gap:10px}.portfolio-metrics strong{font-size:11px}.windows{grid-template-rows:repeat(2,78px)}#atmosphere{height:calc(100% - 227px)}}
 
 #portfolioPct{display:block;font-size:9px;color:#b8ded8;margin-top:2px}#portfolioSince{font-size:8px;color:#a1b8c0}.portfolio-strip{min-height:64px}@media(max-width:760px){.portfolio-strip{min-height:64px}.windows{grid-template-rows:repeat(3,82px)}#portfolioSince{display:block;font-size:7px}#portfolioPct{font-size:8px}#atmosphere{height:calc(100% - 351px)}}@media(max-height:500px) and (min-width:540px){.portfolio-strip{min-height:48px}.windows{grid-template-rows:repeat(2,78px)}#portfolioSince{display:inline}#atmosphere{height:calc(100% - 233px)}}
+
+/* Calm opaque lower-deck backdrop hides the old foamy fallback only beneath controls. */
+.lower-deck{background:linear-gradient(180deg,#071c2c 0%,#061727 45%,#03111f 100%)}

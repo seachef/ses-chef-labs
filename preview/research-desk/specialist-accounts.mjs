@@ -1,3 +1,5 @@
+import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009';
+import {readNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
 // Optional read-only server projection. Never allocates cash, infers fills or activates agents.
 export const SPECIALISTS=Object.freeze(['solana','base','ethereum','hyperliquid','binance']);
 const names={solana:'Solana',base:'Base',ethereum:'Ethereum',hyperliquid:'Hyperliquid',binance:'Binance'};
@@ -14,7 +16,7 @@ export function readSpecialistAccounts(report,now=Date.now()){
  if(p.version!==1||p.mode!=='PAPER'||p.currency!=='AUD'||p.initial_cash!==10000||report.currency!=='AUD'||report.account?.initial_cash!==10000||!Number.isSafeInteger(p.source_revision)||p.source_revision<0||!timestamp(p.observed_at)||!['pending','allocated'].includes(p.allocation_status)||!Array.isArray(p.accounts)||p.accounts.length!==5||new Set(p.accounts.map(a=>a?.id)).size!==5)return invalid();
  if(!(p.allocation_status==='pending'&&p.total_cash===null)&&!same(p.total_cash,report.account.cash))return invalid();
  for(const a of p.accounts){
-  if(a&&('source_venue' in a&&a.source_venue!==null&&(typeof a.source_venue!=='string'||!a.source_venue.trim()||a.source_venue.length>120)||'readiness_reason' in a&&(typeof a.readiness_reason!=='string'||a.readiness_reason.length>500)||'execution_kind' in a&&!['spot_paper','research_only'].includes(a.execution_kind)||'costs_basis' in a&&(typeof a.costs_basis!=='string'||a.costs_basis.length>160)))return invalid();
+  if(a&&('source_venue' in a&&a.source_venue!==null&&(typeof a.source_venue!=='string'||!a.source_venue.trim()||a.source_venue.length>120)||'readiness_reason' in a&&(typeof a.readiness_reason!=='string'||a.readiness_reason.length>500)||'execution_kind' in a&&!['spot_paper','native_spot_paper','research_only'].includes(a.execution_kind)||'costs_basis' in a&&(typeof a.costs_basis!=='string'||a.costs_basis.length>160)))return invalid();
   if(!a||!SPECIALISTS.includes(a.id)||a.nominal_initial_cash!==2000||!(a.costs_base===null||nonnegative(a.costs_base))||!Object.hasOwn(statusNames,a.status)||!(a.evidence_at===null||timestamp(a.evidence_at)))return invalid();
   if(p.allocation_status==='pending'){
    if(['cash','reserved_cash','available_cash','exposure_base','realized_pnl','costs_base'].some(k=>a[k]!==null)||a.status==='paper_active')return invalid();
@@ -34,10 +36,11 @@ export function renderSpecialistAccounts(document,report,now=Date.now()){
  const rows=SPECIALISTS.map(id=>{
   const row=document.createElement('li'),a=view.accounts.find(a=>a.id===id);
   let label=view.state==='missing'?'Planned':view.state==='pending'?'Allocation pending':view.state==='stale'?'Stale report':view.state==='invalid'?'Unavailable':statusNames[a.status];
-  if(a?.status==='paper_active'&&(!fresh(a.evidence_at,now)||!fresh(report.quote_at,now)||report.status!=='running'||!a.source_venue||a.execution_kind!=='spot_paper'))label='Paper scan unconfirmed';
+  const observedSource=a?.execution_kind==='native_spot_paper'?readNativePaper(report,now).state==='valid':fresh(report?.quote_at,now)&&report?.status==='running';
+  if(a?.status==='paper_active'&&(!fresh(a.evidence_at,now)||!observedSource||!a.source_venue||!['spot_paper','native_spot_paper'].includes(a.execution_kind)))label='Paper scan unconfirmed';
   // Exposure and returns require a fresh valuation; settled cash does not.
-  const valued=view.state==='allocated'&&fresh(report.quote_at,now)&&fresh(report.account?.valuation_at,now);
-  row.textContent=`${names[id]} · ${label}\nSource venue: ${a?.source_venue??'unverified'} · ${a?.execution_kind==='spot_paper'?'spot paper only; no on-chain execution':'research only; no verified execution adapter'}\nReadiness: ${a?.readiness_reason||'not reported'}\nPlanned initial share AUD 2,000.00 · settled cash ${amount(a?.cash)} · available ${amount(a?.available_cash)} · reserved ${amount(a?.reserved_cash)}\nExposure ${amount(valued?a?.exposure_base:null)} · realized P&L ${amount(a?.realized_pnl)} · recorded fees/FX ${amount(a?.costs_base)}\nCost basis: ${a?.costs_basis??'not reported'}\nEvidence ${a?.evidence_at??'not received'}`;
+  const valued=view.state==='allocated'&&readPortfolioSnapshot(report,true,now).valuationCurrent;
+  row.textContent=`${names[id]} · ${label}\nSource venue: ${a?.source_venue??'unverified'} · ${a?.execution_kind==='native_spot_paper'?'native venue paper simulation; no real orders or signing':a?.execution_kind==='spot_paper'?'spot paper only; no on-chain execution':'research only; no verified execution adapter'}\nReadiness: ${a?.readiness_reason||'not reported'}\nPlanned initial share AUD 2,000.00 · settled cash ${amount(a?.cash)} · available ${amount(a?.available_cash)} · reserved ${amount(a?.reserved_cash)}\nExposure ${amount(valued?a?.exposure_base:null)} · realized P&L ${amount(a?.realized_pnl)} · recorded fees/FX ${amount(a?.costs_base)}\nCost basis: ${a?.costs_basis??'not reported'}\nEvidence ${a?.evidence_at??'not received'}`;
   return row;
  });
  list.replaceChildren(...rows);return view;

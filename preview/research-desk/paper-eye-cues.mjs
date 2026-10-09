@@ -1,5 +1,5 @@
-import {settledProfits} from './profit-events.mjs?v=neptune-specialists-20261009';
-import {validateV2,fresh} from './status-v2.mjs?v=neptune-specialists-20261009';
+import {settledProfits} from './profit-events.mjs?v=neptune-native-20261009';
+import {validateV2,fresh} from './status-v2.mjs?v=neptune-native-20261009';
 const trusted=new WeakSet();
 export const CUE_LIMITS=Object.freeze({capacity:8,durationMs:900,profitDurationMs:2400,backlogMs:6000,eventAgeMs:90000});
 export function isVerifiedCue(cue,now=Date.now()){return !!cue&&trusted.has(cue)&&Number.isFinite(now)&&now>=cue.createdAt&&now<cue.until;}
