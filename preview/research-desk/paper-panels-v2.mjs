@@ -1,5 +1,5 @@
-import {createHistory} from './paper-history-v2.mjs';
-import {createOwnerControl} from './paper-owner-v2.mjs';
+import {createHistory} from './paper-history-v2.mjs?v=neptune-v2-20261009-r1';
+import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-v2-20261009-r1';
 export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,getClient}={}){
  const $=id=>document.getElementById(id);let report=null,historyStarted=false,exporting=false,authSubscription;
  const short=v=>v===null||v===undefined?'—':String(v);
