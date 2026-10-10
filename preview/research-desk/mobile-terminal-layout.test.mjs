@@ -46,7 +46,7 @@ test('portrait compact rules preserve desktop and short landscape scopes without
  assert.ok(css.indexOf(marker)<css.indexOf('@media(max-height:500px)'));
  assert.doesNotMatch(phone,/body\s*\{|overflow\s*:\s*hidden|position\s*:\s*fixed|transform\s*:/);
  assert.doesNotMatch(phone,/font-size\s*:/);
- assert.match(html,/team-work\.css\?v=neural-currents-20261010/);
+ assert.match(html,/team-work\.css\?v=progress-roll-20261010/);
 });
 
 test('intrinsic scene/terminal partition leaves all feet and rock above the deck across phone sizes',()=>{
