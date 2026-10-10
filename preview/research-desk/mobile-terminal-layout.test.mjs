@@ -37,7 +37,7 @@ test('compact source keeps an accessible full-history control, portfolio, and tr
  assert.match(html,/id="teamFullSource"/);
  assert.match(html,/id="openPortfolio"/);
  assert.match(html,/id="teamCodingState">NOT CONNECTED/);
- assert.match(html,/Static browser function · not a coding worker/);
+ assert.match(html,/Source is an optional static reference/);
  assert.doesNotMatch(phone,/#teamCodingState\{[^}]*display:none/);
 });
 

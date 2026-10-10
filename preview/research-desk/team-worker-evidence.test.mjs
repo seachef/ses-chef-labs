@@ -35,13 +35,13 @@ test('six unassigned slots stay separate from market controls',()=>{const b=ui({
 test('actual server slot six stays AGENT 006 with other slots empty',()=>{const b=ui({workers:true});send(b,[open(),ev(2,{slot:6})]);assert.equal(b.nodes.get('codingWorkerSlots').children[5].disabled,false);assert.equal(b.nodes.get('codingWorkerSlots').children[0].disabled,true);assert.match(b.nodes.get('teamActivityPreview').textContent,/AGENT 006/);});
 test('one event gives one pulse; source stays static and timer ticks invent no work',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);assert.equal(b.nodes.get('teamCodingState').textContent,'1 OBSERVED ACTIVE');assert.equal(b.timers.length,1);const old=b.nodes.get('teamActivityPreview').textContent;b.nodes.get('toggleTeamPane').events.click();assert.equal(b.nodes.get('codingWorkerSource').textContent,PUBLIC_WORK_SOURCES[0].code);for(let i=0;i<10;i++)b.app.render();send(b,e);assert.equal(b.timers.length,1);assert.equal(b.nodes.get('teamActivityPreview').textContent,old);b.setNow(T+63000);b.app.render();assert.equal(b.nodes.get('teamCodingState').textContent,'OFFLINE');});
 test('current worker status renewals never create activity lines',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);const old=b.nodes.get('teamActivityPreview').textContent;e.push(ev(3,{kind:'publisher_heartbeat'}),ev(4,{run_seq:1,step:'status_observed'}));b.setNow(T+4000);send(b,e);assert.equal(b.nodes.get('teamActivityPreview').textContent,old);assert.equal(b.timers.length,1);});
-test('activity follows internally at bottom and pauses while reading older records',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);const a=b.nodes.get('teamActivityPreview');a.scrollHeight=200;a.clientHeight=30;a.scrollTop=170;e.push(ev(3,{run_seq:1,step:'source_inspected'}));b.setNow(T+3000);send(b,e);assert.equal(a.scrollTop,200);const old=a.textContent;a.scrollTop=0;e.push(ev(4,{run_seq:2,step:'tests_started'}));b.setNow(T+4000);send(b,e);assert.equal(a.textContent,old);assert.equal(a.scrollTop,0);assert.match(b.nodes.get('teamCodeNote').textContent,/Reading older activity/);a.scrollTop=170;a.events.scroll();assert.match(a.textContent,/Tests started/);assert.equal(a.scrollTop,200);});
-test('source mode and hidden-page receipt never move activity reader',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);const a=b.nodes.get('teamActivityPreview'),old=a.textContent;a.scrollHeight=200;a.clientHeight=30;a.scrollTop=0;b.nodes.get('toggleTeamPane').events.click();e.push(ev(3,{run_seq:1,step:'source_inspected'}));b.setNow(T+3000);send(b,e);assert.equal(a.textContent,old);b.nodes.get('toggleTeamPane').events.click();assert.equal(a.textContent,old);b.document.hidden=true;b.events.visibilitychange();const count=b.timers.length;e.push(ev(4,{run_seq:2,step:'tests_started'}));b.setNow(T+4000);send(b,e);assert.equal(a.textContent,old);assert.equal(a.scrollTop,0);assert.equal(b.timers.length,count);});
+test('new real worker events always auto-follow while duplicate polls do not move the reader',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);const a=b.nodes.get('teamActivityPreview');a.scrollHeight=200;a.clientHeight=30;a.scrollTop=0;e.push(ev(3,{run_seq:1,step:'source_inspected'}));b.setNow(T+3000);send(b,e);assert.equal(a.scrollTop,200);a.scrollTop=0;send(b,e);b.app.render();assert.equal(a.scrollTop,0);e.push(ev(4,{run_seq:2,step:'tests_started'}));b.setNow(T+4000);send(b,e);assert.match(a.textContent,/Tests started/);assert.equal(a.scrollTop,200);assert.match(b.nodes.get('teamCodeNote').textContent,/Auto-follow new worker events/);});
+test('source mode and hidden-page receipt never move activity reader until activity resumes',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);const a=b.nodes.get('teamActivityPreview'),old=a.textContent;a.scrollHeight=200;a.clientHeight=30;a.scrollTop=0;b.nodes.get('toggleTeamPane').events.click();e.push(ev(3,{run_seq:1,step:'source_inspected'}));b.setNow(T+3000);send(b,e);assert.equal(a.textContent,old);assert.equal(a.scrollTop,0);b.nodes.get('toggleTeamPane').events.click();assert.match(a.textContent,/Source inspected/);assert.equal(a.scrollTop,200);const current=a.textContent;a.scrollTop=0;b.document.hidden=true;b.events.visibilitychange();const count=b.timers.length;e.push(ev(4,{run_seq:2,step:'tests_started'}));b.setNow(T+4000);send(b,e);assert.equal(a.textContent,current);assert.equal(a.scrollTop,0);assert.equal(b.timers.length,count);});
 test('visible tab resume waits for fresh worker and publisher observations',()=>{const b=ui({workers:true}),e=[open(),ev(2)];send(b,e);b.document.hidden=true;b.setNow(T+3000);b.events.visibilitychange();b.document.hidden=false;b.setNow(T+4000);b.events.visibilitychange();send(b,e);assert.doesNotMatch(b.nodes.get('teamCodingState').textContent,/OBSERVED ACTIVE/);e.push(ev(5,{kind:'publisher_heartbeat'}),ev(6,{run_seq:1,step:'status_observed'}));b.setNow(T+6000);send(b,e);assert.equal(b.nodes.get('teamCodingState').textContent,'1 OBSERVED ACTIVE');});
 test('one-hour activity and six-hour worker retention expire at render time',()=>{const b=ui({workers:true});send(b,[open(),ev(2)]);b.setNow(T+3602001);b.app.render();assert.doesNotMatch(b.nodes.get('teamActivityPreview').textContent,/Task started/);b.setNow(T+21602001);b.app.render();assert.ok(b.nodes.get('codingWorkerSlots').children.every(n=>n.disabled));assert.equal(b.app.store.snapshot().fence_count,1);});
 test('mismatched, staged or injected code never renders unsafe HTML or substitute source',()=>{for(const o of [{file_sha256:'f'.repeat(64)},{scope:'candidate',commit:null}]){const b=ui({workers:true}),e=ev(2);Object.assign(e.source,o);e.source.code='<script>SECRET</script>';send(b,[open(),e]);assert.doesNotMatch(b.nodes.get('codingWorkerSource').textContent,/SECRET|async function/);}});
 test('activity pane keeps exact compact geometry, bounded history and internal instant scrolling',()=>{const css=fs.readFileSync(new URL('./team-work.css',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./team-worker-view.mjs',import.meta.url),'utf8');assert.match(css,/#teamActivityPreview\{grid-column:1 \/ -1;grid-row:2;height:27px\}/);assert.match(css,/overscroll-behavior:contain;scroll-behavior:auto/);assert.match(src,/while\(activityRecords.size>40\)/);assert.doesNotMatch(src,/scrollIntoView|window\.scroll|document\.(?:body|documentElement)\.scroll/);});
-test('cache identities and limited-history explanation identify v2 truthfully',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8');assert.match(html,/neptune\.mjs\?v=neptune-spider-web-20261010/);assert.match(html,/team-work\.mjs\?v=team-work-spider-web-20261010/);assert.match(html,/limited cache is not a complete activity log, signed worker attestation or a persistent AI workforce/);assert.match(src,/emitTeamWorkReport\(report\?\.team_work\?\?null\)/);});
+test('cache identities and limited-history explanation identify v2 truthfully',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8');assert.match(html,/neptune\.mjs\?v=neptune-activity-stream-20261010/);assert.match(html,/team-work\.mjs\?v=team-work-activity-stream-20261010/);assert.match(html,/limited cache is not a complete activity log, signed worker attestation or a persistent AI workforce/);assert.match(src,/emitTeamWorkReport\(report\?\.team_work\?\?null\)/);});
 test('ring worker requires current slot and retained terminal cannot precede running current revision',()=>{let p=packet([open(),ev(2)]);p.workers=[];assert.equal(validateTeamWork(p,{now:T+2000}),null);const terminal=ev(3,{run_seq:1,state:'completed',step:'task_completed'}),current=ev(4,{run_seq:2,step:'status_observed'});p=packet([open(),terminal,current]);assert.equal(validateTeamWork(p,{now:T+4000}),null);});
 test('content timestamp must equal newest producer receipt, not poll time',()=>{const p=packet([open(),ev(2)]);p.content_at=iso(T+3000);assert.equal(validateTeamWork(p,{now:T+3000}),null);});
 test('retained same-run transition revisions cannot repeat or continue after terminal',()=>{const a=ev(2,{run_seq:1,step:'source_inspected'}),b=ev(3,{run_seq:1,step:'tests_started'}),c=ev(4,{run_seq:2,step:'status_observed'});assert.equal(validateTeamWork(packet([open(),a,b,c]),{now:T+4000}),null);});
@@ -55,11 +55,11 @@ test('fresh page starts on market checks without requiring worker or browser evi
  assert.equal(b.nodes.get('showCodingTeam').attrs['aria-pressed'],'false');
  assert.equal(b.nodes.get('marketStreamSlots').hidden,false);
  assert.equal(b.nodes.get('codingWorkerSlots').hidden,true);
- assert.equal(b.nodes.get('toggleTeamPane').hidden,true);
- assert.equal(b.nodes.get('teamActivityPreview').hidden,true);
+ assert.equal(b.nodes.get('toggleTeamPane').hidden,false);
+ assert.equal(b.nodes.get('teamActivityPreview').hidden,false);
  assert.equal(b.nodes.get('teamViewCaption').textContent,'Automated market checks');
- assert.equal(b.nodes.get('teamCodeCaption').textContent,'BROWSER SOURCE REFERENCE · refreshFeed()');
- assert.equal(b.nodes.get('teamCodeNote').textContent,'Static browser function · not a coding worker.');
+ assert.equal(b.nodes.get('teamCodeCaption').textContent,'MARKET ACTIVITY · PAPER DECISIONS');
+ assert.equal(b.nodes.get('teamCodeNote').textContent,'Feed unavailable · last recorded decisions.');
  assert.equal(b.app.store.snapshot().report,null);
  assert.ok(b.nodes.get('codingWorkerSlots').children.every(n=>n.disabled));
 });
@@ -85,7 +85,7 @@ test('explicit Workers choice survives repeated clicks, report refreshes, discon
  assert.equal(b.nodes.get('marketStreamSlots').hidden,false);
  assert.equal(b.nodes.get('codingWorkerSlots').hidden,true);
  assert.equal(b.nodes.get('teamCodePreview').textContent,'async function refreshFeed(){\n return readReports();\n}');
- assert.equal(b.nodes.get('toggleTeamPane').hidden,true);
+ assert.equal(b.nodes.get('toggleTeamPane').hidden,false);
  // A new page always gets the predictable default, not the last page's choice.
  assert.equal(ui().app.currentView(),'market');
 });
@@ -110,9 +110,11 @@ test('initial HTML matches the market default before scripts load or when they f
  assert.match(html,/id="teamViewCaption">Automated market checks/);
  assert.match(html,/id="codingWorkerSlots"[^>]* hidden>/);
  assert.doesNotMatch(html,/id="marketStreamSlots"[^>]* hidden/);
- assert.match(html,/id="toggleTeamPane"[^>]* hidden>/);
- assert.match(html,/id="teamCodeCaption">BROWSER SOURCE REFERENCE · refreshFeed\(\)/);
- assert.match(html,/id="teamCodeNote"[^>]*>Static browser function · not a coding worker\./);
+ assert.doesNotMatch(html,/id="toggleTeamPane"[^>]* hidden>/);
+ assert.match(html,/id="teamCodePreview"[^>]* hidden>/);
+ assert.doesNotMatch(html,/id="teamActivityPreview"[^>]* hidden>/);
+ assert.match(html,/id="teamCodeCaption">MARKET ACTIVITY · PAPER DECISIONS/);
+ assert.match(html,/id="teamCodeNote"[^>]*>Awaiting new verified decisions · auto-follow enabled\./);
  assert.match(html,/id="teamFooter">Ambient flight · tap for real evidence/);
 });
 
@@ -130,8 +132,8 @@ test('reload cache keys reach both the corrected terminal style and nested view 
  const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8');
  const team=fs.readFileSync(new URL('./team-work.mjs',import.meta.url),'utf8');
  assert.match(html,/team-work\.css\?v=neptune-spider-web-20261010/);
- assert.match(html,/team-work\.mjs\?v=team-work-spider-web-20261010/);
- assert.match(team,/from '\.\/team-worker-view\.mjs\?v=team-worker-spider-web-20261010'/);
+ assert.match(html,/team-work\.mjs\?v=team-work-activity-stream-20261010/);
+ assert.match(team,/from '\.\/team-worker-view\.mjs\?v=team-worker-activity-stream-20261010'/);
  const view=fs.readFileSync(new URL('./team-worker-view.mjs',import.meta.url),'utf8');
  assert.doesNotMatch(team+view,/localStorage|sessionStorage/);
 });
@@ -150,3 +152,9 @@ test('switching away from a real worker pulse stops visible work effects and doe
  const b=ui({workers:true});send(b,[open(),ev(2)]);const button=b.nodes.get('codingWorkerSlots').children[0];assert.equal(button.attrs['data-pulse'],'true');
  b.nodes.get('showMarketStreams').events.click();assert.equal(button.attrs['data-pulse'],'false');b.nodes.get('showCodingTeam').events.click();assert.equal(button.attrs['data-pulse'],'false');assert.equal(b.timers.length,1);
 });
+
+const marketRecord=(n,changes={})=>({key:'kraken:number:'+n,at:iso(T+n*1000),asset:'ETH/USD',action:'hold',result:'no_trade',reason:'no_qualified_momentum',source:'Kraken paper decision',...changes});
+const sendMarket=(b,records,changes={})=>b.events['neptune:market-activity']({detail:{records,connected:true,nativeStatus:'ready',latestAt:records.at(-1)?.at??null,...changes}});
+test('market decision stream is default, follows new evidence, preserves true event times and leaves workers unassigned',()=>{const b=ui(),a=b.nodes.get('teamActivityPreview');a.scrollHeight=240;a.scrollTop=0;sendMarket(b,[marketRecord(1),marketRecord(2)]);assert.match(a.textContent,/2026-10-10 00:00:01.000 UTC.*Kraken paper decision.*ETH\/USD HOLD \/ NO TRADE.*no qualified momentum/);assert.equal(a.scrollTop,240);assert.equal(a.hidden,false);assert.equal(b.nodes.get('teamCodePreview').hidden,true);assert.equal(b.nodes.get('teamCodingState').textContent,'NOT CONNECTED');assert.ok(b.nodes.get('codingWorkerSlots').children.every(n=>n.disabled));a.scrollTop=0;sendMarket(b,[marketRecord(1),marketRecord(2)]);for(let i=0;i<5;i++)b.app.render();assert.equal(a.scrollTop,0);b.setNow(T+3000);sendMarket(b,[marketRecord(1),marketRecord(2),marketRecord(3)]);assert.equal(a.scrollTop,240);assert.equal(a.textContent.split('\n').length,3);});
+test('market source is optional, stale/offline states stay honest and market records never pulse workers',()=>{const b=ui(),a=b.nodes.get('teamActivityPreview');sendMarket(b,[marketRecord(1)]);b.nodes.get('toggleTeamPane').events.click();assert.equal(a.hidden,true);assert.equal(b.nodes.get('teamCodePreview').hidden,false);assert.match(b.nodes.get('teamCodeCaption').textContent,/BROWSER SOURCE REFERENCE/);b.nodes.get('toggleTeamPane').events.click();assert.equal(a.hidden,false);sendMarket(b,[marketRecord(1)],{connected:false});assert.match(b.nodes.get('teamCodeNote').textContent,/Feed unavailable/);b.setNow(T+95000);sendMarket(b,[marketRecord(1)]);assert.match(b.nodes.get('teamCodeNote').textContent,/Awaiting a new decision/);assert.equal(b.timers.length,0);b.setNow(T+3602000);b.app.render();assert.doesNotMatch(a.textContent,/ETH/);assert.match(a.textContent,/Waiting for a verified market decision/);});
+test('invalid market event display projection does not substitute source or expose arbitrary text',()=>{const b=ui();sendMarket(b,[marketRecord(1)]);const before=b.nodes.get('teamActivityPreview').textContent;for(const edit of [{at:iso(T+100000)},{source:'private secret'},{reason:'<script>secret</script>'},{action:'execute'},{result:'approved'}])sendMarket(b,[marketRecord(2,edit)]);assert.equal(b.nodes.get('teamActivityPreview').textContent,before);});

@@ -1,9 +1,22 @@
-import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-native-20261009'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
+import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-native-20261009'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
 const publicKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoc3JibXZtanRpaGx4bmJydmJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NDc4MjAsImV4cCI6MjEwNjQyMzgyMH0.fAhJqVZ6bf7sdPAGhX_Jq7o5rzROKIvXtUnTWtnHHIg';
 const panels=setupPaperPanels({document,endpointRoot:'https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1',publicKey});
+// Read the already-public bounded native decision history. This adds no writer,
+// credential or backend route and never includes account values in activity.
+const marketActivity=createMarketActivityFeed({
+ fetchNative:async({watermark,limit})=>{
+  const url=new URL(endpoint.replace('/neptune_paper_v2_status','/neptune_paper_v2_history'));
+  url.search='';url.searchParams.set('select','seq,kind,id,at,payload,source_hash,config_hash');
+  url.searchParams.set('kind','eq.native_decisions');url.searchParams.set('seq','lte.'+watermark);
+  url.searchParams.set('order','seq.desc');url.searchParams.set('limit',String(limit));
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
+  try{const response=await fetch(url.href,{headers:{apikey:publicKey},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal});if(!response.ok)throw Error('Native decisions unavailable');return await response.json();}finally{clearTimeout(timeout);}
+ },
+ onChange:snapshot=>{try{document.dispatchEvent?.(new CustomEvent('neptune:market-activity',{detail:snapshot}));}catch{/* Display telemetry cannot interrupt the paper feed. */}}
+});
 const cueBridge=createPaperCueBridge();
 let selected='ETH/USD',report=null,connected=false,busy=false,polls=0,seenDecisions=null;
 const runtimeEvents=[];
@@ -60,7 +73,7 @@ async function refreshFeed(){
  if(busy)return;
  busy=true;$('refresh').disabled=true;recordRuntime('GET paper status · request started');
  const workStartedAt=new Date().toISOString(),workRunId='interface:'+workStartedAt+':'+polls;emitInterfaceWork('started',workRunId,workStartedAt,'Read-only status request started');
- try{report=await readReports();emitTeamWorkReport(report?.team_work??null);cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;emitTeamWorkReport(null);cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
+ try{report=await readReports();void marketActivity.observe(report);emitTeamWorkReport(report?.team_work??null);cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;marketActivity.disconnect();emitTeamWorkReport(null);cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
  finally{polls++;busy=false;$('refresh').disabled=false;render();}
 }
 function igniteDecisions(){
@@ -256,5 +269,5 @@ armSound();
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
 clock();setInterval(clock,1000);render();void refreshFeed();
 setInterval(()=>{render();if(!document.hidden)void refreshFeed();},10000);
-document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(!document.hidden)void refreshFeed();});
+document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden)marketActivity.disconnect();else void refreshFeed();});
 
