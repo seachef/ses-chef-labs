@@ -1,0 +1,272 @@
+{
+  "protocol": "neptune-public-research-runonce-v1",
+  "mode": "read_only_capture_replay",
+  "started_at": "2026-10-10T05:09:19.150726+00:00",
+  "completed_at": "2026-10-10T05:10:30.734498+00:00",
+  "execution_enabled": false,
+  "qualified_buy_count": 0,
+  "screened_identities": 882,
+  "prefilter_pass_count": 20,
+  "pre_screen_reasons": {
+    "change_outside_3_to_60_percent": 776,
+    "spread_above_35_bps": 266,
+    "volume_below_100k_quote": 716
+  },
+  "coverage": {
+    "kraken": {
+      "screened_identities": 599
+    },
+    "hyperliquid": {
+      "screened_identities": 283
+    }
+  },
+  "source_captures": [
+    {
+      "kind": "kraken_metadata",
+      "raw_sha256": "463b5bde2d7be1ab8923bf6134c2ceca622965b7dfa9edbed5a7cb1f9cac6d76",
+      "observed_at": "2026-10-10T05:09:24.654997+00:00",
+      "status": 200,
+      "error": null
+    },
+    {
+      "kind": "kraken_tickers",
+      "raw_sha256": "0495905b2c0d9e87dc68a08f623fb38fbd82c49a6c92038a6faaad5dafde3040",
+      "observed_at": "2026-10-10T05:09:24.718728+00:00",
+      "status": 200,
+      "error": null
+    },
+    {
+      "kind": "hyperliquid_bulk",
+      "raw_sha256": "eb4c1216cc20e55b4e271f03af1a1c6fb4900debebacb372a4e1cef7df8cd9aa",
+      "observed_at": "2026-10-10T05:09:32.179183+00:00",
+      "status": 200,
+      "error": null
+    }
+  ],
+  "leads": [
+    {
+      "id": "kraken:NEAR/USD",
+      "pair": "NEAR/USD",
+      "venue": "kraken",
+      "base_id": "NEAR",
+      "quote_id": "USD",
+      "observed_at": "2026-10-10T05:09:45.977646+00:00",
+      "model_quote_notional": "100",
+      "execution_eligible": false,
+      "qualified_buy": false,
+      "ai_review_status": "not_reviewed",
+      "checks": {
+        "depth": {
+          "status": "passed"
+        },
+        "bars": {
+          "status": "passed"
+        },
+        "trades": {
+          "status": "passed"
+        },
+        "cost": {
+          "spread_bps": "4.273670305761684603131434788",
+          "displayed_book_round_trip_loss_bps": "162.9350944738697462580233650",
+          "screening_cost_reserve_bps": "212.9350944738697462580233650",
+          "fee_rate_per_side": "0.008",
+          "source_event_time": null
+        },
+        "momentum": {
+          "completed_close_above_previous_20_highs": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "depth",
+          "artifact": "04-depth-kraken_NEAR_USD.json",
+          "raw_sha256": "d04c17fa7531cb48b89e199e71b574a78517d492184c74fffa8401dd7eaef87c",
+          "request_started_at": "2026-10-10T05:09:32.213527+00:00",
+          "response_observed_at": "2026-10-10T05:09:39.077547+00:00"
+        },
+        {
+          "kind": "bars",
+          "artifact": "05-bars-kraken_NEAR_USD.json",
+          "raw_sha256": "0ceac2ae732d6ff64c0f6cd9690ff1a467e8efb17dc0f548bb2ba178102aad6b",
+          "request_started_at": "2026-10-10T05:09:33.313555+00:00",
+          "response_observed_at": "2026-10-10T05:09:39.126986+00:00"
+        },
+        {
+          "kind": "trades",
+          "artifact": "06-trades-kraken_NEAR_USD.json",
+          "raw_sha256": "e9790da1d7a9b9a467d7cbb598d36029ca553ec04ddbb8b0364e88b067736e81",
+          "request_started_at": "2026-10-10T05:09:39.078072+00:00",
+          "response_observed_at": "2026-10-10T05:09:45.977646+00:00"
+        }
+      ]
+    },
+    {
+      "id": "kraken:ADA/USD",
+      "pair": "ADA/USD",
+      "venue": "kraken",
+      "base_id": "ADA",
+      "quote_id": "USD",
+      "observed_at": "2026-10-10T05:10:06.733221+00:00",
+      "model_quote_notional": "100",
+      "execution_eligible": false,
+      "qualified_buy": false,
+      "ai_review_status": "not_reviewed",
+      "checks": {
+        "depth": {
+          "status": "passed"
+        },
+        "bars": {
+          "status": "passed"
+        },
+        "trades": {
+          "status": "passed"
+        },
+        "cost": {
+          "spread_bps": "3.260255890328172586814252885",
+          "displayed_book_round_trip_loss_bps": "161.9381415847397441879761860",
+          "screening_cost_reserve_bps": "211.9381415847397441879761860",
+          "fee_rate_per_side": "0.008",
+          "source_event_time": null
+        },
+        "momentum": {
+          "completed_close_above_previous_20_highs": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "bars",
+          "artifact": "07-bars-kraken_ADA_USD.json",
+          "raw_sha256": "8d427ab78eea42b62fd8f08ead402504d6cbaae06d7019e9fab656262517a06d",
+          "request_started_at": "2026-10-10T05:09:47.083085+00:00",
+          "response_observed_at": "2026-10-10T05:10:00.639056+00:00"
+        },
+        {
+          "kind": "depth",
+          "artifact": "08-depth-kraken_ADA_USD.json",
+          "raw_sha256": "16e42b4bd53b6f0fb6eefeedd54365c34d4e95f8fe8c8d257012bbcacd1df77d",
+          "request_started_at": "2026-10-10T05:09:45.983038+00:00",
+          "response_observed_at": "2026-10-10T05:10:00.641883+00:00"
+        },
+        {
+          "kind": "trades",
+          "artifact": "09-trades-kraken_ADA_USD.json",
+          "raw_sha256": "0d626d9056978d61914599234d7722d790da78cb58e24e6cb718a778e7bd8388",
+          "request_started_at": "2026-10-10T05:10:00.640162+00:00",
+          "response_observed_at": "2026-10-10T05:10:06.733221+00:00"
+        }
+      ]
+    },
+    {
+      "id": "hyperliquid:@700",
+      "pair": "DRV/USDC",
+      "venue": "hyperliquid",
+      "base_id": "0x0896dbb30344c65b8727f41c3fe9ef62",
+      "quote_id": "0x6d1e7cde53ba9467b783cb7c530ce054",
+      "observed_at": "2026-10-10T05:10:19.105844+00:00",
+      "model_quote_notional": "100",
+      "execution_eligible": false,
+      "qualified_buy": false,
+      "ai_review_status": "not_reviewed",
+      "checks": {
+        "depth": {
+          "status": "passed"
+        },
+        "bars": {
+          "status": "passed"
+        },
+        "trades": {
+          "status": "passed"
+        },
+        "cost": {
+          "spread_bps": "6.064671451018589136886985766",
+          "displayed_book_round_trip_loss_bps": "26.87487750585963623002020700",
+          "screening_cost_reserve_bps": "76.87487750585963623002020700",
+          "fee_rate_per_side": "0.0007",
+          "source_event_time": 1791609012.047
+        },
+        "momentum": {
+          "completed_close_above_previous_20_highs": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "depth",
+          "artifact": "10-depth-hyperliquid__700.json",
+          "raw_sha256": "908feaf1c865455a209d2ba0c7e90e012b3ecd1510b2c4aa40fa3f6deb0a844a",
+          "request_started_at": "2026-10-10T05:10:06.740809+00:00",
+          "response_observed_at": "2026-10-10T05:10:12.855021+00:00"
+        },
+        {
+          "kind": "bars",
+          "artifact": "11-bars-hyperliquid__700.json",
+          "raw_sha256": "127156588466aab11d5cadeeb38e16164f7f752fc8daab913f44ddc2c117ad8d",
+          "request_started_at": "2026-10-10T05:10:06.988569+00:00",
+          "response_observed_at": "2026-10-10T05:10:12.930959+00:00"
+        },
+        {
+          "kind": "trades",
+          "artifact": "12-trades-hyperliquid__700.json",
+          "raw_sha256": "873c2da0b678e855bb741dfeebc71e8322a17f47c20af4bb5a558abca271b1ed",
+          "request_started_at": "2026-10-10T05:10:12.855419+00:00",
+          "response_observed_at": "2026-10-10T05:10:19.105844+00:00"
+        }
+      ]
+    },
+    {
+      "id": "hyperliquid:@496",
+      "pair": "ONEAR/USDC",
+      "venue": "hyperliquid",
+      "base_id": "0x20b8c9d2f022ffd2aea4f7962b7b1d8b",
+      "quote_id": "0x6d1e7cde53ba9467b783cb7c530ce054",
+      "observed_at": "2026-10-10T05:10:30.734498+00:00",
+      "model_quote_notional": "100",
+      "execution_eligible": false,
+      "qualified_buy": false,
+      "ai_review_status": "not_reviewed",
+      "checks": {
+        "depth": {
+          "status": "passed"
+        },
+        "bars": {
+          "status": "passed"
+        },
+        "trades": {
+          "status": "blocked"
+        },
+        "cost": {
+          "spread_bps": "12.44893989496206963625753744",
+          "displayed_book_round_trip_loss_bps": "26.41888433186890089809883100",
+          "screening_cost_reserve_bps": "76.41888433186890089809883100",
+          "fee_rate_per_side": "0.0007",
+          "source_event_time": 1791609025.016
+        },
+        "momentum": {
+          "completed_close_above_previous_20_highs": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "bars",
+          "artifact": "13-bars-hyperliquid__496.json",
+          "raw_sha256": "896dfec7e9d2d92665a356d97f0ff20021feed1af88db5925280a01d2be78e2e",
+          "request_started_at": "2026-10-10T05:10:19.358135+00:00",
+          "response_observed_at": "2026-10-10T05:10:25.384504+00:00"
+        },
+        {
+          "kind": "depth",
+          "artifact": "14-depth-hyperliquid__496.json",
+          "raw_sha256": "67c5a367a2b223362956cd887e0f3d8b2e263997163fec992a093485fc45f5de",
+          "request_started_at": "2026-10-10T05:10:19.108129+00:00",
+          "response_observed_at": "2026-10-10T05:10:25.412900+00:00"
+        },
+        {
+          "kind": "trades",
+          "artifact": "15-trades-hyperliquid__496.json",
+          "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "request_started_at": "2026-10-10T05:10:25.385061+00:00",
+          "response_observed_at": "2026-10-10T05:10:30.734498+00:00"
+        }
+      ]
+    }
+  ]
+}

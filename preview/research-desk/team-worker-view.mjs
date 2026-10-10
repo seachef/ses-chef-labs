@@ -1,4 +1,4 @@
-import {readPublicScoutSnapshot,publicScoutDisplay,PUBLIC_SCOUT_LIMITS} from './public-scout.mjs?v=public-scout-20261010';
+import {readPublicScoutSnapshot,publicScoutDisplay,PUBLIC_SCOUT_LIMITS} from './public-scout.mjs?v=public-scout-review-20261010';
 import {validateMarketActivitySnapshot} from './market-activity.mjs?v=market-activity-20261010';
 import {createTeamWorkStore,teamWorkerState,matchPublicWorkSource,teamPublisherLive,TEAM_WORK_LIMITS,WORK_ROLES,WORK_TASKS,WORK_STEPS} from './team-worker-evidence.mjs';
 const stamp=value=>value?new Date(value).toISOString().replace('T',' ').replace('Z',' UTC'):'Time unavailable';
@@ -72,7 +72,7 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
    activity.scrollTop=lines.length&&(hasNew||switched)?activity.scrollHeight??0:oldTop;
   }
   const age=marketSnapshot.latestAt?now()-Date.parse(marketSnapshot.latestAt):Infinity;
-  text('teamCodeNote',market?(!marketSnapshot.connected?'Feed unavailable · last recorded decisions.':marketSnapshot.nativeStatus==='unavailable'?'Native decision feed unavailable · last verified records.':age>90000?'Awaiting a new decision · last records shown.':'Auto-follow new decisions · paper checks, unvalidated.')+(scoutSnapshot?' Scout: '+publicScoutDisplay(scoutSnapshot,{now:now()}).status.toLowerCase()+'; independent review awaiting.':''):'Auto-follow new worker events · limited recorded activity.');
+  text('teamCodeNote',market?(!marketSnapshot.connected?'Feed unavailable · last recorded decisions.':marketSnapshot.nativeStatus==='unavailable'?'Native decision feed unavailable · last verified records.':age>90000?'Awaiting a new decision · last records shown.':'Auto-follow new decisions · paper checks, unvalidated.')+(scoutSnapshot?' Scout: '+publicScoutDisplay(scoutSnapshot,{now:now()}).status.toLowerCase()+'; '+publicScoutDisplay(scoutSnapshot,{now:now()}).output+'.':''):'Auto-follow new worker events · limited recorded activity.');
  }
  function receiveMarket(event){
   if(disposed)return;

@@ -1,4 +1,4 @@
-import {createPublicScoutFeed,publicScoutDisplay} from './public-scout.mjs?v=public-scout-20261010'; import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010'; import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010'; import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neural-currents-20261010'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
+import {createPublicReviewFeed} from './public-reviews.mjs?v=independent-reviews-20261010'; import {createPublicScoutFeed,publicScoutDisplay} from './public-scout.mjs?v=public-scout-review-20261010'; import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010'; import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010'; import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neural-currents-20261010'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -41,7 +41,8 @@ const marketActivity=createMarketActivityFeed({
 
 // This separate read-only discovery channel never reaches profitBridge,
 // sceneTargets, paper status, quote validation or execution controls.
-const publicScout=createPublicScoutFeed({fetch:(...args)=>fetch(...args),onChange:snapshot=>{
+const publicReviews=createPublicReviewFeed({fetch:(...args)=>fetch(...args),onChange:()=>{publicScout.reviewChanged();render();}});
+const publicScout=createPublicScoutFeed({fetch:(...args)=>fetch(...args),reviewSnapshot:()=>publicReviews.snapshot(),onChange:snapshot=>{
  try{document.dispatchEvent?.(new CustomEvent('neptune:public-scout',{detail:snapshot}));}catch{}
  render();
 }});
@@ -215,7 +216,7 @@ reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
 window.addEventListener('resize',()=>atmosphere.resize());window.visualViewport?.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
 let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
-window.addEventListener('pagehide',()=>{publicScout.disconnect();audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
+window.addEventListener('pagehide',()=>{publicScout.disconnect();publicReviews.disconnect();audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
 window.addEventListener('pageshow',()=>{audioVisible=true;scenePageVisible=true;atmosphere.resize();syncMotion();void syncSound();});
 
 function setAudioSession(active){
@@ -295,7 +296,7 @@ $('accessSound').addEventListener('click',async()=>{
 });
 armSound();
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
-clock();setInterval(clock,1000);render();void refreshFeed();void publicScout.refresh();void loadSceneCatalogue();
-setInterval(()=>{render();if(!document.hidden){void refreshFeed();void publicScout.refresh();}},10000);
-document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden){marketActivity.disconnect();publicScout.disconnect();}else{void refreshFeed();void publicScout.refresh();}});
+clock();setInterval(clock,1000);render();void refreshFeed();void publicScout.refresh();void publicReviews.refresh();void loadSceneCatalogue();
+setInterval(()=>{render();if(!document.hidden){void refreshFeed();void publicScout.refresh();void publicReviews.refresh();}},10000);
+document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden){marketActivity.disconnect();publicScout.disconnect();publicReviews.disconnect();}else{void refreshFeed();void publicScout.refresh();void publicReviews.refresh();}});
 

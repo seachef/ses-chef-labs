@@ -1,0 +1,588 @@
+{
+  "protocol": "neptune-owner-published-reviews-v1",
+  "revision": 1,
+  "record_created_at": "2026-10-10T06:31:41.963Z",
+  "authority": {
+    "kind": "repository-owner-publication",
+    "repository": "seachef/ses-chef-labs",
+    "branch": "main",
+    "path": "public/research-reviews.json",
+    "cryptographic_model_attestation": false
+  },
+  "reviews": [
+    {
+      "review_id": "astra-38030204509-kraken-NEAR-v1",
+      "reviewer_id": "astra-scout-review-v1",
+      "status": "completed",
+      "review_started_at": "2026-10-10T06:17:18Z",
+      "review_completed_at": "2026-10-10T06:24:57.051567+00:00",
+      "subject": {
+        "run_id": "38030204509",
+        "run_started_at": "2026-10-10T06:13:55.045882+00:00",
+        "run_completed_at": "2026-10-10T06:14:04.350009+00:00",
+        "source_commit": "1de38801fd25489387ebfa127f2ce8ec1cb72e34",
+        "data_commit": "2f3de6519d8048af61838da1139f233f5a42dec5",
+        "feed_sha256": "4b6b2559da2e1dd30005c328b3a5153429b0eecbf748fb47156ccde5aae1e7a6",
+        "lead_id": "kraken:NEAR/USD",
+        "identity": {
+          "venue": "kraken",
+          "instrument_id": "NEAR/USD",
+          "pair": "NEAR/USD",
+          "base_symbol": "NEAR",
+          "quote_symbol": "USD",
+          "base_id": "NEAR",
+          "quote_id": "USD",
+          "asset_namespace": "kraken_asset",
+          "base_representation": "venue_asset",
+          "quote_representation": "fiat"
+        },
+        "identity_key": "kraken|kraken_asset|NEAR/USD|NEAR|USD|NEAR|USD|venue_asset|fiat",
+        "evidence_sha256": "7805b49575c166fbd6a6f0bc074f816d6f9504dba7790572e24ea832979b1698",
+        "source_observed_at": "2026-10-10T06:13:59.591147+00:00",
+        "quote_expires_at": "2026-10-10T06:16:55.045Z"
+      },
+      "verdict": "needs_more_evidence",
+      "summary": "Completed close below 5.1992 with 0.88x volume. Nearby upside does not cover base round-trip fees; original evidence expired and raw capture unavailable.",
+      "findings": [
+        {
+          "code": "original_evidence_not_reproduced",
+          "conclusion": "unknown",
+          "text": "Original raw candles, books and trades were not retained. Payload hashes match the published snapshot; fresh observations below do not reconstruct its original raw evidence.",
+          "source_ids": [
+            "original-feed"
+          ]
+        },
+        {
+          "code": "fresh_completed_bar",
+          "conclusion": "failed",
+          "text": "New completed bar ending 2026-10-10T06:15:00+00:00: close 5.1832, previous-20 high 5.1992, volume 0.88 times the prior mean. This is a separate later observation.",
+          "source_ids": [
+            "new-bars"
+          ]
+        },
+        {
+          "code": "fresh_book_observation",
+          "conclusion": "caution",
+          "text": "Later captured bid/ask 5.1694/5.1713, spread 3.675 bps; received 2026-10-10T06:21:44.041752+00:00. These historical displayed prices are not executable entry quotes.",
+          "source_ids": [
+            "new-book"
+          ]
+        },
+        {
+          "code": "identity_and_supply_risk",
+          "conclusion": "unknown",
+          "text": "Current protocol issuance settings were not independently interrogated; do not reuse historical inflation assumptions as a verified current parameter.",
+          "source_ids": [
+            "token-docs"
+          ]
+        },
+        {
+          "code": "costs_and_qualification",
+          "conclusion": "unknown",
+          "text": "Scenario fees are assumptions, account tier and funding route are unverified, and gas, bridge, withdrawal, slippage and FX costs are incomplete. No fully supported after-cost trade setup or execution approval follows.",
+          "source_ids": [
+            "fees"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "kind": "candles",
+          "source_id": "new-bars",
+          "instrument_id": "NEAR/USD",
+          "request_started_at": "2026-10-10T06:19:53.059097+00:00",
+          "response_observed_at": "2026-10-10T06:19:57.563057+00:00",
+          "source_event_at": null,
+          "sha256": "2855a4227c630ae6be890617508a037d408509d3992bcc4c20527a9913cbcb45"
+        },
+        {
+          "kind": "depth",
+          "source_id": "new-book",
+          "instrument_id": "NEAR/USD",
+          "request_started_at": "2026-10-10T06:21:36.859991+00:00",
+          "response_observed_at": "2026-10-10T06:21:44.041752+00:00",
+          "source_event_at": null,
+          "sha256": "652ad6fe64b09a891449cc3362eb02521a3ef83e572af68007cdde9d89fe616e"
+        },
+        {
+          "kind": "trades",
+          "source_id": "new-trades",
+          "instrument_id": "NEAR/USD",
+          "request_started_at": "2026-10-10T06:22:09.638861+00:00",
+          "response_observed_at": "2026-10-10T06:22:15.814763+00:00",
+          "source_event_at": "2026-10-10T06:22:07.572934+00:00",
+          "sha256": "c89c65450ab47b5f37941bc6bfe44e23919416c847735ec7095e33bd0ae61569"
+        }
+      ],
+      "sources": [
+        {
+          "source_id": "original-feed",
+          "label": "Immutable original public scout feed",
+          "url": "https://raw.githubusercontent.com/seachef/ses-chef-labs/2f3de6519d8048af61838da1139f233f5a42dec5/public/research-feed.json"
+        },
+        {
+          "source_id": "new-bars",
+          "label": "Independently fetched completed candles",
+          "url": "https://api.kraken.com/0/public/OHLC?pair=NEAR%2FUSD&interval=15&assetVersion=1"
+        },
+        {
+          "source_id": "new-book",
+          "label": "Independently fetched public book",
+          "url": "https://api.kraken.com/0/public/Depth?pair=NEARUSD&count=20&assetVersion=1"
+        },
+        {
+          "source_id": "new-trades",
+          "label": "Independently fetched recent public trades",
+          "url": "https://api.kraken.com/0/public/Trades?pair=NEARUSD&count=1&assetVersion=1"
+        },
+        {
+          "source_id": "fees",
+          "label": "Kraken Australia published fees",
+          "url": "https://www.kraken.com/au/features/fee-schedule"
+        },
+        {
+          "source_id": "token-docs",
+          "label": "NEAR tokenomics protocol-change announcement",
+          "url": "https://blog.nearone.org/announcement/2025/10/21/enhancing-near-tokenomics.html"
+        }
+      ],
+      "original_raw_reproduced": false,
+      "new_observation_at": "2026-10-10T06:22:15.814763+00:00",
+      "execution_eligible": false,
+      "paper_entry_allowed": false,
+      "qualified_buy": false
+    },
+    {
+      "review_id": "astra-38030204509-kraken-SUI-v1",
+      "reviewer_id": "astra-scout-review-v1",
+      "status": "completed",
+      "review_started_at": "2026-10-10T06:17:18Z",
+      "review_completed_at": "2026-10-10T06:24:57.051567+00:00",
+      "subject": {
+        "run_id": "38030204509",
+        "run_started_at": "2026-10-10T06:13:55.045882+00:00",
+        "run_completed_at": "2026-10-10T06:14:04.350009+00:00",
+        "source_commit": "1de38801fd25489387ebfa127f2ce8ec1cb72e34",
+        "data_commit": "2f3de6519d8048af61838da1139f233f5a42dec5",
+        "feed_sha256": "4b6b2559da2e1dd30005c328b3a5153429b0eecbf748fb47156ccde5aae1e7a6",
+        "lead_id": "kraken:SUI/USD",
+        "identity": {
+          "venue": "kraken",
+          "instrument_id": "SUI/USD",
+          "pair": "SUI/USD",
+          "base_symbol": "SUI",
+          "quote_symbol": "USD",
+          "base_id": "SUI",
+          "quote_id": "USD",
+          "asset_namespace": "kraken_asset",
+          "base_representation": "venue_asset",
+          "quote_representation": "fiat"
+        },
+        "identity_key": "kraken|kraken_asset|SUI/USD|SUI|USD|SUI|USD|venue_asset|fiat",
+        "evidence_sha256": "21cad3a92fe2752984cd865a678c2f40e8584b19aa1d33b818a7d67b3854bd81",
+        "source_observed_at": "2026-10-10T06:14:02.877594+00:00",
+        "quote_expires_at": "2026-10-10T06:16:55.045Z"
+      },
+      "verdict": "needs_more_evidence",
+      "summary": "New coarse lead; completed close below 1.1113 with 0.83x volume. Base fees exceed upside to nearby resistance. Supply dilution, expired original evidence and funding gaps prevent qualification.",
+      "findings": [
+        {
+          "code": "original_evidence_not_reproduced",
+          "conclusion": "unknown",
+          "text": "Original raw candles, books and trades were not retained. Payload hashes match the published snapshot; fresh observations below do not reconstruct its original raw evidence.",
+          "source_ids": [
+            "original-feed"
+          ]
+        },
+        {
+          "code": "fresh_completed_bar",
+          "conclusion": "failed",
+          "text": "New completed bar ending 2026-10-10T06:15:00+00:00: close 1.1028, previous-20 high 1.1113, volume 0.83 times the prior mean. This is a separate later observation.",
+          "source_ids": [
+            "new-bars"
+          ]
+        },
+        {
+          "code": "fresh_book_observation",
+          "conclusion": "caution",
+          "text": "Later captured bid/ask 1.1016/1.1017, spread 0.908 bps; received 2026-10-10T06:21:35.659252+00:00. These historical displayed prices are not executable entry quotes.",
+          "source_ids": [
+            "new-book"
+          ]
+        },
+        {
+          "code": "identity_and_supply_risk",
+          "conclusion": "unknown",
+          "text": "The official circulation schedule is estimated. Supply dilution remains a research risk; a monthly projection is not a verified single-day unlock.",
+          "source_ids": [
+            "token-docs"
+          ]
+        },
+        {
+          "code": "costs_and_qualification",
+          "conclusion": "unknown",
+          "text": "Scenario fees are assumptions, account tier and funding route are unverified, and gas, bridge, withdrawal, slippage and FX costs are incomplete. No fully supported after-cost trade setup or execution approval follows.",
+          "source_ids": [
+            "fees"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "kind": "candles",
+          "source_id": "new-bars",
+          "instrument_id": "SUI/USD",
+          "request_started_at": "2026-10-10T06:19:43.156248+00:00",
+          "response_observed_at": "2026-10-10T06:19:51.857444+00:00",
+          "source_event_at": null,
+          "sha256": "7762cb4551e0d7e37770430a10a3a035ac43fa33f80adcb46c436cdc5c6c66b9"
+        },
+        {
+          "kind": "depth",
+          "source_id": "new-book",
+          "instrument_id": "SUI/USD",
+          "request_started_at": "2026-10-10T06:21:27.509209+00:00",
+          "response_observed_at": "2026-10-10T06:21:35.659252+00:00",
+          "source_event_at": null,
+          "sha256": "50a2e8587b3135585a96003f3ca7196418ebf06dbca5cabd565b865bc41e1f57"
+        },
+        {
+          "kind": "trades",
+          "source_id": "new-trades",
+          "instrument_id": "SUI/USD",
+          "request_started_at": "2026-10-10T06:22:02.147991+00:00",
+          "response_observed_at": "2026-10-10T06:22:08.438316+00:00",
+          "source_event_at": "2026-10-10T06:22:06.893826+00:00",
+          "sha256": "904a70c9a61293d45973923841b13df3fdee30fd9ebc6eb8807f1b5130132f92"
+        }
+      ],
+      "sources": [
+        {
+          "source_id": "original-feed",
+          "label": "Immutable original public scout feed",
+          "url": "https://raw.githubusercontent.com/seachef/ses-chef-labs/2f3de6519d8048af61838da1139f233f5a42dec5/public/research-feed.json"
+        },
+        {
+          "source_id": "new-bars",
+          "label": "Independently fetched completed candles",
+          "url": "https://api.kraken.com/0/public/OHLC?pair=SUI%2FUSD&interval=15&assetVersion=1"
+        },
+        {
+          "source_id": "new-book",
+          "label": "Independently fetched public book",
+          "url": "https://api.kraken.com/0/public/Depth?pair=SUIUSD&count=20&assetVersion=1"
+        },
+        {
+          "source_id": "new-trades",
+          "label": "Independently fetched recent public trades",
+          "url": "https://api.kraken.com/0/public/Trades?pair=SUIUSD&count=1&assetVersion=1"
+        },
+        {
+          "source_id": "fees",
+          "label": "Kraken Australia published fees",
+          "url": "https://www.kraken.com/au/features/fee-schedule"
+        },
+        {
+          "source_id": "token-docs",
+          "label": "Sui estimated token circulation schedule",
+          "url": "https://www.sui.io/token-schedule"
+        }
+      ],
+      "original_raw_reproduced": false,
+      "new_observation_at": "2026-10-10T06:22:08.438316+00:00",
+      "execution_eligible": false,
+      "paper_entry_allowed": false,
+      "qualified_buy": false
+    },
+    {
+      "review_id": "astra-38030204509-hyperliquid-DRV-v1",
+      "reviewer_id": "astra-scout-review-v1",
+      "status": "completed",
+      "review_started_at": "2026-10-10T06:17:18Z",
+      "review_completed_at": "2026-10-10T06:24:57.051567+00:00",
+      "subject": {
+        "run_id": "38030204509",
+        "run_started_at": "2026-10-10T06:13:55.045882+00:00",
+        "run_completed_at": "2026-10-10T06:14:04.350009+00:00",
+        "source_commit": "1de38801fd25489387ebfa127f2ce8ec1cb72e34",
+        "data_commit": "2f3de6519d8048af61838da1139f233f5a42dec5",
+        "feed_sha256": "4b6b2559da2e1dd30005c328b3a5153429b0eecbf748fb47156ccde5aae1e7a6",
+        "lead_id": "hyperliquid:@700",
+        "identity": {
+          "venue": "hyperliquid",
+          "instrument_id": "@700",
+          "pair": "DRV/USDC",
+          "base_symbol": "DRV",
+          "quote_symbol": "USDC",
+          "base_id": "0x0896dbb30344c65b8727f41c3fe9ef62",
+          "quote_id": "0x6d1e7cde53ba9467b783cb7c530ce054",
+          "asset_namespace": "hyperliquid_token",
+          "base_representation": "unknown",
+          "quote_representation": "stablecoin"
+        },
+        "identity_key": "hyperliquid|hyperliquid_token|@700|0x0896dbb30344c65b8727f41c3fe9ef62|0x6d1e7cde53ba9467b783cb7c530ce054|DRV|USDC|unknown|stablecoin",
+        "evidence_sha256": "8b422aa3cf90230bcbff5d20089878bd4687e1a20dafbbd9bccc981eb7534ac1",
+        "source_observed_at": "2026-10-10T06:14:03.628982+00:00",
+        "quote_expires_at": "2026-10-10T06:16:55.045Z"
+      },
+      "verdict": "needs_more_evidence",
+      "summary": "Derive/OFT linkage corroborated; completed close below 0.55570 on 0.24x volume. Shallow top ask, bridge/admin and funding gaps prevent qualification.",
+      "findings": [
+        {
+          "code": "original_evidence_not_reproduced",
+          "conclusion": "unknown",
+          "text": "Original raw candles, books and trades were not retained. Payload hashes match the published snapshot; fresh observations below do not reconstruct its original raw evidence.",
+          "source_ids": [
+            "original-feed"
+          ]
+        },
+        {
+          "code": "fresh_completed_bar",
+          "conclusion": "failed",
+          "text": "New completed bar ending 2026-10-10T06:15:00+00:00: close 0.54492, previous-20 high 0.5557, volume 0.24 times the prior mean. This is a separate later observation.",
+          "source_ids": [
+            "new-bars"
+          ]
+        },
+        {
+          "code": "fresh_book_observation",
+          "conclusion": "caution",
+          "text": "Later captured bid/ask 0.54402/0.54492, spread 16.530 bps; received 2026-10-10T06:21:32.631998+00:00. These historical displayed prices are not executable entry quotes.",
+          "source_ids": [
+            "new-book"
+          ]
+        },
+        {
+          "code": "identity_and_supply_risk",
+          "conclusion": "unknown",
+          "text": "Derive/OFT linkage was corroborated, but upgrade administrators, bridge peers, controlling parties and legal issuer were not fully audited.",
+          "source_ids": [
+            "token-docs",
+            "token-proxy"
+          ]
+        },
+        {
+          "code": "costs_and_qualification",
+          "conclusion": "unknown",
+          "text": "Scenario fees are assumptions, account tier and funding route are unverified, and gas, bridge, withdrawal, slippage and FX costs are incomplete. No fully supported after-cost trade setup or execution approval follows.",
+          "source_ids": [
+            "fees"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "kind": "candles",
+          "source_id": "new-bars",
+          "instrument_id": "@700",
+          "request_started_at": "2026-10-10T06:19:48.653364+00:00",
+          "response_observed_at": "2026-10-10T06:19:52.567832+00:00",
+          "source_event_at": null,
+          "sha256": "b793f90107c759c0cd1f61ffcb32aec51b0963fca85cd0a5a3fba2db84a7669e"
+        },
+        {
+          "kind": "depth",
+          "source_id": "new-book",
+          "instrument_id": "@700",
+          "request_started_at": "2026-10-10T06:21:27.510133+00:00",
+          "response_observed_at": "2026-10-10T06:21:32.631998+00:00",
+          "source_event_at": "2026-10-10T06:21:31.955000+00:00",
+          "sha256": "4c964c33a4148f64fcc2650a03d1b5b2025010cf6e0bd26d2ccfb561e4844cad"
+        },
+        {
+          "kind": "trades",
+          "source_id": "new-trades",
+          "instrument_id": "@700",
+          "request_started_at": "2026-10-10T06:21:33.132554+00:00",
+          "response_observed_at": "2026-10-10T06:21:37.643512+00:00",
+          "source_event_at": "2026-10-10T06:21:30.047000+00:00",
+          "sha256": "519130db06f7bd4183216e244850023f823f51bb2600e8b6bf49ab0c4f64ddc9"
+        }
+      ],
+      "sources": [
+        {
+          "source_id": "original-feed",
+          "label": "Immutable original public scout feed",
+          "url": "https://raw.githubusercontent.com/seachef/ses-chef-labs/2f3de6519d8048af61838da1139f233f5a42dec5/public/research-feed.json"
+        },
+        {
+          "source_id": "new-bars",
+          "label": "Independently fetched completed candles",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "new-book",
+          "label": "Independently fetched public book",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "new-trades",
+          "label": "Independently fetched recent public trades",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "fees",
+          "label": "Hyperliquid published fees",
+          "url": "https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees"
+        },
+        {
+          "source_id": "token-docs",
+          "label": "Derive issuer token information",
+          "url": "https://insights.derive.xyz/drv/"
+        },
+        {
+          "source_id": "token-proxy",
+          "label": "DRV HyperEVM verified proxy source",
+          "url": "https://hyperevmscan.io/address/0x9628bba16db41ea7fe1fd84f9ce53bc27c63f59b#code"
+        }
+      ],
+      "original_raw_reproduced": false,
+      "new_observation_at": "2026-10-10T06:21:37.643512+00:00",
+      "execution_eligible": false,
+      "paper_entry_allowed": false,
+      "qualified_buy": false
+    },
+    {
+      "review_id": "astra-38030204509-hyperliquid-ONEAR-v1",
+      "reviewer_id": "astra-scout-review-v1",
+      "status": "completed",
+      "review_started_at": "2026-10-10T06:17:18Z",
+      "review_completed_at": "2026-10-10T06:24:57.051567+00:00",
+      "subject": {
+        "run_id": "38030204509",
+        "run_started_at": "2026-10-10T06:13:55.045882+00:00",
+        "run_completed_at": "2026-10-10T06:14:04.350009+00:00",
+        "source_commit": "1de38801fd25489387ebfa127f2ce8ec1cb72e34",
+        "data_commit": "2f3de6519d8048af61838da1139f233f5a42dec5",
+        "feed_sha256": "4b6b2559da2e1dd30005c328b3a5153429b0eecbf748fb47156ccde5aae1e7a6",
+        "lead_id": "hyperliquid:@496",
+        "identity": {
+          "venue": "hyperliquid",
+          "instrument_id": "@496",
+          "pair": "ONEAR/USDC",
+          "base_symbol": "ONEAR",
+          "quote_symbol": "USDC",
+          "base_id": "0x20b8c9d2f022ffd2aea4f7962b7b1d8b",
+          "quote_id": "0x6d1e7cde53ba9467b783cb7c530ce054",
+          "asset_namespace": "hyperliquid_token",
+          "base_representation": "unknown",
+          "quote_representation": "stablecoin"
+        },
+        "identity_key": "hyperliquid|hyperliquid_token|@496|0x20b8c9d2f022ffd2aea4f7962b7b1d8b|0x6d1e7cde53ba9467b783cb7c530ce054|ONEAR|USDC|unknown|stablecoin",
+        "evidence_sha256": "186a90e3b12fc84a6385c2e4f434cb0001d216c14053fec33298b1ae064b6a59",
+        "source_observed_at": "2026-10-10T06:14:04.346973+00:00",
+        "quote_expires_at": "2026-10-10T06:16:55.045Z"
+      },
+      "verdict": "needs_more_evidence",
+      "summary": "Tighter fresh spread does not resolve unknown backing/redemption/issuer controls. Completed close below 5.1986 on 0.42x volume; original snapshot expired.",
+      "findings": [
+        {
+          "code": "original_evidence_not_reproduced",
+          "conclusion": "unknown",
+          "text": "Original raw candles, books and trades were not retained. Payload hashes match the published snapshot; fresh observations below do not reconstruct its original raw evidence.",
+          "source_ids": [
+            "original-feed"
+          ]
+        },
+        {
+          "code": "fresh_completed_bar",
+          "conclusion": "failed",
+          "text": "New completed bar ending 2026-10-10T06:15:00+00:00: close 5.1902, previous-20 high 5.1986, volume 0.42 times the prior mean. This is a separate later observation.",
+          "source_ids": [
+            "new-bars"
+          ]
+        },
+        {
+          "code": "fresh_book_observation",
+          "conclusion": "caution",
+          "text": "Later captured bid/ask 5.1753/5.1756, spread 0.580 bps; received 2026-10-10T06:21:42.210286+00:00. These historical displayed prices are not executable entry quotes.",
+          "source_ids": [
+            "new-book"
+          ]
+        },
+        {
+          "code": "identity_and_supply_risk",
+          "conclusion": "unknown",
+          "text": "Native NEAR equivalence, backing, redemption, issuer identity, bridge route and controlling signers remain unverified; a tighter quote does not resolve these gaps.",
+          "source_ids": [
+            "token-docs"
+          ]
+        },
+        {
+          "code": "costs_and_qualification",
+          "conclusion": "unknown",
+          "text": "Scenario fees are assumptions, account tier and funding route are unverified, and gas, bridge, withdrawal, slippage and FX costs are incomplete. No fully supported after-cost trade setup or execution approval follows.",
+          "source_ids": [
+            "fees"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "kind": "candles",
+          "source_id": "new-bars",
+          "instrument_id": "@496",
+          "request_started_at": "2026-10-10T06:19:52.868558+00:00",
+          "response_observed_at": "2026-10-10T06:19:57.683612+00:00",
+          "source_event_at": null,
+          "sha256": "898ba61d3a1554e8b617995a7b700b45bf3b5922030a36bc128a21dfc999f4fc"
+        },
+        {
+          "kind": "depth",
+          "source_id": "new-book",
+          "instrument_id": "@496",
+          "request_started_at": "2026-10-10T06:21:38.144007+00:00",
+          "response_observed_at": "2026-10-10T06:21:42.210286+00:00",
+          "source_event_at": "2026-10-10T06:21:41.624000+00:00",
+          "sha256": "ebe1020769c51f1c123e7262688c194ed36ed032c42b112cce7a178db8eb9897"
+        },
+        {
+          "kind": "trades",
+          "source_id": "new-trades",
+          "instrument_id": "@496",
+          "request_started_at": "2026-10-10T06:21:42.710912+00:00",
+          "response_observed_at": "2026-10-10T06:21:46.135340+00:00",
+          "source_event_at": "2026-10-10T06:21:32.964000+00:00",
+          "sha256": "66703d5edb6062ec54baf680f635aafefa7e3445e9c5150bd80b977bd02c965c"
+        }
+      ],
+      "sources": [
+        {
+          "source_id": "original-feed",
+          "label": "Immutable original public scout feed",
+          "url": "https://raw.githubusercontent.com/seachef/ses-chef-labs/2f3de6519d8048af61838da1139f233f5a42dec5/public/research-feed.json"
+        },
+        {
+          "source_id": "new-bars",
+          "label": "Independently fetched completed candles",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "new-book",
+          "label": "Independently fetched public book",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "new-trades",
+          "label": "Independently fetched recent public trades",
+          "url": "https://api.hyperliquid.xyz/info"
+        },
+        {
+          "source_id": "fees",
+          "label": "Hyperliquid published fees",
+          "url": "https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees"
+        },
+        {
+          "source_id": "token-docs",
+          "label": "ONEAR HyperEVM proxy contract",
+          "url": "https://hyperevmscan.io/address/0xc80d9eb120d6e40e31d5ae9040d5fc0753c52da7"
+        }
+      ],
+      "original_raw_reproduced": false,
+      "new_observation_at": "2026-10-10T06:21:46.135340+00:00",
+      "execution_eligible": false,
+      "paper_entry_allowed": false,
+      "qualified_buy": false
+    }
+  ]
+}

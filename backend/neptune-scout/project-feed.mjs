@@ -38,7 +38,13 @@ export async function projectFeed(report,snapshot,{source_commit,run_id,rate_sta
    const prior=l.checks?.[from]?.status;const status=prior==='blocked'?'failed':from==='trades'?'unknown':prior==='passed'?'passed':'unknown';
    checks.push(check(to,status,[e.evidence_id],from==='trades'?'Transport check retained; source trade-event time is absent from compact report':'Deterministic '+from+' evidence check retained from collector'));
   }
-  if(evidence.some(e=>e.kind==='candles'))checks.push(check('momentum',l.checks?.momentum?.completed_close_above_previous_20_highs===false?'failed':'unknown',['candles'],'Completed-bar signal retained; full strategy qualification remains outstanding'));
+  if(evidence.some(e=>e.kind==='candles')){
+   const breakout=l.checks?.momentum?.completed_close_above_previous_20_highs;
+   const status=breakout===false?'failed':'unknown';
+   const reason=breakout===false?'Completed candle did not close above the previous 20 candle highs; breakout criterion not met':breakout===true?'Completed-bar breakout observed; remaining momentum criteria are not fully qualified':'Completed-bar breakout evidence is missing or inconclusive';
+   checks.push(check('momentum',status,['candles'],reason));
+   checks.push(check('strategy_qualification','unknown',['candles'],'Full strategy qualification has not been completed'));
+  }
   checks.push(check('sizing_rules','unknown',['metadata'],'Complete current instrument rules still require verification'),check('venue_restrictions','unknown',['metadata'],'Current venue and route restrictions require independent verification'));
   const cost=l.checks?.cost??{},economics={fee_bps_per_side:unknown('bps'),spread_bps:unknown('bps'),slippage_bps:unknown('bps'),fx_to_usd:m.quote==='USD'?{status:'not_applicable',value:null,unit:'rate',evidence_ids:[],reason:'Native USD quote; no USD conversion'}:unknown('rate'),fx_usd_to_aud:unknown('rate'),network_cost_quote:unknown('quote')};
   // Fee multiplication by 10,000 shifts a decimal string exactly, without floating arithmetic.

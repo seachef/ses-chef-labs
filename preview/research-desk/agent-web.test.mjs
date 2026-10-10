@@ -1,4 +1,4 @@
-import {publicScoutDisplay} from './public-scout.mjs?v=public-scout-20261010';
+import {publicScoutDisplay} from './public-scout.mjs?v=public-scout-review-20261010';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
