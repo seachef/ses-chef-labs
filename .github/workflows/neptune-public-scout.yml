@@ -1,0 +1,73 @@
+name: NEPTUNE public research scout
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      recovery_from_run_id:
+        description: "Exact blocked run ID, only after reviewing its outcome and provider state"
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: neptune-public-research-feed
+  cancel-in-progress: false
+jobs:
+  scout:
+    if: github.repository == 'seachef/ses-chef-labs' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      feed_base64: ${{ steps.project.outputs.feed_base64 }}
+      feed_sha256: ${{ steps.project.outputs.feed_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-10
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: backend/neptune-scout
+      - name: Verify tested collector and publisher
+        working-directory: backend/neptune-scout
+        run: python3 -m unittest -v test_scout.py test_publish_feed.py test_scheduled_scout.py test_integration.py test_admission.py
+      - name: Read bounded public market evidence
+        working-directory: backend/neptune-scout
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          RECOVERY_FROM_RUN_ID: ${{ github.event.inputs.recovery_from_run_id || '' }}
+        run: python3 scheduled_scout.py --out "$RUNNER_TEMP/scout" > "$RUNNER_TEMP/scout.log"
+      - name: Project strictly public evidence
+        id: project
+        working-directory: backend/neptune-scout
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          node project-feed.mjs "$RUNNER_TEMP/scout/RUN-RESULT.json" "$RUNNER_TEMP/scout/research-snapshot.json" "$RUNNER_TEMP/research-feed.json" --source-commit "$SOURCE_COMMIT" --run-id "$WORKFLOW_RUN_ID" --rate-state "$RUNNER_TEMP/scout/rate-state.json"
+          node validate-feed.mjs "$RUNNER_TEMP/research-feed.json" --source-commit "$SOURCE_COMMIT" --run-id "$WORKFLOW_RUN_ID"
+          python3 emit_output.py "$RUNNER_TEMP/research-feed.json"
+  publish:
+    needs: scout
+    if: github.repository == 'seachef/ses-chef-labs' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, same trusted source
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: backend/neptune-scout
+      - name: Publish only the approved feed file
+        working-directory: backend/neptune-scout
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FEED_BASE64: ${{ needs.scout.outputs.feed_base64 }}
+          FEED_SHA256: ${{ needs.scout.outputs.feed_sha256 }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: python3 publish_feed.py
