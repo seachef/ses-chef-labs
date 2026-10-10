@@ -20,4 +20,17 @@
  .team-console{grid-template-columns:1fr;gap:6px;padding:7px 10px 6px;min-height:164px}.team-note{display:none}.team-line{font-size:8px;margin-bottom:3px}.team-line strong{font-size:8px;margin-left:0}.team-observation #teamLocalState{display:inline;font-size:9px}.team-observation #teamLocalOutput{display:none}.team-observation #teamLocalTime{display:inline;font-size:8px;margin-left:6px}.team-source{border-left:0;border-top:1px solid #84947c33;padding:3px 0 0}.team-source-bar{font-size:8px;min-height:27px}.team-source-bar button{font-size:10px;min-height:32px}.team-source-note{font-size:8px;margin-top:1px}#teamCodePreview{font-size:10px;line-height:1.35;height:56px}
 }
 @media(max-width:360px){.team-terminal .stream-status{font-size:8px}.team-terminal .stream-name{font-size:10px}.team-terminal .stream-top{gap:3px}.team-source-bar{font-size:8px}.team-console{padding-left:8px;padding-right:8px}}
+/* Phone portrait: reserve the actual scene rows above the deck instead of the
+   old fixed canvas deduction. Keep Neptune's feet and rock above all controls.
+   The compact source preview opens the unchanged full source/history dialog. */
+@media(max-width:760px) and (min-height:501px){
+ .world{grid-area:1 / 1 / 3 / 2}#atmosphere{height:100%}
+ .deck-bar>span:nth-child(2){max-width:none}.deck-bar button{min-height:32px}
+ .team-terminal .windows{grid-template-rows:repeat(2,37px)}.team-terminal .windows:before{top:18px;box-shadow:0 37px #74877935}.team-terminal .stream-window{min-height:37px}
+ .team-console{grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:5px 10px;min-height:0}
+ .team-observation{grid-column:1;grid-row:1}.team-observation #teamLocalTime{display:none}
+ .team-source{display:contents}.team-source-bar{grid-column:2;grid-row:1;min-height:32px}.team-source-bar>span{display:none}
+ #teamCodePreview{grid-column:1 / -1;grid-row:2;height:27px}
+ .team-source-note{grid-column:1 / -1;grid-row:3;margin:0}
+}
 @media(max-height:500px) and (min-width:540px){.team-terminal .windows{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:30px}.team-terminal .windows:before{top:15px;box-shadow:none}.team-terminal .stream-window{min-height:30px}.team-terminal .stream-top{flex-direction:column;align-items:flex-start;gap:2px}.team-console{grid-template-columns:minmax(180px,.8fr) minmax(0,1.7fr);min-height:86px;gap:12px;padding:5px 9px}.team-source{border-top:0;border-left:1px solid #84947c33;padding:0 0 0 10px}.team-source-bar{min-height:20px}.team-source-bar button{min-height:24px}#teamCodePreview{height:43px;font-size:9px}.team-observation #teamLocalState,.team-observation #teamLocalTime{display:block}.team-observation #teamLocalTime{margin-left:0}.team-line{font-size:7px}.team-line strong{font-size:7px;margin-left:auto}.team-source-note{font-size:7px}}
