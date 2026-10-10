@@ -1,0 +1,20 @@
+{
+  "files": {
+    "ATOMIC-WORKER-CACHE.sql": "fcfcfc1fc2054e4914c9562e459c345684a7c1a8cb5363a93eb02029d88f645c",
+    "CONTRACT.md": "58c6b45e218319748f17e6c9edd56f8dc5383804213fd5cb2e7bd90482b443b4",
+    "INSTALL-APPROVED.sql": "3f8768aca86413e1a937e6c600695c69529e78db13512a8e7dc565ec6dd81682",
+    "MANIFEST.json": "674e3836cabe659927fed9d285900080cea1384a3cf9f549031dae8eae39f5c1",
+    "PRODUCER.md": "8a9ef1d60e116c6ae41a69f2dbc16f69f0dc5fe3836bf841c89ec54ea6f6e379"
+  },
+  "required_native_inputs": {
+    "ATOMIC-NATIVE-UPGRADE.sql": "9c4f5ba7cd854e0d56d704465972a3581c14cec4c8bf1480bd1516c2ecc531f8"
+  },
+  "installed": false,
+  "private_or_live_records_included": false,
+  "verification": {
+    "public_cache_test_harness_included": false,
+    "private_cache_groups": 19,
+    "private_checks_required_before_installation": true,
+    "public_ci_scope": "Existing frontend and native backend suites; cache diagnostic tests are private-only."
+  }
+}

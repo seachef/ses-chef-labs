@@ -37,7 +37,7 @@ test('compact source keeps an accessible full-history control, portfolio, and tr
  assert.match(html,/id="teamFullSource"/);
  assert.match(html,/id="openPortfolio"/);
  assert.match(html,/id="teamCodingState">NOT CONNECTED/);
- assert.match(html,/Static source · full function in Code \+ history/);
+ assert.match(html,/Source references appear only after a matching worker event/);
  assert.doesNotMatch(phone,/#teamCodingState\{[^}]*display:none/);
 });
 
@@ -46,7 +46,7 @@ test('portrait compact rules preserve desktop and short landscape scopes without
  assert.ok(css.indexOf(marker)<css.indexOf('@media(max-height:500px)'));
  assert.doesNotMatch(phone,/body\s*\{|overflow\s*:\s*hidden|position\s*:\s*fixed|transform\s*:/);
  assert.doesNotMatch(phone,/font-size\s*:/);
- assert.match(html,/team-work\.css\?v=neptune-phone-rock-20261010/);
+ assert.match(html,/team-work\.css\?v=neptune-phone-rock-team-bridge-20261010/);
 });
 
 test('intrinsic scene/terminal partition leaves all feet and rock above the deck across phone sizes',()=>{

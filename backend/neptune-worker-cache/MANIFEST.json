@@ -1,0 +1,106 @@
+{
+  "component": "neptune-worker-cache",
+  "contract": "team-work-cache-v2",
+  "release_state": "uninstalled_candidate",
+  "sql_sha256": "fcfcfc1fc2054e4914c9562e459c345684a7c1a8cb5363a93eb02029d88f645c",
+  "predecessor_catalog_md5": {
+    "native027544_research": "ebb947a07dd579e567cdf84b97b2b3ae"
+  },
+  "approved_entrypoint_sha256": "3f8768aca86413e1a937e6c600695c69529e78db13512a8e7dc565ec6dd81682",
+  "installation_order": "native027544 with exact existing research first; cache second",
+  "public_transport": "separate nullable team_work JSONB column on existing public status row",
+  "new_overlay_trigger": false,
+  "predecessor_runtime_sha256": {
+    "native027544": "027544eb165e7b705302b4a48ad6fdc7d58602bb6ff3852829ad57f9982501be"
+  },
+  "functions": [
+    {
+      "name": "admit",
+      "arguments": "",
+      "body_md5": "2e0ff63a9af36f4ad2f662769d34b42a",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "headroom",
+      "arguments": "",
+      "body_md5": "ffe69622176aeaf87460e4b86057650f",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "now_at",
+      "arguments": "",
+      "body_md5": "0f07466da6eaa28778c1857bfdde383d",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "payload_valid",
+      "arguments": "p jsonb",
+      "body_md5": "9effc16d427ab93eb1330e1d28edf342",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "publish",
+      "arguments": "",
+      "body_md5": "1ad1efff3f6ed61ad9116746841643f3",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\"",
+        "lock_timeout=250ms"
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "publisher_update",
+      "arguments": "p jsonb, expected_generation bigint, expected_revision bigint",
+      "body_md5": "d86598c1fa0549e2781c7b0da509559c",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\"",
+        "lock_timeout=250ms"
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "worker_update",
+      "arguments": "worker_slot integer, p jsonb, expected_session_generation bigint, expected_run_generation bigint, expected_revision bigint",
+      "body_md5": "5cddab4f196175bd51042d2add6128b7",
+      "security_definer": false,
+      "settings": [
+        "search_path=\"\"",
+        "lock_timeout=250ms"
+      ],
+      "acl": "{postgres=X/postgres}"
+    }
+  ],
+  "bounds": {
+    "publisher_rows": 1,
+    "worker_rows": 6,
+    "recent_rows": 8,
+    "snapshot_rows": 1,
+    "envelope_bytes": 4096,
+    "snapshot_soft_bytes": 6144,
+    "snapshot_hard_bytes": 16384,
+    "cache_admission_bytes": 524288,
+    "shared_admission_bytes": 31457280
+  },
+  "existing_or_global_settings_changed": false,
+  "new_cache_reloptions": "existing defaults",
+  "financial_history_modified": false,
+  "new_public_or_client_privileges": false
+}

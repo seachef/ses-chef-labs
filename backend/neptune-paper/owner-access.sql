@@ -34,7 +34,8 @@ begin
 end$$;
 create function neptune_v2_private.publish_control_ack() returns void language plpgsql security invoker set search_path='' as $$begin
  update public.neptune_paper_v2_status p set payload=p.payload||jsonb_build_object('control',jsonb_build_object('requested_enabled',c.enabled,'requested_epoch',c.epoch,'ack_epoch',(a.state->>'control_epoch')::bigint,'enabled',coalesce((a.state->>'enabled')::boolean,false),'ack_status',a.state->>'control_ack_status','ack_at',a.state->>'control_ack_at'))
- from public.neptune_paper_v2_control c,neptune_v2_private.account a where p.id=c.id and a.id=c.id;
+ from public.neptune_paper_v2_control c,neptune_v2_private.account a where p.id=c.id and a.id=c.id
+ and p.payload->'control' is distinct from jsonb_build_object('requested_enabled',c.enabled,'requested_epoch',c.epoch,'ack_epoch',(a.state->>'control_epoch')::bigint,'enabled',coalesce((a.state->>'enabled')::boolean,false),'ack_status',a.state->>'control_ack_status','ack_at',a.state->>'control_ack_at');
 end$$;
 
 -- Sanitized fictional-paper history, never raw observations or owner identity.

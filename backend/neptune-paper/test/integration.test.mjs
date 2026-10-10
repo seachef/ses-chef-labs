@@ -1,8 +1,10 @@
+import {historicalAllVenuePolicy} from './fixtures/historical-policy.mjs';
 import {validateHistoryRow,historyCsv} from './reader/paper-history-v2.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {PGlite} from '@electric-sql/pglite';
 const db=new PGlite();const q=async(s,a=[])=>(await db.query(s,a)).rows;
 await db.exec('create role anon;create role authenticated;create role service_role;create schema auth;create function auth.uid() returns uuid language sql as $$select null::uuid$$;create table public.paper_control(id int,owner_id uuid);');
 for(const f of ['schema.sql','core.sql','owner-access.sql','native-economics.sql','native-ledger.sql','native-order-rules.sql','native-scanner-helpers.sql','native-audit.sql','native-public-projection.sql'])await db.exec(await fs.readFile(new URL('../'+f,import.meta.url),'utf8'));
+await db.exec(historicalAllVenuePolicy);
 await db.exec("insert into neptune_v2_private.build_metadata values(6,repeat('b',64),'00f878a855d0b8f65b57473bc0d2c89efde617b72ca5643b14ed05aa55afa8f8',now());select neptune_v2_private.initialize('AUD');insert into public.neptune_paper_v2_control(id,owner_id) values('neptune-paper-v2','00000000-0000-0000-0000-000000000001');select neptune_v2_private.allocate_specialists();update public.neptune_paper_v2_control set enabled=true;select neptune_v2_private.sync_control();");
 const native=JSON.parse(await fs.readFile(new URL('./fixtures/normalized-native.json',import.meta.url),'utf8'));
 const assets=['ETH/USD','SOL/USD','AVAX/USD','LINK/USD','AAVE/USD','UNI/USD'];

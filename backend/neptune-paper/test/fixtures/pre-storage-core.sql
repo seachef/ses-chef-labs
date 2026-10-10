@@ -65,10 +65,6 @@ create function neptune_v2_private.decide(obs text,at_time timestamptz,a text,ac
  did:=md5(obs||a||action||reason||result);
  d:=jsonb_build_object('id',did,'at',at_time,'asset',a,'action',action,'price',b->'bid','quote_currency',neptune_v2_private.instrument_currency(a),'reason',reason,'source',case when neptune_v2_private.native_spec(a) is null then 'Kraken public spot' else (neptune_v2_private.native_spec(a)->>'venue')||' public spot' end,'observation_id',obs,'risk_base',p->'initial_risk_base','stop',p->'stop','target',p->'target','invalidation',p->'invalidation','confidence','unvalidated','result',result,'origin_order_id',p->>'id','origin_decision_id',p->>'decision_id','config_version','neptune-v2-experimental-1','config_hash','00f878a855d0b8f65b57473bc0d2c89efde617b72ca5643b14ed05aa55afa8f8','source_hash',(select source_hash from neptune_v2_private.build_metadata order by id desc limit 1));
  if neptune_v2_private.native_spec(a) is not null then d:=d||jsonb_build_object('native_model_version',neptune_v2_private.native_model()->>'version','native_model_hash',neptune_v2_private.native_model()->>'hash','venue',neptune_v2_private.native_spec(a)->>'venue','market_type','spot','specialist_id',neptune_v2_private.native_spec(a)->>'agent');end if;
- -- Only the idle polling branch supplies this private immutable audit context.
- if action='hold' and reason='no_new_completed_bar' and result='no_trade' and p?'poll_context' then
- d:=d||jsonb_build_object('poll_context',p->'poll_context','poll_key',p->>'poll_key');
- end if;
  insert into neptune_v2_private.decisions values(did,obs,at_time,d);
  if p->>'id' is not null and result in ('cancelled','blocked') then insert into neptune_v2_private.order_events values(md5('event'||did),p->>'id',obs,at_time,result,d);end if;return d;
 end$$;
@@ -105,7 +101,7 @@ create function neptune_v2_private.process_scan(o jsonb) returns jsonb language 
 declare ac neptune_v2_private.account;s jsonb;obs text;n timestamptz:=clock_timestamp();at_time timestamptz;fx jsonb;fxrate numeric;fxok boolean:=false;
  specialist_budget numeric;specialists boolean;native boolean;rules jsonb;quote_fx jsonb;ownedqty numeric;dustqty numeric;dustcost numeric;dustrisk numeric;native_result jsonb; a text;m jsonb;b jsonb;br jsonb;p jsonb;pending jsonb;d jsonb;ord jsonb;f jsonb;res jsonb;books jsonb:='{}';markets jsonb:='{}';equity numeric;mark numeric;marksok boolean:=true;quote_at timestamptz;scanok boolean:=true;
  countpos int;aggregate numeric;qty numeric;price numeric;debit numeric;risk numeric;reward numeric;unitdebit numeric;unitrisk numeric;stopprice numeric;target numeric;cost numeric;atr numeric;pnl numeric;trailing_flag boolean;nextstop numeric;
- reason text;data_reason text;newbar bigint;lastbar bigint;signals int:=0;activity boolean:=false;seen text[]:='{}';fill_count int;fees numeric;realized numeric;daykey text;status text;report jsonb;recent jsonb;sizebytes bigint;storedbytes bigint;totalqty numeric;nearbid numeric;nearask numeric;v jsonb;fxcosts numeric;receipt record;settle jsonb;usdamount numeric;settled numeric;unsettled numeric;reservebytes bigint;post_equity numeric;unitloss numeric;exitprice numeric;relationbytes bigint;evidence jsonb;evidence_markets jsonb:='[]';compact jsonb;h text;oldref jsonb;prior_poll jsonb;poll_context jsonb;poll_key text;poll_anchor jsonb;
+ reason text;data_reason text;newbar bigint;lastbar bigint;signals int:=0;activity boolean:=false;seen text[]:='{}';fill_count int;fees numeric;realized numeric;daykey text;status text;report jsonb;recent jsonb;sizebytes bigint;storedbytes bigint;totalqty numeric;nearbid numeric;nearask numeric;v jsonb;fxcosts numeric;receipt record;settle jsonb;usdamount numeric;settled numeric;unsettled numeric;reservebytes bigint;post_equity numeric;unitloss numeric;exitprice numeric;relationbytes bigint;evidence jsonb;evidence_markets jsonb:='[]';compact jsonb;h text;oldref jsonb;
 begin
  perform neptune_v2_private.sync_control();
  perform 1 from public.neptune_paper_v2_control where id='neptune-paper-v2' for update;
@@ -220,10 +216,7 @@ begin
  perform neptune_v2_private.native_scan_reconcile();
  specialists:=exists(select 1 from neptune_v2_private.specialist_checkpoint);
  -- All buy intents are nonbinding; no cash is reserved. Later fills resize under this same account lock.
- -- Poll continuity is a cache of an immutable decision anchor, never a gate on execution.
- if jsonb_typeof(s->'idle_poll') is distinct from 'object' then s:=s||jsonb_build_object('idle_poll','{}'::jsonb);end if;
  foreach a in array neptune_v2_private.universe() loop
- prior_poll:=s#>array['idle_poll',a];s:=jsonb_set(s,'{idle_poll}',(s->'idle_poll')-a);
  m:=markets->a;b:=books->a;br:=neptune_v2_private.bars(m,at_time);pending:=s#>array['pending',a];p:=null;native:=neptune_v2_private.native_spec(a) is not null;rules:=m->'metadata';dustqty:=0;dustcost:=0;dustrisk:=0;
  -- Disabled venues cannot create intents or fills and do not make the active scan incomplete.
  -- The preceding protective-exit loop is intentionally untouched.
@@ -282,42 +275,13 @@ begin
  insert into neptune_v2_private.positions values(a,p) on conflict(asset) do update set payload=excluded.payload;
  s:=jsonb_set(s,'{pending}',(s->'pending')-a);perform neptune_v2_private.decide(obs,at_time,a,'buy','later_observation_entry',b,p,'filled');continue;
  end if;
- if newbar<=lastbar then
- -- Coalesce only repeated healthy idle polls. Every observation/price remains immutable.
- -- Any exposure, intent, older candle or earlier branch retains the original full audit.
- if newbar=lastbar and pending is null and s->'pending'='{}'::jsonb and s->'receivables'='{}'::jsonb
- and not exists(select 1 from neptune_v2_private.positions where (payload->>'qty')::numeric>0)
- and not exists(select 1 from neptune_v2_private.native_inventory idle_inventory where idle_inventory.qty>0)
- and neptune_v2_private.native_pending_count()=0 then
- poll_context:=jsonb_build_object('version',1,'asset',a,'completed_bar',newbar,'control_epoch',s->'control_epoch',
- 'build',(select jsonb_build_object('source_hash',source_hash,'config_hash',config_hash) from neptune_v2_private.build_metadata order by id desc limit 1),
- 'native_model_hash',case when native then neptune_v2_private.native_model()->>'hash' end,
- 'bars_hash',encode(sha256(convert_to((m->'bars')::text,'UTF8')),'hex'),'volume_reference',neptune_v2_private.instrument_volume_reference(m,a,quote_fx,at_time),
- 'sources_hash',(select encode(sha256(convert_to(coalesce(jsonb_object_agg(key,value->'source'),'{}'::jsonb)::text,'UTF8')),'hex') from jsonb_each(case when jsonb_typeof(m->'feed_evidence')='object' then m->'feed_evidence' else '{}'::jsonb end)),
- 'metadata_hash',encode(sha256(convert_to(((m->'metadata')-array['at','feed_evidence'])::text,'UTF8')),'hex'),
- 'quote_metadata_hash',case when native then encode(sha256(convert_to(((quote_fx#>array[neptune_v2_private.instrument_currency(a)||'/USD','metadata'])-array['at','feed_evidence'])::text,'UTF8')),'hex') end,
- 'fx_hash',encode(sha256(convert_to((fx-array['at','fetched_at','feed_evidence'])::text,'UTF8')),'hex'),
- 'native_source_state_hash',encode(sha256(convert_to(jsonb_build_object('provider_blocked',o#>'{native_feed,provider_blocked}','identity_blocked',o#>'{native_feed,identity_blocked}','feed_terminal',o#>'{native_feed,feed_terminal}')::text,'UTF8')),'hex'),
- 'eligibility',jsonb_build_object('cash',ac.cash,'equity',equity,'day',s->'day','day_equity',s->'day_equity','peak_equity',s->'peak_equity','risk_paused',s->'risk_paused','pause_reason',s->'pause_reason','entry_capacity_paused',s->'entry_capacity_paused','native_entry_capacity_paused',o#>'{native_feed,entry_capacity_paused}'));
- poll_key:=encode(sha256(convert_to(poll_context::text,'UTF8')),'hex');poll_anchor:=null;
- if prior_poll->>'key'=poll_key then
- select payload into poll_anchor from neptune_v2_private.decisions where id=prior_poll->>'decision_id' and at<at_time
- and payload->>'asset'=a and payload->>'action'='hold' and payload->>'reason'='no_new_completed_bar' and payload->>'result'='no_trade'
- and payload->>'poll_key'=poll_key and payload->'poll_context'=poll_context;
- end if;
- if poll_anchor is null then
- d:=neptune_v2_private.decide(obs,at_time,a,'hold','no_new_completed_bar',b,jsonb_build_object('poll_context',poll_context,'poll_key',poll_key));
- prior_poll:=jsonb_build_object('key',poll_key,'decision_id',d->>'id');
- end if;
- s:=jsonb_set(s,array['idle_poll',a],prior_poll);
- else perform neptune_v2_private.decide(obs,at_time,a,'hold','no_new_completed_bar',b,null);end if;
- continue;end if;
+ if newbar<=lastbar then perform neptune_v2_private.decide(obs,at_time,a,'hold','no_new_completed_bar',b,null);continue;end if;
  s:=jsonb_set(s,array['last_bar',a],to_jsonb(newbar));atr:=(br->>'atr')::numeric;
  stopprice:=least((br#>>'{last,c}')::numeric-2*atr,(br->>'structural')::numeric);
  unitdebit:=(ceil((b->>'ask')::numeric*1.0025/neptune_v2_private.num(m#>>'{metadata,tick_size}'))*neptune_v2_private.num(m#>>'{metadata,tick_size}'))*1.008*case when ac.currency='AUD' then 1.0025 else 1 end;unitrisk:=unitdebit-(floor(stopprice*.9975/neptune_v2_private.num(m#>>'{metadata,tick_size}'))*neptune_v2_private.num(m#>>'{metadata,tick_size}'))*.992*case when ac.currency='AUD' then .9975 else 1 end;target:=(ceil(((unitdebit+2*unitrisk)/(.992*case when ac.currency='AUD' then .9975 else 1 end))/neptune_v2_private.num(m#>>'{metadata,tick_size}'))+1)*neptune_v2_private.num(m#>>'{metadata,tick_size}')/.9975;cost:=unitdebit-(floor((b->>'bid')::numeric*.9975/neptune_v2_private.num(m#>>'{metadata,tick_size}'))*neptune_v2_private.num(m#>>'{metadata,tick_size}'))*.992*case when ac.currency='AUD' then .9975 else 1 end;
  if native then unitdebit:=neptune_v2_private.instrument_value(a,1,neptune_v2_private.instrument_depth(a,b->'asks',1,'buy',rules),'buy',rules,fx,quote_fx,at_time);ownedqty:=neptune_v2_private.net_owned_after_fee(a,1,rules);unitrisk:=unitdebit-neptune_v2_private.instrument_value(a,ownedqty,stopprice*.9975,'sell',rules,fx,quote_fx,at_time);unitloss:=greatest(0,unitdebit-neptune_v2_private.instrument_value(a,ownedqty,neptune_v2_private.instrument_depth(a,b->'bids',ownedqty,'sell',rules),'sell',rules,fx,quote_fx,at_time));qty:=neptune_v2_private.native_size(neptune_v2_private.specialist_entry_budget(a),unitdebit,unitrisk,unitloss,rules,dustcost);target:=neptune_v2_private.native_target(a,b,stopprice,rules,fx,quote_fx,at_time,qty);cost:=(unitdebit-neptune_v2_private.instrument_value(a,ownedqty,neptune_v2_private.instrument_depth(a,b->'bids',ownedqty,'sell',rules),'sell',rules,fx,quote_fx,at_time))/unitdebit*(b->>'ask')::numeric;end if;
  if (br#>>'{last,c}')::numeric>(br->>'breakout')::numeric and (br#>>'{last,v}')::numeric>=1.2*(br->>'mean_volume')::numeric and stopprice>0 and stopprice<(b->>'bid')::numeric and atr>=cost and target-(br#>>'{last,c}')::numeric<=6*atr then
- p:=jsonb_build_object('stop',stopprice,'target',target,'invalidation',stopprice,'initial_risk_base',case when specialists then least(equity,neptune_v2_private.specialist_entry_budget(a))*.0025 else equity*.0025 end);d:=neptune_v2_private.decide(obs,at_time,a,'buy','completed_15m_momentum',b,p,'pending');ord:=neptune_v2_private.make_order(d,p);s:=jsonb_set(s,array['pending',a],ord);signals:=signals+1;
+ p:=jsonb_build_object('stop',stopprice,'target',target,'invalidation',stopprice,'initial_risk_base',equity*.0025);d:=neptune_v2_private.decide(obs,at_time,a,'buy','completed_15m_momentum',b,p,'pending');ord:=neptune_v2_private.make_order(d,p);s:=jsonb_set(s,array['pending',a],ord);signals:=signals+1;
  else perform neptune_v2_private.decide(obs,at_time,a,'hold','no_qualified_momentum',b,null);end if;
  end loop;
  select cash into ac.cash from neptune_v2_private.account where id=ac.id;

@@ -39,6 +39,7 @@ declare evidence jsonb;m jsonb;rules jsonb;f jsonb;fid text;accounting jsonb;del
 begin
  perform 1 from public.neptune_paper_v2_control where id='neptune-paper-v2' for update;
  perform 1 from neptune_v2_private.account where id='neptune-paper-v2' for update;
+ if ord->>'side'='buy' and not coalesce((neptune_v2_private.native_activation_policy()->'native_entry_venues')?(neptune_v2_private.native_spec(asset)->>'venue'),false) then raise exception 'Native venue disabled by owner';end if;
  if at_time<=(ord->>'at')::timestamptz then raise exception 'Later observation required';end if;
  evidence:=neptune_v2_private.resolve_observation(obs);select value into m from jsonb_array_elements(evidence->'markets') where value->>'asset'=asset;
  if ord->>'side'='buy' then rules:=m->'metadata';else select payload->'verified_entry_rules' into rules from neptune_v2_private.positions where positions.asset=execute_native_fill.asset;end if;

@@ -1,3 +1,4 @@
+import {historicalAllVenuePolicy} from './fixtures/historical-policy.mjs';
 // Actual candidate SQL and engine; pg_net transport only is stubbed. No live calls.
 import {PGlite} from '@electric-sql/pglite';
 import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import assert from 'node:assert/strict';
@@ -13,7 +14,8 @@ create table cron.job_run_details(jobid bigint,return_message text);create table
 create function cron.alter_job(job_id bigint,active boolean) returns void language sql as $$update cron.job set active=$2 where jobid=$1$$;
 create function cron.unschedule(job_id bigint) returns boolean language sql as $$update cron.job set active=false where jobid=$1 returning true$$;
 create table public.observed_scans(payload jsonb);`);
-for(const f of ['schema.sql','core.sql','owner-access.sql','native-economics.sql','native-ledger.sql','native-order-rules.sql','native-scanner-helpers.sql','native-audit.sql','native-public-projection.sql','collector.sql','native-collector.sql','collector-integration.sql'])await db.exec(await fs.readFile(new URL('../'+f,import.meta.url),'utf8'));
+for(const f of ['schema.sql','core.sql','owner-access.sql','native-economics.sql','native-ledger.sql','native-order-rules.sql','native-scanner-helpers.sql','native-audit.sql','native-public-projection.sql','collector.sql','native-collector.sql','transport-observation.sql','collector-integration.sql'])await db.exec(await fs.readFile(new URL('../'+f,import.meta.url),'utf8'));
+await db.exec(historicalAllVenuePolicy);
 // Test-only call counter still invokes the actual engine, never a fake process_scan.
 await db.exec(`alter function neptune_v2_private.process_scan(jsonb) rename to tested_process_scan;
 create function neptune_v2_private.process_scan(o jsonb) returns jsonb language plpgsql as $$begin insert into public.observed_scans values(o);return neptune_v2_private.tested_process_scan(o);end$$;

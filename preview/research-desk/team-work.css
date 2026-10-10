@@ -34,3 +34,34 @@
  .team-source-note{grid-column:1 / -1;grid-row:3;margin:0}
 }
 @media(max-height:500px) and (min-width:540px){.team-terminal .windows{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:30px}.team-terminal .windows:before{top:15px;box-shadow:none}.team-terminal .stream-window{min-height:30px}.team-terminal .stream-top{flex-direction:column;align-items:flex-start;gap:2px}.team-console{grid-template-columns:minmax(180px,.8fr) minmax(0,1.7fr);min-height:86px;gap:12px;padding:5px 9px}.team-source{border-top:0;border-left:1px solid #84947c33;padding:0 0 0 10px}.team-source-bar{min-height:20px}.team-source-bar button{min-height:24px}#teamCodePreview{height:43px;font-size:9px}.team-observation #teamLocalState,.team-observation #teamLocalTime{display:block}.team-observation #teamLocalTime{margin-left:0}.team-line{font-size:7px}.team-line strong{font-size:7px;margin-left:auto}.team-source-note{font-size:7px}}
+
+/* Coding workers and market reports share one terminal, with distinct views. */
+.team-view-switch{display:flex;align-items:center;gap:12px;min-height:26px;padding:0 14px;border-bottom:1px solid #69826a33;font:9px/1.2 ui-monospace,SFMono-Regular,monospace;color:#81917a}.team-view-switch button{min-height:26px;font:10px/1.2 ui-monospace,SFMono-Regular,monospace;color:#899b84;padding:2px 0}.team-view-switch button[aria-pressed=true]{color:#d2eec6;text-decoration:underline;text-underline-offset:4px}.team-view-switch span{margin-left:auto}
+#marketStreamSlots[hidden],#codingWorkerSlots[hidden]{display:none!important}
+.coding-worker-slots{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:42px;padding:0 8px;border-bottom:1px solid #69826a45;background:#1220175c}.coding-worker-slots:before{content:'';position:absolute;left:4%;right:4%;top:21px;height:1px;background:#74877935;pointer-events:none}
+.worker-slot{position:relative;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:4px 8px;border:0;border-radius:0;color:#899b84;background:transparent;font:10px/1.1 ui-monospace,SFMono-Regular,monospace;text-align:left}.worker-slot span{position:relative;z-index:1;background:#0b1912;padding-right:5px}.worker-slot .worker-number:before{content:'○ ';color:#6e8270}.worker-slot .worker-role{font-size:8px;padding-left:13px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.worker-slot[data-state=working] .worker-number:before{content:'● ';color:#c5f2a4;text-shadow:0 0 8px #bef78d66}.worker-slot[aria-pressed=true]{box-shadow:inset 0 -1px #a8c997}.worker-slot:focus-visible{outline:2px solid #c6eeb8;outline-offset:-2px}.worker-slot[data-pulse=true]{animation:worker-observed-glow 850ms ease-out 1}
+@keyframes worker-observed-glow{0%{background-color:#c4efa72e}100%{background-color:transparent}}
+#teamWorkerResult{font-size:10px;line-height:1.35;margin:0;color:#bed7b4;overflow-wrap:anywhere}#teamWorkerTime{font-size:9px;line-height:1.25;margin:3px 0;color:#82957e}#teamWorkerTask{display:block;font-size:10px;line-height:1.35;margin:4px 0 5px;color:#a8bd9f}
+.team-terminal[data-view=workers] #teamLocalState,.team-terminal[data-view=workers] #teamLocalOutput,.team-terminal[data-view=workers] #teamLocalTime{display:none}.team-terminal[data-view=market] #teamWorkerTask,.team-terminal[data-view=market] #teamWorkerResult,.team-terminal[data-view=market] #teamWorkerTime{display:none}
+@media(max-width:760px){.team-view-switch{padding:0 10px;gap:10px;min-height:28px}.team-view-switch button{min-height:28px;font-size:10px}.team-view-switch span{font-size:8px;max-width:47%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.coding-worker-slots{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,37px);padding:0 5px}.coding-worker-slots:before{top:18px;box-shadow:0 37px #74877935}.worker-slot{min-height:37px;font-size:10px;padding:3px 6px}.worker-slot .worker-role{font-size:8px}.worker-slot[data-handoff=true]:after{top:18px}.team-terminal[data-view=workers] .team-console{min-height:145px}.team-terminal[data-view=workers] #teamWorkerTask{font-size:9px;margin:3px 0}.team-terminal[data-view=workers] #teamWorkerResult{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.team-terminal[data-view=workers] #teamWorkerTime{font-size:8px;margin-top:2px}}
+@media(max-height:500px) and (min-width:540px){.team-view-switch{min-height:20px}.team-view-switch button{min-height:20px;font-size:9px}.coding-worker-slots{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:30px}.coding-worker-slots:before{top:15px;box-shadow:none}.worker-slot{min-height:30px;font-size:9px;padding:3px 6px}.worker-slot .worker-role{font-size:7px}.worker-slot[data-handoff=true]:after{top:15px}.team-terminal[data-view=workers] .team-console{min-height:86px}#teamWorkerTask{font-size:9px;margin:3px 0}#teamWorkerResult{font-size:9px}#teamWorkerTime{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.worker-slot[data-pulse=true],.worker-slot[data-handoff=true]:after{animation:none}}
+
+/* Keep the worker view inside the same compact portrait envelope. */
+@media(max-width:760px) and (min-height:501px){
+ .team-terminal[data-view=workers] .team-console{min-height:0}
+ .team-terminal[data-view=workers] #teamWorkerTime{display:none}
+ .team-terminal[data-view=workers] #teamWorkerTask{margin:2px 0;font-size:9px;line-height:1.2}
+ .team-terminal[data-view=workers] #teamWorkerResult{font-size:9px;line-height:1.2}
+}
+.worker-links{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}.worker-handoff-edge{fill:none;stroke:#c5f2a4;stroke-width:1.5;opacity:0;animation:worker-handoff-once 850ms ease-out 1;filter:drop-shadow(0 0 3px #bef78d66)}
+@keyframes worker-handoff-once{0%{opacity:.7}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.worker-handoff-edge{animation:none;opacity:0}}
+
+/* The real activity feed uses the source pane's exact existing dimensions. */
+#teamActivityPreview{font:11px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#bee5b0;white-space:pre-wrap;overflow-wrap:anywhere;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scroll-behavior:auto;margin:0;height:71px;max-width:100%;tab-size:2}
+#teamCodePreview[hidden],#teamActivityPreview[hidden],#toggleTeamPane[hidden]{display:none!important}
+.team-source-bar #toggleTeamPane{font-size:9px;min-width:50px;padding:0;text-decoration:none}
+@media(max-width:760px){#teamActivityPreview{font-size:10px;line-height:1.35;height:56px}.team-source-bar{gap:5px}.team-source-bar #toggleTeamPane{font-size:9px;min-width:48px}}
+@media(max-width:760px) and (min-height:501px){#teamActivityPreview{grid-column:1 / -1;grid-row:2;height:27px}}
+@media(max-height:500px) and (min-width:540px){#teamActivityPreview{height:43px;font-size:9px}.team-source-bar #toggleTeamPane{font-size:8px;min-width:42px}}

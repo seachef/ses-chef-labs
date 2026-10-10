@@ -6,26 +6,26 @@
       "status": "completed",
       "label": "Frontend tests",
       "command": "node --test *.test.mjs",
-      "started_at": "2026-10-10T00:12:33.613Z",
-      "completed_at": "2026-10-10T00:12:35.622Z",
+      "started_at": "2026-10-10T02:46:58.930Z",
+      "completed_at": "2026-10-10T02:47:00.814Z",
       "exit_code": 0,
-      "passed": 333,
+      "passed": 392,
       "failed": 0,
-      "source_set_sha256": "7313433ba53c5026a06ad487b0cd9c8088a748fa5802f6b6331eb2fa226094ab",
-      "log_sha256": "c0b9fcf32a1623d286af5607a522f3119e4d7064acd850c16876ea52f60bff24"
+      "source_set_sha256": "5fecce7ac23cf71a37d8d8a14c22390758c214a21284f991077e3c9c66103a2b",
+      "log_sha256": "1c429cf5aa0d702f3b3a5b04079f3b62d8d235a19b876b020597938179e8849a"
     },
     {
       "kind": "test_run",
       "status": "completed",
       "label": "Backend tests",
       "command": "npm test",
-      "started_at": "2026-10-10T00:12:35.623Z",
-      "completed_at": "2026-10-10T00:13:03.856Z",
+      "started_at": "2026-10-10T02:47:00.815Z",
+      "completed_at": "2026-10-10T02:47:51.447Z",
       "exit_code": 0,
-      "passed": 27,
+      "passed": 38,
       "failed": 0,
-      "source_set_sha256": "7313433ba53c5026a06ad487b0cd9c8088a748fa5802f6b6331eb2fa226094ab",
-      "log_sha256": "8f609f9814bfcbb22d2319c359f3f2adaff7c3eb24680f018d556a25183e9d79"
+      "source_set_sha256": "5fecce7ac23cf71a37d8d8a14c22390758c214a21284f991077e3c9c66103a2b",
+      "log_sha256": "766e263bb1c5dad3daab217798df8f12cbf28408fb42d414e3d6c29719ec9de4"
     }
   ]
 }

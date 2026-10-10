@@ -16,13 +16,34 @@ function recordRuntime(message){
 const safe=v=>typeof v==='string'?v.slice(0,1000):'';
 const stamp=v=>Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('en-AU',{timeZone:'Australia/Perth',hour12:false}):'—';
 const sampleAge=at=>{const age=Date.now()-Date.parse(at);return Number.isFinite(age)&&age>=0?Math.floor(age/1000)+'s ago':'age unavailable';};
+let nextTeamColumnProbe=0;
+function missingTeamColumn(error){
+ if(!error||typeof error.message!=='string')return false;
+ if(error.code==='42703')return /^column (?:(?:public\.)?neptune_paper_v2_status\.)?"?team_work"? does not exist$/.test(error.message);
+ return error.code==='PGRST204'&&error.message==="Could not find the 'team_work' column of 'neptune_paper_v2_status' in the schema cache";
+}
 async function readReports(){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
- try{const response=await fetch(endpoint,{headers:{apikey:publicKey},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal});
- if(!response.ok)throw Error('Status service unavailable');
- const rows=await response.json();return Array.isArray(rows)&&rows.length===0?null:validateV2(rows);
+ const options={headers:{apikey:publicKey},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal};
+ let withTeamColumn=Date.now()>=nextTeamColumnProbe;
+ try{
+  let response=await fetch(withTeamColumn?endpoint+',team_work':endpoint,options);
+  if(!response.ok&&withTeamColumn&&response.status===400){
+   let error=null;try{error=await response.json();}catch{}
+   if(missingTeamColumn(error)){
+    // Pre-migration fallback: at most one extra request per minute. Access denials never enter this branch.
+    nextTeamColumnProbe=Date.now()+60000;withTeamColumn=false;response=await fetch(endpoint,options);
+   }
+  }
+  if(!response.ok)throw Error('Status service unavailable');
+  const rows=await response.json();if(Array.isArray(rows)&&rows.length===0)return null;
+  const validated=validateV2(rows);
+  // Only the dedicated column is the worker transport. Any legacy payload cache fails closed.
+  const legacyCache=Object.hasOwn(validated,'team_work')&&validated.team_work!==null;
+  return {...validated,team_work:!legacyCache&&withTeamColumn?(rows[0].team_work??null):null};
  }finally{clearTimeout(timeout);}
 }
+
 function emitInterfaceWork(kind,runId,startedAt,summary){
  // Local invocation telemetry contains no report, account data, URL or credentials.
  try{document.dispatchEvent?.(new CustomEvent('neptune:interface-work',{detail:{
@@ -34,11 +55,12 @@ function emitInterfaceWork(kind,runId,startedAt,summary){
   output:{summary,exit_code:null},review:null
  }}));}catch{/* A display observer must never interrupt the existing feed. */}
 }
+function emitTeamWorkReport(payload){try{document.dispatchEvent?.(new CustomEvent(payload?'neptune:team-work-report':'neptune:team-work-disconnected',{detail:payload}));}catch{/* Evidence display cannot interrupt the paper feed. */}}
 async function refreshFeed(){
  if(busy)return;
  busy=true;$('refresh').disabled=true;recordRuntime('GET paper status · request started');
  const workStartedAt=new Date().toISOString(),workRunId='interface:'+workStartedAt+':'+polls;emitInterfaceWork('started',workRunId,workStartedAt,'Read-only status request started');
- try{report=await readReports();cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
+ try{report=await readReports();emitTeamWorkReport(report?.team_work??null);cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;emitTeamWorkReport(null);cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
  finally{polls++;busy=false;$('refresh').disabled=false;render();}
 }
 function igniteDecisions(){

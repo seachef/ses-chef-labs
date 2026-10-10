@@ -55,10 +55,10 @@ begin
 end$$;
 
 -- Decimal strings preserve numeric precision for cross-language consumers.
-create function neptune_mv_private.parse(v text,k text,raw text,received timestamptz,cutoff timestamptz,meta jsonb default null,protective boolean default false) returns jsonb language plpgsql stable set search_path='' as $$
-declare j jsonb;p jsonb;b jsonb;q jsonb;x jsonb;f jsonb;out jsonb:='{}';arr jsonb;levels jsonb;side int;px numeric;sz numeric;prev numeric;t numeric;last_t numeric;lo numeric;hi numeric;op numeric;cl numeric;vol numeric:=0;quotevol numeric:=0;lowerquote numeric:=0;cnt int:=0;id text;quote text;lot jsonb;pricefilter jsonb;notional jsonb;marketlot jsonb;upper_ms bigint:=neptune_mv_private.ms(cutoff);received_ms bigint:=neptune_mv_private.ms(received);window_ms bigint:=floor(neptune_mv_private.ms(received)/900000)*900000;rules jsonb;
+create function neptune_mv_private.parse(v text,k text,raw text,received timestamptz,cutoff timestamptz,meta jsonb default null,protective boolean default false,observed_upper timestamptz default null) returns jsonb language plpgsql stable set search_path='' as $$
+declare j jsonb;p jsonb;b jsonb;q jsonb;x jsonb;f jsonb;out jsonb:='{}';arr jsonb;levels jsonb;side int;px numeric;sz numeric;prev numeric;t numeric;last_t numeric;lo numeric;hi numeric;op numeric;cl numeric;vol numeric:=0;quotevol numeric:=0;lowerquote numeric:=0;cnt int:=0;id text;quote text;lot jsonb;pricefilter jsonb;notional jsonb;marketlot jsonb;upper_ms bigint:=neptune_mv_private.ms(cutoff);received_ms bigint:=neptune_mv_private.ms(received);observed_time timestamptz:=coalesce(observed_upper,received);observed_ms bigint:=neptune_mv_private.ms(coalesce(observed_upper,received));window_ms bigint:=floor(neptune_mv_private.ms(received)/900000)*900000;rules jsonb;
 begin
- if v is null or v not in ('binance','hyperliquid','USDT','USDC') or received is null or cutoff is null or received>cutoff or received<cutoff-interval '30 seconds' or raw is null or octet_length(raw)>neptune_mv_private.limit_bytes(k) then return null;end if;
+ if v is null or v not in ('binance','hyperliquid','USDT','USDC') or received is null or cutoff is null or observed_time is null or observed_time<received or observed_time>cutoff or received>cutoff or received<cutoff-interval '30 seconds' or raw is null or octet_length(raw)>neptune_mv_private.limit_bytes(k) then return null;end if;
  j:=raw::jsonb;
  if v in ('USDT','USDC') then
   if j->'error' is distinct from '[]'::jsonb or jsonb_typeof(j->'result') is distinct from 'object' then return null;end if;
@@ -75,12 +75,12 @@ begin
    for x in select value from jsonb_array_elements(levels) loop
     if jsonb_typeof(x) is distinct from 'array' or jsonb_array_length(x)<>3 then return null;end if;
     px:=neptune_mv_private.num(x->>0);sz:=neptune_mv_private.num(x->>1);t:=neptune_mv_private.num(x->>2);
-    if px is null or sz is null or px<=0 or sz<=0 or t is null or t<=0 or t*1000>received_ms or (prev is not null and ((side=0 and px>=prev) or (side=1 and px<=prev))) then return null;end if;
+    if px is null or sz is null or px<=0 or sz<=0 or t is null or t<=0 or t*1000>observed_ms or (prev is not null and ((side=0 and px>=prev) or (side=1 and px<=prev))) then return null;end if;
     arr:=arr||jsonb_build_array(jsonb_build_array(px::text,sz::text,t));prev:=px;
    end loop;out:=out||jsonb_build_object(case side when 0 then 'bids' else 'asks' end,arr);
   end loop;
   if (out#>>'{bids,0,0}')::numeric>=(out#>>'{asks,0,0}')::numeric then return null;end if;
-  return jsonb_build_object('asset',v||'/USD','base',v,'quote','USD','book',out||jsonb_build_object('at',received,'timestamp_basis','http_response_observed','level_timestamp_basis','last_level_modification'),'received_at',received,'metadata',meta,'basis','observed_size_limited_depth','peg_assumed',false);
+  return jsonb_build_object('asset',v||'/USD','base',v,'quote','USD','book',out||jsonb_build_object('at',received,'timestamp_basis','conservative_sample_lower_bound','level_timestamp_basis','last_level_modification'),'received_at',received,'metadata',meta,'basis','observed_size_limited_depth','peg_assumed',false);
  end if;
  if v not in ('binance','hyperliquid') then return null;end if;
  id:=case v when 'binance' then 'binance:SOLUSDT' else 'hyperliquid:@107' end;quote:=case v when 'binance' then 'USDT' else 'USDC' end;
@@ -117,7 +117,7 @@ begin
  if k='avg_price' then
   if v<>'binance' then return null;end if;
   px:=neptune_mv_private.num(j->>'price');sz:=neptune_mv_private.num(j->>'mins');t:=neptune_mv_private.num(j->>'closeTime');
-  if px is null or px<=0 or sz is null or sz<>floor(sz) or t is null or t<>floor(t) or t>received_ms or t<upper_ms-60000 then return null;end if;
+  if px is null or px<=0 or sz is null or sz<>floor(sz) or t is null or t<>floor(t) or t>observed_ms or t<upper_ms-60000 then return null;end if;
   cnt:=0;
   for f in select value from jsonb_array_elements(meta#>'{rules,all_filters}') where value->>'filterType' in ('PERCENT_PRICE','PERCENT_PRICE_BY_SIDE') loop
    if neptune_mv_private.num(f->>'avgPriceMins') is distinct from sz then return null;end if;cnt:=cnt+1;
@@ -138,9 +138,9 @@ begin
    end loop;out:=out||jsonb_build_object(case side when 0 then 'bids' else 'asks' end,arr);
   end loop;
   if (out#>>'{bids,0,0}')::numeric >= (out#>>'{asks,0,0}')::numeric then return null;end if;
-  if v='hyperliquid' then t:=neptune_mv_private.num(j->>'time');if t is null or t<>floor(t) or t>received_ms or t<upper_ms-15000 then return null;end if;
+  if v='hyperliquid' then t:=neptune_mv_private.num(j->>'time');if t is null or t<>floor(t) or t>observed_ms or t<upper_ms-15000 then return null;end if;
   else t:=null;px:=neptune_mv_private.num(j->>'lastUpdateId');if px is null or px<>floor(px) or px<=0 then return null;end if;end if;
-  return jsonb_build_object('book',out||jsonb_build_object('at',case when v='hyperliquid' then to_timestamp((t/1000)::double precision) else received end,'source_timestamp_ms',t,'sequence',case v when 'binance' then j->'lastUpdateId' else null end,'timestamp_basis',case v when 'binance' then 'http_response_observed' else 'venue_timestamp' end),'received_at',received,'protective_only',protective,'metadata_stale',(meta->>'at')::timestamptz<cutoff-interval '1 hour','entry_eligible',false);
+  return jsonb_build_object('book',out||jsonb_build_object('at',case when v='hyperliquid' then to_timestamp((t/1000)::double precision) else received end,'source_timestamp_ms',t,'sequence',case v when 'binance' then j->'lastUpdateId' else null end,'timestamp_basis',case v when 'binance' then 'conservative_sample_lower_bound' else 'venue_timestamp' end),'received_at',received,'protective_only',protective,'metadata_stale',(meta->>'at')::timestamptz<cutoff-interval '1 hour','entry_eligible',false);
  elsif k='bars' then
   if jsonb_typeof(j) is distinct from 'array' or jsonb_array_length(j) not between 22 and 97 then return null;end if;arr:='[]';last_t:=null;
   for x in select value from jsonb_array_elements(j) loop
@@ -151,7 +151,7 @@ begin
     if x->>'s' is distinct from '@107' or x->>'i' is distinct from '15m' then return null;end if;
     t:=neptune_mv_private.num(x->>'t');px:=neptune_mv_private.num(x->>'T');op:=neptune_mv_private.num(x->>'o');hi:=neptune_mv_private.num(x->>'h');lo:=neptune_mv_private.num(x->>'l');cl:=neptune_mv_private.num(x->>'c');sz:=neptune_mv_private.num(x->>'v');prev:=null;
    end if;
-   if t is null or mod(t,900000)<>0 or px is null or px<>t+899999 or t>received_ms or op is null or hi is null or lo is null or cl is null or sz is null or least(op,lo,cl)<=0 or hi<greatest(op,lo,cl) or lo>least(op,hi,cl) or (v='binance' and prev is null) then return null;end if;
+   if t is null or mod(t,900000)<>0 or px is null or px<>t+899999 or t>observed_ms or op is null or hi is null or lo is null or cl is null or sz is null or least(op,lo,cl)<=0 or hi<greatest(op,lo,cl) or lo>least(op,hi,cl) or (v='binance' and prev is null) then return null;end if;
    if t+900000>received_ms then continue;end if;
    if t<window_ms-86400000 then continue;end if;
    if last_t is not null and t<>last_t+900000 then return null;end if;last_t:=t;
@@ -164,7 +164,7 @@ begin
   for x in select value from jsonb_array_elements(j) loop
    if v='binance' then px:=neptune_mv_private.num(x->>'price');sz:=neptune_mv_private.num(x->>'qty');
    else if x->>'coin' is distinct from '@107' then return null;end if;px:=neptune_mv_private.num(x->>'px');sz:=neptune_mv_private.num(x->>'sz');end if;
-   t:=neptune_mv_private.num(x->>'time');if px is null or px<=0 or sz is null or sz<=0 or t is null or t<>floor(t) or t>received_ms or t<=0 then return null;end if;last_t:=greatest(last_t,t);
+   t:=neptune_mv_private.num(x->>'time');if px is null or px<=0 or sz is null or sz<=0 or t is null or t<>floor(t) or t>observed_ms or t<=0 then return null;end if;last_t:=greatest(last_t,t);
    arr:=arr||jsonb_build_array(jsonb_build_object('price',px::text,'base_qty',sz::text,'time_ms',t,'id',case v when 'binance' then x->'id' else x->'tid' end));
   end loop;
   return jsonb_build_object('trades',arr,'trade_at',to_timestamp((last_t/1000)::double precision),'trade_window_complete',false);
@@ -252,11 +252,12 @@ begin
  for prov,block in select key,value from jsonb_each(c.provider_blocked) loop
   if block->>'permanent'='false' and (block->>'blocked_until')::timestamptz<=n then c.provider_blocked:=c.provider_blocked-prov;end if;
  end loop;
- update neptune_mv_private.control set provider_blocked=c.provider_blocked where id;
- if (c.provider_blocked?'binance' or c.identity_blocked?'binance') and (c.provider_blocked?'hyperliquid' or c.identity_blocked?'hyperliquid') and c.provider_blocked?'kraken' then return 'providers_blocked';end if;
+ update neptune_mv_private.control set provider_blocked=c.provider_blocked where id and provider_blocked is distinct from c.provider_blocked;
+ if not exists(select 1 from jsonb_array_elements_text(neptune_v2_private.native_activation_policy()->'native_collection_venues') x(v) where not(c.identity_blocked?x.v) and not(c.provider_blocked?neptune_mv_private.provider(x.v))) then return 'providers_blocked';end if;
  if c.last_epoch is not null and (ep<=c.last_epoch or n<c.last_dispatch_at+interval '60 seconds') then return 'rate_limited';end if;
  update neptune_mv_private.control set last_epoch=ep,last_dispatch_at=n,pending_epoch=ep,pending_owner_epoch=owner_epoch,pending_at=n,batches=batches+1 where id;
  foreach v in array array['binance','hyperliquid','USDT','USDC'] loop
+  if not coalesce((neptune_v2_private.native_activation_policy()->'native_collection_venues')?v,false) then continue;end if;
   if c.identity_blocked?v or c.provider_blocked?neptune_mv_private.provider(v) then continue;end if;
   held:=neptune_mv_private.held_metadata(v);
   foreach k in array array['metadata','depth','bars','trades','avg_price','fx'] loop
@@ -282,9 +283,10 @@ begin
 end$$;
 
 create function neptune_mv_private.collect(owner_epoch bigint) returns jsonb language plpgsql volatile set search_path='' as $$
-declare c neptune_mv_private.control;n timestamptz:=clock_timestamp();q record;r record;p jsonb;m jsonb;out jsonb:='{"schema_version":1,"markets":{},"quote_fx":{},"entry_eligible":false}';e jsonb;ready int;expected int;bytes bigint:=0;bad boolean:=false;outcome text:='processed';cache_age numeric;d timestamptz;prov text;block jsonb;
+declare c neptune_mv_private.control;n timestamptz:=clock_timestamp();q record;r record;p jsonb;m jsonb;out jsonb:='{"schema_version":1,"markets":{},"quote_fx":{},"entry_eligible":false}';e jsonb;ready int;expected int;bytes bigint:=0;bad boolean:=false;outcome text:='processed';cache_age numeric;d timestamptz;prov text;block jsonb;receipt jsonb;lower_time timestamptz;observed_time timestamptz;
 begin
  select * into c from neptune_mv_private.control where id for update;if not found or c.pending_epoch is null or c.terminal then return null;end if;
+ perform neptune_mv_private.observe_pending('native',c.pending_epoch);n:=clock_timestamp();
  select count(*) into expected from neptune_mv_private.requests where epoch=c.pending_epoch;
  select count(*) into ready from neptune_mv_private.requests rq join net._http_response rs on rs.id=rq.request_id where rq.epoch=c.pending_epoch;
  if ready<expected and n<c.pending_at+interval '15 seconds' then return null;end if;
@@ -307,14 +309,17 @@ begin
  if outcome='processed' and c.provider_blocked<>'{}'::jsonb then outcome:='partial_providers';end if;
  if outcome in ('processed','partial_providers') then
   for q in select * from neptune_mv_private.requests where epoch=c.pending_epoch order by case when kind='metadata' then 0 else 1 end,kind,venue loop
-   select * into r from net._http_response where id=q.request_id;
-   if not found or c.provider_blocked?neptune_mv_private.provider(q.venue) then continue;end if;
-   if r.status_code is distinct from 200 or coalesce(r.timed_out,false) or r.error_msg is not null or r.created is null or r.created<q.sent_at or r.created>q.sent_at+interval '10 seconds' or r.created>n or r.created<n-interval '30 seconds' or coalesce(r.content_type,'') not ilike 'application/json%' or octet_length(r.content)>neptune_mv_private.limit_bytes(q.kind) then continue;end if;
+   receipt:=neptune_mv_private.observe_response('native',q.request_id);
+   if receipt is null or c.provider_blocked?neptune_mv_private.provider(q.venue) then continue;end if;
+   select * into r from jsonb_populate_record(null::net._http_response,receipt->'response');
+   lower_time:=(receipt->>'sample_lower_bound')::timestamptz;observed_time:=(receipt->>'first_observed_at')::timestamptz;
+   if observed_time>n then continue;end if;
+   if r.status_code is distinct from 200 or coalesce(r.timed_out,false) or r.error_msg is not null or r.created is null or lower_time<q.sent_at or lower_time>q.sent_at+interval '10 seconds' or lower_time>n or lower_time<n-interval '30 seconds' or observed_time<lower_time or coalesce(r.content_type,'') not ilike 'application/json%' or octet_length(r.content)>neptune_mv_private.limit_bytes(q.kind) then continue;end if;
    -- Cached market responses cannot masquerade as current transport evidence.
    begin
     cache_age:=neptune_mv_private.num(coalesce(r.headers->>'age',r.headers->>'Age'));
     if (r.headers?'age' or r.headers?'Age') and (cache_age is null or cache_age>case q.kind when 'metadata' then 3600 when 'bars' then 60 else 5 end) then continue;end if;
-    if r.headers?'date' or r.headers?'Date' then d:=coalesce(r.headers->>'date',r.headers->>'Date')::timestamptz;if d>n+interval '5 seconds' or d<q.sent_at-make_interval(secs=>case q.kind when 'metadata' then 3600 when 'bars' then 60 else 5 end) then continue;end if;end if;
+    if r.headers?'date' or r.headers?'Date' then d:=coalesce(r.headers->>'date',r.headers->>'Date')::timestamptz;if d>observed_time+interval '5 seconds' or d<q.sent_at-make_interval(secs=>case q.kind when 'metadata' then 3600 when 'bars' then 60 else 5 end) then continue;end if;end if;
    exception when others then continue;end;
    if q.kind='metadata' and neptune_mv_private.identity_conflict(q.venue,r.content) then c.identity_blocked:=c.identity_blocked||jsonb_build_object(q.venue,jsonb_build_object('reason','source_identity_or_tradability_conflict','at',n,'request_id',q.request_id,'source',q.url,'body_sha256',encode(sha256(convert_to(r.content,'UTF8')),'hex')));continue;end if;
    if c.identity_blocked?q.venue then continue;end if;
@@ -324,8 +329,8 @@ begin
     if m is null or encode(sha256(convert_to('metadata:'||m::text,'UTF8')),'hex') is distinct from q.held_rules_ref or m->>'revision' is distinct from neptune_mv_private.held_metadata(q.venue)->>'revision' then continue;end if;
    end if;
    if q.kind<>'metadata' and q.metadata_revision is distinct from m->>'revision' then continue;end if;
-   p:=neptune_mv_private.parse(q.venue,q.kind,r.content,r.created,n,m,q.protective_only);if p is null then continue;end if;
-   e:=jsonb_build_object('request_id',q.request_id,'source',q.url,'request_body',q.body,'sent_at',q.sent_at,'received_at',r.created,'body_sha256',encode(sha256(convert_to(r.content,'UTF8')),'hex'),'epoch',q.epoch,'metadata_revision',q.metadata_revision,'protective_only',q.protective_only,'held_rules_ref',q.held_rules_ref,'http_headers',jsonb_build_object('date',coalesce(r.headers->>'date',r.headers->>'Date'),'age',cache_age),'provenance','trusted_pg_net');
+   p:=neptune_mv_private.parse(q.venue,q.kind,r.content,lower_time,n,m,q.protective_only,observed_time);if p is null then continue;end if;
+   e:=jsonb_build_object('request_id',q.request_id,'source',q.url,'request_body',q.body,'sent_at',q.sent_at,'received_at',lower_time,'received_at_basis','conservative_sample_lower_bound','batch_started_at',r.created,'first_observed_at',observed_time,'wire_received_at',null,'request_sha256',receipt->>'request_sha256','response_sha256',receipt->>'response_sha256','body_sha256',encode(sha256(convert_to(r.content,'UTF8')),'hex'),'epoch',q.epoch,'metadata_revision',q.metadata_revision,'protective_only',q.protective_only,'held_rules_ref',q.held_rules_ref,'http_headers',jsonb_build_object('date',coalesce(r.headers->>'date',r.headers->>'Date'),'age',cache_age),'provenance','trusted_pg_net');
    if q.kind='metadata' then c.metadata:=jsonb_set(c.metadata,array[q.venue],p||jsonb_build_object('feed_evidence',e));
    elsif q.kind='fx' then out:=jsonb_set(out,array['quote_fx',q.venue||'/USD'],p||jsonb_build_object('feed_evidence',e));
    else

@@ -1,3 +1,4 @@
+import {setupCodingWorkers} from './team-worker-view.mjs';
 // A local observation viewer. This is not a coding-worker transport.
 const MAX_TEXT=1600, MAX_SOURCE=12000, MAX_EVENTS=40, ACTIVE_MS=15000;
 const PATH='preview/research-desk/neptune.mjs';
@@ -83,14 +84,16 @@ export function validateBuildHistory(history,{now=Date.now()}={}){
 const localTime=at=>iso(at)?new Date(at).toISOString().replace('T',' ').replace('.000Z',' UTC').replace('Z',' UTC'):'Timestamp unavailable';
 export function setupTeamWork({document,fetch:fetcher,now=()=>Date.now(),setInterval:schedule,clearInterval:unschedule}={}){
  const $=id=>document.getElementById(id);if(!$('teamWorkDialog'))return null;
+ const coding=setupCodingWorkers({document,now});
  const store=createWorkStore();let source='',timer=null,disposed=false,renderedEvents=null;
  const text=(id,value)=>{if($(id).textContent!==value)$(id).textContent=value;};
  function render(){
-  const snapshot=store.snapshot(),state=workState(snapshot,now());text('teamCodingState',state.coding);text('teamLocalState','INTERFACE · '+state.local);
+  const snapshot=store.snapshot(),state=workState(snapshot,now());if(!coding)text('teamCodingState',state.coding);text('teamLocalState','INTERFACE · '+state.local);
   text('teamLocalOutput',state.event?.output.summary??'No observed interface result yet.');
   text('teamLocalTime',state.event?localTime(state.event.occurred_at):'No interface event yet');
-  text('teamProofStatus',snapshot.rejected?'Some incomplete or invalid local events were withheld. Coding feed remains not connected.':'Local browser observations only. Coding feed remains not connected.');
-  if(!source){const loaded=$('codeSource')?.textContent;if(loaded?.startsWith('async function refreshFeed(')){source=redactWorkText(loaded,MAX_SOURCE);if(source!==loaded)text('teamSourceIdentity','Loaded function reference with safety redactions or length limit applied; file commit and deployed backend identity unverified.');text('teamFullSource',source);text('teamCodePreview',source.split('\n').slice(0,5).join('\n'));}}
+  text('teamProofStatus',snapshot.rejected?'Some incomplete or invalid local browser events were withheld.':'Browser observations are separate from the coding-worker records above.');
+  if(!source){const loaded=$('codeSource')?.textContent;if(loaded?.startsWith('async function refreshFeed(')){source=redactWorkText(loaded,MAX_SOURCE);if(source!==loaded)text('teamSourceIdentity','Loaded function reference with safety redactions or length limit applied; file commit and deployed backend identity unverified.');text('teamFullSource',source);if(coding)coding.setBrowserSource(source);else text('teamCodePreview',source.split('\n').slice(0,5).join('\n'));}}
+  coding?.render();
   const eventSignature=snapshot.events.map(event=>event.id).join('|');
   if($('teamWorkDialog').open&&eventSignature!==renderedEvents){
    renderedEvents=eventSignature;
@@ -117,6 +120,6 @@ export function setupTeamWork({document,fetch:fetcher,now=()=>Date.now(),setInte
   }catch{/* Keep the truthful missing-evidence state. */}
  }
  void readHistory();
- return {store,render,dispose(){disposed=true;stopTimer();document.removeEventListener('neptune:interface-work',receive);}};
+ return {store,render,dispose(){disposed=true;coding?.dispose();stopTimer();document.removeEventListener('neptune:interface-work',receive);}};
 }
 if(typeof document!=='undefined')setupTeamWork({document,fetch:globalThis.fetch?.bind(globalThis),setInterval:globalThis.setInterval,clearInterval:globalThis.clearInterval});

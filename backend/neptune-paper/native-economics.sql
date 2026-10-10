@@ -1,4 +1,8 @@
-create function neptune_v2_private.native_model() returns jsonb language sql immutable security invoker set search_path='' as $$select '{"version":"neptune-native-paper-1","hash":"786fdae6b8f7c7e599181015cab5196591d633d6a455fd062be2f0c1af8a9180"}'::jsonb$$;
+create function neptune_v2_private.native_model() returns jsonb language sql immutable security invoker set search_path='' as $$select '{"version":"neptune-native-paper-3-observation-bounds","hash":"3b022f537a6f4f47d1b2c9877426891f504e40d26cfa6f45db7cbecdfd5c0312"}'::jsonb$$;
+-- Immutable release policy. Binance accounting/history support is retained, but this
+-- release never dispatches Binance/USDT reads or creates new Binance buy exposure.
+create function neptune_v2_private.native_activation_policy() returns jsonb language sql immutable security invoker set search_path='' as $$select '{"native_entry_venues":["hyperliquid"],"native_collection_venues":["hyperliquid","USDC"],"excluded_venues":{"binance":"owner_disabled"}}'::jsonb$$;
+revoke all on function neptune_v2_private.native_activation_policy() from public,anon,authenticated,service_role;
 -- Pure native spot economics. Candidate only; no execution or external I/O.
 -- Buy fees are modeled in received base, sell fees in received native quote.
 -- Model is conservative public base-tier taker, not actual account commission.

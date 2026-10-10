@@ -2,7 +2,7 @@
 -- Base collector.sql retained byte-for-byte. Load after native-collector.sql and current runtime.
 create or replace function neptune_v2_private.legacy_feed_universe() returns text[] language sql immutable security invoker set search_path='' as $$select array['ETH/USD','SOL/USD','AVAX/USD','LINK/USD','AAVE/USD','UNI/USD']::text[]$$;
 create or replace function neptune_v2_private.native_feed_state() returns jsonb language sql stable security invoker set search_path='' as $$
-select coalesce((select jsonb_build_object('configured',true,'enabled',enabled,'contract_verified',contract_verified,'entry_capacity_paused',entry_paused,'feed_terminal',terminal,'provider_blocked',provider_blocked,'identity_blocked',identity_blocked,'reason',reason) from neptune_mv_private.control where id),'{"configured":false,"enabled":false,"contract_verified":false,"entry_capacity_paused":true,"feed_terminal":true}'::jsonb)
+select coalesce((select jsonb_build_object('configured',true,'activation',neptune_v2_private.native_activation_policy(),'enabled',enabled,'contract_verified',contract_verified,'entry_capacity_paused',entry_paused,'feed_terminal',terminal,'provider_blocked',provider_blocked,'identity_blocked',identity_blocked,'reason',reason) from neptune_mv_private.control where id),'{"configured":false,"enabled":false,"contract_verified":false,"entry_capacity_paused":true,"feed_terminal":true}'::jsonb)
 $$;
 create or replace function neptune_v2_private.shared_provider_preflight(ep bigint,cutoff timestamptz) returns void language plpgsql volatile security invoker set search_path='' as $$
 declare req record;resp record;provider text;blocked jsonb;failure jsonb;
@@ -21,7 +21,7 @@ begin
   if blocked#>>array[provider,'permanent']='false' and failure->>'permanent'='false' and (blocked#>>array[provider,'blocked_until'])::timestamptz>(failure->>'blocked_until')::timestamptz then continue;end if;
   blocked:=blocked||jsonb_build_object(provider,failure);
  end loop;
- update neptune_mv_private.control set provider_blocked=blocked where id;
+ update neptune_mv_private.control set provider_blocked=blocked where id and provider_blocked is distinct from blocked;
 end$$;
 
 create or replace function neptune_v2_private.feed_url(kind text,asset text) returns text language plpgsql immutable security invoker set search_path='' as $$
@@ -34,16 +34,16 @@ begin
  when 'trade' then 'https://api.kraken.com/0/public/Trades?pair='||replace(asset,'/','')||'&count=1&assetVersion=1' end;
 end$$;
 
-create or replace function neptune_v2_private.feed_parse(kind text,asset text,body text,received timestamptz,cutoff timestamptz) returns jsonb language plpgsql stable security invoker set search_path='' as $$
-declare j jsonb;r jsonb;v jsonb;p jsonb;out jsonb:='{}';arr jsonb:='[]';side text;t numeric;oldest timestamptz;updates jsonb:='{}';times jsonb;dt timestamptz;rate numeric;vol numeric:=0;cnt int:=0;previous numeric;a text;
+create function neptune_v2_private.feed_parse_bounded(kind text,asset text,body text,received timestamptz,cutoff timestamptz,observed_upper timestamptz) returns jsonb language plpgsql stable security invoker set search_path='' as $$
+declare j jsonb;r jsonb;v jsonb;p jsonb;out jsonb:='{}';arr jsonb:='[]';side text;t numeric;oldest timestamptz;updates jsonb:='{}';times jsonb;dt timestamptz;rate numeric;vol numeric:=0;cnt int:=0;previous numeric;a text;observed_time timestamptz:=coalesce(observed_upper,received);
 begin
- if body is null or octet_length(body)>(case kind when 'bars' then 131072 when 'metadata' then 32768 when 'depth' then 32768 else 4096 end) or received>cutoff or received<cutoff-interval '30 seconds' then return null;end if;
+ if body is null or octet_length(body)>(case kind when 'bars' then 131072 when 'metadata' then 32768 when 'depth' then 32768 else 4096 end) or received is null or observed_time is null or observed_time<received or observed_time>cutoff or received>cutoff or received<cutoff-interval '30 seconds' then return null;end if;
  j:=body::jsonb;
  if kind='fx' then
   if jsonb_typeof(j)<>'array' or jsonb_array_length(j)<>1 then return null;end if;j:=j->0;
   if j->>'base' is distinct from 'USD' or j->>'quote' is distinct from 'AUD' or coalesce(j->>'date','')!~'^\d{4}-\d{2}-\d{2}$' then return null;end if;
   dt:=((j->>'date')||'T00:00:00Z')::timestamptz;rate:=neptune_v2_private.num(j->>'rate');
-  if dt>cutoff or dt<cutoff-interval '96 hours' or rate is null or rate not between .1 and 10 then return null;end if;
+  if dt>observed_time or dt<cutoff-interval '96 hours' or rate is null or rate not between .1 and 10 then return null;end if;
   return jsonb_build_object('base','USD','quote','AUD','rate',rate,'rate_date',j->>'date','at',dt,'fetched_at',received,'source','Frankfurter ECB reference');
  end if;
  if j->'error' is distinct from '[]'::jsonb or jsonb_typeof(j->'result') is distinct from 'object' then return null;end if;
@@ -62,20 +62,20 @@ begin
    if jsonb_typeof(p->side) is distinct from 'array' or jsonb_array_length(p->side) not between 1 and 10 then return null;end if;arr:='[]';times:='[]';
    for v in select value from jsonb_array_elements(p->side) loop
     if jsonb_typeof(v)<>'array' or jsonb_array_length(v)<>3 then return null;end if;
-    t:=neptune_v2_private.num(v->>2);if t is null or t<0 or t>extract(epoch from received) then return null;end if;
+    t:=neptune_v2_private.num(v->>2);if t is null or t<0 or t>extract(epoch from observed_time) then return null;end if;
     dt:=to_timestamp(t::double precision);
     -- Kraken level timestamps are last modifications, not snapshot observation times.
     oldest:=least(oldest,dt);times:=times||jsonb_build_array(dt);
     arr:=arr||jsonb_build_array(jsonb_build_array(neptune_v2_private.num(v->>0),neptune_v2_private.num(v->>1)));
    end loop;if jsonb_array_length(arr)=0 then return null;end if;out:=out||jsonb_build_object(side,arr);updates:=updates||jsonb_build_object(side,times);
   end loop;
-  out:=out||jsonb_build_object('at',received,'timestamp_basis','http_response_observed','level_updated_at',updates,'oldest_level_update_at',oldest);
+  out:=out||jsonb_build_object('at',received,'timestamp_basis','conservative_sample_lower_bound','level_updated_at',updates,'oldest_level_update_at',oldest);
   if neptune_v2_private.book(jsonb_build_object('book',out,'received_at',received),cutoff)?'error' then return null;end if;
   return jsonb_build_object('book',out,'received_at',received);
  elsif kind='trade' then
   if jsonb_typeof(p) is distinct from 'array' or jsonb_array_length(p)<>1 or jsonb_array_length(p->0)<>7 or coalesce(neptune_v2_private.num(p#>>'{0,0}'),0)<=0 or coalesce(neptune_v2_private.num(p#>>'{0,1}'),0)<=0 then return null;end if;
   t:=neptune_v2_private.num(p#>>'{0,2}');-- Preserve genuine last-trade evidence; the unchanged core60s gate controls entry eligibility.
-  if t is null or t<0 or t>extract(epoch from received) then return null;end if;
+  if t is null or t<0 or t>extract(epoch from observed_time) then return null;end if;
   return jsonb_build_object('trade_at',to_timestamp(t::double precision));
  elsif kind='bars' then
   if jsonb_typeof(p) is distinct from 'array' or jsonb_array_length(p) not between 23 and 720 then return null;end if;
@@ -97,9 +97,13 @@ begin
 exception when others then return null;
 end$$;
 
+-- Point-time compatibility reader for historical/synthetic callers. Production uses
+-- the persisted interval explicitly through feed_parse_bounded.
+create or replace function neptune_v2_private.feed_parse(kind text,asset text,body text,received timestamptz,cutoff timestamptz) returns jsonb language sql stable security invoker set search_path='' as $$select neptune_v2_private.feed_parse_bounded(kind,asset,body,received,cutoff,received)$$;
+
 create or replace function neptune_v2_private.feed_work() returns void language plpgsql security invoker set search_path='' as $$
 declare c neptune_v2_private.feed_control;ac neptune_v2_private.account;n timestamptz:=clock_timestamp();epoch bigint;req record;resp record;
- markets jsonb:='{}';m jsonb;parsed jsonb;fx jsonb;meta jsonb;scan jsonb;arr jsonb:='[]';a text;k text;url text;rid bigint;evidence jsonb;httpdate text;httpage text;cache_age_limit int;rawbytes bigint:=0;outcome text:='processed';ready int;expected int;ownbytes bigint;logbytes bigint;logrows bigint;legacy_arr jsonb;native_tick jsonb;native_snapshot jsonb;native_state jsonb;native_control neptune_mv_private.control;native_ready int;native_expected int;provider text;
+ markets jsonb:='{}';m jsonb;parsed jsonb;fx jsonb;meta jsonb;scan jsonb;arr jsonb:='[]';a text;k text;url text;rid bigint;evidence jsonb;httpdate text;httpage text;cache_age_limit int;rawbytes bigint:=0;outcome text:='processed';ready int;expected int;ownbytes bigint;logbytes bigint;logrows bigint;legacy_arr jsonb;native_tick jsonb;native_snapshot jsonb;native_state jsonb;native_control neptune_mv_private.control;native_ready int;native_expected int;provider text;receipt jsonb;lower_time timestamptz;observed_time timestamptz;
 begin
  -- Global lock order: owner control, account, collector state.
  perform neptune_v2_private.sync_control();
@@ -108,7 +112,7 @@ begin
  if not found then return;end if;
  -- Preserve lock order: owner/account/legacy-feed/native-feed. Only synchronize existing control.
  select * into native_control from neptune_mv_private.control where id for update;
- update neptune_mv_private.control set enabled=coalesce((ac.state->>'enabled')::boolean,false) and not terminal where id;
+ update neptune_mv_private.control set enabled=coalesce((ac.state->>'enabled')::boolean,false) and not terminal where id and enabled is distinct from (coalesce((ac.state->>'enabled')::boolean,false) and not terminal);
  -- Check absolute and attempted-work limits BEFORE any response parse/network work.
  update neptune_v2_private.feed_control set ticks=ticks+1 where id;
  select coalesce(sum(pg_total_relation_size(cl.oid)),0) into ownbytes from pg_class cl join pg_namespace ns on ns.oid=cl.relnamespace where cl.relkind in ('r','m') and (ns.nspname in ('neptune_v2_private','neptune_mv_private') or (ns.nspname='public' and cl.relname in ('neptune_paper_v2_status','neptune_paper_v2_history','neptune_paper_v2_control')));
@@ -124,6 +128,11 @@ begin
   c.pending_epoch:=null;
  end if;
  if not coalesce((ac.state->>'enabled')::boolean,false) then return;end if;
+ -- Capture already-visible responses before either side's partial-batch early return.
+ perform neptune_mv_private.observe_pending('legacy',c.pending_epoch);
+ select * into native_control from neptune_mv_private.control where id;
+ if found then perform neptune_mv_private.observe_pending('native',native_control.pending_epoch);end if;
+ n:=clock_timestamp();
  if c.pending_epoch is not null then
   select count(*) into expected from neptune_v2_private.feed_requests where feed_requests.epoch=c.pending_epoch;
   select count(*) into ready from neptune_v2_private.feed_requests q join net._http_response r on r.id=q.request_id where q.epoch=c.pending_epoch;
@@ -142,19 +151,22 @@ begin
    foreach a in array neptune_v2_private.legacy_feed_universe() loop markets:=markets||jsonb_build_object(a,jsonb_build_object('asset',a));end loop;
    for req in select * from neptune_v2_private.feed_requests where feed_requests.epoch=c.pending_epoch order by kind,asset loop
     begin
-     select * into resp from net._http_response where id=req.request_id;
-     if not found then continue;end if;
+     receipt:=neptune_mv_private.observe_response('legacy',req.request_id);
+     if receipt is null then continue;end if;
+     select * into resp from jsonb_populate_record(null::net._http_response,receipt->'response');
+     lower_time:=(receipt->>'sample_lower_bound')::timestamptz;observed_time:=(receipt->>'first_observed_at')::timestamptz;
+     if observed_time>n then continue;end if;
      provider:=case req.kind when 'fx' then 'frankfurter' else 'kraken' end;
      if exists(select 1 from neptune_mv_private.control where id and provider_blocked?provider) then continue;end if;
      rawbytes:=rawbytes+coalesce(octet_length(resp.content),0);
-     if resp.status_code<>200 or coalesce(resp.timed_out,false) or resp.error_msg is not null or resp.created<req.sent_at or resp.created>n or resp.created< n-interval '30 seconds' or coalesce(resp.content_type,'') not ilike 'application/json%' then continue;end if;
+     if resp.status_code<>200 or coalesce(resp.timed_out,false) or resp.error_msg is not null or lower_time<req.sent_at or lower_time>req.sent_at+interval '10 seconds' or lower_time>n or lower_time< n-interval '30 seconds' or observed_time<lower_time or coalesce(resp.content_type,'') not ilike 'application/json%' then continue;end if;
      cache_age_limit:=case when req.kind in ('metadata','fx') then 3600 when req.kind='bars' then 60 else 5 end;
      httpdate:=coalesce(resp.headers->>'date',resp.headers->>'Date');httpage:=coalesce(resp.headers->>'age',resp.headers->>'Age');
-     if httpdate is not null and (neptune_v2_private.ts(httpdate) is null or neptune_v2_private.ts(httpdate)<req.sent_at-make_interval(secs=>cache_age_limit) or neptune_v2_private.ts(httpdate)>n+interval '5 seconds') then continue;end if;
+     if httpdate is not null and (neptune_v2_private.ts(httpdate) is null or neptune_v2_private.ts(httpdate)<req.sent_at-make_interval(secs=>cache_age_limit) or neptune_v2_private.ts(httpdate)>observed_time+interval '5 seconds') then continue;end if;
      if httpage is not null and (neptune_v2_private.num(httpage) is null or neptune_v2_private.num(httpage)>cache_age_limit) then continue;end if;
-     parsed:=neptune_v2_private.feed_parse(req.kind,req.asset,resp.content,resp.created,n);
+     parsed:=neptune_v2_private.feed_parse_bounded(req.kind,req.asset,resp.content,lower_time,n,observed_time);
      if parsed is null then continue;end if;
-     evidence:=jsonb_build_object('source',req.request_url,'request_id',req.request_id,'sent_at',req.sent_at,'received_at',resp.created,'http_date',httpdate,'http_age',httpage,'body_sha256',encode(sha256(convert_to(resp.content,'UTF8')),'hex'));
+     evidence:=jsonb_build_object('source',req.request_url,'request_id',req.request_id,'sent_at',req.sent_at,'received_at',lower_time,'received_at_basis','conservative_sample_lower_bound','batch_started_at',resp.created,'first_observed_at',observed_time,'wire_received_at',null,'request_sha256',receipt->>'request_sha256','response_sha256',receipt->>'response_sha256','http_date',httpdate,'http_age',httpage,'body_sha256',encode(sha256(convert_to(resp.content,'UTF8')),'hex'));
      if req.kind='metadata' then
       foreach a in array neptune_v2_private.legacy_feed_universe() loop if parsed?a then parsed:=jsonb_set(parsed,array[a],parsed->a||jsonb_build_object('feed_evidence',evidence));end if;end loop;
      elsif req.kind='fx' then parsed:=parsed||jsonb_build_object('feed_evidence',evidence);
@@ -216,4 +228,4 @@ begin
  end loop;
 end$$;
 
-revoke all on function neptune_v2_private.legacy_feed_universe(),neptune_v2_private.native_feed_state(),neptune_v2_private.shared_provider_preflight(bigint,timestamptz),neptune_v2_private.feed_url(text,text),neptune_v2_private.feed_parse(text,text,text,timestamptz,timestamptz),neptune_v2_private.feed_work() from public,anon,authenticated,service_role;
+revoke all on function neptune_v2_private.legacy_feed_universe(),neptune_v2_private.native_feed_state(),neptune_v2_private.shared_provider_preflight(bigint,timestamptz),neptune_v2_private.feed_url(text,text),neptune_v2_private.feed_parse(text,text,text,timestamptz,timestamptz),neptune_v2_private.feed_parse_bounded(text,text,text,timestamptz,timestamptz,timestamptz),neptune_v2_private.feed_work() from public,anon,authenticated,service_role;
