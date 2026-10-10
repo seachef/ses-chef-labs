@@ -1,9 +1,10 @@
+import {readPublicScoutSnapshot,publicScoutDisplay,PUBLIC_SCOUT_LIMITS} from './public-scout.mjs?v=public-scout-20261010';
 import {validateMarketActivitySnapshot} from './market-activity.mjs?v=market-activity-20261010';
 import {createTeamWorkStore,teamWorkerState,matchPublicWorkSource,teamPublisherLive,TEAM_WORK_LIMITS,WORK_ROLES,WORK_TASKS,WORK_STEPS} from './team-worker-evidence.mjs';
 const stamp=value=>value?new Date(value).toISOString().replace('T',' ').replace('Z',' UTC'):'Time unavailable';
 export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay=globalThis.setTimeout,clearTimeout:cancel=globalThis.clearTimeout}={}){
  const $=id=>document.getElementById(id);if(!$('codingWorkerSlots'))return null;
- const store=createTeamWorkStore(),slots=[],slotIds=new Map(),pulseTimers=new Map();let edgeTimer=null,session=null,view='market',selected=null,browserSource='',renderedEvents=null,disposed=false,paneMode='activity',activitySignature='';const activityRecords=new Map();let displayedActivityKeys=new Set();let marketSnapshot={records:[],connected:false,nativeStatus:'idle',latestAt:null};
+ const store=createTeamWorkStore(),slots=[],slotIds=new Map(),pulseTimers=new Map();let edgeTimer=null,session=null,view='market',selected=null,browserSource='',renderedEvents=null,disposed=false,paneMode='activity',activitySignature='';const activityRecords=new Map();let displayedActivityKeys=new Set();let marketSnapshot={records:[],connected:false,nativeStatus:'idle',latestAt:null};let scoutSnapshot=null;
  const text=(id,value)=>{if($(id)&&$(id).textContent!==value)$(id).textContent=value;};
  for(let index=0;index<6;index++){
   const button=document.createElement('button'),number=document.createElement('span'),role=document.createElement('span');button.setAttribute?.('class','worker-slot');button.setAttribute?.('aria-haspopup','dialog');number.setAttribute?.('class','worker-number');role.setAttribute?.('class','worker-role');number.textContent='AGENT '+String(index+1).padStart(3,'0');role.textContent='UNASSIGNED';button.replaceChildren(number,role);button.addEventListener('click',()=>{const id=[...slotIds.entries()].find(([,slot])=>slot===index)?.[0];if(id){selected=id;render();if(!$('teamWorkDialog').open)$('teamWorkDialog').showModal?.();render();}});button.addEventListener('animationend',()=>button.setAttribute?.('data-pulse','false'));slots.push({button,role,number});
@@ -54,12 +55,13 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
   const activity=$('teamActivityPreview'),show=paneMode==='activity';activity.hidden=!show;$('teamCodePreview').hidden=show;$('toggleTeamPane').hidden=false;$('toggleTeamPane').textContent=paneMode==='activity'?'Activity ⇄':'Source ⇄';$('toggleTeamPane').setAttribute?.('aria-label',paneMode==='activity'?'Showing observed activity. Switch to static source.':'Showing static source. Switch to observed activity.');
   if(!show||document.hidden)return;
   const market=view==='market';
-  text('teamCodeCaption',market?'MARKET ACTIVITY · PAPER DECISIONS':'OBSERVED ACTIVITY · REAL EVENTS');
-  const records=market?marketSnapshot.records.filter(event=>now()-Date.parse(event.at)>=0&&now()-Date.parse(event.at)<=3600000):[...activityRecords.values()].sort((a,b)=>a.event_number-b.event_number);
+  text('teamCodeCaption',market?'MARKET ACTIVITY · PAPER + RESEARCH':'OBSERVED ACTIVITY · REAL EVENTS');
+  const records=market?[...marketSnapshot.records,...(scoutSnapshot?.records??[])].filter(event=>now()-Date.parse(event.at)>=0&&now()-Date.parse(event.at)<=PUBLIC_SCOUT_LIMITS.history_ms).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||a.key.localeCompare(b.key)).slice(-140):[...activityRecords.values()].sort((a,b)=>a.event_number-b.event_number);
   const signature=(market?'market:':'workers:')+records.map(event=>market?event.key+':'+event.at:event.id+':'+event.payload_sha256).join('|');
   if(signature!==activitySignature){
    const keys=records.map(event=>(market?'market:':'workers:')+(market?event.key:event.id)),hasNew=keys.some(key=>!displayedActivityKeys.has(key)),switched=!activitySignature.startsWith(market?'market:':'workers:'),oldTop=activity.scrollTop??0;
    const lines=records.map(event=>{
+    if(market&&event.kind==='public_scout')return `${stamp(event.at)} · ${event.text}`;
     if(market)return `${stamp(event.at)} · ${event.source} · ${event.asset} ${event.action.toUpperCase()} / ${event.result.replaceAll('_',' ').toUpperCase()} · ${event.reason?.replaceAll('_',' ')??'Reason unavailable'}`;
     const number=String(event.slot).padStart(3,'0'),result=event.result?.kind==='test'?` · ${event.result.passed} passed / ${event.result.failed} failed`:'';return `${new Date(event.observed_at).toISOString().slice(11,19)} UTC · AGENT ${number} ${WORK_ROLES[event.role]} · ${WORK_STEPS[event.step]}${result}`;
    });
@@ -70,7 +72,7 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
    activity.scrollTop=lines.length&&(hasNew||switched)?activity.scrollHeight??0:oldTop;
   }
   const age=marketSnapshot.latestAt?now()-Date.parse(marketSnapshot.latestAt):Infinity;
-  text('teamCodeNote',market?(!marketSnapshot.connected?'Feed unavailable · last recorded decisions.':marketSnapshot.nativeStatus==='unavailable'?'Native decision feed unavailable · last verified records.':age>90000?'Awaiting a new decision · last records shown.':'Auto-follow new decisions · paper checks, unvalidated.'):'Auto-follow new worker events · limited recorded activity.');
+  text('teamCodeNote',market?(!marketSnapshot.connected?'Feed unavailable · last recorded decisions.':marketSnapshot.nativeStatus==='unavailable'?'Native decision feed unavailable · last verified records.':age>90000?'Awaiting a new decision · last records shown.':'Auto-follow new decisions · paper checks, unvalidated.')+(scoutSnapshot?' Scout: '+publicScoutDisplay(scoutSnapshot,{now:now()}).status.toLowerCase()+'; independent review awaiting.':''):'Auto-follow new worker events · limited recorded activity.');
  }
  function receiveMarket(event){
   if(disposed)return;
@@ -78,6 +80,8 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
   if(!next)return;
   marketSnapshot=next;render();
  }
+ function receiveScout(event){if(disposed)return;const next=readPublicScoutSnapshot(event.detail);if(!next)return;scoutSnapshot=next;render();}
+ document.addEventListener('neptune:public-scout',receiveScout);
  document.addEventListener('neptune:market-activity',receiveMarket);
  $('toggleTeamPane').addEventListener('click',()=>{paneMode=paneMode==='activity'?'source':'activity';render();});
  function pulse(actorId){
@@ -109,5 +113,5 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
  const showWorkers=()=>{view='workers';render();},showMarket=()=>{view='market';render();};
  $('showCodingTeam').addEventListener('click',showWorkers);$('showMarketStreams').addEventListener('click',showMarket);document.addEventListener('neptune:team-work-report',receive);document.addEventListener('neptune:team-work-disconnected',disconnect);
  render();
- return {store,render,currentView:()=>view,setBrowserSource(value){browserSource=value;render();},dispose(){disposed=true;if(edgeTimer!==null)cancel?.(edgeTimer);links?.replaceChildren();for(const timer of pulseTimers.values())cancel?.(timer);pulseTimers.clear();document.removeEventListener('neptune:market-activity',receiveMarket);document.removeEventListener('neptune:team-work-report',receive);document.removeEventListener('neptune:team-work-disconnected',disconnect);document.removeEventListener('visibilitychange',visibilityChanged);document.defaultView?.removeEventListener?.('pagehide',visibilityChanged);document.defaultView?.removeEventListener?.('pageshow',visibilityChanged);}};
+ return {store,render,currentView:()=>view,setBrowserSource(value){browserSource=value;render();},dispose(){disposed=true;if(edgeTimer!==null)cancel?.(edgeTimer);links?.replaceChildren();for(const timer of pulseTimers.values())cancel?.(timer);pulseTimers.clear();document.removeEventListener('neptune:public-scout',receiveScout);document.removeEventListener('neptune:market-activity',receiveMarket);document.removeEventListener('neptune:team-work-report',receive);document.removeEventListener('neptune:team-work-disconnected',disconnect);document.removeEventListener('visibilitychange',visibilityChanged);document.defaultView?.removeEventListener?.('pagehide',visibilityChanged);document.defaultView?.removeEventListener?.('pageshow',visibilityChanged);}};
 }

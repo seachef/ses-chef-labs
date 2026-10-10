@@ -1,5 +1,5 @@
 import {createActionSelector} from './character-motion.mjs?v=real-targets-20261010';
-import {ASSETS,SCENE_LIMITS,renderScene} from './cosmos-scene.mjs?v=coin-visibility-20261010';
+import {ASSETS,SCENE_LIMITS,renderScene} from './cosmos-scene.mjs?v=neural-currents-20261010';
 export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),finite=(v,d=0)=>Number.isFinite(v)?v:d;
 export function makeCosmosScene({canvas,ctx,request,cancel,getDpr=()=>1,getCue=()=>null,onBeam=()=>{},showCaption=true,showMarketLabels=true,getMarketPositions=()=>[],getMarkers=()=>[],getCatalogue=()=>[],getMasks=()=>[],createImage=()=>new Image()}){

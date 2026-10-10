@@ -128,3 +128,22 @@ body.still .agent-web .stream-name:before,body.still .agent-web .worker-number:b
 @media(min-height:501px){.agent-web{height:120px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:120px;grid-template-rows:48px 48px;gap:24px 0}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:48px;padding:0 2px}.team-terminal .agent-web .stream-top{padding:2px 5px;gap:2px}.team-terminal .agent-web .stream-name,.agent-web .worker-slot .worker-number{display:flex;align-items:center;justify-content:center}.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:32px;height:28px;margin-right:4px;flex:none}}
 @media(max-width:760px) and (min-height:501px){.agent-web{height:112px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:112px;grid-template-rows:44px 44px;gap:24px 0}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:44px}.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:30px;height:26px}}
 @media(max-height:500px) and (min-width:540px){.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:18px;height:16px;vertical-align:-4px;margin-right:3px}}
+
+/* Decorative neural currents. Evidence/status attributes never drive this layer. */
+.agent-web-strands{stroke:#91cce1;stroke-width:.65;overflow:hidden;opacity:1}
+.web-current-bed{opacity:.27}.web-current-flow{stroke-linecap:round;fill:none}
+.web-current-tail,.web-current-head{stroke-dasharray:10 90;animation:ambient-neural-travel var(--current-period,4s) linear infinite;animation-delay:var(--current-phase,0s);vector-effect:non-scaling-stroke}
+.web-current-tail{stroke:#84e7ff;stroke-width:4;opacity:.16}.web-current-head{stroke:#b5f5ff;stroke-width:1.7;stroke-dasharray:3 97;opacity:.86}
+.web-current-tail:nth-child(4n+1){stroke:#b7a4ff}.web-current-head:nth-child(4n+2){stroke:#d8cbff}
+.web-current-junctions circle{fill:none;stroke:#aeeaff;stroke-width:2;opacity:0;animation:ambient-neural-junction 4.3s ease-in-out infinite;animation-delay:var(--current-phase,0s);vector-effect:non-scaling-stroke}
+@keyframes ambient-neural-travel{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes ambient-neural-junction{0%,15%,65%,100%{opacity:.04}34%{opacity:.53}48%{opacity:.16}}
+/* Amber is reserved for accepted new observations; ambient cyan has no status meaning. */
+.agent-web .stream-window[data-pulse=true] .stream-top,.agent-web .worker-slot[data-pulse=true]{animation:neural-evidence-amber 850ms ease-out 1}
+@keyframes neural-evidence-amber{0%{box-shadow:0 0 0 2px #ffd69799,0 0 16px #ffbd6866}100%{box-shadow:0 0 0 0 #ffd69700,0 0 0 #ffbd6800}}
+@media(max-width:620px){.web-current-flow use:nth-child(n+17){display:none}.web-current-tail{stroke-width:3}.web-current-head{stroke-width:1.3}}
+.team-terminal[data-current-paused=true] .web-current-flow,.team-terminal[data-current-paused=true] .web-current-junctions{visibility:hidden}
+.team-terminal[data-current-paused=true] .web-current-flow use,.team-terminal[data-current-paused=true] .web-current-junctions circle{animation-play-state:paused}
+body.still .agent-web .web-current-flow,body.still .agent-web .web-current-junctions{display:none}
+body.still .agent-web .web-current-flow use,body.still .agent-web .web-current-junctions circle,body.still .agent-web [data-pulse=true] .stream-top{animation:none!important}
+@media(prefers-reduced-motion:reduce){.agent-web .web-current-flow,.agent-web .web-current-junctions{display:none}.agent-web .web-current-flow use,.agent-web .web-current-junctions circle,.agent-web [data-pulse=true] .stream-top{animation:none!important}}

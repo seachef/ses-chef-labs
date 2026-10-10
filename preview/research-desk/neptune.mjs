@@ -1,4 +1,4 @@
-import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010'; import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010'; import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=coin-visibility-20261010'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
+import {createPublicScoutFeed,publicScoutDisplay} from './public-scout.mjs?v=public-scout-20261010'; import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010'; import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010'; import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neural-currents-20261010'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -38,6 +38,13 @@ const marketActivity=createMarketActivityFeed({
  },
  onChange:snapshot=>{sceneTargets.observeActivity(snapshot);try{document.dispatchEvent?.(new CustomEvent('neptune:market-activity',{detail:snapshot}));}catch{/* Display telemetry cannot interrupt the paper feed. */}}
 });
+
+// This separate read-only discovery channel never reaches profitBridge,
+// sceneTargets, paper status, quote validation or execution controls.
+const publicScout=createPublicScoutFeed({fetch:(...args)=>fetch(...args),onChange:snapshot=>{
+ try{document.dispatchEvent?.(new CustomEvent('neptune:public-scout',{detail:snapshot}));}catch{}
+ render();
+}});
 
 let selected='ETH/USD',report=null,connected=false,busy=false,polls=0,seenDecisions=null;
 const runtimeEvents=[];
@@ -116,9 +123,9 @@ function renderStreams(view){
  const current=view.status==='running',research=readResearchV1(report);
  const set=(id,text)=>{if($(id).textContent!==text)$(id).textContent=text;};
  const show=(id,status,output,at)=>{set(id+'Status',status);set(id+'Output',output);set(id+'Time',at?new Date(at).toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false})+' Perth · '+sampleAge(at):'No observation yet');};
- show('scout','NOT CONNECTED','Broad market screen not connected.',null);
- $('scoutEvidence').textContent='No broad market discovery feed has been received. Execution universe remains the existing six paper markets. Catalogue coverage is not evidence of screening or qualification.';
- if(research){const c=research.catalogue;show('scout','SNAPSHOT',`${c.research_markets} markets catalogued · live screen not connected.`,c.observed_at);$('scoutEvidence').textContent=`Fixed public Kraken catalogue snapshot, observed ${stamp(c.observed_at)} Perth. ${c.listed_pairs} listed pairs; ${c.online_usd_pairs} online USD pairs; ${c.research_markets} research markets after ${c.excluded} exclusions and ${c.cashlike_removed} cash-like removals. ${c.sizing_supported} sizing-supported markets. This is catalogue coverage, not live screening, project review, qualification or trade authorization. Broader live scanning is not connected. Execution remains the existing six markets. Source: ${c.source_url} · SHA256 ${c.source_sha256}`;}
+ const scout=publicScoutDisplay(publicScout.snapshot());
+ show('scout',scout.status,scout.output,scout.at);
+ $('scoutEvidence').textContent=scout.evidence;
  const decisions=report?.decisions||[],fromStream=id=>{const x=research?.streams.find(s=>s.id===id);return x?.decision_id?decisions.find(d=>d.id===x.decision_id&&d.at===x.at&&d.asset===x.asset):null;},depth=fromStream('depth')||decisions.find(d=>/spread_too_wide|volume_below_threshold|insufficient_near_depth/.test(d.reason)),pulse=fromStream('pulse')||decisions[0];
  show('depth',current&&fresh(depth?.at,Date.now(),90000)?'OBSERVED':depth?'LAST REPORT':'WAITING',depth?depth.asset+' · '+safe(depth.reason):'No liquidity decision observed.',depth?.at);
  $('depthEvidence').textContent=depth?`${stamp(depth.at)} Perth · ${depth.asset} · ${depth.action} · ${safe(depth.reason)} · source ${safe(depth.source)} · decision ${depth.id} · observation ${depth.observation_id??'—'} · unvalidated. This reports only an observed decision; it does not imply all liquidity checks passed.`:'No applicable liquidity decision in the last verified report. No gate pass is inferred.';
@@ -138,7 +145,7 @@ function renderStreams(view){
  const reportState=at=>!connected?'offline':!at?'waiting':current&&fresh(at,Date.now(),90000)?'observed':'stale';
  const latestFill=nativeFill&&(!fill||Date.parse(nativeFill.at)>Date.parse(fill.at))?nativeFill:fill;
  try{document.dispatchEvent?.(new CustomEvent('neptune:market-evidence',{detail:{version:1,nodes:[
-  marker(1,research?.catalogue.source_sha256,research?.catalogue.observed_at,research?'snapshot':'waiting'),
+  marker(1,scout.key,scout.at,scout.markerState),
   marker(2,depth?.id,depth?.at,reportState(depth?.at)),
   marker(3,pulse?.id,pulse?.at,reportState(pulse?.at)),
   marker(4,risk?report.heartbeat_at:null,risk?report.heartbeat_at:null,reportState(risk?report.heartbeat_at:null)),
@@ -208,7 +215,7 @@ reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
 window.addEventListener('resize',()=>atmosphere.resize());window.visualViewport?.addEventListener('resize',()=>atmosphere.resize());atmosphere.resize();syncMotion();
 let atmosphereObserver;
 if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new IntersectionObserver(entries=>{inView=entries.some(e=>e.isIntersecting);syncMotion();});atmosphereObserver.observe(canvas);}
-window.addEventListener('pagehide',()=>{audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
+window.addEventListener('pagehide',()=>{publicScout.disconnect();audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
 window.addEventListener('pageshow',()=>{audioVisible=true;scenePageVisible=true;atmosphere.resize();syncMotion();void syncSound();});
 
 function setAudioSession(active){
@@ -288,7 +295,7 @@ $('accessSound').addEventListener('click',async()=>{
 });
 armSound();
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
-clock();setInterval(clock,1000);render();void refreshFeed();void loadSceneCatalogue();
-setInterval(()=>{render();if(!document.hidden)void refreshFeed();},10000);
-document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden)marketActivity.disconnect();else void refreshFeed();});
+clock();setInterval(clock,1000);render();void refreshFeed();void publicScout.refresh();void loadSceneCatalogue();
+setInterval(()=>{render();if(!document.hidden){void refreshFeed();void publicScout.refresh();}},10000);
+document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden){marketActivity.disconnect();publicScout.disconnect();}else{void refreshFeed();void publicScout.refresh();}});
 

@@ -44,6 +44,6 @@ test('numbered labels do not replace evidence or claim independent live workers'
   assert.match(html, /observed interface checks and verified paper reports/);
   assert.equal((html.match(/Waiting for verified evidence\./g) || []).length, 6);
   assert.equal((html.match(/No observation yet/g) || []).length, 6);
-  assert.match(source, /show\('scout','NOT CONNECTED'/);
+  assert.match(source, /show\('scout',scout.status,scout.output,scout.at\)/);
   assert.match(source, /show\('watch',busy\?'CHECKING'/);
 });

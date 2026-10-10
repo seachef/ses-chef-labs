@@ -31,7 +31,7 @@ export function createWebEvidenceStore(){
 export function setupMarketWeb({document,now=()=>Date.now(),setTimeout:delay=globalThis.setTimeout,clearTimeout:cancel=globalThis.clearTimeout}={}){
  const store=createWebEvidenceStore(),timers=new Map();
  const clear=()=>{for(const id of WEB_MARKET_IDS)document.getElementById(id)?.setAttribute?.('data-pulse','false');for(const timer of timers.values())cancel?.(timer);timers.clear();};
- const pause=()=>{store.pause(now());clear();};
+ const pause=event=>{store.pause(now());clear();document.getElementById('teamTerminal')?.setAttribute?.('data-current-paused',String(document.hidden||event?.type==='pagehide'));};
  function receive(event){
   const active=!document.hidden&&document.getElementById('teamTerminal')?.getAttribute?.('data-view')==='market';
   const result=store.observe(event.detail,{now:now(),active});
