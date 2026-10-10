@@ -3,7 +3,7 @@ import {isVerifiedSceneFill,sceneInstrument,TARGET_LIMITS} from './scene-targets
 export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
 import {choreography,drawCharacter,drawEyeBeams,hash} from './character-motion.mjs?v=real-targets-20261010';
 import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-native-20261009';
-export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:36,companions:0,maxDpr:1.25,maxPixels:1800000});
+export const SCENE_LIMITS=Object.freeze({cycle:40,coinNodes:42,companions:0,maxDpr:1.25,maxPixels:1800000});
 export const ASSETS=['cosmos-ocean-background.webp','neptune-run-atlas.png','neptune-braced-aim.png','cosmos-ocean-phone.webp','neptune-tucked-roll.png','neptune-transition-atlas.png'];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function layout(width,height){const mobile=width<620,rock={x:width*.06,y:height*.60,w:width*.88,h:height*.40};return{mobile,rock,contact:{x:width*.5,y:height*.70}};}
@@ -20,7 +20,7 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
  }
  const verified=isVerifiedSceneFill(cue,now)?cue:null,celebration=cue?.kind==='profit'&&isVerifiedCue(cue,now)?cue:null;
  const recorded=markers.filter(m=>sceneInstrument(m.asset));
- const items=new Map(catalogue.map(m=>[m.id,{...m,asset:m.id,label:m.base,kind:'discovered',active:false,opacity:.60}]));
+ const items=new Map(catalogue.map(m=>[m.id,{...m,asset:m.id,label:m.base,kind:'discovered',active:false,opacity:.72}]));
  // This is display-only replacement of the exact same venue/pair. It never
  // converts catalogue metadata into a receipt or changes its instrument identity.
  for(const m of recorded){for(const [id,n]of items)if(n.kind==='discovered'&&n.venue.toLowerCase()===m.venue.toLowerCase()&&n.pair===m.pair)items.delete(id);items.set(m.asset,m);}
@@ -35,7 +35,7 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
  if(!target||masks.some(m=>target.x>=m.left&&target.x<=m.right&&target.y>=m.top&&target.y<=m.bottom))actor.fire=false;
  const feet=actor.feet,eyes=actor.eyes,p=actor;
  const neural=drawNeuralLinks(ctx,nodes,{masks,now,reduced});
- for(const n of nodes){const focus=n===active;ctx.save();ctx.globalAlpha=reduced?(n.active?1:.4):(n.opacity??.3);const color=focus&&verified?(verified.kind==='buy'?'#ffd177':'#ff85bd'):n.active?'#f2c36c':'#91bacb';ctx.strokeStyle=color;ctx.fillStyle='rgba(3,15,27,.92)';ctx.lineWidth=focus?1.5:.8;ctx.beginPath();ctx.arc(n.x,n.y,focus?(l.mobile?19:25):(l.mobile?15:20),0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.font=`${l.mobile?8:10}px sans-serif`;ctx.textAlign='center';ctx.fillText(n.label,n.x,n.y+1,l.mobile?29:40);ctx.font='6px sans-serif';ctx.fillText(String(n.venue??'').toLowerCase()==='hyperliquid'?'HYP':String(n.venue??'').toLowerCase()==='kraken'?'KRA':String(n.venue??'').toLowerCase()==='binance'?'BIN':'',n.x,n.y+10);ctx.restore();}
+ for(const n of nodes){const focus=n===active;ctx.save();ctx.globalAlpha=reduced?(n.active?1:.52):(n.opacity??.3);const color=focus&&verified?(verified.kind==='buy'?'#ffd177':'#ff85bd'):n.active?'#f2c36c':'#c2e7f5';ctx.strokeStyle=color;ctx.fillStyle='rgba(3,15,27,.92)';ctx.lineWidth=focus?1.5:.8;ctx.beginPath();ctx.arc(n.x,n.y,focus?(l.mobile?19:25):(l.mobile?15:20),0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.font=`600 ${l.mobile?8:10}px sans-serif`;ctx.textAlign='center';ctx.fillText(n.label,n.x,n.y+1,l.mobile?29:40);ctx.font='6px sans-serif';ctx.fillText(String(n.venue??'').toLowerCase()==='hyperliquid'?'HYP':String(n.venue??'').toLowerCase()==='kraken'?'KRA':String(n.venue??'').toLowerCase()==='binance'?'BIN':'',n.x,n.y+10);ctx.restore();}
  drawCharacter(ctx,images,actor);
  const color=verified?.kind==='buy'?'255,191,70':'255,100,174';const beamCount=target?drawEyeBeams(ctx,actor,target,{color,strength:1}):0;
  const caption=celebration?'SIMULATED NET PROFIT · AUD '+celebration.pnl_base.toFixed(2):verified?'SIMULATED '+verified.kind.toUpperCase()+' · '+sceneInstrument(verified.asset).pair:active?'CHECK RECORDED · '+active.pair+' · '+(active.reason??active.result??'unvalidated').replaceAll('_',' '):'LOOKING · NO NEW VERIFIED FILL';
@@ -45,7 +45,7 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
 
 // Bounded positions in the sky; labels never overlap controls or the rock.
 export function constellationLayout(width,height,items,{masks=[],focus=null,eye=null}={}){
- const mobile=width<620,cols=mobile?5:9,rows=5,limit=mobile?20:36,slots=[];
+ const mobile=width<620,cols=mobile?(width<360?5:6):(width<900?9:11),rows=5,limit=mobile?24:SCENE_LIMITS.coinNodes,slots=[];
  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
   const x=width*(.07+.86*(col+.35*(row%2))/cols),y=height*(.17+row*.075);
   if(x<26||x>width-26||masks.some(m=>x>=m.left-28&&x<=m.right+28&&y>=m.top-20&&y<=m.bottom+28))continue;
@@ -59,7 +59,7 @@ export function constellationLayout(width,height,items,{masks=[],focus=null,eye=
  return shown.map((m,i)=>({...m,...slots[i]}));
 }
 
-export const NEURAL_LIMITS=Object.freeze({nodes:36,edges:70,pulseMs:900});
+export const NEURAL_LIMITS=Object.freeze({nodes:SCENE_LIMITS.coinNodes,edges:82,pulseMs:900});
 // Pure visual proximity graph. There is no financial, correlation or worker link.
 function crossesMask(a,b,m){
  const left=m.left-5,right=m.right+5,top=m.top-5,bottom=m.bottom+5;

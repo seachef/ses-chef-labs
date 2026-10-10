@@ -2,10 +2,10 @@ import test from 'node:test';import assert from 'node:assert/strict';import fs f
 import {createCanvas} from './canvas-test-support.mjs';
 import {neuralLinks,drawNeuralLinks,NEURAL_LIMITS} from './cosmos-scene.mjs?v=neural-links-20261010';
 const now=Date.parse('2026-10-10T04:45:00Z');
-const points=(n=36)=>Array.from({length:n},(_,i)=>({asset:'catalogue-'+i,label:'C'+i,x:40+(i%6)*80,y:40+Math.floor(i/6)*40,kind:'discovered',active:false,opacity:.6}));
+const points=(n=42)=>Array.from({length:n},(_,i)=>({asset:'catalogue-'+i,label:'C'+i,x:40+(i%6)*80,y:40+Math.floor(i/6)*40,kind:'discovered',active:false,opacity:.6}));
 const ctx=()=>createCanvas(600,350).getContext('2d');
 test('visible coins form one bounded sparse spatial graph without self or duplicate links',()=>{const p=points(),e=neuralLinks(p);assert.ok(e.length>=p.length-1);assert.ok(e.length<=NEURAL_LIMITS.edges);const keys=e.map(({a,b})=>[a.asset,b.asset].sort().join('|'));assert.equal(new Set(keys).size,e.length);assert.ok(e.every(({a,b})=>a.asset!==b.asset));const reached=new Set([p[0].asset]);for(let i=0;i<p.length;i++)for(const {a,b}of e)if(reached.has(a.asset)||reached.has(b.asset)){reached.add(a.asset);reached.add(b.asset);}assert.equal(reached.size,p.length);});
-test('node processing and edge output remain bounded even with an oversized input',()=>{const e=neuralLinks(points(1000));assert.ok(e.length<=70);assert.ok(e.every(({a,b})=>Number(a.asset.split('-')[1])<36&&Number(b.asset.split('-')[1])<36));});
+test('node processing and edge output remain bounded even with an oversized input',()=>{const e=neuralLinks(points(1000));assert.ok(e.length<=NEURAL_LIMITS.edges);assert.ok(e.every(({a,b})=>Number(a.asset.split('-')[1])<NEURAL_LIMITS.nodes&&Number(b.asset.split('-')[1])<NEURAL_LIMITS.nodes));});
 test('edges cannot cross a control mask and isolated sides remain separate',()=>{const p=[{asset:'a',x:20,y:50},{asset:'b',x:20,y:100},{asset:'c',x:180,y:50},{asset:'d',x:180,y:100}];const e=neuralLinks(p,{masks:[{left:80,right:120,top:0,bottom:150}]});assert.equal(e.length,2);assert.ok(e.every(({a,b})=>a.x===b.x));});
 test('empty, one-node and fully masked views safely have no edges',()=>{assert.deepEqual(neuralLinks([]),[]);assert.deepEqual(neuralLinks(points(1)),[]);assert.deepEqual(neuralLinks(points(),{masks:[{left:0,right:600,top:0,bottom:350}]}),[]);});
 test('catalogue identities are static connections with no activity pulse',()=>{const r=drawNeuralLinks(ctx(),points(),{now});assert.ok(r.edgeCount>0);assert.equal(r.pulses,0);assert.equal(r.beamCount,undefined);});
