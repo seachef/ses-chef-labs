@@ -1,4 +1,4 @@
-import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import {createPaperCueBridge,isVerifiedCue}from'./paper-eye-cues.mjs?v=neptune-native-20261009';import {validateV2}from'./status-v2.mjs?v=neptune-native-20261009';
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import {createPaperCueBridge,isVerifiedCue}from'./paper-eye-cues.mjs?v=experiment-provenance-v3-r2';import {validateV2}from'./status-v2.mjs?v=experiment-provenance-v3-r2';
 const now=Date.parse('2026-10-09T10:32:00Z'),at=new Date(now).toISOString(),fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/engine-running-v2.json',import.meta.url)));
 function report(){const p=structuredClone(fixture);p.heartbeat_at=at;return p;}
 function changed(p){p=structuredClone(p);p.fills[0].id='new-receipt';p.fills[0].at=at;return p;}

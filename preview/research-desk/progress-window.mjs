@@ -1,6 +1,6 @@
-import {validateV2} from './status-v2.mjs?v=neptune-native-20261009';
+import {validateV2} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 import {readNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
-import {validateMarketActivitySnapshot} from './market-activity.mjs?v=market-activity-20261010';
+import {validateMarketActivitySnapshot} from './market-activity.mjs?v=experiment-provenance-v3-r2';
 import {readPublicScoutSnapshot,publicScoutDisplay} from './public-scout.mjs?v=public-scout-review-20261010';
 
 // Display-only summary of existing public receipts. No timer, storage, request,

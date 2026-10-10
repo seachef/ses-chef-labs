@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {layout} from './cosmos-scene.mjs';
+import {layout} from './cosmos-scene.mjs?v=experiment-provenance-v3-r2';
 import {choreography} from './character-motion.mjs';
 
 const read=name=>fs.readFileSync(new URL(name,import.meta.url),'utf8');

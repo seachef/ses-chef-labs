@@ -1,8 +1,11 @@
+import {createExperimentOwner} from './experiment-owner.mjs?v=experiment-provenance-v3-r2';
+import {renderExperimentPanel,readExperimentPanel} from './experiment-panel.mjs?v=experiment-provenance-v3-r2';
+import {formatExperimentEvent,historyExperimentLabels} from './experiment-provenance.mjs?v=experiment-provenance-v3-r2';
 import {formatNativeHistory} from './native-history-display.mjs?v=neptune-native-20261009';
 import {NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-r2-20261009';
 import {renderNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
 import {renderSpecialistAccounts} from './specialist-accounts.mjs?v=neptune-native-20261009';
-import {createHistory} from './paper-history-v2.mjs?v=neptune-native-r2-20261009';
+import {createHistory} from './paper-history-v2.mjs?v=experiment-provenance-v3-r2';
 import {createOwnerControl} from './paper-owner-v2.mjs?v=neptune-native-20261009';
 export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,getClient}={}){
  const $=id=>document.getElementById(id);let report=null,historyStarted=false,exporting=false,authSubscription;
@@ -12,16 +15,24 @@ export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
   try{const response=await fetcher(url.href,{headers:{apikey:publicKey},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal});if(!response.ok)throw Error('History unavailable');return await response.json();}finally{clearTimeout(timer);}
  },onChange:renderHistory});
- const owner=createOwnerControl({getClient:getClient||(async()=>{
+ const loadOwnerClient=getClient||(async()=>{
   // Reuse the existing same-tab session; do not add a new redirect or owner identity.
   const auth=await import('../portfolio/portfolio/auth-client.mjs?v=20261001.data2');const client=await auth.getAuthClient();
-  if(client&&!authSubscription){authSubscription=client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'||event==='USER_UPDATED'||event==='SIGNED_IN'&&owner.getState().access==='owner')owner.invalidate();});}
   return client;
- }),onChange:renderOwner});
+ });
+ let authClient=null;
+ async function getOwnerClient(){const client=await loadOwnerClient();if(client!==authClient){if(authClient){authSubscription?.data?.subscription?.unsubscribe?.();owner.invalidate();experiments?.invalidate();}authClient=client;authSubscription=client?.auth?.onAuthStateChange?.(event=>{if(['SIGNED_OUT','SIGNED_IN','USER_UPDATED','PASSWORD_RECOVERY','TOKEN_REFRESHED'].includes(event)){owner.invalidate();experiments?.invalidate();}});}return client;}
+ const owner=createOwnerControl({getClient:getOwnerClient,onChange:renderOwner});
+ const experiments=$('experimentCheck')?createExperimentOwner({getClient:getOwnerClient,onChange:renderExperimentOwner}):null;
+ function renderExperimentOwner(state){const status=$('experimentOwnerStatus');if(status)status.textContent=state.message;for(const id of ['experimentCheck','experimentStart','experimentStop'])if($(id))$(id).disabled=state.busy||(id!=='experimentCheck'&&(id==='experimentStart'?!state.canStart:!state.canStop));}
+ $('experimentCheck')?.addEventListener('click',()=>experiments.refresh());
+ $('experimentStart')?.addEventListener('click',()=>{experiments.nextCampaign();void experiments.start();});
+ $('experimentStop')?.addEventListener('click',()=>experiments.stop());
  function renderOwner(state){$('ownerStatus').textContent=state.message;$('ownerActions').hidden=state.access!=='owner';$('ownerCheck').disabled=state.busy;$('ownerStop').disabled=state.busy||state.access!=='owner';$('ownerResume').disabled=state.busy||state.access!=='owner'||report?.status==='capacity_paused';}
  function renderHistory(state){
-  const visible=state.rows.filter(r=>['fills','results','settlements'].includes(r.kind)||NATIVE_KINDS.includes(r.kind)).slice(-100);
-  const nodes=visible.map(r=>{const li=document.createElement('li'),p=r.payload;li.textContent=NATIVE_KINDS.includes(r.kind)?formatNativeHistory(r):r.kind==='fills'?`${r.at} · SIMULATED ${short(p.side).toUpperCase()} ${short(p.asset)} · ${short(p.qty)} @ USD ${short(p.price)} · ${short(p.settlement_status)} · AUD cash ${short(p.cash_delta_base)} · fee AUD ${short(p.fee_base)} · FX cost AUD ${short(p.fx_cost_base)} · fill ${r.id}`:r.kind==='results'?`${r.at} · ${short(p.asset)} · ${short(p.status)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`:`${r.at} · FX settlement · USD ${short(p.usd_amount)} → AUD ${short(p.cash_delta_base)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`;return li;});
+  const visible=state.rows.filter(r=>['fills','results','settlements','experiment_events'].includes(r.kind)||NATIVE_KINDS.includes(r.kind)).slice(-100);
+  const label=historyExperimentLabels(state.rows,{complete:state.complete});
+  const nodes=visible.map(r=>{const li=document.createElement('li'),p=r.payload;li.textContent=label(r)+(r.kind==='experiment_events'?formatExperimentEvent(r):NATIVE_KINDS.includes(r.kind)?formatNativeHistory(r):r.kind==='fills'?`${r.at} · SIMULATED ${short(p.side).toUpperCase()} ${short(p.asset)} · ${short(p.qty)} @ USD ${short(p.price)} · ${short(p.settlement_status)} · AUD cash ${short(p.cash_delta_base)} · fee AUD ${short(p.fee_base)} · FX cost AUD ${short(p.fx_cost_base)} · fill ${r.id}`:r.kind==='results'?`${r.at} · ${short(p.asset)} · ${short(p.status)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`:`${r.at} · FX settlement · USD ${short(p.usd_amount)} → AUD ${short(p.cash_delta_base)} · realized AUD ${short(p.pnl_base)} · exit ${short(p.exit_fill_id)}`);return li;});
   if(!nodes.length){const li=document.createElement('li');li.textContent=state.complete?'No execution/result/settlement records in this snapshot.':'No execution records loaded yet. More may follow.';nodes.push(li);}
   $('completeHistory').replaceChildren(...nodes);
   $('historyStatus').textContent=state.error||(state.watermark===null?'Complete history has not been loaded.':`${state.rows.length} audit records loaded · ${state.complete?'complete fixed snapshot':'more records available'} · ${visible.length} latest execution/result/settlement/native audit records shown. CSV includes every audit kind.`);
@@ -37,6 +48,6 @@ export function setupPaperPanels({document,fetcher=fetch,endpointRoot,publicKey,
   finally{exporting=false;const s=history.getState();$('historyMore').disabled=s.busy||s.complete;$('historyExport').disabled=s.busy;$('historyReset').disabled=s.busy;}
  });
  $('ownerCheck').addEventListener('click',()=>owner.refresh());$('ownerStop').addEventListener('click',()=>owner.requestEnabled(false));$('ownerResume').addEventListener('click',()=>owner.requestEnabled(true));
- renderHistory(history.getState());renderOwner(owner.getState());
- return {observe(next){report=next;owner.observe(next);renderSpecialistAccounts(document,next);renderNativePaper(document,next);},history,owner};
+ renderHistory(history.getState());renderOwner(owner.getState());if(experiments)renderExperimentOwner(experiments.getState());
+ return {observe(next){report=next;owner.observe(next);experiments?.observe(next);renderExperimentPanel(document,next);renderSpecialistAccounts(document,next);renderNativePaper(document,next);},history,owner,experiments};
 }

@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {createCanvas,loadImage} from './canvas-test-support.mjs';
 import {configureCosmicCanvas} from './cosmic-motion.mjs?v=neptune-native-20261009';
-import {ASSETS,renderScene,constellationLayout} from './cosmos-scene.mjs?v=real-targets-20261010';
-import {createSceneTargets} from './scene-targets.mjs?v=real-targets-20261010';
+import {ASSETS,renderScene,constellationLayout} from './cosmos-scene.mjs?v=experiment-provenance-v3-r2';
+import {createSceneTargets} from './scene-targets.mjs?v=experiment-provenance-v3-r2';
 configureCosmicCanvas(createCanvas);
 const images=await Promise.all(ASSETS.map(a=>loadImage(new URL('./assets/'+a,import.meta.url).pathname)));
 const now=Date.parse('2026-10-10T04:00:00Z');
@@ -24,3 +24,13 @@ test('native HYPE fill targets HYPE/USDC rather than an empty legacy-node lookup
 });
 
 test('same venue and exact pair uses one display node while cross-venue tickers stay distinct',()=>{const catalogue=[{id:'kraken:XETHZUSD',venue:'kraken',pair:'ETH/USD',base:'ETH'},{id:'kraken:HYPEUSD',venue:'kraken',pair:'HYPE/USD',base:'HYPE'},{id:'hyperliquid:@107',venue:'hyperliquid',pair:'HYPE/USDC',base:'HYPE'}];const r=render(1180,500,2,{catalogue,markers:[{asset:'ETH/USD',label:'ETH',pair:'ETH/USD',venue:'Kraken',active:false,opacity:.27}]});assert.equal(r.nodes.filter(n=>n.label==='ETH').length,1);assert.equal(r.nodes.filter(n=>n.label==='HYPE').length,2);assert.equal(new Set(r.nodes.filter(n=>n.label==='HYPE').map(n=>n.venue)).size,2);assert.equal(r.beamCount,0);});
+
+test('confirmed buy exact coin and eye beams use green; ambient/fabricated cues do not acquire buy glow',()=>{
+ function trace(cue,markers=[]){const writes=[],gradient=()=>({addColorStop(){}}),ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get(o,k){return k in o?o[k]:()=>{};},set(o,k,v){writes.push([k,v]);o[k]=v;return true;}});const result=renderScene(ctx,images,2,390,430,{now:now+800,cue,markers});return {result,writes};}
+ const {bridge,cue}=receipt(),live=trace(cue,bridge.markers(now+800));
+ assert.equal(live.result.target.asset,cue.asset);assert.equal(live.result.beamCount,2);
+ assert.ok(live.writes.some(([k,v])=>k==='strokeStyle'&&v==='#84f4ab'));
+ assert.ok(live.writes.some(([k,v])=>k==='shadowColor'&&v==='#84f4ab'));
+ assert.ok(live.writes.some(([k,v])=>k==='strokeStyle'&&String(v).startsWith('rgba(90,235,140,')));
+ for(const unsupported of [null,{kind:'buy',asset:cue.asset,createdAt:now,until:now+10000,eventId:'invented'}]){const r=trace(unsupported);assert.equal(r.result.beamCount,0);assert.equal(r.writes.some(([k,v])=>k==='shadowColor'&&v==='#84f4ab'),false);}
+});

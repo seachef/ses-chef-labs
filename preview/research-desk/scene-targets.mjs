@@ -1,6 +1,6 @@
-import {validateV2,fresh} from './status-v2.mjs?v=neptune-native-20261009';
+import {validateV2,fresh} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 import {readNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
-import {validateMarketActivitySnapshot} from './market-activity.mjs?v=market-activity-20261010';
+import {validateMarketActivitySnapshot} from './market-activity.mjs?v=experiment-provenance-v3-r2';
 export const TARGET_LIMITS=Object.freeze({freshMs:90000,checkMs:6500,pendingMs:12000,fillMs:1200,backlogMs:6000,capacity:8,markers:8,historyMs:3600000});
 const instruments=Object.freeze(Object.fromEntries([
  ...['ETH','SOL','AVAX','LINK','AAVE','UNI'].map(s=>[s+'/USD',{label:s,pair:s+'/USD',venue:'Kraken'}]),
@@ -9,26 +9,61 @@ const instruments=Object.freeze(Object.fromEntries([
 export const sceneInstrument=asset=>Object.hasOwn(instruments,asset)?instruments[asset]:null;
 const trusted=new WeakSet();
 export const isVerifiedSceneFill=(cue,now=Date.now())=>!!cue&&trusted.has(cue)&&['buy','sell'].includes(cue.kind)&&Number.isFinite(now)&&now>=cue.createdAt&&now<cue.until;
+// Classification labels may be enriched later. Only a pending sell may gain
+// its first settled accounting; established debit/proceeds and lineage are immutable. Missing legacy venue retains its original
+// schema meaning (Kraken); explicit contradictory venues fail closed.
+function executionFingerprint(r){
+ const instrument=sceneInstrument(r.asset);if(!instrument)return null;
+ const venue=instrument.venue.toLowerCase();
+ if('venue' in r&&(typeof r.venue!=='string'||r.venue.toLowerCase()!==venue))return null;
+ const fields=['side','asset','quote_currency','qty','price','gross_qty','fee_qty','fee_quote','fee_currency','net_inventory_delta','net_quote_delta','gross_usd','fee_usd','net_usd','slippage_pct','order_id','decision_id','observation_id','source_hash','config_hash','config_version','position_status'];
+ return JSON.stringify([venue,Date.parse(r.at),...fields.map(k=>[k,r[k]??null])]);
+}
+function accountingFingerprint(r){
+ const fields=['settlement_status','at_fill_settlement_status','cash_delta_base','gross_base','fee_base','fx_cost_base','fx','fx_source','fx_rate_date','fx_applied_rate'];
+ const stamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v))?Date.parse(v):v??null;
+ return JSON.stringify([...fields.map(k=>[k,r[k]??null]),...['settled_at','fx_at','fx_retrieved_at'].map(k=>[k,stamp(r[k])])]);
+}
+function firstSellSettlement(old,r,heartbeat){
+ if(r.side!=='sell'||!['pending_conversion','pending_native_conversion'].includes(old.settlementStatus)||r.settlement_status!=='settled')return false;
+ if('at_fill_settlement_status' in r&&r.at_fill_settlement_status!==old.settlementStatus)return false;
+ if(r.settled_at!=null){const at=Date.parse(r.settled_at);if(!Number.isFinite(at)||at<Date.parse(r.at)||at>heartbeat)return false;}
+ return true;
+}
 // Pure, read-only presentation. Each source seeds independently, including delayed
 // native history hydration. A decision can create a marker, never a fill receipt.
 function tombstones(){const bits=new Uint8Array(1<<15),mask=bits.length*8-1;const indices=key=>{let a=2166136261,b=0x9e3779b9;for(const c of key){a=Math.imul(a^c.charCodeAt(0),16777619);b=Math.imul(b^c.charCodeAt(0),2246822519);}return [a,a+b,a+2*b,a+3*b].map(n=>(n>>>0)&mask);};return {has:key=>indices(key).every(i=>bits[i>>>3]&(1<<(i&7))),add(key){for(const i of indices(key))bits[i>>>3]|=1<<(i&7);}};}
 export function createSceneTargets(){
  let active=true,connected=false,heartbeat=-Infinity,clock=-Infinity,cue=null;
  const markers=new Map(),sources=new Map(),queue=[];
- function source(name){if(!sources.has(name))sources.set(name,{seeded:false,watermark:-Infinity,seen:new Set(),retired:tombstones()});return sources.get(name);}
+ function source(name){if(!sources.has(name))sources.set(name,{seeded:false,watermark:-Infinity,seen:new Set(),fingerprints:new Map(),retired:tombstones()});return sources.get(name);}
  function clear(){if(cue)trusted.delete(cue);cue=null;queue.length=0;for(const x of sources.values())x.seeded=false;for(const [k,v]of markers)markers.set(k,Object.freeze({...v,until:0}));}
  function disconnect(){connected=false;clear();}
  function tick(now){if(!Number.isFinite(now)||now<clock){disconnect();return false;}clock=now;if(!connected||(!Number.isFinite(heartbeat)||now<heartbeat||now-heartbeat>TARGET_LIMITS.freshMs)){clear();return false;}return true;}
  function remember(asset,at,fields={}){if(!sceneInstrument(asset))return;const old=markers.get(asset);if(old&&(Date.parse(old.at)>Date.parse(at)||old.at===at&&!Object.keys(fields).length))return;markers.set(asset,Object.freeze({asset,...sceneInstrument(asset),at,kind:'recorded',result:null,reason:null,until:0,...fields}));while(markers.size>TARGET_LIMITS.markers)markers.delete(markers.keys().next().value);}
+ function revoke(key,asset){
+  if(cue?.eventId===key){trusted.delete(cue);const m=markers.get(cue.asset);if(m)markers.set(cue.asset,Object.freeze({...m,until:0}));cue=null;}
+  for(let i=queue.length-1;i>=0;i--)if(queue[i].eventId===key)queue.splice(i,1);
+  const m=markers.get(asset);if(m)markers.set(asset,Object.freeze({...m,until:0}));
+ }
  function accept(name,records,now,{fill=false,ready=true}={}){
   const s=source(name),baseline=!s.seeded,candidates=[];
-  for(const r of records){const at=Date.parse(r.at),key=r.key;if(!sceneInstrument(r.asset)||!Number.isFinite(at)||at>now||at>heartbeat)continue;
+  for(const r of records){const at=Date.parse(r.at),key=r.key;
+   if(fill){const fingerprint=executionFingerprint(r),accounting=accountingFingerprint(r),old=s.fingerprints.get(key);
+    const accountingConflict=old&&old.accounting!==accounting&&!firstSellSettlement(old,r,heartbeat);
+    if(fingerprint===null||old&&(old.fingerprint!==fingerprint||accountingConflict)){revoke(key,old?.asset??r.asset);s.seen.add(key);s.retired.add(key);continue;}
+    s.fingerprints.set(key,{fingerprint,accounting,settlementStatus:r.settlement_status,asset:r.asset});
+   }
+   if(!sceneInstrument(r.asset)||!Number.isFinite(at)||at>now||at>heartbeat)continue;
    const isNew=!baseline&&!s.retired.has(key)&&at>s.watermark;
    s.seen.add(key);s.retired.add(key);remember(r.asset,r.at);
    if(isNew&&active&&fresh(r.at,now,TARGET_LIMITS.freshMs))candidates.push(r);
   }
   for(const r of records){const at=Date.parse(r.at);if(Number.isFinite(at)&&at<=now&&at<=heartbeat)s.watermark=Math.max(s.watermark,at);}
   while(s.seen.size>256)s.seen.delete(s.seen.values().next().value);
+  // Older IDs retain the existing fixed-size retirement filter. Keep every
+  // active/queued fingerprint even during a rapid bounded-history rotation.
+  for(const key of s.fingerprints.keys())if(s.fingerprints.size>256&&cue?.eventId!==key&&!queue.some(x=>x.eventId===key))s.fingerprints.delete(key);
   if(ready){if(baseline)s.watermark=Math.max(s.watermark,heartbeat,now);s.seeded=true;}
   for(const r of candidates.sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||a.key.localeCompare(b.key))){
    if(fill){if(queue.length+(cue?1:0)<TARGET_LIMITS.capacity)queue.push(Object.freeze({asset:r.asset,kind:r.side,eventId:r.key,at:r.at,receivedAt:now}));}

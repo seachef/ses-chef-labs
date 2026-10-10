@@ -1,0 +1,20 @@
+[
+  "cosmos-controller.mjs",
+  "cosmos-scene.mjs",
+  "experiment-owner.mjs",
+  "experiment-panel.mjs",
+  "experiment-provenance.mjs",
+  "market-activity.mjs",
+  "neptune.mjs",
+  "paper-eye-cues.mjs",
+  "paper-history-v2.mjs",
+  "paper-panels-v2.mjs",
+  "paper-position-charts.mjs",
+  "paper-trade-plan.mjs",
+  "profit-events.mjs",
+  "progress-window.mjs",
+  "scene-targets.mjs",
+  "status-v2.mjs",
+  "team-work.mjs",
+  "team-worker-view.mjs"
+]

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {createPublicScoutFeed,publicScoutDisplay,readPublicScoutSnapshot,PUBLIC_SCOUT_URL,PUBLIC_SCOUT_LIMITS} from './public-scout.mjs?v=public-scout-review-20261010';
 import {validatePublicFeed} from './public-scout-contract-v1/public-feed.mjs';
 import {payloadDigest} from './public-scout-contract-v1/lead-review.mjs';
-import {setupCodingWorkers} from './team-worker-view.mjs';
+import {setupCodingWorkers} from './team-worker-view.mjs?v=experiment-provenance-v3-r2';
 
 // Archived public market observations with test-only commit/run identifiers.
 // Timestamp shifts below are synthetic test inputs, never runtime feed data.
@@ -123,7 +123,7 @@ test('new research records respect source-pane choice, hidden page, repeated nav
 });
 
 test('integration preserves complete scene/artwork/style and keeps research outside quote and trade bridges',()=>{
- const source=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8'),clientSource=fs.readFileSync(new URL('./public-scout.mjs',import.meta.url),'utf8');
+ const source=fs.readFileSync(new URL('./neptune.mjs?v=experiment-provenance-v3-r2',import.meta.url),'utf8'),clientSource=fs.readFileSync(new URL('./public-scout.mjs',import.meta.url),'utf8');
  const wiring=source.slice(source.indexOf('const publicScout='),source.indexOf("let selected='ETH/USD'"));assert.match(wiring,/neptune:public-scout/);assert.doesNotMatch(wiring,/sceneTargets\.|profitBridge\.|emitTeamWorkReport|marketActivity\.observe|paperViewV2/);
  assert.doesNotMatch(clientSource,/supabase|apikey|publicKey|localStorage|sessionStorage|innerHTML|insertAdjacentHTML|method:\s*['"](?:POST|PATCH|DELETE)|requestAnimationFrame/);assert.equal((clientSource.match(/https:\/\//g)||[]).length,1);
  assert.match(source,/marker\(1,scout.key,scout.at,scout.markerState\)/);assert.match(clientSource,/markerState:stale\?'stale':offline\|\|health.venues===0\?'offline':'snapshot'/);assert.equal(PUBLIC_SCOUT_LIMITS.bytes,65536);assert.equal(PUBLIC_SCOUT_LIMITS.timeout_ms,8000);

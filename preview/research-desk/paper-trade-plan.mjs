@@ -1,4 +1,4 @@
-import {validateV2,money,fresh} from './status-v2.mjs?v=neptune-native-20261009';
+import {validateV2,money,fresh,experimentRecordLabel} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 import {readNativePaper} from './native-paper.mjs?v=neptune-native-20261009';
 import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009';
 
@@ -30,7 +30,7 @@ function entryReceipt(report,p,at){
  return f;
 }
 function legacyRow(report,p,at,now){
- const fill=entryReceipt(report,p,at),row={key:'open:'+p.asset,asset:p.asset,venue:'Kraken',currency:'USD',status:'OPEN · PAPER',entry:fill?p.entry_price:null,intended:null,target:p.target,stop:p.stop,estimatedExit:null,estimatedNet:null,at:p.opened_at,note:'Entry fill receipt missing or inconsistent; net estimate unavailable.'};
+ const fill=entryReceipt(report,p,at),row={classificationLabel:experimentRecordLabel(p),key:'open:'+p.asset,asset:p.asset,venue:'Kraken',currency:'USD',status:'OPEN · PAPER',entry:fill?p.entry_price:null,intended:null,target:p.target,stop:p.stop,estimatedExit:null,estimatedNet:null,at:p.opened_at,note:'Entry fill receipt missing or inconsistent; net estimate unavailable.'};
  if(!fill)return row;
  row.note='Actual simulated entry receipt '+fill.id+'.';
  if(!positive(p.target)||!positive(p.stop)){row.note+=' Plan incomplete; net estimate unavailable.';return row;}
@@ -49,7 +49,7 @@ function pendingRows(report,at,now){
   !report.positions.some(p=>p.asset===d.asset)&&!report.fills.some(f=>f.decision_id===d.id)&&
   !report.decisions.some(x=>x!==d&&x.asset===d.asset&&(x.origin_decision_id===d.id||time(x.at)>=time(d.at)&&x.result!=='pending'))&&
   !report.decisions.some(x=>x!==d&&x.asset===d.asset&&x.result==='pending'&&(time(x.at)>time(d.at)||time(x.at)===time(d.at)&&String(x.id)>String(d.id))))
- .map(d=>({key:'pending:'+d.id,asset:d.asset,venue:'Kraken',currency:'USD',status:'INTENDED · NOT FILLED',entry:null,intended:d.price,target:d.target,stop:d.stop,estimatedExit:null,estimatedNet:null,at:d.at,note:'Decision '+d.id+'. This is the decision reference price, not an order limit or an actual fill. No verified filled quantity/cost; net estimate unavailable. Current pending order state is not supplied by this limited report.'}));
+ .map(d=>({classificationLabel:report.experiment_provenance_version===1?'PAPER CLASSIFICATION UNRESOLVED · ':'',key:'pending:'+d.id,asset:d.asset,venue:'Kraken',currency:'USD',status:'INTENDED · NOT FILLED',entry:null,intended:d.price,target:d.target,stop:d.stop,estimatedExit:null,estimatedNet:null,at:d.at,note:'Decision '+d.id+'. This is the decision reference price, not an order limit or an actual fill. No verified filled quantity/cost; net estimate unavailable. Current pending order state is not supplied by this limited report.'}));
 }
 function closedRows(report,at){
  const groups=new Map();
@@ -68,7 +68,7 @@ function closedRows(report,at){
    if(settled&&same(settled.cash+buy.cash_delta_base,settled.pnl)&&(r.status!=='settled'||same(r.pnl_base,settled.pnl))&&(!('settled_at' in r)||by(r.settled_at,at)&&time(r.settled_at)>=time(r.closed_at))){net=settled.pnl;note='Actual simulated exit '+sell.id+'; realised net P&L reconciles entry debit and settled AUD proceeds.';}
    else if(sell.settlement_status==='pending_conversion')note='Exit filled; AUD conversion/realised P&L not yet verified.';
   }
-  return {asset:r.asset,entry:linked?buy.price:null,exit:linked?sell.price:null,net,at:r.closed_at,note};
+  return {classificationLabel:experimentRecordLabel(r),asset:r.asset,entry:linked?buy.price:null,exit:linked?sell.price:null,net,at:r.closed_at,note};
  });
 }
 export function paperTradePlanView({report,connected=false,now=Date.now()}={}){
@@ -89,7 +89,7 @@ export function paperTradePlanView({report,connected=false,now=Date.now()}={}){
  const heldCost=p.positions.reduce((total,x)=>total+x.cost_base,0)+(nativeOkay?native.positions.reduce((total,x)=>total+x.cost_base,0):0);
  const current=snapshot.valuationCurrent&&fxReady(p.account,at,now)&&p.positions.every(x=>by(x.quote_at,at))&&costComplete&&number(heldCost)&&same(p.account.unrealized_pnl,snapshot.equity-snapshot.cash-heldCost);
  const first=rows.find(x=>x.status==='OPEN · PAPER'&&x.entry!==null)??rows[0];
- const preview=first?[first.asset+' · '+(first.intended!==null?'intended':'paper entry')+' '+price(first.intended??first.entry,first.currency),
+ const preview=first?[(first.classificationLabel??'')+first.asset+' · '+(first.intended!==null?'intended':'paper entry')+' '+price(first.intended??first.entry,first.currency),
   'Target trigger '+price(first.target,first.currency),
   'Est. net P&L '+signed(first.estimatedNet)+(rows.length>1?' · +'+(rows.length-1)+' more':'')]:['Entry / target · no checked position','No entry or target inferred','Est. net P&L unavailable'];
  return {state:native.state==='invalid'||native.state==='stale'||native.state==='valid'&&!nativeOkay?'PARTIAL':'RECEIVED',observedAt:p.heartbeat_at,rows,closed:closedRows(p,at),unrealised:current?p.account.unrealized_pnl:null,preview,
@@ -101,7 +101,7 @@ export function renderPaperTradePlan(document,options){
  set('paperPlanStatus',v.state+' · '+(v.observedAt?'Report '+iso(v.observedAt)+'. ':'')+v.reason);
  set('paperPlanUnrealised','Current unrealised P&L · whole paper account: '+signed(v.unrealised)+'. This includes open holdings and is not realised profit.');
  const list=(id,rows,format,fallback)=>{const n=document.getElementById(id);if(!n)return;const texts=rows.length?rows.map(format):[fallback],signature=texts.join('\n');if(n.dataset?.signature===signature)return;const children=texts.map(t=>{const li=document.createElement('li');li.textContent=t;return li;});n.replaceChildren(...children);if(n.dataset)n.dataset.signature=signature;};
- list('paperPlanRows',v.rows,r=>r.venue+' · '+r.asset+' · '+r.status+'\n'+(r.intended!==null?'Intended entry reference '+price(r.intended,r.currency)+' · actual entry not filled':'Actual paper entry '+price(r.entry,r.currency))+'\nPlanned target trigger '+price(r.target,r.currency)+' · stop trigger '+price(r.stop,r.currency)+'\nEstimated target exit after slippage '+price(r.estimatedExit,r.currency)+' · estimated net P&L '+signed(r.estimatedNet)+'\n'+r.note,'No checked open position or recent intended entry available. No zero profit is inferred.');
- list('paperPlanClosed',v.closed,r=>r.asset+' · '+iso(r.at)+'\nActual paper entry '+price(r.entry)+' · actual paper exit '+price(r.exit)+'\nRealised net P&L '+signed(r.net)+'\n'+r.note,'No verified linked exit result in this limited report. This does not establish that no earlier exits occurred.');
+ list('paperPlanRows',v.rows,r=>(r.classificationLabel??'')+r.venue+' · '+r.asset+' · '+r.status+'\n'+(r.intended!==null?'Intended entry reference '+price(r.intended,r.currency)+' · actual entry not filled':'Actual paper entry '+price(r.entry,r.currency))+'\nPlanned target trigger '+price(r.target,r.currency)+' · stop trigger '+price(r.stop,r.currency)+'\nEstimated target exit after slippage '+price(r.estimatedExit,r.currency)+' · estimated net P&L '+signed(r.estimatedNet)+'\n'+r.note,'No checked open position or recent intended entry available. No zero profit is inferred.');
+ list('paperPlanClosed',v.closed,r=>(r.classificationLabel??'')+r.asset+' · '+iso(r.at)+'\nActual paper entry '+price(r.entry)+' · actual paper exit '+price(r.exit)+'\nRealised net P&L '+signed(r.net)+'\n'+r.note,'No verified linked exit result in this limited report. This does not establish that no earlier exits occurred.');
  return v;
 }

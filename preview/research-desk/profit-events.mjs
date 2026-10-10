@@ -1,11 +1,12 @@
+import {ordinaryProfitEligible} from './experiment-provenance.mjs?v=experiment-provenance-v3-r2';
 // Called only after validateV2. Require complete, linked, closed cost accounting.
 export function settledProfits(p){
- if(p.mode!=='PAPER'||p.currency!=='AUD')return [];
+ if(p.mode!=='PAPER'||p.currency!=='AUD'||p.experiment_provenance_version!==1)return [];
  const seen=new Set();
  return p.results.flatMap(r=>{
   if(seen.has(r.exit_fill_id))return [];seen.add(r.exit_fill_id);
   const entry=p.fills.find(f=>f.id===r.entry_fill_id),exit=p.fills.find(f=>f.id===r.exit_fill_id),settlement=p.settlements.find(s=>s.exit_fill_id===r.exit_fill_id);
-  if(!entry||!exit||entry.side!=='buy'||exit.side!=='sell'||entry.asset!==r.asset||exit.asset!==r.asset||entry.settlement_status!=='settled'||entry.qty!==exit.qty||Date.parse(entry.at)>Date.parse(exit.at)||Date.parse(r.closed_at)!==Date.parse(exit.at))return [];
+  if(!ordinaryProfitEligible(p,entry,exit,r,...(settlement?[settlement]:[]))||!entry||!exit||entry.side!=='buy'||exit.side!=='sell'||entry.asset!==r.asset||exit.asset!==r.asset||entry.settlement_status!=='settled'||entry.qty!==exit.qty||Date.parse(entry.at)>Date.parse(exit.at)||Date.parse(r.closed_at)!==Date.parse(exit.at))return [];
   const delayed=exit.settlement_status==='pending_conversion';
   if(delayed&&!settlement||!delayed&&r.status!=='settled')return [];
   const net=(delayed?settlement.cash_delta_base:exit.cash_delta_base)+entry.cash_delta_base;

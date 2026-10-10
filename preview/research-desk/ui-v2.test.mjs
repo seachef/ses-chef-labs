@@ -1,17 +1,18 @@
-import {renderPaperTradePlan} from './paper-trade-plan.mjs';
-import {renderProgressWindow} from './progress-window.mjs?v=progress-roll-20261010';
+import {createPaperPositionCharts,renderPaperPositionCharts} from './paper-position-charts.mjs?v=experiment-provenance-v3-r2';
+import {renderPaperTradePlan} from './paper-trade-plan.mjs?v=experiment-provenance-v3-r2';
+import {renderProgressWindow} from './progress-window.mjs?v=experiment-provenance-v3-r2';
 import {createPublicReviewFeed} from './public-reviews.mjs?v=independent-reviews-20261010';
 import {createPublicScoutFeed,publicScoutDisplay} from './public-scout.mjs?v=public-scout-review-20261010';
 import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010';
-import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010';
-import {createMarketActivityFeed} from './market-activity.mjs';
+import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=experiment-provenance-v3-r2';
+import {createMarketActivityFeed} from './market-activity.mjs?v=experiment-provenance-v3-r2';
 import {readNativePaper,nativeFillLabel} from './native-paper.mjs';
 import {readPortfolioSnapshot} from './portfolio-snapshot.mjs';
 import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009';
 import {readDailyPerformance} from './daily-performance.mjs';
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import * as adapter from './status-v2.mjs?v=neptune-native-20261009';import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-native-20261009';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import * as adapter from './status-v2.mjs?v=experiment-provenance-v3-r2';import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=experiment-provenance-v3-r2';
 import {readResearchV1} from './research-v1.mjs';
-const src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8').replace(/^import .*\n/,'');
+const src=fs.readFileSync(new URL('./neptune.mjs?v=experiment-provenance-v3-r2',import.meta.url),'utf8').replace(/^import .*\n/,'');
 const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/pending-v2.json',import.meta.url)));
 class Node {
@@ -31,9 +32,9 @@ function boot(payload,{fail=false,fetchWait,scoutFeed,Audio,webkitAudio,audioSes
  const ids=Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],new Node()]));
  const markets=[...html.matchAll(/data-market="([^"]+)"/g)].map(m=>{let n=new Node();n.dataset.market=m[1];return n;});
  const tabs=['code','trades','events'].map(p=>{let n=new Node();n.dataset.pane=p;return n;}),panes=tabs.map(t=>{let n=new Node();n.dataset.pane=t.dataset.pane;return n;});
- const docEvents={},mediaEvents={},windowEvents={},states=[],historyRequests=[];let requests=0;const document={hidden:false,body:new Node(),getElementById:id=>{assert.ok(ids[id],`missing #${id}`);return ids[id];},createElement:()=>new Node(),querySelectorAll:q=>q==='[data-market]'?markets:q==='.mobile-tabs button'?tabs:q==='.instrument'?panes:[],addEventListener(k,fn){docEvents[k]=fn;},removeEventListener(k){delete docEvents[k];}};
- const context=vm.createContext({...adapter,renderPaperTradePlan,renderProgressWindow,createPublicReviewFeed,createPublicScoutFeed,publicScoutDisplay,readDiscoveryCatalogue,createSceneTargets,sceneInstrument,createMarketActivityFeed,URL,createLaserAudio,readResearchV1,readDailyPerformance,readPortfolioSnapshot,readNativePaper,nativeFillLabel,setupPaperPanels:()=>({observe(){}}),createPaperCueBridge,makeCosmosScene:options=>{const a=makeCosmosScene({...options,createImage:()=>({addEventListener(){},removeEventListener(){}})});return {...a,setState(state){states.push(state);a.setState(state);}};},document,window:{navigator:{audioSession},AudioContext:Audio,webkitAudioContext:webkitAudio,addEventListener(k,fn){windowEvents[k]=fn;}},matchMedia:()=>({matches:true,addEventListener(k,fn){mediaEvents[k]=e=>{this.matches=e.matches;fn(e);};}}),devicePixelRatio:1,requestAnimationFrame:()=>0,cancelAnimationFrame(){},setInterval(){},setTimeout:audioSetTimeout,clearTimeout:audioClearTimeout,AbortController,Intl,Date,fetch:async(url,options)=>{if(String(url).includes('raw.githubusercontent.com'))return scoutFeed?new Response(JSON.stringify(scoutFeed),{headers:{'content-type':'text/plain'}}):{ok:false};if(String(url).includes('discovery-catalogue.json'))return {ok:false};if(String(url).includes('neptune_paper_v2_history')){historyRequests.push({url,options});return {ok:true,json:async()=>[]};}requests++;assert.equal(options.credentials,'omit');assert.equal(options.method,undefined);assert.match(url,/neptune_paper_v2_status/);if(fetchWait)await fetchWait();if(fail)throw Error('offline');return {ok:true,json:async()=>payload};}});
- vm.runInContext(src,context);return {context,ids,markets,tabs,panes,document,docEvents,mediaEvents,windowEvents,states,historyRequests,requests:()=>requests};
+ const docEvents={},mediaEvents={},windowEvents={},states=[],historyRequests=[],transportRequests=[];let requests=0;const document={hidden:false,body:new Node(),getElementById:id=>{assert.ok(ids[id],`missing #${id}`);return ids[id];},createElement:()=>new Node(),createElementNS:()=>new Node(),querySelectorAll:q=>q==='[data-market]'?markets:q==='.mobile-tabs button'?tabs:q==='.instrument'?panes:[],addEventListener(k,fn){docEvents[k]=fn;},removeEventListener(k){delete docEvents[k];}};
+ const context=vm.createContext({...adapter,structuredClone,renderPaperTradePlan,createPaperPositionCharts,renderPaperPositionCharts,renderProgressWindow,createPublicReviewFeed,createPublicScoutFeed,publicScoutDisplay,readDiscoveryCatalogue,createSceneTargets,sceneInstrument,createMarketActivityFeed,URL,createLaserAudio,readResearchV1,readDailyPerformance,readPortfolioSnapshot,readNativePaper,nativeFillLabel,setupPaperPanels:()=>({observe(){}}),createPaperCueBridge,makeCosmosScene:options=>{const a=makeCosmosScene({...options,createImage:()=>({addEventListener(){},removeEventListener(){}})});return {...a,setState(state){states.push(state);a.setState(state);}};},document,window:{navigator:{audioSession},AudioContext:Audio,webkitAudioContext:webkitAudio,addEventListener(k,fn){windowEvents[k]=fn;}},matchMedia:()=>({matches:true,addEventListener(k,fn){mediaEvents[k]=e=>{this.matches=e.matches;fn(e);};}}),devicePixelRatio:1,requestAnimationFrame:()=>0,cancelAnimationFrame(){},setInterval(){},setTimeout:audioSetTimeout,clearTimeout:audioClearTimeout,AbortController,Intl,Date,fetch:async(url,options)=>{transportRequests.push({url:String(url),method:options?.method??'GET',credentials:options?.credentials});assert.ok(options?.method===undefined||options.method==='GET','Unexpected mutating transport '+options?.method);assert.match(String(url),/raw\.githubusercontent\.com|discovery-catalogue\.json|neptune_paper_v2_history|neptune_paper_v2_status/,'Unexpected transport destination');if(String(url).includes('raw.githubusercontent.com'))return scoutFeed?new Response(JSON.stringify(scoutFeed),{headers:{'content-type':'text/plain'}}):{ok:false};if(String(url).includes('discovery-catalogue.json'))return {ok:false};if(String(url).includes('neptune_paper_v2_history')){historyRequests.push({url,options});return {ok:true,json:async()=>[]};}requests++;assert.equal(options.credentials,'omit');assert.equal(options.method,undefined);assert.match(url,/neptune_paper_v2_status/);if(fetchWait)await fetchWait();if(fail)throw Error('offline');return {ok:true,json:async()=>payload};}});
+ vm.runInContext(src,context);return {context,ids,markets,tabs,panes,document,docEvents,mediaEvents,windowEvents,states,historyRequests,transportRequests,requests:()=>requests};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 function active(){let p=structuredClone(fixture),at=new Date().toISOString();Object.assign(p,{currency:'AUD',status:'running',heartbeat_at:at,quote_at:at,scan_at:at,scan_complete:true,message:'Nothing to report',account:{initial_cash:10000,cash:10000,available_cash:10000,reserved_cash:0,equity:10000,realized_pnl:0,unrealized_pnl:0,fees:0,fills:0},risk:{...p.risk,entry_paused:false}});return p;}
@@ -242,3 +243,19 @@ test('scheduled discovery updates actual Scout DOM while paper balances and rece
 
 
 test('15-minute summary opens and closes repeatedly without changing paper controls',async()=>{const b=boot([{id:'neptune-paper-v2',payload:active()}]);await settle();assert.match(b.ids.progressHeadline.textContent,/some data missing/);assert.match(b.ids.progressObserved.textContent,/Report .* Perth/);for(let i=0;i<3;i++){b.ids.openProgress.events.click();assert.equal(b.ids.progressDialog.open,true);b.ids.openProgress.events.click();assert.equal(b.ids.progressDialog.open,true);b.ids.closeProgress.events.click();assert.equal(b.ids.progressDialog.open,false);}assert.equal(b.ids.marketSelect.children.length,6);assert.match(b.ids.progressDetails.textContent,/practice trades/);});
+
+test('real app render wires each checked position below the scene without any additional request',async()=>{
+ const p=JSON.parse(fs.readFileSync(new URL('./fixtures/engine-running-v2.json',import.meta.url))),offset=Date.now()-2000-Date.parse(p.heartbeat_at);
+ function shift(x){if(Array.isArray(x))return x.forEach(shift);if(!x||typeof x!=='object')return;for(const [k,v]of Object.entries(x)){if(typeof v==='string'&&/^\d{4}-\d\d-\d\dT/.test(v))x[k]=new Date(Date.parse(v)+offset).toISOString();else if(v&&typeof v==='object')shift(v);}if(x.fx_at)x.fx_rate_date=x.fx_at.slice(0,10);}
+ shift(p);for(const position of p.positions)position.tick_size=.000001;
+ const b=boot([{id:'neptune-paper-v2',payload:p}]);await settle();assert.equal(b.requests(),1);assert.equal(b.ids.paperPositionWindows.children.length,3);assert.match(b.ids.paperPositionStatus.textContent,/RECEIVED/);assert.match(b.ids.paperPositionWindows.children[0].children[0].textContent,/Kraken/);
+ const equity=p.account.equity;p.heartbeat_at=new Date(Date.parse(p.heartbeat_at)+1000).toISOString();p.positions=[];await b.ids.refresh.events.click();assert.equal(b.requests(),2);assert.equal(b.ids.paperPositionWindows.children.length,1);assert.match(b.ids.paperPositionWindows.children[0].textContent,/No verified open paper positions/);assert.equal(p.account.equity,equity);assert.equal(b.ids.portfolioBalance.textContent,'—','an inconsistent synthetic flat account remains withheld by the unchanged portfolio guard');
+ assert.ok(html.indexOf('</main>')<html.indexOf('id="paperPositionCharts"'));
+});
+
+
+test('combined app transport capture stays read-only across rendering, chart refresh and repeated display actions',async()=>{
+ const b=boot([{id:'neptune-paper-v2',payload:active()}]);await settle();
+ for(let i=0;i<3;i++){b.ids.openProgress.events.click();b.ids.closeProgress.events.click();await b.ids.refresh.events.click();}
+ assert.ok(b.transportRequests.length>0);assert.ok(b.transportRequests.every(r=>r.method==='GET'));assert.ok(b.transportRequests.every(r=>/raw\.githubusercontent\.com|discovery-catalogue\.json|neptune_paper_v2_history|neptune_paper_v2_status/.test(r.url)));assert.ok(b.transportRequests.every(r=>!/(?:rpc|orders|request_market|stop_market|topup|reset)/.test(r.url)));assert.equal(b.requests(),4);
+});

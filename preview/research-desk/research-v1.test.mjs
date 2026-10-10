@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {readResearchV1} from './research-v1.mjs';
-import {validateV2} from './status-v2.mjs';
+import {validateV2} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/research-v1.json',import.meta.url)));const clone=()=>structuredClone(fixture);
 test('six evidence streams and fixed catalogue provenance accepted',()=>{const p=readResearchV1(fixture);assert(p);assert.deepEqual(p.streams.map(x=>x.id),['scout','depth','pulse','shield','ledger','watch']);assert.equal(p.catalogue.live_screen_status,'not_connected');});
 test('optional missing or malformed extension never throws',()=>{for(const x of [null,{}, {research_v1:3},{research_v1:{}}])assert.equal(readResearchV1(x),null);});

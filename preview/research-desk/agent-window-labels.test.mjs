@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-const source = fs.readFileSync(new URL('./neptune.mjs', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('./neptune.mjs?v=experiment-provenance-v3-r2', import.meta.url), 'utf8');
 const roles = [
   ['Scout', 'scout', 'Scout: Market coverage', 'scoutDialog'],
   ['Depth', 'depth', 'Depth: Liquidity checks', 'depthDialog'],

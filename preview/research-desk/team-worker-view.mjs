@@ -1,5 +1,5 @@
 import {readPublicScoutSnapshot,publicScoutDisplay,PUBLIC_SCOUT_LIMITS} from './public-scout.mjs?v=public-scout-review-20261010';
-import {validateMarketActivitySnapshot} from './market-activity.mjs?v=market-activity-20261010';
+import {validateMarketActivitySnapshot} from './market-activity.mjs?v=experiment-provenance-v3-r2';
 import {createRollingActivity} from './rolling-activity.mjs?v=rolling-activity-20261010';
 import {createTeamWorkStore,teamWorkerState,matchPublicWorkSource,teamPublisherLive,TEAM_WORK_LIMITS,WORK_ROLES,WORK_TASKS,WORK_STEPS} from './team-worker-evidence.mjs';
 const stamp=value=>value?new Date(value).toISOString().replace('T',' ').replace('Z',' UTC'):'Time unavailable';

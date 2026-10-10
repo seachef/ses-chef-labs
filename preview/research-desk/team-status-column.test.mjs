@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
-import {validateV2} from './status-v2.mjs';import {createTeamWorkStore,teamWorkerState} from './team-worker-evidence.mjs';
-const src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8'),readerSource=src.slice(src.indexOf('let nextTeamColumnProbe=0;'),src.indexOf('\nfunction emitInterfaceWork'));
+import {validateV2} from './status-v2.mjs?v=experiment-provenance-v3-r2';import {createTeamWorkStore,teamWorkerState} from './team-worker-evidence.mjs';
+const src=fs.readFileSync(new URL('./neptune.mjs?v=experiment-provenance-v3-r2',import.meta.url),'utf8'),readerSource=src.slice(src.indexOf('let nextTeamColumnProbe=0;'),src.indexOf('\nfunction emitInterfaceWork'));
 const paper=JSON.parse(fs.readFileSync(new URL('./fixtures/pending-v2.json',import.meta.url))),work=JSON.parse(fs.readFileSync(new URL('./fixtures/team-work-cache-v2-sql.json',import.meta.url))),T=Date.parse(work.content_at);
 const row=(cache=work,payload=paper)=>[{id:'neptune-paper-v2',payload:structuredClone(payload),team_work:cache}];
 const ok=value=>({ok:true,status:200,json:async()=>value});

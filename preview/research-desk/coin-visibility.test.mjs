@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createCanvas,loadImage} from './canvas-test-support.mjs';
 import {configureCosmicCanvas} from './cosmic-motion.mjs?v=neptune-native-20261009';
-import {ASSETS,renderScene,constellationLayout,SCENE_LIMITS,NEURAL_LIMITS} from './cosmos-scene.mjs?v=neural-currents-20261010';
+import {ASSETS,renderScene,constellationLayout,SCENE_LIMITS,NEURAL_LIMITS} from './cosmos-scene.mjs?v=experiment-provenance-v3-r2';
 configureCosmicCanvas(createCanvas);
 const images=await Promise.all(ASSETS.map(a=>loadImage(new URL('./assets/'+a,import.meta.url).pathname)));
 const catalogue=JSON.parse(fs.readFileSync(new URL('./discovery-catalogue.json',import.meta.url))).instruments;

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRollingActivity,ROLLING_ACTIVITY_LIMITS as LIMITS} from './rolling-activity.mjs';
-import {setupCodingWorkers} from './team-worker-view.mjs';
+import {setupCodingWorkers} from './team-worker-view.mjs?v=experiment-provenance-v3-r2';
 const T=Date.parse('2026-10-10T09:00:00.000Z'),iso=n=>new Date(n).toISOString();
 const row=(n,{at=T+n,text='Verified recorded event '+n}={})=>({key:'event:'+n,at:iso(at),text});
 class Node{

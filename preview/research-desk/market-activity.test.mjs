@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createMarketActivityFeed,validateMarketActivitySnapshot,MARKET_ACTIVITY_MAX_AGE_MS,MARKET_REASONS,MARKET_SOURCES} from './market-activity.mjs';
+import {createMarketActivityFeed,validateMarketActivitySnapshot,MARKET_ACTIVITY_MAX_AGE_MS,MARKET_REASONS,MARKET_SOURCES} from './market-activity.mjs?v=experiment-provenance-v3-r2';
 
 const T=Date.parse('2026-10-10T04:00:00Z');
 const iso=n=>new Date(n).toISOString();

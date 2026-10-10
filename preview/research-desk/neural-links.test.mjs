@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {createCanvas} from './canvas-test-support.mjs';
-import {neuralLinks,drawNeuralLinks,NEURAL_LIMITS} from './cosmos-scene.mjs?v=neural-links-20261010';
+import {neuralLinks,drawNeuralLinks,NEURAL_LIMITS} from './cosmos-scene.mjs?v=experiment-provenance-v3-r2';
 const now=Date.parse('2026-10-10T04:45:00Z');
 const points=(n=42)=>Array.from({length:n},(_,i)=>({asset:'catalogue-'+i,label:'C'+i,x:40+(i%6)*80,y:40+Math.floor(i/6)*40,kind:'discovered',active:false,opacity:.6}));
 const ctx=()=>createCanvas(600,350).getContext('2d');
@@ -14,4 +14,4 @@ test('fresh recorded check produces one short directional pulse without a beam c
 for(const [name,fields]of [['inactive',{active:false}],['fill',{kind:'buy'}],['catalogue',{kind:'discovered'}],['expired',{until:now}],['future',{at:new Date(now+1).toISOString()}],['stale',{at:new Date(now-90001).toISOString()}]])test(name+' markers never create check pulses',()=>{assert.equal(drawNeuralLinks(ctx(),checked(fields),{now}).pulses,0);});
 test('pending check uses its bounded marker lifetime and does not pulse for the whole pending window',()=>{const p=checked({result:'pending',until:now+11900});assert.equal(drawNeuralLinks(ctx(),p,{now}).pulses,1);assert.equal(drawNeuralLinks(ctx(),p,{now:now+1500}).pulses,0);});
 test('reduced motion retains static spatial connections and suppresses every moving pulse',()=>{const r=drawNeuralLinks(ctx(),checked(),{now,reduced:true});assert.ok(r.edgeCount>0);assert.equal(r.pulses,0);});
-test('spatial meaning is disclosed and renderer cannot write or mint receipt authority',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./cosmos-scene.mjs',import.meta.url),'utf8');assert.match(html,/decorative spatial connections/);assert.match(html,/Amber pulses mark fresh recorded checks/);assert.doesNotMatch(src,/fetch\(|setInterval\(|trusted\.add|observeReport\(/);});
+test('spatial meaning is disclosed and renderer cannot write or mint receipt authority',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./cosmos-scene.mjs?v=experiment-provenance-v3-r2',import.meta.url),'utf8');assert.match(html,/decorative spatial connections/);assert.match(html,/Amber pulses mark fresh recorded checks/);assert.doesNotMatch(src,/fetch\(|setInterval\(|trusted\.add|observeReport\(/);});

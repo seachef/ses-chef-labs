@@ -1,6 +1,6 @@
-import {isVerifiedCue} from './paper-eye-cues.mjs?v=neptune-native-20261009';
-import {isVerifiedSceneFill,sceneInstrument,TARGET_LIMITS} from './scene-targets.mjs?v=real-targets-20261010';
-export {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
+import {isVerifiedCue} from './paper-eye-cues.mjs?v=experiment-provenance-v3-r2';
+import {isVerifiedSceneFill,sceneInstrument,TARGET_LIMITS} from './scene-targets.mjs?v=experiment-provenance-v3-r2';
+export {createPaperCueBridge} from './paper-eye-cues.mjs?v=experiment-provenance-v3-r2';
 import {choreography,drawCharacter,drawEyeBeams,hash} from './character-motion.mjs?v=real-targets-20261010';
 import {drawCosmicMotion} from './cosmic-motion.mjs?v=neptune-native-20261009';
 import {makeCurrentPath,curvePoint,buildCurrentWaves,drawAmbientCurrents,drawCurrentPacket} from './neural-currents.mjs?v=neural-currents-20261010';
@@ -36,10 +36,10 @@ export function renderScene(ctx,images,time,width,height,{reduced=false,cue=null
  if(!target||masks.some(m=>target.x>=m.left&&target.x<=m.right&&target.y>=m.top&&target.y<=m.bottom))actor.fire=false;
  const feet=actor.feet,eyes=actor.eyes,p=actor;
  const neural=drawNeuralLinks(ctx,nodes,{masks,now,reduced,time:t,mobile:l.mobile});
- for(const n of nodes){const focus=n===active,emphasis=focus||n.active,radius=emphasis?(l.mobile?11:14):n.radius;ctx.save();ctx.globalAlpha=reduced?(n.active?1:.52):(n.opacity??.3);const color=focus&&verified?(verified.kind==='buy'?'#ffd177':'#ff85bd'):n.active?'#f2c36c':'#c2e7f5';ctx.strokeStyle=color;ctx.fillStyle=n.labelVisible||emphasis?'rgba(3,15,27,.92)':color;ctx.lineWidth=emphasis?1.5:n.labelVisible?.8:.5;ctx.beginPath();ctx.arc(n.x,n.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();
+ for(const n of nodes){const focus=n===active,emphasis=focus||n.active,radius=emphasis?(l.mobile?11:14):n.radius;ctx.save();ctx.globalAlpha=reduced?(n.active?1:.52):(n.opacity??.3);const color=focus&&verified?(verified.kind==='buy'?'#84f4ab':'#ff85bd'):n.active?'#f2c36c':'#c2e7f5';ctx.strokeStyle=color;if(focus&&verified?.kind==='buy'){ctx.shadowColor='#84f4ab';ctx.shadowBlur=18;}ctx.fillStyle=n.labelVisible||emphasis?'rgba(3,15,27,.92)':color;ctx.lineWidth=emphasis?1.5:n.labelVisible?.8:.5;ctx.beginPath();ctx.arc(n.x,n.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();
   if(n.labelVisible||emphasis){ctx.fillStyle=color;ctx.font=`600 ${l.mobile?8:10}px sans-serif`;ctx.textAlign='center';ctx.fillText(n.asset==='kraken:XXBTZUSD'&&n.label==='XBT'?'BTC':n.label,n.x,n.y+(radius<7?radius+9:3),l.mobile?38:48);if(emphasis){ctx.font='6px sans-serif';ctx.fillText(String(n.venue??'').toLowerCase()==='hyperliquid'?'HYP':String(n.venue??'').toLowerCase()==='kraken'?'KRA':String(n.venue??'').toLowerCase()==='binance'?'BIN':'',n.x,n.y+radius+8);}}ctx.restore();}
  drawCharacter(ctx,images,actor);
- const color=verified?.kind==='buy'?'255,191,70':'255,100,174';const beamCount=target?drawEyeBeams(ctx,actor,target,{color,strength:1}):0;
+ const color=verified?.kind==='buy'?'90,235,140':'255,100,174';const beamCount=target?drawEyeBeams(ctx,actor,target,{color,strength:1}):0;
  const caption=celebration?'SIMULATED NET PROFIT · AUD '+celebration.pnl_base.toFixed(2):verified?'SIMULATED '+verified.kind.toUpperCase()+' · '+sceneInstrument(verified.asset).pair:active?'CHECK RECORDED · '+active.pair+' · '+(active.reason??active.result??'unvalidated').replaceAll('_',' '):'LOOKING · NO NEW VERIFIED FILL';
  if(showCaption){ctx.fillStyle='rgba(3,12,28,.78)';ctx.fillRect(width*.04-5,height*.06-14,l.mobile?246:295,22);ctx.fillStyle='rgba(215,232,245,.95)';ctx.font=`${l.mobile?9:11}px sans-serif`;ctx.fillText(caption,width*.04,height*.06);}
  return {nodes,neural,beamCount,beamKey:verified?.eventId??null,feet,eyes,target,pose:p,stage:l,verified:!!verified};

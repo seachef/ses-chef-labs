@@ -1,6 +1,7 @@
+import {validateExperimentEvent,validateExperimentHistory,EXPERIMENT_FIELDS} from './experiment-provenance.mjs?v=experiment-provenance-v3-r2';
 import {NATIVE_FIELDS,NATIVE_KINDS} from './native-fields.mjs?v=neptune-native-r2-20261009';
 import {validateNativeHistoryRow} from './native-history-validation.mjs?v=neptune-native-r2-20261009';
-import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=neptune-native-20261009';
+import {validHistoryRecord,ACCOUNT_CURRENCY} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 import {csvRows} from './csv-safe.mjs?v=neptune-native-20261009';
 export const HISTORY_PAGE_SIZE=100;
 export const HISTORY_FIELDS=Object.freeze(['id','at','asset','action','side','price','qty','quote_currency','reason','source','observation_id','risk_base','stop','target','invalidation','confidence','result','config_version','config_hash','source_hash','origin_order_id','origin_decision_id','decision_id','order_id','initial_risk_base','fx','fx_source','fx_at','gross_base','fee_base','cash_delta_base','slippage_pct','gross_usd','fee_usd','net_usd','settlement_status','fx_rate_date','fx_retrieved_at','fx_applied_rate','fx_cost_base','closed_at','settled_at','entry_fill_id','exit_fill_id','pnl_base','net_r','status','usd_amount','fill_id','delta','balance','venue','market_type','specialist_id']);
@@ -9,6 +10,7 @@ const seq=v=>Number.isSafeInteger(v)&&v>=0;
 const kinds=['decisions','orders','fills','results','settlements','order_events','cash_ledger','usd_ledger'];
 const stamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 export function validateHistoryRow(row){
+ if(row?.kind==='experiment_events')return validateExperimentEvent(row);
  if(NATIVE_KINDS.includes(row?.kind))return validateNativeHistoryRow(row);
  if(!row||!seq(row.seq)||row.seq===0||!kinds.includes(row.kind)||typeof row.id!=='string'||!row.id||row.id.length>1000||!stamp(row.at)||!hash(row.source_hash)||!hash(row.config_hash)||!row.payload||typeof row.payload!=='object'||Array.isArray(row.payload))throw Error('Invalid history row');
  const p=row.payload;
@@ -43,6 +45,7 @@ export function createHistory({fetchPage,onChange=()=>{}}){
    // Identity sequences can have rollback gaps. Never require consecutive integers.
    // A committed fixed watermark must nevertheless be reached before claiming completeness.
    if(cursor===start&&cursor<watermark)throw Error('History page made no progress');
+   validateExperimentHistory([...state.rows,...additions],{complete:cursor>=watermark});
    for(const row of additions){const encoded=JSON.stringify(row);bySeq.set(row.seq,encoded);byId.set(row.kind+':'+row.id,encoded);}
    emit({cursor,rows:[...state.rows,...additions],complete:cursor>=watermark,error:null});
   }catch{if(requestEpoch===epoch)emit({error:'History unavailable or incomplete. Loaded records are retained; retry to continue.'});}
@@ -60,4 +63,4 @@ export function createHistory({fetchPage,onChange=()=>{}}){
  }
  return {reset,more,exportAll,checkpoint,restore,getState:snapshot};
 }
-export function historyCsv(rows){const fields=[...new Set([...HISTORY_FIELDS,...NATIVE_FIELDS])];const columns=['mode','account_currency','seq','kind','history_id','history_at','history_source_hash','history_config_hash',...fields];return csvRows(columns,rows.map(validateHistoryRow).map(r=>['PAPER_SIMULATED',ACCOUNT_CURRENCY,r.seq,r.kind,r.id,r.at,r.source_hash,r.config_hash,...fields.map(k=>r.payload[k])]));}
+export function historyCsv(rows){validateExperimentHistory(rows.map(validateHistoryRow),{complete:true});const fields=[...new Set([...HISTORY_FIELDS,...NATIVE_FIELDS,...EXPERIMENT_FIELDS])];const columns=['mode','account_currency','seq','kind','history_id','history_at','history_source_hash','history_config_hash',...fields];return csvRows(columns,rows.map(validateHistoryRow).map(r=>['PAPER_SIMULATED',ACCOUNT_CURRENCY,r.seq,r.kind,r.id,r.at,r.source_hash,r.config_hash,...fields.map(k=>r.payload[k])]));}

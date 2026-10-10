@@ -1,4 +1,4 @@
-import {validateHistoryRow} from './paper-history-v2.mjs?v=neptune-native-r2-20261009';
+import {validateHistoryRow} from './paper-history-v2.mjs?v=experiment-provenance-v3-r2';
 
 // This is a bounded view of recorded paper decisions, never a worker log or a
 // heartbeat generator. No network, account values or execution controls live here.

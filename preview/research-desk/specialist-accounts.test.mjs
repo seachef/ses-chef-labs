@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {SPECIALISTS,readSpecialistAccounts,renderSpecialistAccounts} from './specialist-accounts.mjs';
-import {validateV2} from './status-v2.mjs';
+import {validateV2} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 const now=Date.parse('2026-10-09T12:00:00Z'),at=new Date(now).toISOString();
 function report(){return {currency:'AUD',status:'running',heartbeat_at:at,quote_at:at,account:{initial_cash:10000,cash:9950,available_cash:9900,reserved_cash:50,valuation_at:at},specialist_accounts:{version:1,mode:'PAPER',currency:'AUD',initial_cash:10000,total_cash:9950,source_revision:13,observed_at:at,allocation_status:'allocated',accounts:SPECIALISTS.map(id=>({id,nominal_initial_cash:2000,cash:1990,available_cash:1980,reserved_cash:10,exposure_base:0,realized_pnl:0,costs_base:null,status:'research_only',evidence_at:null}))}};}
 function render(p){const nodes=Object.fromEntries(['specialistStatus','specialistAccounts'].map(id=>[id,{textContent:'',replaceChildren(...items){this.children=items;}}]));const document={getElementById:id=>nodes[id],createElement:()=>({textContent:'',set innerHTML(v){throw Error('unsafe');}})};const view=renderSpecialistAccounts(document,p,now);return {view,text:nodes.specialistAccounts.children.map(n=>n.textContent).join('\n'),message:nodes.specialistStatus.textContent};}

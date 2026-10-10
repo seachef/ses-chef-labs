@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createSceneTargets,isVerifiedSceneFill,sceneInstrument,TARGET_LIMITS} from './scene-targets.mjs';
-import {validateV2} from './status-v2.mjs';
+import {createSceneTargets,isVerifiedSceneFill,sceneInstrument,TARGET_LIMITS} from './scene-targets.mjs?v=experiment-provenance-v3-r2';
+import {validateV2} from './status-v2.mjs?v=experiment-provenance-v3-r2';
 import {readNativePaper} from './native-paper.mjs';
 
 const NOW=Date.parse('2026-10-09T13:20:00Z');
@@ -319,3 +319,60 @@ for(const mode of ['initial','reconnect','native-recovery'])test('delayed histor
  const at=NOW+200;s.observeReport(report({at,fills:[legacyFill('delayed-history',NOW-1)],native:[nativeFill('delayed-native-history',NOW-1,'buy','hyperliquid:@107')]}),at);quiet(s,at);
 });
 test('newly hydrated decision history predating each source baseline stays dim',()=>{const s=seeded({native:[]});s.observeActivity(activity(),NOW);s.observeReport(report({at:NOW+100,native:[]}),NOW+100);s.observeActivity(activity([decision('backfilled-check',NOW-1),decision('backfilled-native',NOW-1,'hyperliquid:@107')]),NOW+100);quiet(s,NOW+100);});
+
+test('genuine experimental classification preserves one exact-market buy receipt cue',()=>{
+ const scene=seeded(),fill={...legacyFill('experimental-confirmed-buy',NOW+100,'buy','SOL/USD'),trade_kind:'experimental',is_experimental:true,execution_class:'paper_experiment'};
+ scene.observeReport(report({at:NOW+100,fills:[fill]}),NOW+100);
+ const cue=scene.current(NOW+100);assert.ok(cue);assert.equal(cue.kind,'buy');assert.equal(cue.asset,'SOL/USD');assert.equal(sceneInstrument(cue.asset).venue,'Kraken');assert.ok(Object.isFrozen(cue));
+ scene.observeReport(report({at:NOW+200,fills:[{...fill,trade_kind:'ordinary'}]}),NOW+200);
+ assert.equal(scene.current(NOW+200),cue);assert.equal(scene.current(NOW+1500),null);assert.equal(scene.snapshot().queued,0);
+ scene.observeReport(report({at:NOW+2000,fills:[fill]}),NOW+2000);assert.equal(scene.current(NOW+2000),null);
+});
+test('experimental intent alone and initial-load/reconnect history do not become new buys',()=>{
+ const scene=createSceneTargets(),fill={...legacyFill('experiment-history',NOW,'buy','LINK/USD'),trade_kind:'experimental'};
+ scene.observeReport(report({fills:[fill]}),NOW);quiet(scene);
+ scene.observeActivity(activity([{...decision('experiment-intent',NOW+100,'SOL/USD','buy','pending'),trade_kind:'experimental'}]),NOW+100);assert.equal(scene.current(NOW+100),null);
+ scene.disconnect();scene.observeReport(report({at:NOW+200,fills:[fill]}),NOW+200);quiet(scene,NOW+200);
+});
+test('experimental native buy keeps venue-qualified identity separate from same-ticker Kraken',()=>{
+ const scene=seeded({native:[]}),fill={...nativeFill('experimental-binance-sol',NOW+100,'buy','binance:SOLUSDT'),trade_kind:'experimental'};
+ scene.observeReport(report({at:NOW+100,native:[fill]}),NOW+100);
+ const cue=scene.current(NOW+100);assert.equal(cue.asset,'binance:SOLUSDT');assert.equal(sceneInstrument(cue.asset).pair,'SOL/USDT');assert.equal(sceneInstrument(cue.asset).venue,'Binance');assert.notEqual(cue.asset,'SOL/USD');
+});
+
+for(const family of ['legacy','native'])for(const field of ['asset','at','order_id','decision_id','observation_id'])test('REVIEW: '+family+' same-ID '+field+' contradiction revokes active fill authority',()=>{
+ const scene=seeded({native:[]}),isNative=family==='native',fill=isNative?nativeFill('immutable-cue',NOW+100):legacyFill('immutable-cue',NOW+100);
+ for(const k of ['order_id','decision_id','observation_id'])fill[k]='original-'+k;
+ scene.observeReport(report({at:NOW+100,fills:isNative?[]:[fill],native:isNative?[fill]:[]}),NOW+100);const cue=scene.current(NOW+100);assert.ok(cue);
+ if(field==='asset'){if(isNative)Object.assign(fill,nativeFill(fill.id,NOW+100,'buy','hyperliquid:@107'));else fill.asset='SOL/USD';}
+ else if(field==='at')fill.at=iso(NOW+101);else fill[field]='changed-'+field;
+ scene.observeReport(report({at:NOW+110,fills:isNative?[]:[fill],native:isNative?[fill]:[]}),NOW+110);assert.equal(isVerifiedSceneFill(cue,NOW+110),false);assert.equal(scene.current(NOW+110),null);
+});
+for(const family of ['legacy','native'])test('REVIEW: '+family+' same-ID queued contradiction is purged before firing',()=>{
+ const scene=seeded({native:[]}),isNative=family==='native',make=isNative?nativeFill:legacyFill,first=make('a-current',NOW+100),later=make('b-queued',NOW+100);
+ scene.observeReport(report({at:NOW+100,fills:isNative?[]:[first,later],native:isNative?[first,later]:[]}),NOW+100);const cue=scene.current(NOW+100);later.observation_id='changed-lineage';scene.observeReport(report({at:NOW+110,fills:isNative?[]:[first,later],native:isNative?[first,later]:[]}),NOW+110);assert.equal(scene.current(cue.until),null);
+});
+test('REVIEW: explicit conflicting legacy venue cannot acquire Kraken receipt authority',()=>{const scene=seeded(),fill={...legacyFill('wrong-venue',NOW+100),venue:'binance'};scene.observeReport(report({at:NOW+100,fills:[fill]}),NOW+100);assert.equal(scene.current(NOW+100),null);});
+test('REVIEW: native settlement enrichment preserves existing execution authority',()=>{
+ const scene=seeded({native:[]}),fill=nativeFill('settlement-enrichment',NOW+100,'sell');scene.observeReport(report({at:NOW+100,native:[fill]}),NOW+100);const cue=scene.current(NOW+100);assert.equal(cue.kind,'sell');Object.assign(fill,{settlement_status:'settled',settled_at:iso(NOW+110),at_fill_settlement_status:'pending_native_conversion',cash_delta_base:599.25,fee_base:.75,fx_cost_base:1});scene.observeReport(report({at:NOW+110,native:[fill]}),NOW+110);assert.equal(scene.current(NOW+110),cue);assert.equal(isVerifiedSceneFill(cue,NOW+110),true);
+});
+
+function revalueLegacyReceipt(f,fx){Object.assign(f,{fx,fx_source:'Frankfurter ECB reference',fx_at:iso(NOW),fx_rate_date:iso(NOW).slice(0,10),fx_retrieved_at:iso(NOW),fx_applied_rate:fx*(f.side==='buy'?1.0025:.9975),settlement_status:'settled'});f.gross_base=f.gross_usd*fx;f.fee_base=f.fee_usd*fx;f.fx_cost_base=Math.abs(f.net_usd)*Math.abs(f.fx_applied_rate-fx);f.cash_delta_base=f.net_usd*f.fx_applied_rate;}
+for(const family of ['legacy','native'])test('REVIEW R3: '+family+' already-settled buy debit/FX change revokes active receipt',()=>{
+ const native=family==='native',scene=seeded({native:[]}),f=native?nativeFill('settled-buy-debit',NOW+100):legacyFill('settled-buy-debit',NOW+100);scene.observeReport(report({at:NOW+100,fills:native?[]:[f],native:native?[f]:[]}),NOW+100);const cue=scene.current(NOW+100);assert.equal(cue.kind,'buy');
+ if(native)f.cash_delta_base-=10;else revalueLegacyReceipt(f,1.6);scene.observeReport(report({at:NOW+110,fills:native?[]:[f],native:native?[f]:[]}),NOW+110);assert.equal(isVerifiedSceneFill(cue,NOW+110),false);assert.equal(scene.current(NOW+110),null);
+});
+for(const family of ['legacy','native'])test('REVIEW R3: '+family+' queued buy accounting contradiction is purged',()=>{
+ const native=family==='native',scene=seeded({native:[]}),make=native?nativeFill:legacyFill,a=make('a-accounting-stable',NOW+100),b=make('b-accounting-changed',NOW+100);scene.observeReport(report({at:NOW+100,fills:native?[]:[a,b],native:native?[a,b]:[]}),NOW+100);const cue=scene.current(NOW+100);if(native)b.fee_base+=1;else revalueLegacyReceipt(b,1.6);scene.observeReport(report({at:NOW+110,fills:native?[]:[a,b],native:native?[a,b]:[]}),NOW+110);assert.equal(scene.current(cue.until),null);
+});
+for(const family of ['legacy','native'])test('REVIEW R3: '+family+' first sell settlement is accepted once; later proceeds change revokes',()=>{
+ const native=family==='native',scene=seeded({native:[]}),f=native?nativeFill('first-sell-settlement',NOW+100,'sell'):legacyFill('first-sell-settlement',NOW+100,'sell');
+ const pending=native?'pending_native_conversion':'pending_conversion';f.settlement_status=pending;if(!native)for(const k of ['fx','fx_source','fx_at','fx_rate_date','fx_retrieved_at','fx_applied_rate','gross_base','fee_base','fx_cost_base','cash_delta_base'])f[k]=null;
+ scene.observeReport(report({at:NOW+100,fills:native?[]:[f],native:native?[f]:[]}),NOW+100);const cue=scene.current(NOW+100);assert.equal(cue.kind,'sell');
+ if(native)Object.assign(f,{settlement_status:'settled',cash_delta_base:599.25,fee_base:.75,fx_cost_base:1});else revalueLegacyReceipt(f,1.5);Object.assign(f,{at_fill_settlement_status:pending,settled_at:iso(NOW+110)});
+ scene.observeReport(report({at:NOW+110,fills:native?[]:[f],native:native?[f]:[]}),NOW+110);assert.equal(scene.current(NOW+110),cue);assert.equal(isVerifiedSceneFill(cue,NOW+110),true);
+ if(native)f.cash_delta_base+=1;else revalueLegacyReceipt(f,1.6);scene.observeReport(report({at:NOW+120,fills:native?[]:[f],native:native?[f]:[]}),NOW+120);assert.equal(isVerifiedSceneFill(cue,NOW+120),false);assert.equal(scene.current(NOW+120),null);
+});
+test('REVIEW R3: native settled fee/FX costs cannot change under a fixed cash debit',()=>{
+ for(const field of ['fee_base','fx_cost_base']){const scene=seeded({native:[]}),f=nativeFill('immutable-'+field,NOW+100);scene.observeReport(report({at:NOW+100,native:[f]}),NOW+100);const cue=scene.current(NOW+100);f[field]+=1;scene.observeReport(report({at:NOW+110,native:[f]}),NOW+110);assert.equal(isVerifiedSceneFill(cue,NOW+110),false);}
+});

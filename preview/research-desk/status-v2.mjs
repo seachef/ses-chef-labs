@@ -1,3 +1,5 @@
+export {experimentRecordLabel} from './experiment-provenance.mjs?v=experiment-provenance-v3-r2';
+import {validateExperimentProjection} from './experiment-provenance.mjs?v=experiment-provenance-v3-r2';
 // Read-only public projection. This adapter never creates an account or a fill.
 export const ACCOUNT_CURRENCY='AUD'; // Explicitly chosen by the owner; never a seeded balance.
 export const ASSETS=Object.freeze(['ETH/USD','SOL/USD','AVAX/USD','LINK/USD','AAVE/USD','UNI/USD']);
@@ -65,7 +67,7 @@ export function validateV2(rows){
   }
  }
  for(const record of [p,...p.decisions,...p.fills,...p.settlements])for(const k of ['source_hash','config_hash'])if(k in record&&(typeof record[k]!=='string'||!/^\w{64}$/.test(record[k])||!/^[a-f0-9]+$/.test(record[k])))throw Error('Invalid audit hash');
- return p;
+ return validateExperimentProjection(p);
 }
 // Display tolerance covers a 60s server batch plus collector latency.
 // This is NOT an execution gate: the server still requires quotes <=30s at fills.
