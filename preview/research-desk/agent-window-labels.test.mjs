@@ -14,19 +14,19 @@ const roles = [
 ];
 const windowButtons = [...html.matchAll(/<button class="stream-window"[^>]*>[\s\S]*?<\/button>/g)].map(match => match[0]);
 
-test('six compact window tops show AGENT 001 through AGENT 006 in role order', () => {
+test('six market web nodes show their actual evidence roles', () => {
   assert.equal(windowButtons.length, 6);
   for (const [index, button] of windowButtons.entries()) {
-    const label = `AGENT ${String(index + 1).padStart(3, '0')}`;
+    const label = `Market check ${String(index + 1).padStart(3, '0')}`;
     assert.ok(button.includes(`id="open${roles[index][0]}Stream"`));
-    assert.ok(button.includes(`<span class="stream-top"><span class="stream-name">${label}</span>`));
+    assert.ok(button.includes(`<span class="stream-top"><span class="stream-name">${['SCOUT','DEPTH','SIGNALS','RISK','TRADES','HEALTH'][index]}</span>`));
     assert.doesNotMatch(button, /<h[1-6]\b/);
   }
 });
 
 test('numbered windows retain their role, evidence descriptions and native dialog controls', () => {
   for (const [index, [stream, id, role, dialog]] of roles.entries()) {
-    const label = `AGENT ${String(index + 1).padStart(3, '0')}`;
+    const label = `Market check ${String(index + 1).padStart(3, '0')}`;
     const button = windowButtons[index];
     assert.ok(button.includes(`aria-label="${label}. ${role}. Open `));
     assert.ok(button.includes(`aria-describedby="${id}Status ${id}Output ${id}Time"`));

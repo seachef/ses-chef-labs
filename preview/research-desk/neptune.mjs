@@ -98,6 +98,20 @@ function renderStreams(view){
  if(nativeFill&&(!fill||Date.parse(nativeFill.at)>Date.parse(fill.at)))show('ledger','NATIVE PAPER',`${nativeFill.side.toUpperCase()} ${nativeFill.asset} · ${nativeFillLabel(nativeFill)}`,nativeFill.at);
  const last=runtimeEvents[0];
  show('watch',busy?'CHECKING':polls===0?'WAITING':connected?'RECEIVED':'UNAVAILABLE',last?.message||'First interface check pending.',last?.at);
+ // Small display-only markers from the already validated report. No new feed,
+ // network request, account balance, worker identity or execution is created.
+ const marker=(slot,key,at,state)=>({slot,key:key==null?null:String(key),at:at??null,state});
+ const reportState=at=>!connected?'offline':!at?'waiting':current&&fresh(at,Date.now(),90000)?'observed':'stale';
+ const latestFill=nativeFill&&(!fill||Date.parse(nativeFill.at)>Date.parse(fill.at))?nativeFill:fill;
+ try{document.dispatchEvent?.(new CustomEvent('neptune:market-evidence',{detail:{version:1,nodes:[
+  marker(1,research?.catalogue.source_sha256,research?.catalogue.observed_at,research?'snapshot':'waiting'),
+  marker(2,depth?.id,depth?.at,reportState(depth?.at)),
+  marker(3,pulse?.id,pulse?.at,reportState(pulse?.at)),
+  marker(4,risk?report.heartbeat_at:null,risk?report.heartbeat_at:null,reportState(risk?report.heartbeat_at:null)),
+  marker(5,latestFill?.id,latestFill?.at,reportState(latestFill?.at)),
+  marker(6,last?last.at+':'+last.message:null,last?.at,!connected&&polls?'offline':last?'observed':'waiting')
+ ]}}));}catch{/* An evidence effect never interrupts the existing controls. */}
+
 }
 function renderPortfolio(view){
  const a=report?.account,snapshot=readPortfolioSnapshot(report,connected),value=n=>Number.isFinite(n)?new Intl.NumberFormat('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n):'—';

@@ -5,7 +5,7 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
  const store=createTeamWorkStore(),slots=[],slotIds=new Map(),pulseTimers=new Map();let edgeTimer=null,session=null,view='market',selected=null,browserSource='',renderedEvents=null,disposed=false,paneMode='source',paneChosen=false,activitySignature='',activityPending=false,expiredActivity=false;const activityRecords=new Map();
  const text=(id,value)=>{if($(id)&&$(id).textContent!==value)$(id).textContent=value;};
  for(let index=0;index<6;index++){
-  const button=document.createElement('button'),number=document.createElement('span'),role=document.createElement('span');button.setAttribute?.('class','worker-slot');number.setAttribute?.('class','worker-number');role.setAttribute?.('class','worker-role');number.textContent='AGENT '+String(index+1).padStart(3,'0');role.textContent='UNASSIGNED';button.replaceChildren(number,role);button.addEventListener('click',()=>{const id=[...slotIds.entries()].find(([,slot])=>slot===index)?.[0];if(id){selected=id;render();}});button.addEventListener('animationend',()=>button.setAttribute?.('data-pulse','false'));slots.push({button,role,number});
+  const button=document.createElement('button'),number=document.createElement('span'),role=document.createElement('span');button.setAttribute?.('class','worker-slot');button.setAttribute?.('aria-haspopup','dialog');number.setAttribute?.('class','worker-number');role.setAttribute?.('class','worker-role');number.textContent='AGENT '+String(index+1).padStart(3,'0');role.textContent='UNASSIGNED';button.replaceChildren(number,role);button.addEventListener('click',()=>{const id=[...slotIds.entries()].find(([,slot])=>slot===index)?.[0];if(id){selected=id;render();if(!$('teamWorkDialog').open)$('teamWorkDialog').showModal?.();render();}});button.addEventListener('animationend',()=>button.setAttribute?.('data-pulse','false'));slots.push({button,role,number});
  }
  const links=document.createElementNS?.('http://www.w3.org/2000/svg','svg');links?.setAttribute('class','worker-links');links?.setAttribute('aria-hidden','true');
  $('codingWorkerSlots').replaceChildren(...slots.map(slot=>slot.button),...(links?[links]:[]));
@@ -23,19 +23,20 @@ export function setupCodingWorkers({document,now=()=>Date.now(),setTimeout:delay
   const states=workers.map(worker=>teamWorkerState(snapshot,worker,now())),active=states.filter(state=>state.live).length;
   const connected=teamPublisherLive(snapshot,now());
   const overall=!snapshot.connected?'NOT CONNECTED':!connected?'OFFLINE':!workers.length?'WAITING FOR WORKERS':active?active+' OBSERVED ACTIVE':states.some(state=>state.state==='unconfirmed')?'STATUS UNCONFIRMED':'RECORDED WORK';
-  if(!connected)links?.replaceChildren();
-  text('teamCodingState',overall);text('codingEvidenceState','CODING WORK FEED · '+overall);
-  text('teamFooter',view==='market'?'Automated checks · tap a segment for evidence':'Select a worker · Source + recent activity');
+  if(!connected||view!=='workers'||document.hidden)links?.replaceChildren();
+  text('teamWebCount',view==='market'?'6 check groups':workers.length+' recorded · '+active+' active');text('teamCodingState',overall);text('codingEvidenceState','CODING WORK FEED · '+overall);
+  text('teamFooter',view==='market'?'Ambient flight · tap for real evidence':'Ambient flight · tap a worker for evidence');
   text('teamViewCaption',view==='market'?'Automated market checks':active?'Root-observed coding workers':'Coding-worker evidence · '+(workers.length?'last records':'waiting'));
   $('teamTerminal')?.setAttribute?.('data-view',view);$('codingWorkerSlots').hidden=view!=='workers';$('marketStreamSlots').hidden=view!=='market';$('showCodingTeam').setAttribute?.('aria-pressed',String(view==='workers'));$('showMarketStreams').setAttribute?.('aria-pressed',String(view==='market'));
   for(let index=0;index<6;index++){
-   const worker=workers.find(item=>slotIds.get(item.actor_id)===index),state=teamWorkerState(snapshot,worker,now()),slot=slots[index];slot.role.textContent=worker?WORK_ROLES[worker.role]+' · '+state.label:'UNASSIGNED';slot.button.disabled=!worker;slot.button.setAttribute?.('data-state',state.state);slot.button.setAttribute?.('aria-pressed',String(worker?.actor_id===selected));slot.button.setAttribute?.('aria-label',worker?`AGENT ${String(index+1).padStart(3,'0')}. ${WORK_ROLES[worker.role]}. ${state.label}. ${WORK_TASKS[worker.task]}. Select worker evidence.`:`AGENT ${String(index+1).padStart(3,'0')}. Unassigned coding-worker slot.`);
-   if(!connected){slot.button.setAttribute?.('data-pulse','false');slot.button.setAttribute?.('data-handoff','false');}
+   const worker=workers.find(item=>slotIds.get(item.actor_id)===index),state=teamWorkerState(snapshot,worker,now()),slot=slots[index];slot.role.textContent=worker?WORK_ROLES[worker.role]+' · '+state.label:'UNASSIGNED';slot.button.disabled=!worker;slot.button.setAttribute?.('data-state',state.state);slot.button.setAttribute?.('aria-pressed',String(worker?.actor_id===selected));slot.button.setAttribute?.('aria-label',worker?`AGENT ${String(index+1).padStart(3,'0')}. ${WORK_ROLES[worker.role]}. ${state.label}. ${WORK_TASKS[worker.task]}. Open worker evidence.`:`AGENT ${String(index+1).padStart(3,'0')}. Unassigned coding-worker slot.`);
+   if(!connected||!worker||view!=='workers'||document.hidden){slot.button.setAttribute?.('data-pulse','false');slot.button.setAttribute?.('data-handoff','false');}
   }
   const worker=workers.find(item=>item.actor_id===selected),state=teamWorkerState(snapshot,worker,now()),reference=matchPublicWorkSource(worker?.source);
   text('teamWorkerTask',worker?WORK_ROLES[worker.role]+' · '+WORK_TASKS[worker.task]:'No coding-worker evidence received.');
   text('teamWorkerResult',worker?state.label+' · '+WORK_STEPS[worker.step]:'Waiting for a worker-specific event.');
   text('teamWorkerTime',worker?stamp(worker.observed_at)+' · observed':'No coding-worker timestamp');
+  text('codingSelectedWorker',worker?'AGENT '+String(worker.slot).padStart(3,'0')+' · '+WORK_ROLES[worker.role]+' · '+WORK_TASKS[worker.task]+' · '+state.label+' · '+stamp(worker.observed_at):'No coding-worker evidence selected.');
   const identity=!worker?'No verified worker source reference.':worker.source?.scope==='candidate'?'Staged candidate source · code is not published.':reference?`Published source reference · ${reference.function_name} · ${reference.path} · commit ${reference.commit} · file SHA-256 ${reference.file_sha256}. Reference bytes do not prove this worker executed these lines.`:'Worker source version unverified; no code substituted.';
   text('codingSourceIdentity',identity+(worker?.candidate_sha256?' Candidate SHA-256: '+worker.candidate_sha256:''));text('codingWorkerSource',reference?.code??'No matching approved public source snippet.');
   if(view==='workers'){

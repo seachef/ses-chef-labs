@@ -26,7 +26,7 @@ test('phone terminal is a compact three-row console with all six visible agents'
  assert.match(phone,/\.team-source\{display:contents\}/);
  assert.match(phone,/#teamCodePreview\{grid-column:1 \/ -1;grid-row:2;height:27px\}/);
  assert.match(phone,/\.team-source-note\{grid-column:1 \/ -1;grid-row:3/);
- for(let n=1;n<=6;n++)assert.ok(html.includes(`AGENT ${String(n).padStart(3,'0')}`));
+ for(let n=1;n<=6;n++)assert.ok(html.includes(`Market check ${String(n).padStart(3,'0')}`));
  assert.equal((html.match(/class="stream-window"/g)||[]).length,6);
  assert.doesNotMatch(phone,/\.stream-window\{[^}]*(?:display:none|visibility:hidden)/);
 });
@@ -46,7 +46,7 @@ test('portrait compact rules preserve desktop and short landscape scopes without
  assert.ok(css.indexOf(marker)<css.indexOf('@media(max-height:500px)'));
  assert.doesNotMatch(phone,/body\s*\{|overflow\s*:\s*hidden|position\s*:\s*fixed|transform\s*:/);
  assert.doesNotMatch(phone,/font-size\s*:/);
- assert.match(html,/team-work\.css\?v=neptune-market-default-touch-20261010/);
+ assert.match(html,/team-work\.css\?v=neptune-spider-web-20261010/);
 });
 
 test('intrinsic scene/terminal partition leaves all feet and rock above the deck across phone sizes',()=>{

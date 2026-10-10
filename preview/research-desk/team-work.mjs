@@ -1,4 +1,5 @@
-import {setupCodingWorkers} from './team-worker-view.mjs?v=team-worker-market-default-20261010';
+import {setupMarketWeb} from './agent-web.mjs?v=spider-web-20261010';
+import {setupCodingWorkers} from './team-worker-view.mjs?v=team-worker-spider-web-20261010';
 // A local observation viewer. This is not a coding-worker transport.
 const MAX_TEXT=1600, MAX_SOURCE=12000, MAX_EVENTS=40, ACTIVE_MS=15000;
 const PATH='preview/research-desk/neptune.mjs';
@@ -84,7 +85,7 @@ export function validateBuildHistory(history,{now=Date.now()}={}){
 const localTime=at=>iso(at)?new Date(at).toISOString().replace('T',' ').replace('.000Z',' UTC').replace('Z',' UTC'):'Timestamp unavailable';
 export function setupTeamWork({document,fetch:fetcher,now=()=>Date.now(),setInterval:schedule,clearInterval:unschedule}={}){
  const $=id=>document.getElementById(id);if(!$('teamWorkDialog'))return null;
- const coding=setupCodingWorkers({document,now});
+ const coding=setupCodingWorkers({document,now}),marketWeb=setupMarketWeb({document,now});
  const store=createWorkStore();let source='',timer=null,disposed=false,renderedEvents=null;
  const text=(id,value)=>{if($(id).textContent!==value)$(id).textContent=value;};
  function render(){
@@ -120,6 +121,6 @@ export function setupTeamWork({document,fetch:fetcher,now=()=>Date.now(),setInte
   }catch{/* Keep the truthful missing-evidence state. */}
  }
  void readHistory();
- return {store,render,dispose(){disposed=true;coding?.dispose();stopTimer();document.removeEventListener('neptune:interface-work',receive);}};
+ return {store,render,dispose(){disposed=true;coding?.dispose();marketWeb?.dispose();stopTimer();document.removeEventListener('neptune:interface-work',receive);}};
 }
 if(typeof document!=='undefined')setupTeamWork({document,fetch:globalThis.fetch?.bind(globalThis),setInterval:globalThis.setInterval,clearInterval:globalThis.clearInterval});

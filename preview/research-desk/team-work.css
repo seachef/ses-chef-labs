@@ -65,3 +65,66 @@
 @media(max-width:760px){#teamActivityPreview{font-size:10px;line-height:1.35;height:56px}.team-source-bar{gap:5px}.team-source-bar #toggleTeamPane{font-size:9px;min-width:48px}}
 @media(max-width:760px) and (min-height:501px){#teamActivityPreview{grid-column:1 / -1;grid-row:2;height:27px}}
 @media(max-height:500px) and (min-width:540px){#teamActivityPreview{height:43px;font-size:9px}.team-source-bar #toggleTeamPane{font-size:8px;min-width:42px}}
+
+/* A compact evidence web. Static strands group controls; they never imply
+   network traffic. Only accepted observations produce a single node pulse. */
+.agent-web{position:relative;height:104px;background:radial-gradient(ellipse at 50% 50%,#174c4030,transparent 68%);isolation:isolate}
+.agent-web-strands{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;fill:none;stroke:#7dab964a;stroke-width:1;vector-effect:non-scaling-stroke}
+.agent-web-count{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:3px 8px;background:#081912;color:#91b49d;border:1px solid #63897455;border-radius:20px;font:9px/1.2 ui-monospace,SFMono-Regular,monospace;white-space:nowrap;pointer-events:none}
+.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:104px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:44px 44px;gap:16px 0;padding:0 5%;border:0;background:transparent}
+.team-terminal .agent-web .windows:before,.agent-web .coding-worker-slots:before{display:none}
+.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:44px;min-width:0;align-items:center;justify-content:center;padding:3px 4px;border-radius:22px;text-align:center;position:relative;gap:3px}
+.team-terminal .agent-web .stream-top{align-items:center;gap:3px;padding:3px 7px;background:#07170ff0;border:1px solid #759b7555;border-radius:16px;min-width:78px}
+.team-terminal .agent-web .stream-name{color:#c9ead9;font-size:10px;letter-spacing:.04em}.team-terminal .agent-web .stream-name:before{color:#9dd5ba}.team-terminal .agent-web .stream-status{padding:0;font-size:8px;color:#aac2af}
+.agent-web .worker-slot span{background:#07170ff0;padding:0 5px}.agent-web .worker-slot .worker-number{font-size:10px;color:#c9ead9}.agent-web .worker-slot .worker-role{padding:0 4px;font-size:8px;max-width:100%}
+.agent-web .worker-slot:disabled{opacity:.62}.agent-web .worker-slot[aria-pressed=true]{box-shadow:none;background:#759b7522;outline:1px solid #b5d9a677;outline-offset:-4px}
+.agent-web .worker-slot[data-state=offline] .worker-number:before,.agent-web .worker-slot[data-state=unconfirmed] .worker-number:before{color:#d8b585}
+.agent-web .stream-window[data-state=stale] .stream-top,.agent-web .stream-window[data-state=offline] .stream-top{border-style:dashed;border-color:#b89f7655}
+.agent-web .stream-window[data-pulse=true]{animation:worker-observed-glow 850ms ease-out 1}
+.agent-web .stream-window:focus-visible,.agent-web .worker-slot:focus-visible{outline:2px solid #dafcd2;outline-offset:-2px}
+/* The source pane gives its spare desktop height to the web, keeping the deck compact. */
+@media(min-width:761px) and (min-height:501px){.team-console{min-height:0;padding-top:6px;padding-bottom:6px}.team-note{margin:3px 0}.team-source-note{margin:2px 0 0}#teamCodePreview,#teamActivityPreview{height:27px}.team-source-bar{min-height:26px}}
+@media(max-width:760px) and (min-height:501px){.agent-web{height:96px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:96px;grid-template-rows:40px 40px;gap:16px 0;padding:0 2%}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:40px}.agent-web-count{font-size:8px;padding:2px 6px}.team-terminal .agent-web .stream-top{min-width:76px;padding:3px 5px}.team-terminal .agent-web .stream-name{font-size:9px;letter-spacing:0}.agent-web .worker-slot .worker-number{font-size:9px}.agent-web .worker-slot .worker-role{font-size:7px}}
+@media(max-height:500px) and (min-width:540px){.agent-web{height:64px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:64px;grid-template-rows:30px 30px;gap:4px 0;padding:0 5%}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:30px;padding:0 3px}.team-terminal .agent-web .stream-top{padding:1px 6px;gap:1px}.agent-web-count{font-size:7px;padding:1px 5px}.team-console,.team-terminal[data-view=workers] .team-console{min-height:0;padding:3px 9px}#teamCodePreview,#teamActivityPreview{height:27px}}
+@media(prefers-reduced-motion:reduce){.agent-web .stream-window[data-pulse=true],.agent-web .worker-slot[data-pulse=true]{animation:none}.agent-web-strands{animation:none}}
+/* Original little retro spacecraft, drawn from CSS geometry rather than a
+   character asset. Docked unless a genuine new observation briefly arrives. */
+.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{content:'';display:inline-block;width:18px;height:13px;margin-right:5px;vertical-align:-2px;background:#a4dfc3;clip-path:polygon(20% 0,30% 0,30% 15%,70% 15%,70% 0,80% 0,80% 30%,90% 30%,90% 45%,100% 45%,100% 85%,80% 85%,80% 70%,70% 70%,70% 100%,60% 100%,60% 70%,40% 70%,40% 100%,30% 100%,30% 70%,20% 70%,20% 85%,0 85%,0 45%,10% 45%,10% 30%,20% 30%);filter:drop-shadow(0 0 3px #a4dfc340)}
+.team-terminal .agent-web .stream-window:nth-of-type(2) .stream-name:before{background:#a8cce8}.team-terminal .agent-web .stream-window:nth-of-type(3) .stream-name:before{background:#c0b4e6}.team-terminal .agent-web .stream-window:nth-of-type(4) .stream-name:before{background:#d9c48d}.team-terminal .agent-web .stream-window:nth-of-type(5) .stream-name:before{background:#d2a6cd}
+.agent-web .worker-slot:disabled .worker-number:before{background:#728979;filter:none}.agent-web .worker-slot[data-state=offline] .worker-number:before,.agent-web .worker-slot[data-state=unconfirmed] .worker-number:before{background:#c7ad84;filter:none}
+.team-terminal .agent-web .stream-window[data-pulse=true] .stream-name:before,.agent-web .worker-slot[data-pulse=true] .worker-number:before{animation:craft-observation 850ms ease-out 1}
+@keyframes craft-observation{0%,100%{transform:translate(0,0) rotate(0)}30%{transform:translate(var(--craft-drift,8px),-4px) rotate(var(--craft-bank,8deg))}65%{transform:translate(calc(var(--craft-drift,8px) * -.4),-2px) rotate(calc(var(--craft-bank,8deg) * -.5))}}
+.agent-web .stream-window:nth-of-type(even),.agent-web .worker-slot:nth-of-type(even){--craft-drift:-8px;--craft-bank:-8deg}
+/* Use actual grid boundaries on laptops too, so extra terminal detail can never
+   cover Neptune's feet or rock. Original artwork and scene renderer stay intact. */
+@media(min-width:761px) and (min-height:501px){.world{grid-area:1 / 1 / 3 / 2}#atmosphere{height:100%}}
+@media(prefers-reduced-motion:reduce){.team-terminal .agent-web .stream-window[data-pulse=true] .stream-name:before,.agent-web .worker-slot[data-pulse=true] .worker-number:before{animation:none;transform:none}}
+body.still .agent-web [data-pulse=true],body.still .agent-web [data-pulse=true] .stream-name:before,body.still .agent-web [data-pulse=true] .worker-number:before,body.still .agent-web .worker-handoff-edge{animation:none!important}
+
+/* Decorative circulation is explicitly labelled ambient. These tiny original
+   hulls remain inside fixed evidence buttons; clicks never chase a moving target. */
+.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:26px;height:23px;vertical-align:-7px;background-color:transparent!important;clip-path:none;background-image:url('./assets/web-craft-01.svg?v=web-craft-20261010');background-position:center;background-repeat:no-repeat;background-size:contain;filter:drop-shadow(0 0 3px #6cdae84d);animation:craft-ambient-orbit var(--craft-period,9s) linear infinite;animation-delay:var(--craft-phase,0s);transform-origin:50% 50%}
+.agent-web .stream-window:nth-of-type(1),.agent-web .worker-slot:nth-of-type(1){--craft-period:9s;--craft-phase:0s}
+.team-terminal .agent-web .stream-window:nth-of-type(1) .stream-name:before,.agent-web .worker-slot:nth-of-type(1) .worker-number:before{background-image:url('./assets/web-craft-01.svg?v=web-craft-20261010')}
+.agent-web .stream-window:nth-of-type(2),.agent-web .worker-slot:nth-of-type(2){--craft-period:11s;--craft-phase:-3s}
+.team-terminal .agent-web .stream-window:nth-of-type(2) .stream-name:before,.agent-web .worker-slot:nth-of-type(2) .worker-number:before{background-image:url('./assets/web-craft-02.svg?v=web-craft-20261010')}
+.agent-web .stream-window:nth-of-type(3),.agent-web .worker-slot:nth-of-type(3){--craft-period:13s;--craft-phase:-7s}
+.team-terminal .agent-web .stream-window:nth-of-type(3) .stream-name:before,.agent-web .worker-slot:nth-of-type(3) .worker-number:before{background-image:url('./assets/web-craft-03.svg?v=web-craft-20261010')}
+.agent-web .stream-window:nth-of-type(4),.agent-web .worker-slot:nth-of-type(4){--craft-period:10s;--craft-phase:-5s}
+.team-terminal .agent-web .stream-window:nth-of-type(4) .stream-name:before,.agent-web .worker-slot:nth-of-type(4) .worker-number:before{background-image:url('./assets/web-craft-04.svg?v=web-craft-20261010')}
+.agent-web .stream-window:nth-of-type(5),.agent-web .worker-slot:nth-of-type(5){--craft-period:14s;--craft-phase:-11s}
+.team-terminal .agent-web .stream-window:nth-of-type(5) .stream-name:before,.agent-web .worker-slot:nth-of-type(5) .worker-number:before{background-image:url('./assets/web-craft-05.svg?v=web-craft-20261010')}
+.agent-web .stream-window:nth-of-type(6),.agent-web .worker-slot:nth-of-type(6){--craft-period:12s;--craft-phase:-2s}
+.team-terminal .agent-web .stream-window:nth-of-type(6) .stream-name:before,.agent-web .worker-slot:nth-of-type(6) .worker-number:before{background-image:url('./assets/web-craft-06.svg?v=web-craft-20261010')}
+@keyframes craft-ambient-orbit{0%{transform:translate(-4px,0) rotate(-8deg)}25%{transform:translate(0,-3px) rotate(8deg)}50%{transform:translate(4px,0) rotate(16deg)}70%{transform:translate(0,2px) rotate(180deg)}100%{transform:translate(-4px,0) rotate(352deg)}}
+.agent-web .worker-slot:not([data-state=working]) .worker-number:before{animation:none;filter:grayscale(.65);opacity:.65}
+.team-terminal .agent-web .stream-window[data-pulse=true] .stream-name:before,.agent-web .worker-slot[data-pulse=true] .worker-number:before{animation:craft-observation 850ms ease-out 1;filter:drop-shadow(0 0 5px #acffff)}
+/* Only a retained, verified handoff inserts this edge. No timer invents beams. */
+.agent-web .worker-handoff-edge{stroke:#b5f9ff;stroke-width:2;stroke-dasharray:10 7;filter:drop-shadow(0 0 4px #68eaff);animation:worker-handoff-laser 850ms ease-out 1}
+@keyframes worker-handoff-laser{0%{opacity:0;stroke-dashoffset:24}20%{opacity:.85}100%{opacity:0;stroke-dashoffset:-24}}
+@media(prefers-reduced-motion:reduce){.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before,.agent-web .worker-handoff-edge{animation:none!important;transform:none}}
+body.still .agent-web .stream-name:before,body.still .agent-web .worker-number:before,body.still .agent-web .worker-handoff-edge{animation:none!important;transform:none}
+/* Give the detailed hulls breathing room while keeping both rows in one deck. */
+@media(min-height:501px){.agent-web{height:120px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:120px;grid-template-rows:48px 48px;gap:24px 0}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:48px;padding:0 2px}.team-terminal .agent-web .stream-top{padding:2px 5px;gap:2px}.team-terminal .agent-web .stream-name,.agent-web .worker-slot .worker-number{display:flex;align-items:center;justify-content:center}.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:32px;height:28px;margin-right:4px;flex:none}}
+@media(max-width:760px) and (min-height:501px){.agent-web{height:112px}.team-terminal .agent-web .windows,.agent-web .coding-worker-slots{height:112px;grid-template-rows:44px 44px;gap:24px 0}.team-terminal .agent-web .stream-window,.agent-web .worker-slot{min-height:44px}.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:30px;height:26px}}
+@media(max-height:500px) and (min-width:540px){.team-terminal .agent-web .stream-name:before,.agent-web .worker-slot .worker-number:before{width:18px;height:16px;vertical-align:-4px;margin-right:3px}}

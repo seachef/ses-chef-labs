@@ -41,7 +41,7 @@ test('visible tab resume waits for fresh worker and publisher observations',()=>
 test('one-hour activity and six-hour worker retention expire at render time',()=>{const b=ui({workers:true});send(b,[open(),ev(2)]);b.setNow(T+3602001);b.app.render();assert.doesNotMatch(b.nodes.get('teamActivityPreview').textContent,/Task started/);b.setNow(T+21602001);b.app.render();assert.ok(b.nodes.get('codingWorkerSlots').children.every(n=>n.disabled));assert.equal(b.app.store.snapshot().fence_count,1);});
 test('mismatched, staged or injected code never renders unsafe HTML or substitute source',()=>{for(const o of [{file_sha256:'f'.repeat(64)},{scope:'candidate',commit:null}]){const b=ui({workers:true}),e=ev(2);Object.assign(e.source,o);e.source.code='<script>SECRET</script>';send(b,[open(),e]);assert.doesNotMatch(b.nodes.get('codingWorkerSource').textContent,/SECRET|async function/);}});
 test('activity pane keeps exact compact geometry, bounded history and internal instant scrolling',()=>{const css=fs.readFileSync(new URL('./team-work.css',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./team-worker-view.mjs',import.meta.url),'utf8');assert.match(css,/#teamActivityPreview\{grid-column:1 \/ -1;grid-row:2;height:27px\}/);assert.match(css,/overscroll-behavior:contain;scroll-behavior:auto/);assert.match(src,/while\(activityRecords.size>40\)/);assert.doesNotMatch(src,/scrollIntoView|window\.scroll|document\.(?:body|documentElement)\.scroll/);});
-test('cache identities and limited-history explanation identify v2 truthfully',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8');assert.match(html,/neptune\.mjs\?v=neptune-worker-cache-column-v2-20261010/);assert.match(html,/team-work\.mjs\?v=team-work-market-default-touch-20261010/);assert.match(html,/limited cache is not a complete activity log, signed worker attestation or a persistent AI workforce/);assert.match(src,/emitTeamWorkReport\(report\?\.team_work\?\?null\)/);});
+test('cache identities and limited-history explanation identify v2 truthfully',()=>{const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8'),src=fs.readFileSync(new URL('./neptune.mjs',import.meta.url),'utf8');assert.match(html,/neptune\.mjs\?v=neptune-spider-web-20261010/);assert.match(html,/team-work\.mjs\?v=team-work-spider-web-20261010/);assert.match(html,/limited cache is not a complete activity log, signed worker attestation or a persistent AI workforce/);assert.match(src,/emitTeamWorkReport\(report\?\.team_work\?\?null\)/);});
 test('ring worker requires current slot and retained terminal cannot precede running current revision',()=>{let p=packet([open(),ev(2)]);p.workers=[];assert.equal(validateTeamWork(p,{now:T+2000}),null);const terminal=ev(3,{run_seq:1,state:'completed',step:'task_completed'}),current=ev(4,{run_seq:2,step:'status_observed'});p=packet([open(),terminal,current]);assert.equal(validateTeamWork(p,{now:T+4000}),null);});
 test('content timestamp must equal newest producer receipt, not poll time',()=>{const p=packet([open(),ev(2)]);p.content_at=iso(T+3000);assert.equal(validateTeamWork(p,{now:T+3000}),null);});
 test('retained same-run transition revisions cannot repeat or continue after terminal',()=>{const a=ev(2,{run_seq:1,step:'source_inspected'}),b=ev(3,{run_seq:1,step:'tests_started'}),c=ev(4,{run_seq:2,step:'status_observed'});assert.equal(validateTeamWork(packet([open(),a,b,c]),{now:T+4000}),null);});
@@ -113,7 +113,7 @@ test('initial HTML matches the market default before scripts load or when they f
  assert.match(html,/id="toggleTeamPane"[^>]* hidden>/);
  assert.match(html,/id="teamCodeCaption">BROWSER SOURCE REFERENCE · refreshFeed\(\)/);
  assert.match(html,/id="teamCodeNote"[^>]*>Static browser function · not a coding worker\./);
- assert.match(html,/id="teamFooter">Automated checks · tap a segment for evidence/);
+ assert.match(html,/id="teamFooter">Ambient flight · tap for real evidence/);
 });
 
 test('terminal restores inherited pointer input without enabling decorative hit targets or changing geometry',()=>{
@@ -129,9 +129,24 @@ test('terminal restores inherited pointer input without enabling decorative hit 
 test('reload cache keys reach both the corrected terminal style and nested view module',()=>{
  const html=fs.readFileSync(new URL('./index.html',import.meta.url),'utf8');
  const team=fs.readFileSync(new URL('./team-work.mjs',import.meta.url),'utf8');
- assert.match(html,/team-work\.css\?v=neptune-market-default-touch-20261010/);
- assert.match(html,/team-work\.mjs\?v=team-work-market-default-touch-20261010/);
- assert.match(team,/from '\.\/team-worker-view\.mjs\?v=team-worker-market-default-20261010'/);
+ assert.match(html,/team-work\.css\?v=neptune-spider-web-20261010/);
+ assert.match(html,/team-work\.mjs\?v=team-work-spider-web-20261010/);
+ assert.match(team,/from '\.\/team-worker-view\.mjs\?v=team-worker-spider-web-20261010'/);
  const view=fs.readFileSync(new URL('./team-worker-view.mjs',import.meta.url),'utf8');
  assert.doesNotMatch(team+view,/localStorage|sessionStorage/);
+});
+
+test('web worker click opens existing selected evidence dialog repeatedly without fabricating activity',()=>{
+ const b=ui({workers:true}),dialog=b.nodes.get('teamWorkDialog');dialog.showModal=()=>{dialog.open=true;};
+ send(b,[open(),ev(2)]);const count=b.app.store.snapshot().report.events.length;
+ const button=b.nodes.get('codingWorkerSlots').children[0];assert.equal(button.attrs['aria-haspopup'],'dialog');
+ for(let n=0;n<3;n++){button.events.click();assert.equal(dialog.open,true);assert.match(b.nodes.get('codingSelectedWorker').textContent,/AGENT 001 · Builder/);dialog.open=false;}
+ assert.equal(b.app.store.snapshot().report.events.length,count);
+ assert.equal(b.nodes.get('teamWebCount').textContent,'1 recorded · 1 active');
+ b.setNow(T+63000);b.app.render();assert.equal(b.nodes.get('teamWebCount').textContent,'1 recorded · 0 active');assert.match(b.nodes.get('codingSelectedWorker').textContent,/PUBLISHER OFFLINE/);
+});
+
+test('switching away from a real worker pulse stops visible work effects and does not replay on return',()=>{
+ const b=ui({workers:true});send(b,[open(),ev(2)]);const button=b.nodes.get('codingWorkerSlots').children[0];assert.equal(button.attrs['data-pulse'],'true');
+ b.nodes.get('showMarketStreams').events.click();assert.equal(button.attrs['data-pulse'],'false');b.nodes.get('showCodingTeam').events.click();assert.equal(button.attrs['data-pulse'],'false');assert.equal(b.timers.length,1);
 });
