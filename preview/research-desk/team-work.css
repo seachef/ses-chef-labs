@@ -1,5 +1,5 @@
 /* One still phosphor terminal; the connecting rule denotes grouping, not traffic. */
-.team-terminal{min-width:0;border:1px solid #688d7066;border-radius:5px;background:linear-gradient(#05140fe8,#020a08f5);box-shadow:0 0 22px #0006,inset 0 1px #baf6b01c;color:#afd2ab;overflow:hidden;position:relative}
+.team-terminal{pointer-events:auto;min-width:0;border:1px solid #688d7066;border-radius:5px;background:linear-gradient(#05140fe8,#020a08f5);box-shadow:0 0 22px #0006,inset 0 1px #baf6b01c;color:#afd2ab;overflow:hidden;position:relative}
 .team-terminal:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#d2ffe503 3px 4px);opacity:.55}
 .team-terminal .windows{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:42px;gap:0;padding:0 8px;border-bottom:1px solid #69826a45;background:#1220175c}
 .team-terminal .windows:before{content:'';position:absolute;left:4%;right:4%;top:21px;height:1px;background:#74877935;pointer-events:none}

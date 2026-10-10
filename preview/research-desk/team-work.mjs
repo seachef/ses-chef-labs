@@ -1,4 +1,4 @@
-import {setupCodingWorkers} from './team-worker-view.mjs';
+import {setupCodingWorkers} from './team-worker-view.mjs?v=team-worker-market-default-20261010';
 // A local observation viewer. This is not a coding-worker transport.
 const MAX_TEXT=1600, MAX_SOURCE=12000, MAX_EVENTS=40, ACTIVE_MS=15000;
 const PATH='preview/research-desk/neptune.mjs';
