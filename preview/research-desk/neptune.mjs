@@ -23,10 +23,22 @@ async function readReports(){
  const rows=await response.json();return Array.isArray(rows)&&rows.length===0?null:validateV2(rows);
  }finally{clearTimeout(timeout);}
 }
+function emitInterfaceWork(kind,runId,startedAt,summary){
+ // Local invocation telemetry contains no report, account data, URL or credentials.
+ try{document.dispatchEvent?.(new CustomEvent('neptune:interface-work',{detail:{
+  version:1,id:runId+':'+kind,run_id:runId,seq:kind==='started'?0:1,
+  actor_id:'browser-interface',actor_kind:'browser_check',kind,
+  occurred_at:kind==='started'?startedAt:new Date().toISOString(),task:'Refresh public paper status',
+  source:{path:'preview/research-desk/neptune.mjs',function_name:'refreshFeed',commit:null,file_sha256:null},
+  evidence:{kind:'local_invocation',id:runId,at:startedAt},
+  output:{summary,exit_code:null},review:null
+ }}));}catch{/* A display observer must never interrupt the existing feed. */}
+}
 async function refreshFeed(){
  if(busy)return;
  busy=true;$('refresh').disabled=true;recordRuntime('GET paper status · request started');
- try{report=await readReports();cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');}catch{connected=false;cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');}
+ const workStartedAt=new Date().toISOString(),workRunId='interface:'+workStartedAt+':'+polls;emitInterfaceWork('started',workRunId,workStartedAt,'Read-only status request started');
+ try{report=await readReports();cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
  finally{polls++;busy=false;$('refresh').disabled=false;render();}
 }
 function igniteDecisions(){
@@ -113,8 +125,9 @@ $('openPortfolio').addEventListener('click',()=>$('historyDialog').showModal());
 for(const [stream,name] of [['Scout','Scout'],['Depth','Depth'],['Pulse','Findings'],['Shield','Shield'],['Ledger','History'],['Watch','Runtime']]){const dialog=$(name.toLowerCase()+'Dialog');$('open'+stream+'Stream').addEventListener('click',()=>dialog.showModal());$('close'+name).addEventListener('click',()=>dialog.close());}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let motion=!reduced.matches,inView=true,scenePageVisible=true;
-let audioContext,soundOn=true,audioVisible=true,audioRevision=0;
-const laserAudio=createLaserAudio({getContext:()=>audioContext,canPlay:()=>soundOn&&audioVisible&&motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible});
+let audioContext,oceanSource,oceanFilter,oceanGain,soundOn=true,audioVisible=true,audioRevision=0,audioUnlocking=false,audioNeedsRetry=false,audioNeedsRebuild=false,audioReady=false;
+const AUDIO_OPERATION_TIMEOUT_MS=1800;
+const laserAudio=createLaserAudio({getContext:()=>audioContext,canPlay:()=>soundOn&&audioReady&&audioVisible&&motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible});
 const canvas=$('atmosphere'),ctx=canvas.getContext('2d');
 const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,onBeam:frame=>laserAudio.observe(frame),showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
  getMasks:box=>[...document.querySelectorAll('header,.horizon,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
@@ -128,27 +141,81 @@ if(typeof IntersectionObserver!=='undefined'){atmosphereObserver=new Intersectio
 window.addEventListener('pagehide',()=>{audioVisible=false;scenePageVisible=false;syncMotion();void syncSound();});
 window.addEventListener('pageshow',()=>{audioVisible=true;scenePageVisible=true;atmosphere.resize();syncMotion();void syncSound();});
 
-async function syncSound(){
- if(!soundOn||!audioVisible||document.hidden)laserAudio.stop();
+function setAudioSession(active){
+ // iOS Web Audio otherwise uses the ambient route, which follows Silent mode.
+ // No recording, device-volume changes or media permission request is needed.
+ try{const session=window.navigator?.audioSession;if(session)session.type=active?'playback':'auto';}catch{}
+}
+function disarmSound(){for(const type of ['click','keydown','touchend'])document.removeEventListener(type,beginSound);}
+function armSound(){document.addEventListener('click',beginSound);document.addEventListener('keydown',beginSound);document.addEventListener('touchend',beginSound,{passive:true});}
+function boundedAudio(operation){
+ return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Object.assign(Error('Audio operation timed out'),{code:'AUDIO_TIMEOUT'})),AUDIO_OPERATION_TIMEOUT_MS);Promise.resolve(operation).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
+}
+function discardAudio(){
+ const old=audioContext;audioContext=undefined;audioReady=false;
+ if(old)old.onstatechange=null;
+ laserAudio.stop();try{oceanSource?.stop();}catch{}
+ for(const node of [oceanSource,oceanFilter,oceanGain])try{node?.disconnect();}catch{}
+ oceanSource=oceanFilter=oceanGain=undefined;
+ if(old&&old.state!=='closed')try{Promise.resolve(old.close()).catch(()=>{});}catch{}
+}
+function audioStateChanged(context){
+ if(context!==audioContext||!soundOn||!audioVisible||document.hidden||context.state==='running')return;
+ audioReady=false;laserAudio.stop();if(oceanGain)oceanGain.gain.value=0;
+ audioNeedsRetry=true;if(context.state==='closed')audioNeedsRebuild=true;
+ $('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');
+ $('audioStatus').textContent='Sound paused by your device. Tap to resume.';armSound();
+}
+async function syncSound(fromGesture=false){
+ const active=soundOn&&audioVisible&&!document.hidden,context=audioContext,revision=++audioRevision;
+ audioReady=false;laserAudio.stop();if(oceanGain)oceanGain.gain.value=0;
+ if(!active)setAudioSession(false);
  $('accessSound').textContent=soundOn?'Mute sound':'Enable sound';$('accessSound').setAttribute('aria-pressed',String(soundOn));
  if(!audioContext){$('audioStatus').textContent=soundOn?'Sound starts after your first tap or key press.':'Ocean and laser sounds muted.';return;}
- const revision=++audioRevision,active=soundOn&&audioVisible&&!document.hidden;
- try{await audioContext[active?'resume':'suspend']();if(revision!==audioRevision)return;if(active&&audioContext.state!=='running')throw Error('Audio resume interrupted');$('audioStatus').textContent=active?'Ocean and laser sounds on. Ambient lasers are decorative.':soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';}
- catch{if(revision!==audioRevision)return;soundOn=false;$('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent='Sound unavailable in this browser session.';armSound();}
+ if(active&&audioNeedsRetry&&!fromGesture){$('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent=audioNeedsRebuild?'Sound unavailable in this browser session. Tap to retry.':'Sound paused by your device. Tap to resume.';return;}
+ if(active)setAudioSession(true);
+ try{
+  // Invoke resume synchronously inside the trusted gesture, before the first await.
+  await boundedAudio(context[active?'resume':'suspend']());
+  if(revision!==audioRevision||context!==audioContext)return;
+  if(active&&context.state!=='running')throw Error('Audio resume interrupted');
+  if(active){audioReady=true;audioNeedsRetry=false;audioNeedsRebuild=false;if(oceanGain)oceanGain.gain.value=.23;disarmSound();}
+  $('accessSound').textContent=soundOn?'Mute sound':'Enable sound';$('accessSound').setAttribute('aria-pressed',String(soundOn));
+  $('audioStatus').textContent=active?'Ocean and laser sounds on. Ambient lasers are decorative.':soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';
+ }catch(error){
+  if(revision!==audioRevision||context!==audioContext)return;
+  audioReady=false;if(oceanGain)oceanGain.gain.value=0;laserAudio.stop();
+  if(!active){$('audioStatus').textContent=soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';return;}
+  audioNeedsRetry=true;audioNeedsRebuild=error?.code==='AUDIO_TIMEOUT'||context.state==='closed';setAudioSession(false);
+  $('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent='Sound unavailable in this browser session. Tap to retry.';armSound();
+ }
 }
 async function beginSound(event){
  if(event?.isTrusted===false||event?.target&&(event.target===$('accessSound')||event.target.closest?.('#accessSound')))return;
  if(event?.type==='touchend'&&(event.touches?.length>0||event.changedTouches&&event.changedTouches.length!==1))return;
  if(event?.type==='keydown'&&(event.ctrlKey||event.metaKey||event.altKey||/^(Escape|Tab|Shift|Control|Alt|Meta|CapsLock|F[0-9]{1,2})$/.test(event.key)))return;
  if(event?.type==='click'&&event.button!==undefined&&event.button!==0)return;
- document.removeEventListener('click',beginSound);document.removeEventListener('keydown',beginSound);document.removeEventListener('touchend',beginSound);
+ if(audioUnlocking)return;
+ audioUnlocking=true;
  try{
- if(!audioContext||audioContext.state==='closed'){const Audio=window.AudioContext||window.webkitAudioContext;audioContext=new Audio();const buffer=audioContext.createBuffer(1,audioContext.sampleRate*4,audioContext.sampleRate),data=buffer.getChannelData(0);let v=0;for(let i=0;i<data.length;i++){v=(v+(Math.random()*2-1)*.035)/1.025;data[i]=v;}const source=audioContext.createBufferSource();source.buffer=buffer;source.loop=true;const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=500;const gain=audioContext.createGain();gain.gain.value=.23;source.connect(filter).connect(gain).connect(audioContext.destination);source.start();}
- soundOn=true;await syncSound();if(!soundOn)armSound();
- }catch{soundOn=false;$('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent='Sound unavailable in this browser session.';armSound();}
+  if(audioNeedsRebuild||audioContext?.state==='closed')discardAudio();
+  setAudioSession(true);
+  if(!audioContext){
+   const Audio=window.AudioContext||window.webkitAudioContext;audioContext=new Audio();const context=audioContext;context.onstatechange=()=>audioStateChanged(context);
+   const buffer=context.createBuffer(1,context.sampleRate*4,context.sampleRate),data=buffer.getChannelData(0);let v=0;for(let i=0;i<data.length;i++){v=(v+(Math.random()*2-1)*.035)/1.025;data[i]=v;}
+   oceanSource=context.createBufferSource();oceanSource.buffer=buffer;oceanSource.loop=true;oceanFilter=context.createBiquadFilter();oceanFilter.type='lowpass';oceanFilter.frequency.value=500;oceanGain=context.createGain();oceanGain.gain.value=0;oceanSource.connect(oceanFilter).connect(oceanGain).connect(context.destination);oceanSource.start();
+  }
+  soundOn=true;await syncSound(true);
+ }catch{
+  audioReady=false;audioNeedsRetry=true;audioNeedsRebuild=true;setAudioSession(false);
+  $('accessSound').textContent='Enable sound';$('accessSound').setAttribute('aria-pressed','false');$('audioStatus').textContent='Sound unavailable in this browser session. Tap to retry.';armSound();
+ }finally{audioUnlocking=false;}
 }
-$('accessSound').addEventListener('click',async()=>{if(!audioContext||audioContext.state==='closed'){soundOn=true;await beginSound();}else{soundOn=!soundOn;await syncSound();}});
-function armSound(){document.addEventListener('click',beginSound);document.addEventListener('keydown',beginSound);document.addEventListener('touchend',beginSound,{passive:true});}
+$('accessSound').addEventListener('click',async()=>{
+ if(audioUnlocking){soundOn=false;disarmSound();await syncSound();return;}
+ if(!audioContext||audioContext.state!=='running'||audioNeedsRetry||!soundOn){await beginSound();}
+ else{soundOn=false;audioNeedsRetry=false;disarmSound();await syncSound();}
+});
 armSound();
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
 clock();setInterval(clock,1000);render();void refreshFeed();

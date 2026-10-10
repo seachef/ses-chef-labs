@@ -20,12 +20,12 @@ class Node {
  showModal(){this.open=true;}
  close(){this.open=false;}
 }
-function boot(payload,{fail=false,fetchWait,Audio,webkitAudio}={}){
+function boot(payload,{fail=false,fetchWait,Audio,webkitAudio,audioSession,audioSetTimeout=setTimeout,audioClearTimeout=clearTimeout}={}){
  const ids=Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],new Node()]));
  const markets=[...html.matchAll(/data-market="([^"]+)"/g)].map(m=>{let n=new Node();n.dataset.market=m[1];return n;});
  const tabs=['code','trades','events'].map(p=>{let n=new Node();n.dataset.pane=p;return n;}),panes=tabs.map(t=>{let n=new Node();n.dataset.pane=t.dataset.pane;return n;});
  const docEvents={},mediaEvents={},windowEvents={},states=[];let requests=0;const document={hidden:false,body:new Node(),getElementById:id=>{assert.ok(ids[id],`missing #${id}`);return ids[id];},createElement:()=>new Node(),querySelectorAll:q=>q==='[data-market]'?markets:q==='.mobile-tabs button'?tabs:q==='.instrument'?panes:[],addEventListener(k,fn){docEvents[k]=fn;},removeEventListener(k){delete docEvents[k];}};
- const context=vm.createContext({...adapter,createLaserAudio,readResearchV1,readDailyPerformance,readPortfolioSnapshot,readNativePaper,nativeFillLabel,setupPaperPanels:()=>({observe(){}}),createPaperCueBridge,makeCosmosScene:options=>{const a=makeCosmosScene({...options,createImage:()=>({addEventListener(){},removeEventListener(){}})});return {...a,setState(state){states.push(state);a.setState(state);}};},document,window:{AudioContext:Audio,webkitAudioContext:webkitAudio,addEventListener(k,fn){windowEvents[k]=fn;}},matchMedia:()=>({matches:true,addEventListener(k,fn){mediaEvents[k]=e=>{this.matches=e.matches;fn(e);};}}),devicePixelRatio:1,requestAnimationFrame:()=>0,cancelAnimationFrame(){},setInterval(){},setTimeout,clearTimeout,AbortController,Intl,Date,fetch:async(url,options)=>{requests++;assert.equal(options.credentials,'omit');assert.equal(options.method,undefined);assert.match(url,/neptune_paper_v2_status/);if(fetchWait)await fetchWait();if(fail)throw Error('offline');return {ok:true,json:async()=>payload};}});
+ const context=vm.createContext({...adapter,createLaserAudio,readResearchV1,readDailyPerformance,readPortfolioSnapshot,readNativePaper,nativeFillLabel,setupPaperPanels:()=>({observe(){}}),createPaperCueBridge,makeCosmosScene:options=>{const a=makeCosmosScene({...options,createImage:()=>({addEventListener(){},removeEventListener(){}})});return {...a,setState(state){states.push(state);a.setState(state);}};},document,window:{navigator:{audioSession},AudioContext:Audio,webkitAudioContext:webkitAudio,addEventListener(k,fn){windowEvents[k]=fn;}},matchMedia:()=>({matches:true,addEventListener(k,fn){mediaEvents[k]=e=>{this.matches=e.matches;fn(e);};}}),devicePixelRatio:1,requestAnimationFrame:()=>0,cancelAnimationFrame(){},setInterval(){},setTimeout:audioSetTimeout,clearTimeout:audioClearTimeout,AbortController,Intl,Date,fetch:async(url,options)=>{requests++;assert.equal(options.credentials,'omit');assert.equal(options.method,undefined);assert.match(url,/neptune_paper_v2_status/);if(fetchWait)await fetchWait();if(fail)throw Error('offline');return {ok:true,json:async()=>payload};}});
  vm.runInContext(src,context);return {context,ids,markets,tabs,panes,document,docEvents,mediaEvents,windowEvents,states,requests:()=>requests};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
@@ -51,7 +51,7 @@ function audioMock(){let count=0;const calls=[];class Audio{constructor(){count+
 test('page cache restores only opted-in sound and reports resume rejection truthfully',async()=>{
  const m=audioMock(),b=boot([],{Audio:m.Audio});await settle();b.windowEvents.pagehide();b.windowEvents.pageshow();await settle();assert.equal(m.count(),0);
  await b.docEvents.click();assert.equal(b.ids.audioStatus.textContent,'Ocean and laser sounds on. Ambient lasers are decorative.');assert.equal(b.docEvents.click,undefined);assert.equal(b.docEvents.keydown,undefined);assert.equal(m.count(),1);b.windowEvents.pagehide();await settle();assert.equal(b.ids.audioStatus.textContent,'Ocean and laser sounds paused while the page is hidden.');b.windowEvents.pageshow();await settle();assert.equal(b.ids.audioStatus.textContent,'Ocean and laser sounds on. Ambient lasers are decorative.');assert.equal(m.count(),1);
- b.windowEvents.pagehide();await settle();m.Audio.reject=true;b.windowEvents.pageshow();await settle();assert.equal(b.ids.audioStatus.textContent,'Sound unavailable in this browser session.');const resumes=m.calls.filter(x=>x==='resume').length;b.windowEvents.pageshow();await settle();assert.equal(m.calls.filter(x=>x==='resume').length,resumes);
+ b.windowEvents.pagehide();await settle();m.Audio.reject=true;b.windowEvents.pageshow();await settle();assert.equal(b.ids.audioStatus.textContent,'Sound unavailable in this browser session. Tap to retry.');const resumes=m.calls.filter(x=>x==='resume').length;b.windowEvents.pageshow();await settle();assert.equal(m.calls.filter(x=>x==='resume').length,resumes);
 });
 test('scene cue bridge baselines initial history and only renders a new validated paper event',async()=>{
  const p=active(),decision=id=>({id,at:p.heartbeat_at,asset:'ETH/USD',action:'hold',price:2000,quote_currency:'USD',reason:'No setup',source:'Kraken public spot',observation_id:id+'obs',risk_base:null,stop:null,target:null,invalidation:null,confidence:'unvalidated',result:'no_trade'});p.decisions=[decision('initial')];let offline=false;const b=boot([{id:'neptune-paper-v2',payload:p}],{fetchWait:async()=>{if(offline)throw Error('offline');}});b.mediaEvents.change({matches:false});await settle();assert.match(b.ids.sceneCue.textContent,/Ambient/);p.decisions=[decision('new')];await b.ids.refresh.events.click();assert.match(b.ids.sceneCue.textContent,/PAPER REVIEW · UNVALIDATED/);assert.equal(b.ids.fills.textContent,'0');offline=true;await b.ids.refresh.events.click();assert.match(b.ids.sceneCue.textContent,/Ambient/);
@@ -82,3 +82,136 @@ test('fulfilled but interrupted resume stays unavailable and recovers on next re
 test('touch on explicit sound toggle is owned by its click handler, preserving mute',async()=>{const m=audioMock(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend',target:b.ids.accessSound});assert.equal(m.count(),0);await b.ids.accessSound.events.click();assert.equal(m.count(),1);await b.ids.accessSound.events.click();assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(b.docEvents.touchend,undefined);b.windowEvents.pagehide();b.windowEvents.pageshow();await settle();assert.match(b.ids.audioStatus.textContent,/muted/);});
 test('closed mobile audio context is recreated only through explicit sound gesture',async()=>{const m=audioMock(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend'});assert.equal(m.count(),1);vm.runInContext("audioContext.state='closed'",b.context);await b.ids.accessSound.events.click();assert.equal(m.count(),2);assert.match(b.ids.audioStatus.textContent,/sounds on/);});
 test('visibility resume with interrupted WebKit state waits for another touch instead of claiming sound',async()=>{const m=audioMock();class Interrupted extends m.Audio{async resume(){await super.resume();if(Interrupted.blocked)this.state='interrupted';}}const b=boot([],{webkitAudio:Interrupted});await settle();await b.docEvents.touchend({type:'touchend'});b.windowEvents.pagehide();await settle();Interrupted.blocked=true;b.windowEvents.pageshow();await settle();assert.match(b.ids.audioStatus.textContent,/unavailable/);assert.equal(typeof b.docEvents.touchend,'function');Interrupted.blocked=false;await b.docEvents.touchend({type:'touchend'});assert.match(b.ids.audioStatus.textContent,/sounds on/);});
+
+// Device-state models complement the existing UI mocks; they are not an audible-device test.
+function controlledAudio(){
+ const instances=[],calls=[];let mode='normal',pendingResolve;
+ class Audio{
+  constructor(){this.state='suspended';this.currentTime=0;this.sampleRate=48000;this.destination={kind:'destination'};this.nodes=[];instances.push(this);calls.push('construct');}
+  node(kind){const node={kind,gain:{value:0},frequency:{value:0},connect(to){node.target=to;return to;},disconnect(){node.disconnected=true;},start(){node.started=true;calls.push('start');},stop(){node.stopped=true;}};this.nodes.push(node);return node;}
+  createBuffer(channels,length,rate){assert.equal(channels,1);assert.equal(length,192000);assert.equal(rate,48000);return {getChannelData:()=>new Float32Array(length)};}
+  createBufferSource(){return this.node('source');}
+  createBiquadFilter(){return this.node('filter');}
+  createGain(){return this.node('gain');}
+  resume(){calls.push('resume');if(mode==='pending')return new Promise(resolve=>pendingResolve=()=>{this.state='running';resolve();});this.state='running';this.onstatechange?.();return Promise.resolve();}
+  suspend(){calls.push('suspend');this.state='suspended';this.onstatechange?.();return Promise.resolve();}
+  close(){calls.push('close');this.state='closed';this.closed=true;return Promise.resolve();}
+  interrupt(state='interrupted'){this.state=state;this.onstatechange?.();}
+ }
+ return {Audio,instances,calls,setMode:value=>mode=value,resolvePending:()=>pendingResolve?.()};
+}
+function audioTimers(){const pending=new Set();return {set(fn,ms){if(ms!==1800)return setTimeout(fn,ms);const timer={fn};pending.add(timer);return timer;},clear(timer){if(pending.delete(timer))return;clearTimeout(timer);},fire(){for(const timer of [...pending]){pending.delete(timer);timer.fn();}},count:()=>pending.size};}
+test('iOS playback session is requested only after a gesture and released on mute or hiding',async()=>{
+ const m=controlledAudio(),changes=[],audioSession={set type(value){changes.push(value);}};
+ const b=boot([],{Audio:m.Audio,audioSession});await settle();assert.deepEqual(changes,[]);
+ await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(changes[0],'playback');assert.equal(m.instances.length,1);
+ const c=m.instances[0],[source,filter,gain]=c.nodes;assert.equal(source.target,filter);assert.equal(filter.target,gain);assert.equal(gain.target,c.destination);assert.equal(gain.gain.value,.23);assert.equal(source.loop,true);assert.ok(m.calls.indexOf('start')<m.calls.indexOf('resume'));
+ b.windowEvents.pagehide();await settle();assert.equal(changes.at(-1),'auto');assert.equal(gain.gain.value,0);
+ b.windowEvents.pageshow();await settle();assert.equal(changes.at(-1),'playback');assert.equal(gain.gain.value,.23);
+ await b.ids.accessSound.events.click();assert.equal(changes.at(-1),'auto');b.windowEvents.pagehide();b.windowEvents.pageshow();await settle();assert.equal(changes.at(-1),'auto');assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(b.docEvents.touchend,undefined);
+});
+test('unsupported or throwing AudioSession API does not prevent normal Web Audio playback',async()=>{
+ for(const audioSession of [undefined,{set type(value){throw Error('Unsupported');}}]){const m=controlledAudio(),b=boot([],{Audio:m.Audio,audioSession});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.match(b.ids.audioStatus.textContent,/sounds on/);assert.equal(m.instances[0].nodes.at(-1).gain.value,.23);}
+});
+test('a stalled resume times out, permits another tap, and rebuilds only on that gesture',async()=>{
+ const m=controlledAudio(),timers=audioTimers();m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();
+ const first=b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(m.instances.length,1);assert.equal(timers.count(),1);assert.equal(m.instances[0].nodes.at(-1).gain.value,0);await b.docEvents.click({type:'click',isTrusted:true});assert.equal(m.instances.length,1);
+ timers.fire();await first;assert.match(b.ids.audioStatus.textContent,/Tap to retry/);assert.equal(typeof b.docEvents.touchend,'function');b.windowEvents.pageshow();await settle();assert.equal(m.instances.length,1);assert.equal(m.calls.filter(x=>x==='resume').length,1);
+ m.setMode('normal');await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(m.instances.length,2);assert.equal(m.instances[0].closed,true);assert.equal(m.instances[0].onstatechange,null);assert.ok(m.instances[0].nodes.every(n=>n.disconnected));assert.equal(m.instances[0].nodes[0].stopped,true);assert.match(b.ids.audioStatus.textContent,/sounds on/);assert.equal(b.docEvents.touchend,undefined);
+ m.resolvePending();await settle();assert.match(b.ids.audioStatus.textContent,/sounds on/);assert.equal(m.instances[0].nodes.at(-1).gain.value,0);assert.equal(m.instances[1].nodes.at(-1).gain.value,.23);
+});
+test('explicit mute cancels a pending unlock and late resume cannot turn sound back on',async()=>{
+ const m=controlledAudio(),timers=audioTimers();m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();const first=b.docEvents.touchend({type:'touchend',isTrusted:true});await b.ids.accessSound.events.click();assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(b.docEvents.touchend,undefined);m.resolvePending();await first;assert.equal(m.instances[0].nodes.at(-1).gain.value,0);assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(b.docEvents.touchend,undefined);assert.equal(vm.runInContext('soundOn',b.context),false);
+});
+test('interruption while foregrounded changes status and re-arms a trusted recovery tap',async()=>{
+ const m=controlledAudio(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});const c=m.instances[0];c.interrupt();assert.match(b.ids.audioStatus.textContent,/paused by your device/);assert.equal(c.nodes.at(-1).gain.value,0);assert.equal(typeof b.docEvents.touchend,'function');await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.match(b.ids.audioStatus.textContent,/sounds on/);assert.equal(c.nodes.at(-1).gain.value,.23);assert.equal(m.instances.length,1);
+});
+test('a context closed by the device is cleaned up and rebuilt on the next tap',async()=>{
+ const m=controlledAudio(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});const c=m.instances[0];c.interrupt('closed');assert.equal(typeof b.docEvents.touchend,'function');assert.equal(m.instances.length,1);await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(m.instances.length,2);assert.ok(c.nodes.every(n=>n.disconnected));assert.equal(c.onstatechange,null);assert.match(b.ids.audioStatus.textContent,/sounds on/);
+});
+test('device state changes cannot re-enable explicitly muted sound',async()=>{
+ const m=controlledAudio(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});await b.ids.accessSound.events.click();m.instances[0].interrupt();assert.equal(b.docEvents.touchend,undefined);assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(m.instances[0].nodes.at(-1).gain.value,0);
+});
+test('late resume after pagehide leaves the ocean gain silent and preserves the hidden status',async()=>{
+ const m=controlledAudio(),timers=audioTimers();m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();const first=b.docEvents.touchend({type:'touchend',isTrusted:true});b.windowEvents.pagehide();await settle();assert.match(b.ids.audioStatus.textContent,/paused while the page is hidden/);m.resolvePending();await first;assert.equal(m.instances[0].nodes.at(-1).gain.value,0);assert.match(b.ids.audioStatus.textContent,/paused while the page is hidden/);
+});
+
+function audibleMock(){
+ const m=controlledAudio();
+ class Audio extends m.Audio {
+  createOscillator(){const n=this.node('oscillator');n.frequency={setValueAtTime(){},exponentialRampToValueAtTime(){}};return n;}
+  createGain(){const n=super.createGain();Object.assign(n.gain,{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}});return n;}
+ }
+ return {...m,Audio};
+}
+test('ADVERSARIAL: timed-out resume resolving without a new gesture must not re-enable lasers',async()=>{
+ const m=audibleMock(),timers=audioTimers();m.setMode('pending');
+ const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});
+ await settle();b.mediaEvents.change({matches:false});
+ const unlock=b.docEvents.touchend({type:'touchend',isTrusted:true});timers.fire();await unlock;
+ assert.match(b.ids.audioStatus.textContent,/Tap to retry/);m.resolvePending();await settle();
+ assert.equal(m.instances[0].state,'running');assert.equal(m.instances[0].nodes[2].gain.value,0);
+ assert.equal(vm.runInContext("laserAudio.observe({beamCount:1,beamKey:'late-audio'})",b.context),false);
+ assert.equal(m.instances[0].nodes.filter(n=>n.kind==='oscillator').length,0);
+ m.setMode('normal');await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(vm.runInContext("laserAudio.observe({beamCount:1,beamKey:'recovered-timeout'})",b.context),true);
+});
+test('ADVERSARIAL: interrupted then spontaneously running context keeps all audio gated until recovery gesture',async()=>{
+ const m=audibleMock(),b=boot([],{Audio:m.Audio});await settle();b.mediaEvents.change({matches:false});
+ await b.docEvents.touchend({type:'touchend',isTrusted:true});const c=m.instances[0];c.interrupt();
+ assert.match(b.ids.audioStatus.textContent,/Tap to resume/);c.interrupt('running');
+ assert.equal(vm.runInContext("laserAudio.observe({beamCount:1,beamKey:'late-running'})",b.context),false);
+ await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(vm.runInContext("laserAudio.observe({beamCount:1,beamKey:'recovered-interruption'})",b.context),true);
+});
+
+test('ADVERSARIAL: partial graph creation failure is cleaned before retry without duplicate sources',async()=>{
+ const m=controlledAudio();let fail=true;
+ class Audio extends m.Audio {createGain(){if(fail){fail=false;throw Error('allocation failed');}return super.createGain();}}
+ const b=boot([],{Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});
+ assert.match(b.ids.audioStatus.textContent,/Tap to retry/);assert.equal(m.instances.length,1);
+ await b.docEvents.touchend({type:'touchend',isTrusted:true});
+ assert.equal(m.instances.length,2);assert.equal(m.instances[0].closed,true);assert.ok(m.instances[0].nodes.every(n=>n.disconnected));
+ assert.equal(m.instances[1].nodes.filter(n=>n.kind==='source'&&n.started).length,1);assert.match(b.ids.audioStatus.textContent,/sounds on/);
+});
+test('ADVERSARIAL: repeated touch plus synthetic click while resume pending builds one graph',async()=>{
+ const m=controlledAudio(),timers=audioTimers();m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();
+ const first=b.docEvents.touchend({type:'touchend',isTrusted:true});
+ for(let i=0;i<10;i++){await b.docEvents.touchend({type:'touchend',isTrusted:true});await b.docEvents.click({type:'click',isTrusted:true});}
+ assert.equal(m.instances.length,1);assert.equal(m.calls.filter(x=>x==='start').length,1);assert.equal(m.calls.filter(x=>x==='resume').length,1);
+ m.resolvePending();await first;assert.equal(b.docEvents.click,undefined);assert.equal(b.docEvents.touchend,undefined);
+});
+test('ADVERSARIAL: late suspend after newer successful resume truthfully re-arms recovery without another graph',async()=>{
+ const m=controlledAudio();let suspendResolve;
+ class Audio extends m.Audio {suspend(){return new Promise(resolve=>suspendResolve=()=>{this.state='suspended';this.onstatechange?.();resolve();});}}
+ const b=boot([],{Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});
+ b.windowEvents.pagehide();b.windowEvents.pageshow();await settle();assert.match(b.ids.audioStatus.textContent,/sounds on/);
+ suspendResolve();await settle();assert.match(b.ids.audioStatus.textContent,/paused by your device/);assert.equal(m.instances[0].nodes[2].gain.value,0);assert.equal(typeof b.docEvents.touchend,'function');
+ await b.docEvents.touchend({type:'touchend',isTrusted:true});assert.equal(m.instances.length,1);assert.match(b.ids.audioStatus.textContent,/sounds on/);
+});
+test('ADVERSARIAL: hide plus late timeout never rearms hidden playback automatically',async()=>{
+ const m=controlledAudio(),timers=audioTimers(),changes=[],audioSession={set type(v){changes.push(v);}};
+ m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSession,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();
+ const first=b.docEvents.touchend({type:'touchend',isTrusted:true});b.windowEvents.pagehide();await settle();timers.fire();await first;
+ assert.match(b.ids.audioStatus.textContent,/paused while the page is hidden/);assert.equal(changes.at(-1),'auto');assert.equal(m.instances[0].nodes[2].gain.value,0);
+});
+test('ADVERSARIAL: mute followed by key and touch does not unmute',async()=>{
+ const m=controlledAudio(),b=boot([],{Audio:m.Audio});await settle();await b.docEvents.touchend({type:'touchend',isTrusted:true});
+ await b.ids.accessSound.events.click();assert.equal(b.docEvents.keydown,undefined);assert.equal(b.docEvents.click,undefined);assert.equal(b.docEvents.touchend,undefined);
+ b.document.hidden=true;b.docEvents.visibilitychange();b.document.hidden=false;b.docEvents.visibilitychange();await settle();
+ assert.match(b.ids.audioStatus.textContent,/muted/);assert.equal(m.calls.filter(x=>x==='resume').length,1);
+});
+
+test('ADVERSARIAL: pending hidden suspend cannot overwrite newer foreground retry prompt',async()=>{
+ const m=controlledAudio(),timers=audioTimers();let releaseSuspend;
+ class Audio extends m.Audio {suspend(){return new Promise(resolve=>releaseSuspend=()=>{this.state='suspended';this.onstatechange?.();resolve();});}}
+ m.setMode('pending');const b=boot([],{Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();
+ const first=b.docEvents.touchend({type:'touchend',isTrusted:true});timers.fire();await first;
+ b.windowEvents.pagehide();b.windowEvents.pageshow();await settle();releaseSuspend();await settle();
+ assert.doesNotMatch(b.ids.audioStatus.textContent,/page is hidden/);assert.match(b.ids.audioStatus.textContent,/Tap to (retry|resume)/);
+});
+
+test('ADVERSARIAL: returning after timed-out resume says retry rather than still hidden',async()=>{
+ const m=controlledAudio(),timers=audioTimers();m.setMode('pending');const b=boot([],{Audio:m.Audio,audioSetTimeout:timers.set,audioClearTimeout:timers.clear});await settle();
+ const first=b.docEvents.touchend({type:'touchend',isTrusted:true});timers.fire();await first;
+ b.windowEvents.pagehide();await settle();assert.match(b.ids.audioStatus.textContent,/hidden/);b.windowEvents.pageshow();await settle();
+ assert.doesNotMatch(b.ids.audioStatus.textContent,/page is hidden/);assert.match(b.ids.audioStatus.textContent,/Tap to (retry|resume)/);
+});
