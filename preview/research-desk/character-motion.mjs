@@ -18,6 +18,7 @@ export function choreography(time,width,height,{reduced=false,eventId=null,cue=n
  const start=route(episode),end=route(episode+1),ground=height*(mobile?.70:.7075),plan=routines[variant];
  let begin=0,progress=0,state=plan[0],previous='crouch',u=0;
  for(const step of plan){if(q<step.end){state=step;u=clamp((q-begin)/(step.end-begin),0,1);if(step.travel!==undefined)progress=progress+(step.travel-progress)*smooth(u);break;}if(step.travel!==undefined)progress=step.travel;previous=step.kind;begin=step.end;}
+ if(state.kind==='fire')state={...state,kind:'look'};
  const ambientKind=state.kind;let receiptProgress=1,receiptVariant=-1;
  if(cue?.kind==='profit'&&!reduced){const e=clamp((now-cue.createdAt)/Math.max(1,cue.until-cue.createdAt),0,1);receiptProgress=e;receiptVariant=hash(eventId)%4;state={kind:'victory'};u=e;}else if(cue&&!reduced){const e=clamp((now-cue.createdAt)/Math.max(1,cue.until-cue.createdAt),0,1),v=Number.isInteger(actionVariant)?actionVariant%4:hash(eventId)%4;receiptProgress=e;receiptVariant=v;state={kind:e<.20?['brace','turn','kneel','crouch'][v]:e<.35?(v===1||v===2?'recover':v===0?'brace':'crouch'):'fire'};u=clamp(e/.35,0,1);}if(reduced){state={kind:'crouch'};progress=0;}
  const x=width*(start+(end-start)*progress),travelFacing=end>=start?1:-1,aimFacing=target.x>=x?1:-1;
@@ -29,7 +30,7 @@ export function choreography(time,width,height,{reduced=false,eventId=null,cue=n
  const feet=kind==='run'?[{x,y:ground}]:kind==='roll'?[{x,y:ground}]:[{x:x-facing*size*.34,y:ground},{x:x+facing*size*.44,y:ground}];
  const origin={x,y:ground},eyeSource=[[995/1254,208/1254],[1033/1254,220/1254]];
  const eyes=eyeSource.map(([ex,ey])=>({x:x+facing*(ex-.5)*size*turn,y:ground+(ey-.975)*size}));
- const fire=kind==='fire'&&receiptProgress>=.35&&!transition&&!reduced&&Math.abs(target.x-x)>size*.18;
+ const fire=!!cue&&['buy','sell'].includes(cue.kind)&&kind==='fire'&&receiptProgress>=.35&&!transition&&!reduced&&Math.abs(target.x-x)>size*.18;
  return{kind,receiptVariant,preparation:cue?1-smooth(receiptProgress/.35):0,transition,transitionFrame,blend,previous,variant,episode,q,u,x,ground,facing,frame,size,turn,feet,eyes,origin,fire,rotation:kind==='roll'?facing*u*Math.PI*2:0,mobile};
 }
 function shadow(ctx,a){ctx.fillStyle='rgba(0,0,0,.42)';for(const f of a.feet){ctx.beginPath();ctx.ellipse(f.x,f.y+2,a.size*.115,a.size*.018,0,0,Math.PI*2);ctx.fill();}}
@@ -48,7 +49,7 @@ export function drawCharacter(ctx,images,a){shadow(ctx,a);ctx.save();ctx.transla
  ctx.restore();
 }
 export function drawEyeBeams(ctx,a,target,{color='112,225,255',strength=1}={}){
- if(!a.fire||!target||a.facing*(target.x-a.x)<=0)return 0;
+ if(!a.fire||!target||a.eyes.some(eye=>a.facing*(target.x-eye.x)<=0))return 0;
  ctx.save();ctx.setLineDash([]);ctx.lineCap='round';
  // Coherent luminous shafts, like laser-eye imagery: broad halo, coloured body, white core.
  for(const eye of a.eyes){for(const[width,alpha,c]of[[14,.10,color],[7,.22,color],[3,.86,color],[1.2,.98,'243,253,255']]){ctx.lineWidth=width*(a.mobile?.75:1);ctx.strokeStyle=`rgba(${c},${alpha*strength})`;ctx.beginPath();ctx.moveTo(eye.x,eye.y);ctx.lineTo(target.x,target.y);ctx.stroke();}

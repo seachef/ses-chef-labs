@@ -1,4 +1,4 @@
-import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neptune-native-20261009'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
+import {readDiscoveryCatalogue} from './discovery-catalogue-validation.mjs?v=discovery-20261010'; import {createSceneTargets,sceneInstrument} from './scene-targets.mjs?v=real-targets-20261010'; import {createMarketActivityFeed} from './market-activity.mjs?v=market-activity-20261010'; import {readNativePaper,nativeFillLabel} from './native-paper.mjs?v=neptune-native-20261009'; import {readPortfolioSnapshot} from './portfolio-snapshot.mjs?v=neptune-native-20261009'; import {createLaserAudio} from './laser-audio.mjs?v=neptune-native-20261009'; import {readDailyPerformance} from './daily-performance.mjs?v=neptune-native-20261009'; import {ASSETS,validateV2,paperViewV2,money,quote,fresh} from './status-v2.mjs?v=neptune-native-20261009'; import {setupPaperPanels} from './paper-panels-v2.mjs?v=neptune-native-r2-20261009'; import {makeCosmosScene,createPaperCueBridge} from './cosmos-controller.mjs?v=neural-links-20261010'; import {readResearchV1} from './research-v1.mjs?v=neptune-native-20261009';
 const $=id=>document.getElementById(id);
 const endpoint='https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1/neptune_paper_v2_status?id=eq.neptune-paper-v2&select=id,payload';
 // Existing public read-only key. No owner credential, order route or browser account state.
@@ -6,6 +6,27 @@ const publicKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 const panels=setupPaperPanels({document,endpointRoot:'https://jhsrbmvmjtihlxnbrvbx.supabase.co/rest/v1',publicKey});
 // Read the already-public bounded native decision history. This adds no writer,
 // credential or backend route and never includes account values in activity.
+const sceneTargets=createSceneTargets();
+const profitBridge=createPaperCueBridge();
+let sceneCatalogue=[];
+async function loadSceneCatalogue(){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
+ try{
+  const response=await fetch('./discovery-catalogue.json?v=discovery-20261010',{credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal});
+  if(!response.ok)throw Error('Catalogue unavailable');
+  const raw=await response.text();if(raw.length>131072)throw Error('Catalogue exceeds bound');
+  const catalogue=await readDiscoveryCatalogue(JSON.parse(raw));if(!catalogue)throw Error('Catalogue unverified');
+  // Identity-only background: never pass catalogue content into receipt bridges.
+  sceneCatalogue=catalogue.instruments;
+  const snapshotAt=catalogue.sources.map(x=>x.captured_at).sort()[0];
+  $('universeLegend').textContent=catalogue.identity_count+' market identities · discovery snapshot '+new Date(snapshotAt).toLocaleString('en-AU',{timeZone:'UTC',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false})+' UTC · not live monitoring';
+  $('universeIdentityList').replaceChildren(...catalogue.instruments.map(item=>{const li=document.createElement('li');li.textContent=item.venue+' · '+item.pair+' · '+item.id+' · snapshot '+item.snapshot_at;return li;}));
+  $('universeEvidence').textContent='100 venue-qualified market identities, not 100 economically distinct coins. Sources: Kraken public AssetPairs and Ticker; Hyperliquid public spotMetaAndAssetCtxs. Captured 10 October 2026, 03:48 UTC. Discovery only: no live monitoring, qualification or trade eligibility.';
+  atmosphere.refresh();
+ }catch{$('universeLegend').textContent='Catalogue unavailable · recorded coins only';}
+ finally{clearTimeout(timeout);}
+}
+
 const marketActivity=createMarketActivityFeed({
  fetchNative:async({watermark,limit})=>{
   const url=new URL(endpoint.replace('/neptune_paper_v2_status','/neptune_paper_v2_history'));
@@ -15,9 +36,9 @@ const marketActivity=createMarketActivityFeed({
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
   try{const response=await fetch(url.href,{headers:{apikey:publicKey},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal});if(!response.ok)throw Error('Native decisions unavailable');return await response.json();}finally{clearTimeout(timeout);}
  },
- onChange:snapshot=>{try{document.dispatchEvent?.(new CustomEvent('neptune:market-activity',{detail:snapshot}));}catch{/* Display telemetry cannot interrupt the paper feed. */}}
+ onChange:snapshot=>{sceneTargets.observeActivity(snapshot);try{document.dispatchEvent?.(new CustomEvent('neptune:market-activity',{detail:snapshot}));}catch{/* Display telemetry cannot interrupt the paper feed. */}}
 });
-const cueBridge=createPaperCueBridge();
+
 let selected='ETH/USD',report=null,connected=false,busy=false,polls=0,seenDecisions=null;
 const runtimeEvents=[];
 function recordRuntime(message){
@@ -73,7 +94,7 @@ async function refreshFeed(){
  if(busy)return;
  busy=true;$('refresh').disabled=true;recordRuntime('GET paper status · request started');
  const workStartedAt=new Date().toISOString(),workRunId='interface:'+workStartedAt+':'+polls;emitInterfaceWork('started',workRunId,workStartedAt,'Read-only status request started');
- try{report=await readReports();void marketActivity.observe(report);emitTeamWorkReport(report?.team_work??null);cueBridge.observe(report);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;marketActivity.disconnect();emitTeamWorkReport(null);cueBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
+ try{report=await readReports();sceneTargets.observeReport(report);profitBridge.observe(report);void marketActivity.observe(report);emitTeamWorkReport(report?.team_work??null);connected=true;igniteDecisions();recordRuntime(report?'Report validated · '+paperViewV2(report,true).label:'Empty response · account not created');emitInterfaceWork('completed',workRunId,workStartedAt,report?'Status response received and validated':'Empty status response received');}catch{connected=false;marketActivity.disconnect();emitTeamWorkReport(null);sceneTargets.disconnect();profitBridge.disconnect();recordRuntime('Feed check failed · data unavailable');emitInterfaceWork('failed',workRunId,workStartedAt,'Status request failed; data unavailable');}
  finally{polls++;busy=false;$('refresh').disabled=false;render();}
 }
 function igniteDecisions(){
@@ -90,7 +111,7 @@ function list(id,items,format,empty){
  if(!nodes.length){const li=document.createElement('li');li.textContent=empty;nodes.push(li);}
  $(id).replaceChildren(...nodes);
 }
-function sceneCue(){const cue=cueBridge.current(),label=cue?(cue.kind==='profit'?'SIMULATED NET PROFIT · '+money(cue.pnl_base,'AUD'):cue.kind==='review'?'PAPER REVIEW · UNVALIDATED':'SIMULATED '+cue.kind.toUpperCase())+' · '+cue.asset:'Ambient scene · not a trade signal';if($('sceneCue').textContent!==label)$('sceneCue').textContent=label;return cue;}
+function sceneCue(){const profit=profitBridge.current(),cue=profit?.kind==='profit'?profit:sceneTargets.current(),marker=sceneTargets.markers().filter(m=>m.active).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at))[0],label=cue?.kind==='profit'?'SIMULATED NET PROFIT · '+money(cue.pnl_base,'AUD')+' · '+cue.asset:cue?'SIMULATED '+cue.kind.toUpperCase()+' · '+sceneInstrument(cue.asset).pair+' · '+sceneInstrument(cue.asset).venue:marker?'CHECK RECORDED · '+marker.pair+' · '+marker.venue+' · '+(marker.reason??marker.result??'unvalidated').replaceAll('_',' '):'Looking · waiting for a new verified paper fill';if($('sceneCue').textContent!==label)$('sceneCue').textContent=label;return cue;}
 function renderStreams(view){
  const current=view.status==='running',research=readResearchV1(report);
  const set=(id,text)=>{if($(id).textContent!==text)$(id).textContent=text;};
@@ -178,9 +199,9 @@ let audioContext,oceanSource,oceanFilter,oceanGain,soundOn=true,audioVisible=tru
 const AUDIO_OPERATION_TIMEOUT_MS=1800;
 const laserAudio=createLaserAudio({getContext:()=>audioContext,canPlay:()=>soundOn&&audioReady&&audioVisible&&motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible});
 const canvas=$('atmosphere'),ctx=canvas.getContext('2d');
-const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,onBeam:frame=>laserAudio.observe(frame),showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
- getMasks:box=>[...document.querySelectorAll('header,.horizon,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
-function syncMotion(){if(!motion||reduced.matches||document.hidden||!inView||!scenePageVisible)laserAudio.stop();cueBridge.setActive(motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible);sceneCue();document.body.classList.toggle('still',!motion||document.hidden||!inView||!scenePageVisible);$('accessMotion').textContent=motion?'Pause motion':'Enable motion';$('accessMotion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion&&!reduced.matches,visible:!document.hidden&&scenePageVisible,inView});}
+const atmosphere=makeCosmosScene({canvas,ctx,getCue:sceneCue,getMarkers:()=>sceneTargets.markers(),getCatalogue:()=>sceneCatalogue,onBeam:frame=>laserAudio.observe(frame),showCaption:false,showMarketLabels:false,getMarketPositions:()=>{const box=canvas.getBoundingClientRect();return [...document.querySelectorAll('[data-market]')].map(node=>{const r=node.getBoundingClientRect();return {label:node.dataset.market.split('/')[0],x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top};});},request:fn=>requestAnimationFrame(fn),cancel:id=>cancelAnimationFrame(id),getDpr:()=>devicePixelRatio||1,
+ getMasks:box=>[...document.querySelectorAll('header,.horizon,.universe-legend,.coin,.windows,.deck-bar,.mobile-tabs,footer')].map(node=>{const r=node.getBoundingClientRect();return {left:r.left-box.left,right:r.right-box.left,top:r.top-box.top,bottom:r.bottom-box.top};})});
+function syncMotion(){if(!motion||reduced.matches||document.hidden||!inView||!scenePageVisible)laserAudio.stop();sceneTargets.setActive(motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible);profitBridge.setActive(motion&&!reduced.matches&&!document.hidden&&inView&&scenePageVisible);sceneCue();document.body.classList.toggle('still',!motion||document.hidden||!inView||!scenePageVisible);$('accessMotion').textContent=motion?'Pause motion':'Enable motion';$('accessMotion').setAttribute('aria-pressed',String(motion));atmosphere.setState({enabled:motion&&!reduced.matches,visible:!document.hidden&&scenePageVisible,inView});}
 
 $('accessMotion').addEventListener('click',()=>{motion=!motion;syncMotion();});
 reduced.addEventListener('change',e=>{motion=!e.matches;syncMotion();});
@@ -230,7 +251,7 @@ async function syncSound(fromGesture=false){
   if(active&&context.state!=='running')throw Error('Audio resume interrupted');
   if(active){audioReady=true;audioNeedsRetry=false;audioNeedsRebuild=false;if(oceanGain)oceanGain.gain.value=.23;disarmSound();}
   $('accessSound').textContent=soundOn?'Mute sound':'Enable sound';$('accessSound').setAttribute('aria-pressed',String(soundOn));
-  $('audioStatus').textContent=active?'Ocean and laser sounds on. Ambient lasers are decorative.':soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';
+  $('audioStatus').textContent=active?'Ocean and laser sounds on. Lasers mark verified simulated fills.':soundOn?'Ocean and laser sounds paused while the page is hidden.':'Ocean and laser sounds muted.';
  }catch(error){
   if(revision!==audioRevision||context!==audioContext)return;
   audioReady=false;if(oceanGain)oceanGain.gain.value=0;laserAudio.stop();
@@ -267,7 +288,7 @@ $('accessSound').addEventListener('click',async()=>{
 });
 armSound();
 function clock(){$('clock').textContent='PERTH '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour12:false});}
-clock();setInterval(clock,1000);render();void refreshFeed();
+clock();setInterval(clock,1000);render();void refreshFeed();void loadSceneCatalogue();
 setInterval(()=>{render();if(!document.hidden)void refreshFeed();},10000);
 document.addEventListener('visibilitychange',()=>{syncMotion();void syncSound();if(document.hidden)marketActivity.disconnect();else void refreshFeed();});
 

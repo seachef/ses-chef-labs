@@ -10,8 +10,4 @@ test('bookmarked legacy page is fail-closed with all original demonstration code
  assert.doesNotMatch(active,/\+182\.7%|LIVE BACKTEST FIELD|qualityChecked:true|QUALIFYING|Historical tests complete/);
  assert.doesNotMatch(html,/\.content\.cloneNode|appendChild\([^)]*\.content/);
 });
-test('active observatory labels decorative orbit and does not link to legacy demonstration',()=>{
- const html=read('index.html');assert.match(html,/Ambient eye beams are decorative art, not worker telemetry/);assert.match(html,/Cyan beams are decorative\. Gold\/pink fill cues and violet unvalidated reviews require fresh verified paper records/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);
-});
-
-test("continuous ambient beams cannot imply verified trading",()=>{const html=read("index.html");assert.doesNotMatch(html,/Solid eye cues (?:follow|require)/);assert.match(html,/Cyan ambient beams are decorative/);assert.match(html,/No eye cue submits an order/);});
+test('observatory describes moving without unverified eye beams',()=>{const html=read('index.html');assert.match(html,/NEPTUNE keeps moving and looking/);assert.match(html,/only for a new verified simulated buy or sell/);assert.match(html,/A recorded check is not a qualified investment/);assert.doesNotMatch(html,/href="\.\/research-tools.html"/);assert.match(html,/No scene effect submits an order/);assert.doesNotMatch(html,/Cyan ambient beams|Ambient eye beams are decorative/);});

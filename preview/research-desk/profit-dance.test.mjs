@@ -1,3 +1,6 @@
+import {renderScene,ASSETS} from './cosmos-scene.mjs?v=real-targets-20261010';
+import {createCanvas,loadImage} from './canvas-test-support.mjs';
+const sceneImages=await Promise.all(ASSETS.map(a=>loadImage(new URL('./assets/'+a,import.meta.url).pathname)));
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {createPaperCueBridge} from './paper-eye-cues.mjs?v=neptune-native-20261009';
 import {choreography} from './character-motion.mjs?v=neptune-native-20261009';
@@ -19,3 +22,5 @@ test('mute, hidden or reduced-motion gate stops sound and cannot queue replay',(
 test('duplicate result aliases sharing one exit do not create two profit cues',()=>{const p=base(),b=createPaperCueBridge();b.observe(p,now);close(p);p.results.push({...p.results[0],id:'alias'});b.observe(p,now+1000);assert.equal(b.current(now+1000).kind,'profit');assert.notEqual(b.current(now+3400)?.kind,'profit');});
 
 test('tiny partial lot cannot pass a fixed absolute quantity tolerance',()=>{const p=base(),b=createPaperCueBridge();p.fills[0].qty=1e-10;p.fills[0].price=1e12;b.observe(p,now);close(p);p.fills[1].qty=1e-12;p.fills[1].price=110e12;b.observe(p,now+1000);assert.notEqual(b.current(now+1000)?.kind,'profit');});
+
+test('actual scene preserves the verified profit dance without eye beams',()=>{const p=base(),b=createPaperCueBridge();b.observe(p,now);b.observe(close(p),now+1000);const cue=b.current(now+1000);const r=renderScene(createCanvas(390,430).getContext('2d'),sceneImages,2,390,430,{cue,now:now+1200});assert.equal(r.pose.kind,'victory');assert.equal(r.beamCount,0);assert.equal(r.beamKey,null);});
