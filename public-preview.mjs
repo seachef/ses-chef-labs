@@ -1,14 +1,33 @@
-import { renderState, dateTime } from './ui.mjs';
+import { renderState, dateTime, quoteFreshness, timestamp } from './ui.mjs';
 import { createPublicSession } from './src/market/public-session.mjs';
 import { publicView } from './src/market/public-view.mjs';
+
+const clockTime = value => timestamp(value) === null ? 'UNKNOWN' : new Date(timestamp(value)).toISOString().slice(11, 19) + 'Z';
+const price = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
+export function compactSummary(state, view, now) {
+  const last = state.activity.at(-1);
+  return {
+    market: view.market.length ? view.market.map(quote => {
+      const freshness = quoteFreshness(quote, view, now);
+      return `${quote.symbol.replace(/-USD$/, '')} ${freshness.current ? price.format(quote.price) + ' USD' : '—'} · ${freshness.current ? 'FRESH' : freshness.label}`;
+    }).join('\n') : 'UNKNOWN · no verified prices',
+    decision: 'WAIT · strategy off',
+    execution: 'DISABLED · no fills',
+    account: 'UNKNOWN · no account',
+    engine: `${state.phase.toUpperCase()} · browser only\n${last ? `${clockTime(last.at)} ${last.event.replace('Observation cancellation requested', 'Cancel requested')}${last.status ? ` ${last.status}` : ''}` : 'No requests yet'}`,
+  };
+}
 
 export function mountPublicPreview(doc, { fetchImpl = globalThis.fetch, now = Date.now, host = globalThis.window, timeoutMs = 5000 } = {}) {
   const refresh = doc.getElementById('refresh'), cancel = doc.getElementById('cancel'), stop = doc.getElementById('stop');
   stop.disabled = true;
   const paint = () => {
     const state = session.getState();
-    renderState(doc, publicView(state, now()), now());
-    doc.getElementById('mode').textContent = 'PUBLIC DATA · READ-ONLY BROWSER PREVIEW';
+    const at = now(), view = publicView(state, at);
+    renderState(doc, view, at);
+    for (const [section, text] of Object.entries(compactSummary(state, view, at))) doc.getElementById(`${section}-brief`).textContent = text;
+    doc.getElementById('mode').textContent = 'PUBLIC DATA · READ ONLY';
     doc.getElementById('summary').textContent = 'Real public observations on opening and explicit Refresh. No strategy, execution, account or background service.';
     doc.getElementById('market-note').textContent = 'BTC-USD / ETH-USD: initial integration markets only, not final coverage or picks. Broad-market discovery is not implemented.';
     doc.getElementById('decision-note').textContent = 'WAIT · no strategy is running in this preview.';
@@ -20,9 +39,10 @@ export function mountPublicPreview(doc, { fetchImpl = globalThis.fetch, now = Da
     const busy = state.phase === 'fetching' || state.phase === 'canceling';
     refresh.disabled = busy || now() < state.nextAllowedAt;
     cancel.disabled = !busy || state.phase === 'canceling';
-    doc.getElementById('request-status').textContent = busy ? 'Reading Coinbase public data… Cancel aborts this observation.'
-      : now() < state.nextAllowedAt ? `${state.phase} · next manual refresh after ${dateTime(state.nextAllowedAt)}; no automatic retry`
-      : 'Ready for a manual public-data refresh. Stale prices stay hidden.';
+    const requestStatus = busy ? 'Reading public data…'
+      : at < state.nextAllowedAt ? `Refresh after ${clockTime(state.nextAllowedAt)}` : 'Refresh ready · manual only';
+    const status = doc.getElementById('request-status');
+    if (status.textContent !== requestStatus) status.textContent = requestStatus;
     doc.getElementById('activity').textContent = state.activity.map(e => `${dateTime(e.at)} · ${e.event}${e.path ? ` ${e.path}` : ''}${e.status ? ` · HTTP ${e.status}` : ''}${e.bytes ? ` · ${e.bytes} bytes` : ''}${e.sourceTime ? ` · source ${e.sourceTime}` : ''}`).join('\n') || 'No requests recorded.';
   };
   const session = createPublicSession({ fetchImpl, now, onChange: paint, timeoutMs });

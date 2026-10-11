@@ -26,20 +26,7 @@ for (const file of files) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(path.join(root, file), target);
 }
-let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
-  .replace('./loopback.mjs', './public-preview.mjs')
-  .replace('NEPTUNE 2.0 — simulated trading', 'NEPTUNE 2.0 — public data preview')
-  .replace('SIMULATED · STATE UNAVAILABLE', 'PUBLIC DATA · READ-ONLY BROWSER PREVIEW')
-  .replace('No worker or market connection confirmed.', 'Initial integration markets: BTC-USD and ETH-USD. No final coverage or picks. No execution or background service.')
-  .replace('id="stop" type="button"', 'id="stop" type="button" disabled')
-  .replace('>Refresh state</button>', '>Refresh public data</button><button id="cancel" type="button" disabled>Cancel data request</button>')
-  .replace('Local foreground service only. Unattended operation is not deployed.', 'Browser-only public data; no autonomous worker. One snapshot on opening, then manual refresh at most once per minute.')
-  .replace('>Worker</dt>', '>Observation</dt>')
-  .replace('>Last cycle</dt>', '>Last attempt</dt>')
-  .replace('aria-label="Local request activity"', 'aria-label="Public request activity"')
-  .replace('Waiting for local state.', 'Waiting for a public-data observation.')
-  .replace('SIMULATED ONLY · No wallets or exchange orders. Public data is read-only. Fixture results are not trading performance.', 'PUBLIC OBSERVATIONS ONLY · No orders, wallets, account or background service. Prices are not simulated fills.')
-  .replace('JavaScript is disabled. All state is UNKNOWN; emergency stop cannot be sent from this page.', 'JavaScript is disabled. Public observations are unavailable; no engine or account is connected.');
+const html = fs.readFileSync(path.join(root, 'public.html'), 'utf8');
 fs.writeFileSync(path.join(destination, 'index.html'), html);
 let sourceCommit = process.env.VERCEL_GIT_COMMIT_SHA ?? null, sourceDirty = null;
 try {

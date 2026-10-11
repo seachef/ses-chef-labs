@@ -65,3 +65,22 @@ footer, noscript { display: block; margin-top: 12px; }
   .market-table, .execution-table { min-width: 0; }
   section { break-inside: avoid; }
 }
+
+/* Public summary only; the loopback dashboard retains its existing layout. */
+.public-terminal { line-height: 1.35; }
+.public-terminal main { max-width: 760px; padding: 12px; }
+.public-terminal header { margin-bottom: 10px; }
+.public-terminal h1 { margin-bottom: 2px; }
+.public-terminal section { display: grid; grid-template-columns: 76px minmax(0, 1fr); column-gap: 8px; margin-bottom: 2px; }
+.public-terminal h2 { padding-top: 5px; }
+.public-terminal details { min-width: 0; }
+.public-terminal summary { min-height: 44px; padding: 4px 0; cursor: pointer; }
+.public-terminal summary:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+.public-terminal .terminal-brief { display: inline-block; max-width: calc(100% - 16px); vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
+.public-terminal details[open] { grid-column: 1 / -1; }
+.public-terminal .detail-body { padding: 2px 0 12px; }
+.public-terminal .detail-body > p, .public-terminal .detail-body > dl, .public-terminal .detail-body > .table-wrap { margin-bottom: 8px; }
+.public-terminal .controls { margin-top: 2px; gap: 0 24px; }
+.public-terminal button { min-height: 44px; min-width: 64px; }
+.public-terminal #request-status { margin-top: 0; }
+.public-terminal footer { margin-top: 8px; }

@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createPublicSession, retryAfterTime, MIN_REFRESH_MS, MAX_ACTIVITY } from '../src/market/public-session.mjs';
 import { publicView } from '../src/market/public-view.mjs';
-import { mountPublicPreview } from '../public-preview.mjs';
+import { mountPublicPreview, compactSummary } from '../public-preview.mjs';
 import { quoteFreshness } from '../ui.mjs';
 
 // Deliberately fabricated endpoint fixtures. No network, public quotes or fills.
@@ -66,6 +66,29 @@ test('projection expires source/book/receipt independently and cannot create unk
   const unknown = structuredClone(state);
   unknown.observations[0].history = { low: null, samples: 0, missingBuckets: 168, from: null, to: null };
   assert.equal(publicView(unknown, START).market[0].distanceFromLowPct, null);
+});
+
+test('compact summary hides expired prices, keeps actual event time and reports failure/recovery without execution', async () => {
+  let fail = false;
+  const h = harness((url, init, normal) => { if (fail) throw new TypeError('offline'); return normal(url); });
+  const summary = () => compactSummary(h.session.getState(), publicView(h.session.getState(), h.now()), h.now());
+  assert.equal(summary().market, 'UNKNOWN · no verified prices');
+  assert.equal(summary().engine, 'IDLE · browser only\nNo requests yet');
+  await h.session.refresh();
+  assert.equal(summary().market, 'BTC 100 USD · FRESH\nETH 100 USD · FRESH');
+  assert.equal(summary().engine, 'COMPLETED · browser only\n12:01:00Z GET received 200');
+  h.advance(60000);
+  assert.equal(summary().market, 'BTC — · STALE\nETH — · STALE');
+  assert.match(summary().engine, /12:01:00Z GET received 200$/);
+  fail = true; await h.session.refresh();
+  assert.equal(summary().market, 'UNKNOWN · no verified prices');
+  assert.equal(summary().engine, 'FAILED · browser only\n12:02:00Z GET failed');
+  assert.equal(summary().decision, 'WAIT · strategy off');
+  assert.equal(summary().execution, 'DISABLED · no fills');
+  assert.equal(summary().account, 'UNKNOWN · no account');
+  h.advance(60000); fail = false; await h.session.refresh();
+  assert.equal(summary().market, 'BTC 100 USD · FRESH\nETH 100 USD · FRESH');
+  assert.equal(summary().engine, 'COMPLETED · browser only\n12:03:00Z GET received 200');
 });
 
 test('network failure clears previous marks, enforces backoff and permits explicit recovery', async () => {
@@ -201,10 +224,17 @@ test('browser UI is read-only, ages prices without polling/logging, and logs onl
     assert.equal(doc.getElementById('cash').textContent, 'UNKNOWN'); assert.match(doc.getElementById('market-rows').textContent, /100 USD/);
     const log = doc.getElementById('activity').textContent;
     assert.match(log, /GET received.*HTTP 200/); assert.doesNotMatch(log, /\/api\/state|heartbeat/);
+    const details = doc.getElementById('engine-details'); details.open = true;
+    const summary = doc.getElementById('engine-brief');
+    assert.match(doc.getElementById('market-brief').textContent, /100 USD · FRESH/);
     h.advance(61000); t.mock.timers.tick(61000);
     assert.equal(h.requests.length, 10); assert.equal(doc.getElementById('activity').textContent, log);
     assert.match(doc.getElementById('market-rows').textContent, /STALE/); assert.doesNotMatch(doc.getElementById('market-rows').textContent, /100 USD/);
     assert.equal(doc.getElementById('refresh').disabled, false);
+    assert.equal(doc.getElementById('engine-details'), details); assert.equal(details.open, true);
+    assert.equal(doc.getElementById('engine-brief'), summary);
+    assert.equal(summary.textContent, 'COMPLETED · browser only\n12:01:00Z GET received 200');
+    assert.equal(doc.getElementById('market-brief').textContent, 'BTC — · STALE\nETH — · STALE');
   } finally { app.destroy(); }
   assert.equal(host.listeners.size, 0);
 });
@@ -220,6 +250,22 @@ test('static output has a closed browser import graph, exact checksums, five sec
   assert.match(html, /src="\.\/public-preview\.mjs"/); assert.doesNotMatch(html, /loopback\.mjs/);
   assert.match(html, /id="stop" type="button" disabled/);
   assert.match(html, /PUBLIC OBSERVATIONS ONLY/); assert.doesNotMatch(html, /SIMULATED ONLY/);
+  assert.equal(html, fs.readFileSync(new URL('../public.html', import.meta.url), 'utf8'));
+  assert.match(html, /<body class="public-terminal">/);
+  assert.equal((html.match(/<details\b/g) ?? []).length, 5);
+  assert.equal((html.match(/<summary\b/g) ?? []).length, 5);
+  assert.doesNotMatch(html, /<details[^>]*\sopen(?:\s|[=>])/);
+  assert.doesNotMatch(html, /user-scalable=no|maximum-scale|autofocus/);
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const match of html.matchAll(/aria-labelledby="([^"]+)"/g)) for (const id of match[1].split(' ')) assert.ok(ids.includes(id), `Missing accessible label ${id}`);
+  for (const match of html.matchAll(/<summary\b[^>]*>(.*?)<\/summary>/gs)) assert.doesNotMatch(match[1], /<(button|a|input|select)\b/);
+  const engineDetails = html.match(/<details id="engine-details">(.*?)<\/details>/s)[1];
+  assert.ok(engineDetails.includes('id="activity"')); assert.ok(engineDetails.includes('id="market-source"') === false);
+  for (const module of ['ui.mjs', 'public-preview.mjs']) {
+    const source = fs.readFileSync(new URL('../' + module, import.meta.url), 'utf8');
+    for (const m of source.matchAll(/(?:getElementById|\bset)\('([^']+)'/g)) assert.ok(ids.includes(m[1]), `Missing renderer element ${m[1]}`);
+  }
   for (const [file, entry] of Object.entries(manifest.assets)) {
     const data = fs.readFileSync(path.join(directory, file));
     assert.equal(data.length, entry.bytes); assert.equal(createHash('sha256').update(data).digest('hex'), entry.sha256);

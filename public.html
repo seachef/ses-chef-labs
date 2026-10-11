@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>NEPTUNE 2.0 — public data preview</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="public-terminal">
+  <main>
+    <header>
+      <h1>NEPTUNE 2.0</h1>
+      <p id="mode">PUBLIC DATA · READ ONLY</p>
+      <p>2 test markets · tap rows · UTC</p>
+    </header>
+
+    <section aria-labelledby="market-title">
+      <h2 id="market-title">MARKET</h2>
+      <details id="market-details">
+        <summary aria-labelledby="market-title market-brief"><span id="market-brief" class="terminal-brief">UNKNOWN · no verified prices</span></summary>
+        <div class="detail-body">
+          <p id="market-note">BTC-USD / ETH-USD: integration markets only, not final coverage or picks.</p>
+          <div class="table-wrap" role="region" aria-label="Market observations" tabindex="0">
+            <table class="market-table">
+              <thead><tr><th scope="col">Symbol</th><th scope="col">Price</th><th scope="col">24h</th><th scope="col">Book depth USD</th><th scope="col">Spread</th><th scope="col">From low</th><th scope="col">History coverage</th></tr></thead>
+              <tbody id="market-rows"><tr><td colspan="7">UNKNOWN · no verified observations</td></tr></tbody>
+            </table>
+          </div>
+          <p id="market-source" class="note">Source and receipt times unknown.</p>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="decision-title">
+      <h2 id="decision-title">DECISION</h2>
+      <details id="decision-details">
+        <summary aria-labelledby="decision-title decision-brief"><span id="decision-brief" class="terminal-brief">WAIT · strategy off</span></summary>
+        <div class="detail-body">
+          <p id="decision-note">No strategy is running.</p>
+          <div class="table-wrap" role="region" aria-label="Decisions" tabindex="0">
+            <table><thead><tr><th scope="col">Symbol</th><th scope="col">Decision</th><th scope="col">Why</th></tr></thead><tbody id="decision-rows"><tr><td colspan="3">WAIT · no strategy</td></tr></tbody></table>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="execution-title">
+      <h2 id="execution-title">EXECUTION</h2>
+      <details id="execution-details">
+        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">DISABLED · no fills</span></summary>
+        <div class="detail-body">
+          <p id="execution-note">No orders or simulated fills.</p>
+          <div class="table-wrap" role="region" aria-label="Simulated executions" tabindex="0">
+            <table class="execution-table"><thead><tr><th scope="col">Symbol / side</th><th scope="col">Entry / fill</th><th scope="col">Size</th><th scope="col">Stop</th><th scope="col">Target</th><th scope="col">Fees</th><th scope="col">Slippage</th></tr></thead><tbody id="execution-rows"><tr><td colspan="7">No simulated fills</td></tr></tbody></table>
+          </div>
+          <p id="stop-state">EXECUTION DISABLED · no engine to stop</p>
+          <p id="stop-policy">Cancel stops data requests only.</p>
+          <button id="stop" type="button" disabled>EMERGENCY STOP</button>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="account-title">
+      <h2 id="account-title">ACCOUNT</h2>
+      <details id="account-details">
+        <summary aria-labelledby="account-title account-brief"><span id="account-brief" class="terminal-brief">UNKNOWN · no account</span></summary>
+        <div class="detail-body">
+          <p id="account-note">No account initialized.</p>
+          <dl class="account-grid">
+            <div><dt>Cash</dt><dd id="cash">UNKNOWN</dd></div>
+            <div><dt>Positions</dt><dd id="position-count">UNKNOWN</dd></div>
+            <div><dt>Realized P/L</dt><dd id="realized">UNKNOWN</dd></div>
+            <div><dt>Unrealized P/L</dt><dd id="unrealized">UNKNOWN</dd></div>
+            <div><dt>Drawdown</dt><dd id="drawdown">UNKNOWN</dd></div>
+            <div><dt>Net P/L</dt><dd id="net-pnl">UNKNOWN</dd></div>
+            <div><dt>Net return</dt><dd id="net-return">UNKNOWN</dd></div>
+            <div><dt>Fees paid</dt><dd id="fees-paid">UNKNOWN</dd></div>
+          </dl>
+          <p id="positions" class="note">Position details unknown.</p>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="engine-title">
+      <h2 id="engine-title">ENGINE</h2>
+      <details id="engine-details">
+        <summary aria-labelledby="engine-title engine-brief"><span id="engine-brief" class="terminal-brief">IDLE · browser only
+No requests yet</span></summary>
+        <div class="detail-body">
+          <p id="summary">Public observations only. No strategy, execution, account or background service.</p>
+          <p id="engine-note">One snapshot on opening; later refresh is manual. Quotes expire after 10 seconds.</p>
+          <dl class="engine-grid">
+            <dt>Observation</dt><dd id="worker">Not started</dd>
+            <dt>Last attempt</dt><dd id="last-cycle">UNKNOWN</dd>
+            <dt>Freshness</dt><dd id="freshness">UNKNOWN</dd>
+            <dt>Risk</dt><dd id="risk">EXECUTION DISABLED</dd>
+            <dt>Errors</dt><dd id="errors">Public data not checked.</dd>
+          </dl>
+          <p class="note">Actual requests · latest 20 events · no automatic retry or background worker</p>
+          <pre id="activity" aria-label="Public request activity">No requests recorded.</pre>
+        </div>
+      </details>
+    </section>
+
+    <div class="controls"><button id="refresh" type="button" aria-label="Refresh public data">Refresh</button><button id="cancel" type="button" aria-label="Cancel public data request" disabled>Cancel</button></div>
+    <p id="request-status" role="status" aria-live="polite">Waiting for public data.</p>
+    <footer>PUBLIC OBSERVATIONS ONLY · Not fills</footer>
+    <noscript>JavaScript is disabled. Quotes are unavailable; no engine or account is connected.</noscript>
+  </main>
+  <script type="module" src="./public-preview.mjs"></script>
+</body>
+</html>

@@ -10,6 +10,8 @@ Clean-room implementation based on `neptune-2-clean-start` at `1009d02b1b74f6d60
 
 BTC-USD and ETH-USD are initial integration test markets only, not final coverage or picks. Broad-market discovery remains unimplemented and is labelled on the page. The public STOP control is disabled; Cancel only cancels data requests. Existing loopback mode and synthetic causal replay remain separate. See [the concrete branch publication plan](docs/ISOLATED-PREVIEW-PLAN.md) and [connected-preview verification](docs/CONNECTED-PREVIEW-REVIEW.md). Prior Vercel check success is not served-content proof.
 
+The public build now uses `public.html`: five compact terminal rows with native tap/keyboard disclosures for full observations, source clocks, account fields and request history. Freshness and the last actual request time remain visible when details are closed. The default summary targets a single mobile view; opened detail and enlarged text may scroll normally. It never clips content or disables zoom. Pixel fit on the owner's iPhone is not verified: both requested Library screenshot transfers failed, and the browser sandbox remains unavailable. The loopback page and all trading/data-request behavior are unchanged by this layout update.
+
 ## Reproduce offline
 
 Node 22 or newer; tested on Node 24.19.0. There are no dependencies to install, credentials, exchange-order APIs, wallets, or database connections.
