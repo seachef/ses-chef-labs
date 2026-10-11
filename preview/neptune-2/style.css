@@ -1,0 +1,40 @@
+.neptune2{color-scheme:light;background:#f6f7f8;color:#19212a;font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0}
+.neptune2 *{box-sizing:border-box}
+.neptune2 main{max-width:1120px;margin:auto;padding:32px 24px 40px}
+.neptune2 header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:24px}
+.neptune2 h1{font-size:25px;letter-spacing:.025em;margin:0;font-weight:750}
+.neptune2 h1 span{font-weight:450;color:#56616f}
+.neptune2 h2{font-size:18px;margin:0 0 10px;font-weight:650}
+.neptune2 p{margin:8px 0;overflow-wrap:anywhere}
+.neptune2 header p,.neptune2 .quiet,.neptune2 small,.neptune2 footer{color:#52606e;font-size:14px}
+.neptune2 .actions{display:flex;gap:8px;flex-wrap:wrap}
+.neptune2 button,.neptune2 summary{font:inherit;cursor:pointer}
+.neptune2 button{min-height:44px;border:1px solid #b8c2cb;border-radius:7px;background:#fff;color:#19212a;padding:9px 20px;font-weight:600}
+.neptune2 button.primary{background:#155d9a;color:white;border-color:#155d9a}
+.neptune2 button:disabled{cursor:not-allowed;opacity:.52}
+.neptune2 :focus-visible{outline:3px solid #176fbb;outline-offset:4px}
+.neptune2 .status,.neptune2 .metrics>div,.neptune2 .positions,.neptune2 .history{background:#fff;border:1px solid #dbe1e6;border-radius:10px;padding:20px}
+.neptune2 .status-line{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.neptune2 #freshness{color:#52606e;font-size:13px;overflow-wrap:anywhere}
+.neptune2 .block{color:#814700;font-size:14px;font-weight:600}
+.neptune2 #ownerStatus{font-size:14px}
+.neptune2 .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0 8px}
+.neptune2 .metrics h2{font-size:14px;color:#52606e}
+.neptune2 .metrics p{font-size:clamp(20px,2.2vw,28px);font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+.neptune2 .positions,.neptune2 .history{margin-top:24px}
+.neptune2 table{width:100%;border-collapse:collapse;text-align:left;font-size:14px;font-variant-numeric:tabular-nums}
+.neptune2 th,.neptune2 td{padding:14px 12px;border-bottom:1px solid #e2e6eb;vertical-align:top;overflow-wrap:anywhere}
+.neptune2 th:first-child,.neptune2 td:first-child{padding-left:0}
+.neptune2 th{font-size:12px;color:#52606e;font-weight:650}
+.neptune2 td small{display:block;font-size:12px;margin-top:4px}
+.neptune2 ol{list-style:none;padding:0;margin:0}
+.neptune2 li{padding:14px 0;border-bottom:1px solid #e2e6eb;font-size:14px;overflow-wrap:anywhere;white-space:pre-line}
+.neptune2 li:last-child{border-bottom:0}
+.neptune2 details{margin-top:18px;padding-top:14px;border-top:1px solid #e2e6eb}
+.neptune2 summary{min-height:44px;padding:10px 0;font-weight:600}
+.neptune2 #historyStatus{font-size:13px;color:#52606e}
+.neptune2 footer{display:flex;flex-wrap:wrap;gap:12px 24px;padding:24px 0;font-size:13px}
+.neptune2 a{color:#155d9a;min-height:32px}
+.neptune2 footer span{margin-left:auto}
+.neptune2 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.neptune2 main{padding:20px 16px max(28px,env(safe-area-inset-bottom))}.neptune2 header{align-items:flex-start;flex-direction:column;gap:14px}.neptune2 .actions{width:100%}.neptune2 .actions button{flex:1;padding:9px 12px}.neptune2 .metrics{grid-template-columns:1fr;gap:10px}.neptune2 .metrics>div{padding:16px}.neptune2 .metrics p{font-size:26px}.neptune2 .status,.neptune2 .positions,.neptune2 .history{padding:16px}.neptune2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.neptune2 tbody,.neptune2 tr{display:block}.neptune2 tr{padding:12px 0;border-bottom:1px solid #dbe1e6}.neptune2 td,.neptune2 td:first-child{display:grid;grid-template-columns:100px minmax(0,1fr);padding:6px 0;border:0;gap:12px}.neptune2 td:before{content:attr(data-label);color:#52606e;font-weight:550}.neptune2 td small{grid-column:2;margin:0}.neptune2 td.empty{display:block}.neptune2 td.empty:before{content:none}.neptune2 footer span{margin-left:0;width:100%}}
