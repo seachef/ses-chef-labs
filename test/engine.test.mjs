@@ -150,5 +150,5 @@ test('out-of-order events, clock reversal, bounded journal and bad configuration
   assert.match(full.decision.reason, /capacity/);
   assert.equal(full.ledger.length, 1);
   assert.throws(() => step(state, snapshot(), { now: 99999 }), /Clock/);
-  for (const config of [{ feeBps: -1 }, { maxExposurePct: 101 }, { latencyMs: 250 }, { unexpected: 1 }]) assert.throws(() => createState({ config }));
+  for (const config of [{ feeBps: -1 }, { maxExposurePct: 101 }, { latencyMs: 2000 }, { latencyMs: 0.25 }, { unexpected: 1 }]) assert.throws(() => createState({ config }));
 });

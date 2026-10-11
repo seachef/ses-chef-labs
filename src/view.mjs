@@ -3,7 +3,7 @@ import { hostname } from 'node:os';
 const MAX_AGE_MS = 10000;
 const finite = x => typeof x === 'number' && Number.isFinite(x);
 
-function marketView(snapshot, now) {
+function marketView(snapshot, now, requireBookTime = false) {
   const bid = snapshot.bids?.[0]?.[0];
   const ask = snapshot.asks?.[0]?.[0];
   const mid = finite(bid) && finite(ask) ? (bid + ask) / 2 : null;
@@ -12,7 +12,7 @@ function marketView(snapshot, now) {
   const sourceAge = now - snapshot.sourceAt;
   const bookAge = finite(snapshot.bookSourceAt) ? now - snapshot.bookSourceAt : null;
   const stale = !finite(age) || age < 0 || age > MAX_AGE_MS || !finite(sourceAge) || sourceAge < 0 || sourceAge > MAX_AGE_MS ||
-    (snapshot.provenance === 'public' && (!finite(bookAge) || bookAge < 0 || bookAge > MAX_AGE_MS));
+    ((snapshot.provenance === 'public' || requireBookTime) && (!finite(bookAge) || bookAge < 0 || bookAge > MAX_AGE_MS));
   const depth = [...(snapshot.bids ?? []), ...(snapshot.asks ?? [])].reduce((sum, level) => sum + level[0] * level[1], 0);
   const low = snapshot.history?.low;
   const history = snapshot.history;
@@ -41,7 +41,7 @@ function workerView(worker, now) {
 export function toView(document, { now = Date.now() } = {}) {
   const engine = document.engine;
   const snapshots = document.mode === 'observe' ? document.observations : Object.values(engine?.marketByProduct ?? {});
-  const markets = snapshots.map(snapshot => marketView(snapshot, now));
+  const markets = snapshots.map(snapshot => marketView(snapshot, now, engine?.schemaVersion === 3));
   const account = engine ? { ...engine.account, currency: 'USD', provenance: 'synthetic', netPnl: finite(engine.account.equity) ? engine.account.equity - engine.account.initialCash : null } : null;
   const positions = account ? Object.entries(account.positions ?? {}).map(([productId, position]) => ({ ...position, productId, symbol: productId, costPerUnit: position.costBasis / position.quantity })) : [];
   if (account) account.positions = positions;
@@ -58,6 +58,9 @@ export function toView(document, { now = Date.now() } = {}) {
     freshnessMaxAgeMs: MAX_AGE_MS, market: markets,
     decisions: engine?.decision ? [{ ...engine.decision, symbol: engine.decision.productId }] : [{ action: 'WAIT', reason: 'Engine not initialized; public observation cannot trade.' }],
     executions: (engine?.lastFill ? [engine.lastFill] : engine?.ledger.slice(-1) ?? []).map(fill => ({ ...fill, symbol: fill.productId, entry: fill.averagePrice, size: fill.quantity, stop: fill.stopPrice, target: fill.targetPrice, fees: fill.fee, slippage: fill.slippageCost, currency: 'USD', at: fill.simulatedFillAt })), account,
+    pendingOrders: Object.values(engine?.pendingOrders ?? {}),
+    lastOrderTransition: engine?.lastOrderTransition ?? null,
+    reservations: engine?.reservations ?? null,
     risk: { status: engine?.riskHalt?.active ? 'HALTED' : document.control.stopped ? 'ENTRY PAUSED' : 'Fixture limits active',
       ...(engine ? { limits: engine.config } : {}) },
     errors: document.errors, valuationIncomplete, journal: document.journal ?? null,

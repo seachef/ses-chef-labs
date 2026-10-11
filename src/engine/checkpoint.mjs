@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { causalAnchor, initializeCausal } from './causal-state.mjs';
 
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -24,15 +25,18 @@ export function makeCheckpoint(state, kind = 'durable-archive') {
     lastSourceAtByProduct: structuredClone(state.lastSourceAtByProduct),
     controlVersion: state.control.version, riskHalt: structuredClone(state.riskHalt),
   };
+  if (state.schemaVersion === 3) checkpoint.causal = causalAnchor(state);
   checkpoint.digest = checkpointDigest(checkpoint);
   return checkpoint;
 }
 
 export function genesisCheckpoint(state) {
   const cash = state.account.initialCash;
-  return makeCheckpoint({ ...state, asOf: state.createdAt,
+  const genesis = { ...state, asOf: state.createdAt,
     account: { initialCash: cash, cash, positions: {}, realizedPnl: 0, feesPaid: 0, peakEquity: cash },
     totalFillCount: 0, totalEventCount: 0, lastFill: null, lastSourceAtByProduct: {},
     control: { version: 0 }, riskHalt: { active: false, reasons: [] },
-  }, 'genesis');
+  };
+  if (state.schemaVersion === 3) initializeCausal(genesis);
+  return makeCheckpoint(genesis, 'genesis');
 }

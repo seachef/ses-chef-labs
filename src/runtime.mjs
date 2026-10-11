@@ -1,4 +1,5 @@
-import { compactState, createState, resume, step, stop } from './engine/index.mjs';
+import { advanceTime, compactState, createState, resume, step, stop } from './engine/index.mjs';
+import { normalizeBookIdentity, tradeIdentity } from './book-identity.mjs';
 
 const MAX_ACTIVE_ERRORS = 32;
 export const MAX_ACTIVE_ENGINE_BYTES = 2 * 1024 * 1024;
@@ -21,7 +22,7 @@ const errorList = errors => {
 
 // All nondeterministic inputs (including wall clock and process metadata) arrive
 // in the command. The store journals that exact command under its writer lock.
-export function applyCommand(previous, command, { hasEvent } = {}) {
+export function applyCommand(previous, command, { hasEvent, hasBook, hasTrade, lookupBook } = {}) {
   if (!command || typeof command !== 'object' || Array.isArray(command)) throw new Error('COMMAND_INVALID: object required');
   wallClock(command.wallTime);
   const document = structuredClone(previous);
@@ -51,8 +52,29 @@ export function applyCommand(previous, command, { hasEvent } = {}) {
       const snapshot = command.snapshot;
       if (snapshot?.source !== 'synthetic-fixture' || snapshot?.provenance !== 'synthetic') throw new Error('REPLAY_BLOCKED: only explicit synthetic fixture data accepted');
       const duplicate = typeof snapshot.eventId === 'string' && hasEvent(snapshot.eventId);
-      document.engine = step(document.engine, snapshot, { now: Math.max(document.engine.asOf, command.now), knownDuplicate: duplicate, durableArchive: true });
+      const options = { now: Math.max(document.engine.asOf, command.now), knownDuplicate: duplicate, durableArchive: true };
+      if (document.engine.schemaVersion === 3) {
+        if (![hasBook, hasTrade, lookupBook].every(value => typeof value === 'function')) throw new Error('COMMAND_INVALID: durable book/trade lookup required');
+        let book = null;
+        try { book = normalizeBookIdentity(snapshot, { requireExplicit: true }); } catch { /* Engine records the invalid identity as a committed REJECT. */ }
+        options.knownBookConsumed = book ? hasBook(book.key) : false;
+        let trade = null;
+        try { trade = tradeIdentity(snapshot); } catch { /* Invalid trade metadata is rejected by the causal engine. */ }
+        options.knownTradeDuplicate = trade ? hasTrade(trade) : false;
+        options.archivedBook = book ? lookupBook(book) : null;
+      }
+      document.engine = step(document.engine, snapshot, options);
       document.control.stopped = document.engine.control.emergencyStop;
+      document.worker.lastCycleAt = command.wallTime;
+      document.worker.simulatedClock = document.engine.asOf;
+      return boundedEngine(document);
+    }
+    case 'advance-fixture':
+    case 'end-fixture': {
+      if (!document.engine || document.mode !== 'fixture-replay' || document.engine.schemaVersion !== 3) throw new Error('COMMAND_INVALID: causal synthetic engine required');
+      if (!Number.isSafeInteger(command.now) || command.now < 0) throw new Error('COMMAND_INVALID: explicit synthetic clock required');
+      document.engine = advanceTime(document.engine, { now: Math.max(document.engine.asOf, command.now),
+        endOfInput: command.type === 'end-fixture', reason: command.type === 'end-fixture' ? 'Orderly synthetic end of input' : 'Explicit synthetic clock advance' });
       document.worker.lastCycleAt = command.wallTime;
       document.worker.simulatedClock = document.engine.asOf;
       return boundedEngine(document);

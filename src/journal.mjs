@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { tradeIdentity } from './book-identity.mjs';
 
 export const SEGMENT_RECORDS = 128;
 export const MAX_DOCUMENT_BYTES = 16 * 1024 * 1024;
@@ -141,6 +142,37 @@ export function hasEventInHistory(directory, head, eventId) {
       const engine = record.before.engine;
       if (engine?.seenEvents?.includes(eventId) || engine?.ledger?.some(fill => fill.eventId === eventId)) return true;
     }
+  }
+  return false;
+}
+
+// Book consumption is an execution attempt, not observation or ticker receipt.
+// Inspect committed causal state; an orphan/prepared command cannot spend depth.
+export function hasBookInHistory(directory, head, key) {
+  if (typeof key !== 'string') return false;
+  for (const { record } of walkJournal(directory, head)) {
+    if (Object.values(record.after.engine?.consumedBooks ?? {}).some(book => book.key === key)) return true;
+  }
+  return false;
+}
+
+export function lookupBookInHistory(directory, head, identity) {
+  const scope = ['source', 'provenance', 'productId', 'base', 'quote'];
+  for (const { record } of walkJournal(directory, head)) {
+    for (const book of Object.values(record.after.engine?.bookHighWaterByProduct ?? {})) {
+      if (book.key === identity.key || (identity.bookId !== null && identity.bookId === book.bookId && scope.every(field => identity[field] === book[field]))) return book;
+    }
+  }
+  return null;
+}
+
+export function hasTradeInHistory(directory, head, key) {
+  if (typeof key !== 'string') return false;
+  for (const { record } of walkJournal(directory, head)) {
+    if (record.kind !== 'command' || record.command.type !== 'snapshot' ||
+      !(record.after.engine?.totalEventCount > (record.before.engine?.totalEventCount ?? 0))) continue;
+    // Invalid input attempts remain journal evidence, but cannot invent trades.
+    try { if (tradeIdentity(record.command.snapshot) === key) return true; } catch { /* No validated trade identity. */ }
   }
   return false;
 }

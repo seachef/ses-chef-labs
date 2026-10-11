@@ -38,9 +38,9 @@ export function validateSnapshot(snapshot, { now, config = DEFAULT_CONFIG } = {}
 
 // Retain only validated fields. The caller's durable command journal retains
 // the original input, including metadata that is not part of this contract.
-export function retainSnapshot(snapshot) {
+export function retainSnapshot(snapshot, { includeBookIdentity = false } = {}) {
   const h = snapshot.history;
-  return {
+  const retained = {
     schemaVersion: snapshot.schemaVersion, eventId: snapshot.eventId,
     source: snapshot.source, provenance: snapshot.provenance,
     productId: snapshot.productId, base: snapshot.base, quote: snapshot.quote,
@@ -51,6 +51,8 @@ export function retainSnapshot(snapshot) {
     history: h == null ? null : { low: h.low, from: h.from, to: h.to,
       samples: h.samples, intervalMs: h.intervalMs, complete: h.complete, description: h.description },
   };
+  if (includeBookIdentity) for (const key of ['bookId', 'bookSequence', 'bookSourceAt', 'tradeId']) if (Object.hasOwn(snapshot, key)) retained[key] = snapshot[key];
+  return retained;
 }
 
 export function screenMarket(snapshot, config = DEFAULT_CONFIG) {

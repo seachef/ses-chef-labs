@@ -1,6 +1,8 @@
 import { close, configuration, EPSILON, SUPPORTED_PRODUCTS } from './config.mjs';
 import { checkpointDigest } from './checkpoint.mjs';
 import { isDeepStrictEqual } from 'node:util';
+import { auditCausalState } from './causal-audit.mjs';
+import { compareBookProgress } from '../book-identity.mjs';
 
 // Ledger arithmetic is independently replayed here, rather than calling the
 // transition/accounting implementation. Floating point tolerance is explicit.
@@ -8,8 +10,9 @@ export function auditState(state) {
   const errors = [];
   const require = (condition, message) => { if (!condition) errors.push(message); };
   try {
-    require([1, 2].includes(state.schemaVersion) && state.mode === 'synthetic-paper', 'Invalid engine schema or mode');
+    require([1, 2, 3].includes(state.schemaVersion) && state.mode === 'synthetic-paper', 'Invalid engine schema or mode');
     const validatedConfig = configuration(state.config);
+    if (state.schemaVersion !== 3) require(state.config.latencyMs === 0, 'Legacy engine schema cannot claim delayed execution');
     require(Object.keys(state.config).length === Object.keys(validatedConfig).length, 'Incomplete risk configuration');
     require(Number.isSafeInteger(state.asOf) && state.asOf >= 0 && Number.isSafeInteger(state.createdAt) && state.createdAt <= state.asOf, 'Invalid state clock');
     require(typeof state.riskHalt.active === 'boolean' && Array.isArray(state.riskHalt.reasons) && state.riskHalt.reasons.every(reason => typeof reason === 'string'), 'Invalid risk halt state');
@@ -27,7 +30,7 @@ export function auditState(state) {
     require(Object.entries(state.lastSourceAtByProduct).every(([productId, time]) => Object.hasOwn(SUPPORTED_PRODUCTS, productId) && Number.isSafeInteger(time) && time >= 0 && time <= state.asOf), 'Invalid source high-water mark');
     let cash = a.initialCash, realized = 0, fees = 0;
     let positions = {}, fillOffset = 0;
-    if (state.schemaVersion === 2) {
+    if ([2, 3].includes(state.schemaVersion)) {
       const c = state.checkpoint;
       require(c.schemaVersion === 1 && ['genesis', 'durable-archive'].includes(c.kind), 'Invalid accounting checkpoint schema');
       require(typeof c.digest === 'string' && c.digest === checkpointDigest(c), 'Accounting checkpoint digest mismatch');
@@ -78,9 +81,15 @@ export function auditState(state) {
       require(Number.isFinite(fill.fee) && fill.fee >= 0 && close(fill.fee, fill.notional * state.config.feeBps / 10000), 'Fee mismatch');
       require(close(fill.notional, fill.averagePrice * fill.quantity), 'Fill notional mismatch');
       require(close(fill.legs.reduce((sum, leg) => sum + leg.quantity, 0), fill.quantity) && close(fill.legs.reduce((sum, leg) => sum + leg.quantity * leg.price, 0), fill.notional), 'Depth leg mismatch');
-      require(close(fill.slippageCost, (fill.side === 'BUY' ? 1 : -1) * (fill.notional - fill.quantity * fill.expectedPrice)) && fill.slippageCost >= -EPSILON, 'Adverse slippage mismatch');
+      require(close(fill.slippageCost, (fill.side === 'BUY' ? 1 : -1) * (fill.notional - fill.quantity * fill.expectedPrice)) && (state.schemaVersion === 3 || fill.slippageCost >= -EPSILON), 'Execution cost mismatch');
       require(fill.quantity <= fill.requestedQuantity + EPSILON && close(fill.canceledQuantity, fill.requestedQuantity - fill.quantity), 'Canceled remainder mismatch');
-      require(fill.simulatedFillAt === fill.decidedAt && fill.sourceAt <= fill.decidedAt, 'Unsupported or anticipatory fill time');
+      if (state.schemaVersion === 3) {
+        require(fill.decidedAt === fill.decisionAt && fill.eligibleAt === fill.decisionAt + state.config.latencyMs && fill.expiresAt === fill.decisionAt + state.config.maxSignalAgeMs && fill.executedAt === fill.simulatedFillAt && fill.executedAt >= fill.eligibleAt && fill.executedAt < fill.expiresAt && fill.sourceAt <= fill.executedAt && Number.isSafeInteger(fill.arrivalObservedAt) && fill.arrivalObservedAt <= fill.executedAt, 'Unsupported causal fill time');
+        require(fill.decisionBook.sourceAt <= fill.decisionAt && fill.arrivalBook.sourceAt >= fill.eligibleAt && fill.arrivalBook.sourceAt <= fill.arrivalObservedAt && compareBookProgress(fill.decisionBook, fill.arrivalBook).status === 'new' && fill.arrivalEventId === fill.eventId && fill.decisionEventId !== fill.arrivalEventId, 'Causal fill did not use a distinct eligible later book');
+        const direction = fill.side === 'BUY' ? 1 : -1;
+        const observed = fill.legs.reduce((sum, leg) => sum + leg.observedPrice * leg.quantity, 0);
+        require(close(fill.decisionDriftCost, direction * fill.quantity * (fill.arrivalPrice - fill.expectedPrice)) && close(fill.depthImpactCost, direction * (observed - fill.quantity * fill.arrivalPrice)) && close(fill.assumedSlippageCost, direction * (fill.notional - observed)) && fill.depthImpactCost >= -EPSILON && fill.assumedSlippageCost >= -EPSILON && close(fill.slippageCost, fill.decisionDriftCost + fill.depthImpactCost + fill.assumedSlippageCost), 'Causal drift/depth/slippage decomposition failed');
+      } else require(fill.simulatedFillAt === fill.decidedAt && fill.sourceAt <= fill.decidedAt, 'Unsupported or anticipatory fill time');
       fees += fill.fee;
       if (fill.side === 'BUY') {
         require(!positions[fill.productId], 'Ledger adds to an existing position');
@@ -109,9 +118,10 @@ export function auditState(state) {
       require(!!actual && close(actual.stopPrice, p.stopPrice) && close(actual.targetPrice, p.targetPrice), 'Position protective levels changed');
       if (!actual) continue;
       const quote = state.marketByProduct[productId];
-      const usable = !!quote && quote.provenance === 'synthetic' && Number.isFinite(quote.bids?.[0]?.[0]) && quote.sourceAt <= state.asOf && state.asOf - quote.sourceAt <= state.config.maxSnapshotAgeMs;
+      const markAt = state.schemaVersion === 3 ? quote?.bookSourceAt : quote?.sourceAt;
+      const usable = !!quote && quote.provenance === 'synthetic' && Number.isFinite(quote.bids?.[0]?.[0]) && Number.isSafeInteger(markAt) && markAt <= state.asOf && state.asOf - markAt <= state.config.maxSnapshotAgeMs;
       if (!usable) { complete = false; require(actual.markPrice === null, 'Stale/missing position mark must be unknown'); }
-      else { require(close(actual.markPrice, quote.bids[0][0]), 'Position mark differs from observed bid'); marketValue += p.quantity * actual.markPrice; }
+      else { require(close(actual.markPrice, quote.bids[0][0]) && (state.schemaVersion !== 3 || actual.markAsOf === markAt), 'Position mark differs from observed bid/time'); marketValue += p.quantity * actual.markPrice; }
       remainingBasis += p.costBasis;
     }
     require(a.valuationComplete === complete, 'Valuation completeness mismatch');
@@ -123,6 +133,7 @@ export function auditState(state) {
       require(a.peakEquity + EPSILON >= a.equity && close(a.drawdownPct, Math.max(0, (a.peakEquity - a.equity) / a.peakEquity * 100)), 'Drawdown mismatch');
       require(close(a.netReturnPct, (a.equity / a.initialCash - 1) * 100), 'Net return mismatch');
     } else require([a.marketValue, a.equity, a.unrealizedPnl, a.drawdownPct, a.netReturnPct].every(v => v === null), 'Incomplete aggregate valuation must be unknown');
+    if (state.schemaVersion === 3) auditCausalState(state, require);
   } catch (error) { errors.push(`Malformed state: ${error.message}`); }
   return { ok: errors.length === 0, errors };
 }

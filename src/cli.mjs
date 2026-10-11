@@ -20,6 +20,7 @@ export async function replay({ store, input, armFixture = false, config = null, 
       store.dispatch({ type: 'snapshot', snapshot, now: snapshot.observedAt, wallTime: Date.now() });
       await setImmediate(); // Allow an independent operator process to pause between committed events.
     }
+    if (store.read().engine.schemaVersion === 3) store.dispatch({ type: 'end-fixture', now: input.at(-1).observedAt, wallTime: Date.now() });
     return store.dispatch({ type: 'worker-status', status: 'completed', wallTime: Date.now() });
   } catch (error) {
     try { store.dispatch({ type: 'worker-status', status: 'failed', error: error.message, wallTime: Date.now() }); }
@@ -46,7 +47,7 @@ function argumentsFrom(argv) {
   const options = {};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--arm-fixture') { options.armFixture = true; continue; }
-    if (!['--data', '--input', '--port'].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`Unknown or incomplete option: ${args[i]}`);
+    if (!['--data', '--input', '--port', '--latency-ms', '--order-lifetime-ms', '--now'].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`Unknown or incomplete option: ${args[i]}`);
     options[args[i].slice(2)] = args[++i];
   }
   return { command, options };
@@ -55,10 +56,10 @@ function argumentsFrom(argv) {
 async function main() {
   const { command, options } = argumentsFrom(process.argv.slice(2));
   if (command === 'help') {
-    console.log('NEPTUNE 2 local slice\nserve [--data DIR] [--port 8787]\nreplay --input FILE --data DIR --arm-fixture (first initialization only)\nobserve --data DIR (read-only public data; never paper fills)\nstop --data DIR (persistent entry pause)\nresume-fixture --data DIR (explicit fixture-only resume)\njournal-audit --data DIR (replay and verify all committed command evidence)\nmigrate-state --data DIR (explicit version-1 preservation; historical input gap stays labelled)\nrecover-lock --data DIR (dead same-host writer only; retains lock evidence)');
+    console.log('NEPTUNE 2 local slice\nserve [--data DIR] [--port 8787]\nreplay --input FILE --data DIR --arm-fixture [--latency-ms N --order-lifetime-ms N] (new synthetic store only)\nobserve --data DIR (read-only public data; never paper fills)\nstop --data DIR (persistent entry pause)\nresume-fixture --data DIR (explicit fixture-only resume)\nadvance-fixture --data DIR --now N (explicit synthetic clock; expire pending orders)\njournal-audit --data DIR (replay and verify all committed command evidence)\nmigrate-state --data DIR (explicit version-1 preservation; historical input gap stays labelled)\nrecover-lock --data DIR (dead same-host writer only; retains lock evidence)');
     return;
   }
-  if (!['serve', 'replay', 'observe', 'stop', 'resume-fixture', 'recover-lock', 'journal-audit', 'migrate-state'].includes(command)) throw new Error(`Unknown command: ${command}`);
+  if (!['serve', 'replay', 'observe', 'stop', 'resume-fixture', 'recover-lock', 'journal-audit', 'migrate-state', 'advance-fixture'].includes(command)) throw new Error(`Unknown command: ${command}`);
   const directory = path.resolve(options.data ?? '.neptune-local');
   const store = openStore(directory);
   if (command === 'serve') {
@@ -83,7 +84,16 @@ async function main() {
     if (!options.input) throw new Error('--input is required');
     if (fs.statSync(options.input).size > 5_000_000) throw new Error('Fixture exceeds 5 MB limit');
     const fixture = JSON.parse(fs.readFileSync(options.input, 'utf8'));
-    result = await replay({ store, input: Array.isArray(fixture) ? fixture : fixture.snapshots, armFixture: !!options.armFixture });
+    let config = null;
+    if (options['order-lifetime-ms'] != null && options['latency-ms'] == null) throw new Error('--order-lifetime-ms requires --latency-ms');
+    if (options['latency-ms'] != null) {
+      for (const key of ['latency-ms', 'order-lifetime-ms']) if (options[key] != null && (!/^\d+$/.test(options[key]) || !Number.isSafeInteger(Number(options[key])))) throw new Error(`--${key} requires an integer`);
+      config = { latencyMs: Number(options['latency-ms']), ...(options['order-lifetime-ms'] != null ? { maxSignalAgeMs: Number(options['order-lifetime-ms']) } : {}) };
+    }
+    result = await replay({ store, input: Array.isArray(fixture) ? fixture : fixture.snapshots, armFixture: !!options.armFixture, config });
+  } else if (command === 'advance-fixture') {
+    if (!/^\d+$/.test(options.now ?? '') || !Number.isSafeInteger(Number(options.now))) throw new Error('--now requires an explicit integer synthetic time');
+    result = store.dispatch({ type: 'advance-fixture', now: Number(options.now), wallTime: Date.now() });
   } else if (command === 'observe') result = await observe({ store });
   else if (command === 'stop') result = pauseEntries(store);
   else result = store.dispatch({ type: 'resume-fixture', wallTime: Date.now() });

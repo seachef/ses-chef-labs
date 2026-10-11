@@ -128,7 +128,11 @@ export function renderState(doc, state, now = Date.now()) {
   ]), unavailable ? 'WAIT · engine state unavailable' : 'WAIT · no decision recorded', 3);
 
   const executions = list(state.executions ?? state.execution);
-  set('execution-note', executions.length ? 'Last recorded synthetic fill · not a current proposal · fees and slippage are fixture assumptions' : 'No simulated fills recorded. No public-price execution is enabled.');
+  const pending = list(state.pendingOrders);
+  const transition = state.lastOrderTransition;
+  const pendingNote = pending.map(order => `${words(order.productId)} ${words(order.side)} PENDING · eligible ${dateTime(order.eligibleAt)} · expires ${dateTime(order.expiresAt)}`).join(' | ');
+  const transitionNote = transition ? `Last order: ${words(transition.status)} · ${words(transition.lifecycleReason ?? transition.reason)}` : '';
+  set('execution-note', [pendingNote, transitionNote, executions.length ? 'Last recorded synthetic fill below · fees and slippage are fixture assumptions' : 'No simulated fills recorded. No public-price execution is enabled.'].filter(Boolean).join(' | '));
   fillRows(doc, 'execution-rows', executions.map((execution) => [
     [words(execution.symbol), `${words(execution.side)} · ${words(execution.provenance, 'provenance unknown')} · ${dateTime(execution.at)}`],
     money(execution.entry ?? execution.fillPrice ?? execution.price, execution.currency ?? currency),
@@ -139,7 +143,8 @@ export function renderState(doc, state, now = Date.now()) {
     number(execution.slippageBps) ? `${format(execution.slippageBps)} bps` : money(execution.slippage, execution.currency ?? currency),
   ]), unavailable ? 'UNKNOWN · no execution history received' : 'No simulated fills recorded', 7);
 
-  set('account-note', fixtureAccount ? 'SYNTHETIC FIXTURE account · net values include recorded fees and fill slippage' : number(account.cash) ? 'Simulated ledger · mark-dependent values require fresh verified data' : 'No account initialized. Balances and returns are unknown.');
+  const reservationNote = state.reservations ? ` · reserved for buys ${money(state.reservations.buyCash, currency)} · available ${money(account.availableCash, currency)}` : '';
+  set('account-note', (fixtureAccount ? 'SYNTHETIC FIXTURE account · net values include recorded fees and fill slippage' : number(account.cash) ? 'Simulated ledger · mark-dependent values require fresh verified data' : 'No account initialized. Balances and returns are unknown.') + reservationNote);
   set('cash', money(account.cash, currency));
   const positions = Array.isArray(account.positions) ? list(account.positions) : null;
   set('position-count', positions ? String(positions.length) : UNKNOWN);

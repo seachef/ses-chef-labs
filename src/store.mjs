@@ -5,7 +5,7 @@ import { hostname } from 'node:os';
 import * as engineModule from './engine/index.mjs';
 import { applyCommand } from './runtime.mjs';
 import { appendRecord, boundedJson, canonical, digest, documentHash, emptyHead, hasEventInHistory,
-  MAX_DOCUMENT_BYTES, readBounded, syncDirectory, validateHead, walkJournal, withoutHead } from './journal.mjs';
+  hasBookInHistory, hasTradeInHistory, lookupBookInHistory, MAX_DOCUMENT_BYTES, readBounded, syncDirectory, validateHead, walkJournal, withoutHead } from './journal.mjs';
 
 export function initialDocument() {
   return { version: 2, revision: 0, mode: 'idle', control: { stopped: true, stopRequested: false },
@@ -206,6 +206,9 @@ export function openStore(directory) {
       if (current.version === 1) throw new Error('MIGRATION_REQUIRED: legacy snapshot is readable but writes require explicit migrateLegacy()');
       const next = applyCommand(structuredClone(current), structuredClone(command), {
         hasEvent: eventId => hasEventInHistory(root, current.journal, eventId),
+        hasBook: key => hasBookInHistory(root, current.journal, key),
+        hasTrade: key => hasTradeInHistory(root, current.journal, key),
+        lookupBook: identity => lookupBookInHistory(root, current.journal, identity),
       });
       return commit(current, next, { kind: 'command', command }, temporary);
     });
@@ -228,6 +231,9 @@ export function openStore(directory) {
         const before = { ...structuredClone(record.before), journal: structuredClone(record.previous) };
         const replayed = applyCommand(before, structuredClone(record.command), {
           hasEvent: eventId => hasEventInHistory(root, record.previous, eventId),
+          hasBook: key => hasBookInHistory(root, record.previous, key),
+          hasTrade: key => hasTradeInHistory(root, record.previous, key),
+          lookupBook: identity => lookupBookInHistory(root, record.previous, identity),
         });
         if (!replayed || typeof replayed.then === 'function') throw new Error('JOURNAL_REPLAY_FAILED: command must replay synchronously');
         replayed.revision = record.before.revision + 1;
