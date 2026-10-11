@@ -153,4 +153,56 @@ test('the document has exactly five sections and no external data endpoint', asy
   assert.doesNotMatch(html + module, /https?:\/\//);
 });
 
-test('native iPhone/iPad/desktop layout, keyboard and screen reader verification', { skip: 'Supported native environment required; Chromium launch prohibited by handover.' }, () => {});
+test('native iPhone/iPad/desktop layout, keyboard and screen reader verification', { skip: 'Native hardware remains unavailable; the single permitted sandboxed Chromium probe failed (sandbox helper misconfigured). No unsandboxed launch permitted.' }, () => {});
+
+test('public display distinguishes ticker, book and observation clocks and retains a sub-cent-bps spread', () => {
+  const doc = documentStub();
+  const realShape = { ...quote, sourceAt: now - 2200, bookSourceAt: now - 3300, observedAt: now - 1000, spreadBps: 0.0012055506680904195 };
+  renderState(doc, { ...state, market: [realShape] }, now);
+  assert.match(doc.getElementById('market-source').textContent, /ticker source 2026-10-11 08:59:57.800Z/);
+  assert.match(doc.getElementById('market-source').textContent, /book source 2026-10-11 08:59:56.700Z/);
+  assert.match(doc.getElementById('market-source').textContent, /observed 2026-10-11 08:59:59 UTC/);
+  assert.match(doc.getElementById('market-rows').textContent, /0\.001206 bps/);
+  renderState(doc, { ...state, market: [{ ...realShape, bookSourceAt: null }] }, now);
+  assert.match(doc.getElementById('market-source').textContent, /book source UNKNOWN/);
+  assert.doesNotMatch(doc.getElementById('market-rows').textContent, /0\.001206 bps/);
+});
+
+test('request activity is bounded, timestamped, and does not invent heartbeat events', async t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const doc = documentStub();
+  let clock = now, calls = 0, fail = false;
+  const app = mountDashboard(doc, async () => { calls++; if (fail) throw new Error('offline'); return response({ ...state, revision: 7 }); }, () => clock);
+  try {
+    await settle();
+    const first = doc.getElementById('activity').textContent;
+    assert.equal(first.split('\n').length, 2);
+    assert.match(first, /2026-10-11 09:00:00 UTC · GET \/api\/state started/);
+    assert.match(first, /received · revision 7 · finished/);
+    clock += 60000;
+    t.mock.timers.tick(60000);
+    assert.equal(doc.getElementById('activity').textContent, first);
+    assert.equal(calls, 1);
+    assert.match(doc.getElementById('market-rows').textContent, /STALE/);
+    fail = true;
+    await app.refresh();
+    assert.match(doc.getElementById('activity').textContent, /2026-10-11 09:01:00 UTC.*failed/);
+    for (let i = 0; i < 15; i++) await app.refresh();
+    assert.equal(doc.getElementById('activity').textContent.split('\n').length, 20);
+    assert.doesNotMatch(doc.getElementById('activity').textContent, /09:00:00/);
+  } finally { app.destroy(); }
+});
+
+test('activity reports only confirmed stop acknowledgements as persisted', async () => {
+  for (const [ack, success] of [[{ ...state, stopped: true }, false], [{ ...state, stopped: true, stopPersisted: true }, true]]) {
+    const doc = documentStub();
+    const app = mountDashboard(doc, async path => response(path === '/api/stop' ? ack : state), () => now);
+    try {
+      await settle();
+      await app.stop();
+      assert.match(doc.getElementById('activity').textContent, /POST \/api\/stop requested · persistence unconfirmed/);
+      assert.equal(doc.getElementById('activity').textContent.includes('acknowledged · emergency entry pause persisted'), success);
+      assert.equal(doc.getElementById('activity').textContent.includes('POST /api/stop failed · STOP unconfirmed'), !success);
+    } finally { app.destroy(); }
+  }
+});

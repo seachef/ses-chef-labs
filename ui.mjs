@@ -114,12 +114,12 @@ export function renderState(doc, state, now = Date.now()) {
       [displayMark ? money(quote.price, quote.quoteCurrency) : UNKNOWN, fresh[index].label],
       displayMark ? percent(quote.change24hPct) : UNKNOWN,
       displayMark ? money(quote.liquidityUsd, 'USD') : UNKNOWN,
-      displayMark && number(quote.spreadBps) ? `${format(quote.spreadBps)} bps` : UNKNOWN,
+      displayMark && number(quote.spreadBps) ? `${format(quote.spreadBps, 6)} bps` : UNKNOWN,
       displayMark ? percent(quote.distanceFromLowPct) : UNKNOWN,
       words(quote.historyCoverage, 'UNKNOWN · no verified history'),
     ];
   }), unavailable ? 'UNKNOWN · market state unavailable; earlier marks cleared' : 'UNKNOWN · no verified observations', 7);
-  set('market-source', markets.length ? markets.map((quote, index) => `${words(quote.symbol)} · ${words(quote.source, 'source unknown')} · observed ${dateTime(quote.observedAt)} · ${fresh[index].label}`).join(' | ') : 'Source unknown · quote time unknown · freshness unknown');
+  set('market-source', markets.length ? markets.map((quote, index) => `${words(quote.symbol)} · ${words(quote.source, 'source unknown')} · ticker source ${dateTime(quote.sourceAt)} · book source ${dateTime(quote.bookSourceAt)} · observed ${dateTime(quote.observedAt)} · ${fresh[index].label}`).join(' | ') : 'Source unknown · quote time unknown · freshness unknown');
 
   set('decision-note', fixture ? 'Recorded deterministic fixture decisions. No individual trade selection.' : 'Deterministic screening only. No individual trade selection.');
   fillRows(doc, 'decision-rows', list(state.decisions ?? state.decision).map((decision) => [
@@ -183,6 +183,12 @@ export function mountDashboard(doc, fetcher = globalThis.fetch, clock = Date.now
   const status = doc.getElementById('request-status');
   const refreshButton = doc.getElementById('refresh');
   const stopButton = doc.getElementById('stop');
+  const activity = [];
+  function recordActivity(message) {
+    activity.push(`${dateTime(clock())} · ${message}`);
+    if (activity.length > 20) activity.shift();
+    doc.getElementById('activity').textContent = activity.join('\n');
+  }
 
   async function request(path, method = 'GET') {
     const controller = new AbortController();
@@ -204,17 +210,20 @@ export function mountDashboard(doc, fetcher = globalThis.fetch, clock = Date.now
     const requestRevision = revision;
     refreshButton.disabled = true;
     status.textContent = 'Reading local state…';
+    recordActivity('GET /api/state started');
     try {
       const next = validateState(await request('/api/state'));
       if (stopping || requestRevision !== revision) return;
       state = next;
       renderState(doc, state, clock());
       status.textContent = `State received ${dateTime(clock())} · source times shown above`;
+      recordActivity(`GET /api/state received · revision ${Number.isSafeInteger(next.revision) ? next.revision : UNKNOWN} · ${words(next.worker.status)}`);
     } catch (error) {
       if (stopping || requestRevision !== revision) return;
       state = unavailableState(words(error?.message, 'State unavailable'));
       renderState(doc, state, clock());
       status.textContent = 'Local service unavailable. Current marks cleared. STOP unconfirmed.';
+      recordActivity('GET /api/state failed · current marks cleared; STOP unconfirmed');
     } finally { loading = false; refreshButton.disabled = stopping; }
   }
 
@@ -226,16 +235,19 @@ export function mountDashboard(doc, fetcher = globalThis.fetch, clock = Date.now
     refreshButton.disabled = true;
     status.textContent = 'Persisting emergency stop…';
     doc.getElementById('stop-state').textContent = 'STOP REQUESTED · persistence unconfirmed';
+    recordActivity('POST /api/stop requested · persistence unconfirmed');
     try {
       const next = validateState(await request('/api/stop', 'POST'));
       if (next.stopped !== true || (next.stopPersisted !== true && next.persisted !== true)) throw new Error('Stop persistence was not acknowledged');
       state = next;
       renderState(doc, state, clock());
       status.textContent = 'Emergency stop persisted. New entries blocked; see protective exit policy.';
+      recordActivity('POST /api/stop acknowledged · emergency entry pause persisted');
     } catch (error) {
       state = unavailableState(words(error?.message, 'Emergency stop request failed'));
       renderState(doc, state, clock());
       status.textContent = 'STOP UNCONFIRMED. Request failed; use the local CLI stop command.';
+      recordActivity('POST /api/stop failed · STOP unconfirmed');
     } finally { stopping = false; stopButton.disabled = false; refreshButton.disabled = false; }
   }
 

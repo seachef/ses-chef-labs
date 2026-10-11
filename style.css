@@ -39,6 +39,7 @@ button { border: 0; border-radius: 0; padding: 5px 0; background: #fff; color: i
 button:disabled { text-decoration: none; cursor: default; }
 button:focus-visible, .table-wrap:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
 footer, noscript { display: block; margin-top: 12px; }
+#activity { margin: 7px 0 0; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   main { padding: 20px 16px; }
   header { margin-bottom: 24px; }
