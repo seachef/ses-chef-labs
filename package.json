@@ -1,0 +1,13 @@
+{
+  "name": "neptune-2-clean-start",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "start": "node src/cli.mjs serve",
+    "observe": "node src/cli.mjs observe",
+    "replay": "node src/cli.mjs replay"
+  }
+}
