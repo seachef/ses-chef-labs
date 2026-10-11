@@ -85,9 +85,23 @@
     <section aria-labelledby="engine-title">
       <h2 id="engine-title">ENGINE</h2>
       <details id="engine-details">
-        <summary aria-labelledby="engine-title engine-brief"><span id="engine-brief" class="terminal-brief">IDLE · browser only
-No requests yet</span></summary>
+        <summary aria-labelledby="engine-title engine-brief paper-snapshot-brief"><span id="engine-brief" class="terminal-brief">IDLE · browser only
+No requests yet</span><br><span id="paper-snapshot-brief" class="terminal-brief">LAST RUN · 12 OCT 05:35 AWST
+ENDED · STALE</span></summary>
         <div class="detail-body">
+          <div id="paper-snapshot" role="group" aria-labelledby="paper-snapshot-title">
+            <p id="paper-snapshot-title"><strong>Last included verified simulation · historical</strong></p>
+            <p class="note">SESSION ENDED · STALE. This saved report is not a live engine connection or an Emergency STOP acknowledgement. Refresh updates browser quotes only.</p>
+            <dl class="engine-grid">
+              <dt>Session · UTC</dt><dd><time datetime="2026-10-11T21:34:40.371Z">11 Oct 2026 · 21:34:40.371</time> to <time datetime="2026-10-11T21:35:34.274Z">21:35:34.274</time></dd>
+              <dt>Coverage</dt><dd>53.899 seconds · 12 rounds · BTC-USD and ETH-USD · 12 observations each. No continuous coverage.</dd>
+              <dt>Result</dt><dd>24 observations · 24 WAIT · 0 simulated fills · 0 feed errors. No trades; profitability untested.</dd>
+              <dt>Why WAIT</dt><dd>Ask prices were above the unchanged 0–1% entry band: BTC 3.867–3.884%, ETH 5.007–5.045% above the observed hourly-window low. This is not an all-time low.</dd>
+              <dt>Public source</dt><dd>Coinbase Exchange · 76 successful HTTP 200 responses. Public quotes are observations, not fills.</dd>
+              <dt>Last observed · UTC</dt><dd>BTC <time datetime="2026-10-11T21:35:31.954Z">11 Oct 2026 · 21:35:31.954</time>; ETH <time datetime="2026-10-11T21:35:33.044Z">21:35:33.044</time></dd>
+              <dt>Verified · UTC</dt><dd><time datetime="2026-10-11T21:37:30.805Z">11 Oct 2026 · 21:37:30.805</time> · independent reconciliation passed.</dd>
+            </dl>
+          </div>
           <p id="summary">Public observations only. No strategy, execution, account or background service.</p>
           <p id="engine-note">One snapshot on opening; later refresh is manual. Quotes expire after 10 seconds.</p>
           <dl class="engine-grid">

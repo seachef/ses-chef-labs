@@ -212,6 +212,79 @@ function documentStub() {
   return { getElementById(id) { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); }, createElement() { return new Element(); } };
 }
 
+function historicalReport() {
+  const html = fs.readFileSync(new URL('../public.html', import.meta.url), 'utf8');
+  const brief = html.match(/<span id="paper-snapshot-brief"[^>]*>(.*?)<\/span>/s)?.[1];
+  const body = html.match(/<div id="paper-snapshot"[^>]*>(.*?)<\/div>/s)?.[1];
+  assert.ok(brief && body, 'A historical report must be present without JavaScript');
+  return { html, brief, body };
+}
+
+// These fixed report facts come from the independently verified public simulation.
+// The transport fixtures used elsewhere in this file remain fabricated and offline.
+test('historical report preserves verified facts and clocks without publishing account or runtime identifiers', () => {
+  const { html, brief, body } = historicalReport();
+  assert.equal(brief, 'LAST RUN · 12 OCT 05:35 AWST\nENDED · STALE');
+  const clocks = [...body.matchAll(/<time datetime="([^"]+)">/g)].map(match => match[1]);
+  assert.deepEqual(clocks, [
+    '2026-10-11T21:34:40.371Z', '2026-10-11T21:35:34.274Z',
+    '2026-10-11T21:35:31.954Z', '2026-10-11T21:35:33.044Z', '2026-10-11T21:37:30.805Z',
+  ]);
+  const [start, end, btc, eth, verified] = clocks.map(Date.parse);
+  assert.ok(start < btc && btc < eth && eth < end && end < verified);
+  assert.match(body, /53\.899 seconds · 12 rounds · BTC-USD and ETH-USD · 12 observations each/);
+  assert.match(body, /24 observations · 24 WAIT · 0 simulated fills · 0 feed errors/);
+  assert.match(body, /unchanged 0–1% entry band: BTC 3\.867–3\.884%, ETH 5\.007–5\.045%/);
+  assert.match(body, /Coinbase Exchange · 76 successful HTTP 200 responses/);
+  assert.match(body, /No trades; profitability untested/);
+  assert.match(body, /not a live engine connection or an Emergency STOP acknowledgement/);
+  assert.match(body, /Refresh updates browser quotes only/);
+  assert.match(body, /No continuous coverage/);
+  assert.match(body, /Public quotes are observations, not fills/);
+  assert.doesNotMatch(body, /\b(?:cash|equity|balance|account|wallet|credential|password|secret|token|pid|hostname|sessionId|sourceCommit)\b|10000|10,000|\/workspace|\/tmp|https?:|[a-f\d]{40,}|[a-f\d]{8}-[a-f\d-]{27,}/i);
+  assert.doesNotMatch(body, /<(?:script|iframe|img|a|button|input|form)\b|\bon\w+\s*=|\b(?:src|href)\s*=/i);
+  assert.match(html, /<title>2\.0<\/title>/); assert.match(html, /<h1>2\.0<\/h1>/);
+  const engine = html.match(/<details id="engine-details">(.*?)<\/details>/s)?.[1];
+  assert.ok(engine?.includes(body));
+  assert.match(engine, /aria-labelledby="engine-title engine-brief paper-snapshot-brief"/);
+});
+
+test('quote refresh, clock aging, failure and cancellation cannot refresh the historical report or add controls', async t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  let behavior = 'ok';
+  const h = harness((url, init, normal) => {
+    if (behavior === 'offline') throw new TypeError('offline');
+    if (behavior === 'pending') return new Promise((resolve, reject) => init.signal.addEventListener('abort', () => reject(new DOMException('Canceled', 'AbortError')), { once: true }));
+    return normal(url);
+  });
+  const doc = documentStub(), host = new Element(), report = historicalReport();
+  const brief = doc.getElementById('paper-snapshot-brief'), body = doc.getElementById('paper-snapshot');
+  brief.textContent = report.brief; body.textContent = report.body;
+  const unchanged = () => {
+    assert.equal(doc.getElementById('paper-snapshot-brief'), brief); assert.equal(brief.textContent, report.brief);
+    assert.equal(doc.getElementById('paper-snapshot'), body); assert.equal(body.textContent, report.body);
+    assert.equal(doc.getElementById('stop').disabled, true); assert.equal(doc.getElementById('stop').listeners.size, 0);
+    assert.equal(doc.getElementById('cash').textContent, 'UNKNOWN');
+  };
+  const app = mountPublicPreview(doc, { fetchImpl: h.fetchImpl, now: h.now, host });
+  try {
+    for (let i = 0; i < 20 && app.session.getState().phase === 'fetching'; i++) await tick();
+    assert.equal(h.requests.length, 10); unchanged();
+    h.advance(61000); t.mock.timers.tick(61000); assert.equal(h.requests.length, 10); unchanged();
+    await app.session.refresh(); assert.equal(h.requests.length, 20); unchanged();
+    h.advance(61000); behavior = 'offline'; await app.session.refresh();
+    assert.equal(app.session.getState().phase, 'failed'); unchanged();
+    h.advance(600000); behavior = 'pending'; const pending = app.session.refresh(); await tick();
+    app.session.cancel(); await pending; unchanged();
+    const count = h.requests.length; h.advance(600000); t.mock.timers.tick(600000);
+    assert.equal(h.requests.length, count); unchanged();
+    for (const { url, init } of h.requests) {
+      assert.equal(new URL(url).origin, 'https://api.exchange.coinbase.com');
+      assert.equal(init.method, 'GET'); assert.equal(init.credentials, 'omit');
+    }
+  } finally { app.destroy(); }
+});
+
 test('browser UI is read-only, ages prices without polling/logging, and logs only real request events', async t => {
   t.mock.timers.enable({ apis: ['setInterval'] });
   const h = harness(), doc = documentStub(), host = new Element();
