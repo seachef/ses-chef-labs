@@ -1,4 +1,6 @@
-# Read-only feed and UI integration review — 11 October 2026
+# Historical read-only feed and UI integration review — 67a7ae3
+
+This records the checkpoint before the later connected-preview implementation. Its publication restrictions and 266-pass count apply to that earlier review; see [the current connected-preview review](CONNECTED-PREVIEW-REVIEW.md) for the authorized continuation.
 
 Final foundation: `29c959063d283f17f3807696953a106aef7afd73`, tree `ee87aeef3ee6efed503313ba0dc771d9da5f5e8f`. The earlier `c4a707f` checkout, test results, raw public observations and original UI patch are preserved separately. Changes were reconciled on a new isolated local branch, `verification/coinbase-ui-20261011`, without changing the causal engine, pending/reservation rendering, source adapter, runtime, persistence, CLI or server.
 

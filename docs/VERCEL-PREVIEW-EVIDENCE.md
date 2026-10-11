@@ -1,4 +1,4 @@
-# Existing Vercel integration evidence — read-only inspection
+# Historical Vercel integration evidence — 29c9590
 
 GitHub API observations at 11:13–11:14 UTC on 11 October 2026 associate four non-production Preview deployment records with exact commit `29c959063d283f17f3807696953a106aef7afd73`, tree `ee87aeef3ee6efed503313ba0dc771d9da5f5e8f`. No deployment was requested by this verification task. The records are consistent with the repository's existing automatic integration having deployed the builder's push. A successful record does not prove served bytes, functioning UI, live market data or a backend.
 
@@ -43,4 +43,4 @@ Compare served assets with the `29c9590` SHA-256 hashes below. Exact equality su
 | ui.mjs | 15716 | `444f6b57f25459b5df6359ceb9b6bece3f17cd337fa43607ff5dc134f1e0d7a9` |
 | style.css | 3555 | `477b8de3c15b212048562093d63420b3a102c542a17c17ac794f8f62dc09a60d` |
 
-Do not push the reconciled local branch merely to share it: these existing integrations may automatically create deployments. Keep the review patch/bundle local until publication side effects are explicitly approved. No remote ref, project settings, credentials, security configuration or existing site was changed by this verification task.
+Historical boundary during this inspection (superseded by the later authorized connected-preview push): do not push the reconciled local branch merely to share it: these existing integrations may automatically create deployments. Keep the review patch/bundle local until publication side effects are explicitly approved. No remote ref, project settings, credentials, security configuration or existing site was changed by this verification task.

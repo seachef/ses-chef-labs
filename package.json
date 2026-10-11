@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
+    "build": "node scripts/build-public-preview.mjs",
     "test": "node --test test/*.test.mjs",
     "start": "node src/cli.mjs serve",
     "observe": "node src/cli.mjs observe",

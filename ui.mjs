@@ -259,5 +259,3 @@ export function mountDashboard(doc, fetcher = globalThis.fetch, clock = Date.now
   void refresh();
   return { refresh, stop, destroy() { clearInterval(timer); refreshButton.removeEventListener('click', refresh); stopButton.removeEventListener('click', stop); } };
 }
-
-if (typeof document !== 'undefined') mountDashboard(document);

@@ -24,6 +24,15 @@ test('integration: idle preview has no invented account; STOP acknowledges durab
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }));
   const origin = `http://127.0.0.1:${server.address().port}`;
+  const page = await fetch(origin);
+  assert.equal(page.status, 200);
+  assert.match(page.headers.get('content-security-policy'), /connect-src 'self'/);
+  assert.match(await page.text(), /src="\.\/loopback\.mjs"/);
+  const entry = await fetch(`${origin}/loopback.mjs`);
+  assert.equal(entry.status, 200);
+  assert.match(entry.headers.get('content-type'), /^text\/javascript/);
+  assert.match(await entry.text(), /mountDashboard\(document\)/);
+  assert.equal((await fetch(`${origin}/public-preview.mjs`)).status, 404);
   const initial = await (await fetch(`${origin}/api/state`)).json();
   assert.equal(initial.account, null); assert.equal(initial.mode, 'idle'); assert.equal(initial.stopped, true);
   const denied = await fetch(`${origin}/api/stop`, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://unrelated.example' }, body: '{}' });

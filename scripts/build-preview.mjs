@@ -8,7 +8,7 @@ const destination = path.resolve(process.argv[2] ?? path.join(root, '.neptune-lo
 const css = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
   .replace('<link rel="stylesheet" href="./style.css">', `<style>\n${css}\n</style>`)
-  .replace('<script type="module" src="./ui.mjs"></script>', '')
+  .replace('<script type="module" src="./loopback.mjs"></script>', '')
   .replace('<p id="mode">SIMULATED · STATE UNAVAILABLE</p>', '<p id="mode">SIMULATED · STATIC LAYOUT PREVIEW</p>')
   .replace('No worker or market connection confirmed.', 'Standalone preview. No worker, account or market connection. Open the local server for state and controls.')
   .replaceAll('type="button"', 'type="button" disabled')

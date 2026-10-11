@@ -6,7 +6,7 @@ import { toView } from './view.mjs';
 
 const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assets = new Map([['/', ['index.html', 'text/html']], ['/index.html', ['index.html', 'text/html']],
-  ['/ui.mjs', ['ui.mjs', 'text/javascript']], ['/style.css', ['style.css', 'text/css']]]);
+  ['/ui.mjs', ['ui.mjs', 'text/javascript']], ['/loopback.mjs', ['loopback.mjs', 'text/javascript']], ['/style.css', ['style.css', 'text/css']]]);
 
 export function pauseEntries(store, reason = 'Operator emergency entry pause') {
   return store.dispatch({ type: 'stop', reason, wallTime: Date.now() });
