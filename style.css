@@ -105,7 +105,7 @@ footer, noscript { display: block; margin-top: 12px; }
 .public-terminal #exchange-handoff { margin-bottom: 16px; }
 .public-terminal #exchange-handoff p { overflow-wrap: anywhere; }
 .public-terminal #exchange-handoff button:disabled { color: #555; }
-.public-terminal .handoff-actions a { display: inline-block; min-height: 44px; padding: 12px 0; color: inherit; overflow-wrap: anywhere; }
+.public-terminal .handoff-actions a { display: inline-block; min-height: 48px; min-width: 148px; max-width: 100%; padding: 12px 10px; font-size: 14px; color: inherit; overflow-wrap: anywhere; }
 .public-terminal .handoff-actions a[aria-disabled="true"] { color: #555; text-decoration: none; cursor: default; }
 .public-terminal .handoff-actions a:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
 .public-terminal .handoff-owner-label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
