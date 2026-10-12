@@ -224,17 +224,21 @@ function historicalReport() {
 // The transport fixtures used elsewhere in this file remain fabricated and offline.
 test('historical report preserves verified facts and clocks without publishing account or runtime identifiers', () => {
   const { html, brief, body } = historicalReport();
-  assert.equal(brief, 'LAST RUN · 12 OCT 05:35 AWST\nENDED · STALE');
+  assert.equal(brief, 'LAST RUN · 12 OCT 10:45 AWST\nENDED · STALE');
   const clocks = [...body.matchAll(/<time datetime="([^"]+)">/g)].map(match => match[1]);
   assert.deepEqual(clocks, [
-    '2026-10-11T21:34:40.371Z', '2026-10-11T21:35:34.274Z',
-    '2026-10-11T21:35:31.954Z', '2026-10-11T21:35:33.044Z', '2026-10-11T21:37:30.805Z',
+    '2026-10-12T02:44:55.569Z', '2026-10-12T02:45:47.620Z',
+    '2026-10-12T02:45:45.903Z', '2026-10-12T02:45:46.815Z',
   ]);
-  const [start, end, btc, eth, verified] = clocks.map(Date.parse);
-  assert.ok(start < btc && btc < eth && eth < end && end < verified);
-  assert.match(body, /53\.899 seconds · 12 rounds · BTC-USD and ETH-USD · 12 observations each/);
+  const [start, end, btc, eth] = clocks.map(Date.parse);
+  assert.ok(start < btc && btc < eth && eth < end);
+  const displayed = [...body.matchAll(/<time datetime="[^"]+">([^<]+)<\/time>/g)].map(match => match[1]);
+  assert.deepEqual(displayed, ['12 Oct 2026 · 10:44:55.569', '10:45:47.620', '12 Oct 2026 · 10:45:45.903', '10:45:46.815']);
+  assert.match(body, /Session · Perth \(AWST\)/); assert.match(body, /Last receipts · Perth \(AWST\)/);
+  assert.match(body, /52\.048 seconds · 12 rounds · BTC-USD and ETH-USD · 12 observations each/);
   assert.match(body, /24 observations · 24 WAIT · 0 simulated fills · 0 feed errors/);
-  assert.match(body, /unchanged 0–1% entry band: BTC 3\.867–3\.884%, ETH 5\.007–5\.045%/);
+  assert.match(body, /unchanged 0–1% entry band: BTC 4\.335–4\.363%, ETH 6\.032–6\.076%/);
+  assert.match(body, /51 journal records replayed · independent reconciliation passed/);
   assert.match(body, /Coinbase Exchange · 76 successful HTTP 200 responses/);
   assert.match(body, /No trades; profitability untested/);
   assert.match(body, /not a live engine connection or an Emergency STOP acknowledgement/);
