@@ -224,22 +224,22 @@ function historicalReport() {
 // The transport fixtures used elsewhere in this file remain fabricated and offline.
 test('historical report preserves verified facts and clocks without publishing account or runtime identifiers', () => {
   const { html, brief, body } = historicalReport();
-  assert.equal(brief, 'LAST RUN · 12 OCT 10:45 AWST\nENDED · STALE');
+  assert.equal(brief, 'LAST RUN · 12 OCT 13:34 AWST\nENDED · STALE');
   const clocks = [...body.matchAll(/<time datetime="([^"]+)">/g)].map(match => match[1]);
   assert.deepEqual(clocks, [
-    '2026-10-12T02:44:55.569Z', '2026-10-12T02:45:47.620Z',
-    '2026-10-12T02:45:45.903Z', '2026-10-12T02:45:46.815Z',
+    '2026-10-12T05:33:40.297Z', '2026-10-12T05:34:42.025Z',
+    '2026-10-12T05:34:36.104Z', '2026-10-12T05:34:38.038Z',
   ]);
   const [start, end, btc, eth] = clocks.map(Date.parse);
   assert.ok(start < btc && btc < eth && eth < end);
   const displayed = [...body.matchAll(/<time datetime="[^"]+">([^<]+)<\/time>/g)].map(match => match[1]);
-  assert.deepEqual(displayed, ['12 Oct 2026 · 10:44:55.569', '10:45:47.620', '12 Oct 2026 · 10:45:45.903', '10:45:46.815']);
+  assert.deepEqual(displayed, ['12 Oct 2026 · 13:33:40.297', '13:34:42.025', '12 Oct 2026 · 13:34:36.104', '13:34:38.038']);
   assert.match(body, /Session · Perth \(AWST\)/); assert.match(body, /Last receipts · Perth \(AWST\)/);
-  assert.match(body, /52\.048 seconds · 12 rounds · BTC-USD and ETH-USD · 12 observations each/);
-  assert.match(body, /24 observations · 24 WAIT · 0 simulated fills · 0 feed errors/);
-  assert.match(body, /unchanged 0–1% entry band: BTC 4\.335–4\.363%, ETH 6\.032–6\.076%/);
-  assert.match(body, /51 journal records replayed · independent reconciliation passed/);
-  assert.match(body, /Coinbase Exchange · 76 successful HTTP 200 responses/);
+  assert.match(body, /61\.718 seconds including cleanup · 60-second observation limit · 11 rounds · BTC-USD 11 \/ ETH-USD 10 accepted observations/);
+  assert.match(body, /21 accepted observations · 21 WAIT · 0 simulated fills · 1 feed error: stale ETH ticker rejected/);
+  assert.match(body, /unchanged 0–1% entry band: BTC 4\.233–4\.294%, ETH 6\.065–6\.151%/);
+  assert.match(body, /48 journal records replayed · independent reconciliation passed/);
+  assert.match(body, /Coinbase Exchange · 70 successful HTTP 200 responses/);
   assert.match(body, /No trades; profitability untested/);
   assert.match(body, /not a live engine connection or an Emergency STOP acknowledgement/);
   assert.match(body, /Refresh updates browser quotes only/);
