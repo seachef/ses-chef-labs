@@ -1,83 +1,78 @@
-// Navigation only. This frontend has no reviewed setup or account contract.
-// No URL, side, amount, holding or eligibility is derived from public quotes.
-export const VENUES = Object.freeze([
-  Object.freeze({ id: 'okx', name: 'OKX', costs: 'OKX: your pair-specific maker/taker fee is unknown. Check your account fee before trading.' }),
-  Object.freeze({ id: 'coinspot', name: 'CoinSpot', costs: 'CoinSpot Markets: 0.1% each side. Instant and conditional stop/target products: 1%. Check the product; these are different costs.' }),
-]);
-export const DESTINATIONS = Object.freeze([
-  { venue: 'okx', pair: 'BTC-AUD', label: 'BTC / AUD', url: 'https://www.okx.com/en-au/trade-spot/btc-aud' },
-  { venue: 'okx', pair: 'ETH-AUD', label: 'ETH / AUD', url: 'https://www.okx.com/en-au/trade-spot/eth-aud' },
-  { venue: 'okx', pair: 'SOL-AUD', label: 'SOL / AUD', url: 'https://www.okx.com/en-au/trade-spot/sol-aud' },
-  { venue: 'okx', pair: 'BTC-USDT', label: 'BTC / USDT', url: 'https://www.okx.com/en-au/trade-spot/btc-usdt' },
-  { venue: 'okx', pair: 'ETH-USDT', label: 'ETH / USDT', url: 'https://www.okx.com/en-au/trade-spot/eth-usdt' },
-  { venue: 'okx', pair: 'SOL-USDT', label: 'SOL / USDT', url: 'https://www.okx.com/en-au/trade-spot/sol-usdt' },
-  { venue: 'coinspot', pair: 'BTC-AUD', label: 'BTC / AUD', url: 'https://www.coinspot.com.au/trade/BTC' },
-  { venue: 'coinspot', pair: 'ETH-AUD', label: 'ETH / AUD', url: 'https://www.coinspot.com.au/trade/ETH' },
-  { venue: 'coinspot', pair: 'SOL-AUD', label: 'SOL / AUD', url: 'https://www.coinspot.com.au/trade/SOL' },
-  { venue: 'coinspot', pair: 'USDT-AUD', label: 'USDT / AUD', url: 'https://www.coinspot.com.au/trade/USDT' },
-].map(Object.freeze));
-
-export function destinationFor(venue, pair) {
-  return DESTINATIONS.find(d => d.venue === venue && d.pair === pair) ?? null;
-}
-export function approvedDestination(venue, pair, url) {
-  const destination = destinationFor(venue, pair);
-  return typeof url === 'string' && !!destination && url === destination.url;
-}
-export function handoffState({ venue = '', pair = '' } = {}) {
+import { VENUES, DESTINATIONS, destinationFor, approvedDestination } from './exchange-destinations.mjs';
+export { VENUES, DESTINATIONS, destinationFor, approvedDestination } from './exchange-destinations.mjs';
+function selectionState({ venue = '', pair = '' } = {}) {
   const selectedVenue = VENUES.find(v => v.id === venue) ?? null;
-  return Object.freeze({ venue: selectedVenue, destination: destinationFor(venue, pair), action: 'WAIT',
-    buyEnabled: false, sellEnabled: false, reason: 'WAIT · no fresh independently reviewed setup. Buy and Sell are unavailable.' });
+  return Object.freeze({ venue: selectedVenue, destination: destinationFor(venue, pair) });
 }
 
-export function mountExchangeHandoff(doc) {
+export function mountExchangeHandoff(doc, { research = null, now = Date.now } = {}) {
   const venueSelect = doc.getElementById('handoff-venue'), pairSelect = doc.getElementById('handoff-pair');
   const buy = doc.getElementById('handoff-buy'), sell = doc.getElementById('handoff-sell'), link = doc.getElementById('handoff-link');
-  let venue = '', pair = '';
+  const owner = doc.getElementById('handoff-owner');
+  let venue = '', pair = '', confirmed = null;
   const option = (value, text) => { const node = doc.createElement('option'); node.value = value; node.textContent = text; return node; };
+  const clearConfirmation = () => { confirmed = null; owner.checked = false; };
   const resetPairs = () => {
-    pair = ''; pairSelect.replaceChildren(option('', 'Select spot pair'), ...DESTINATIONS.filter(d => d.venue === venue).map(d => option(d.pair, d.label)));
+    pair = ''; clearConfirmation(); pairSelect.replaceChildren(option('', 'Select spot pair'), ...DESTINATIONS.filter(d => d.venue === venue).map(d => option(d.pair, d.label)));
     pairSelect.value = ''; pairSelect.disabled = !VENUES.some(v => v.id === venue);
   };
+  const assessment = () => research?.evaluate(venue, pair, now()) ?? { status: 'WAIT', setup: null, reason: 'No reviewed research loaded.' };
+  const ready = result => result.status === 'READY' && result.setup?.venue === venue && result.setup?.pair === pair && result.setup?.quoteCurrency === pair.split('-')[1];
+  const safeLink = (node, destination, enabled) => {
+    node.disabled = !enabled; node.setAttribute('aria-disabled', String(!enabled));
+    node.setAttribute('target', '_blank'); node.setAttribute('rel', 'noopener noreferrer'); node.setAttribute('referrerpolicy', 'no-referrer');
+    if (enabled) { node.setAttribute('href', destination.url); node.tabIndex = 0; } else { node.removeAttribute('href'); node.tabIndex = -1; }
+  };
   const paint = () => {
-    const state = handoffState({ venue, pair });
-    // Public market freshness and arbitrary setup-like data cannot enable these.
-    buy.disabled = true; sell.disabled = true;
-    buy.textContent = state.destination ? `Buy · ${state.venue.name}` : 'Buy';
-    sell.textContent = state.destination ? `Sell · ${state.venue.name}` : 'Sell';
+    const state = selectionState({ venue, pair }), result = assessment(), destination = state.destination;
+    const canBuy = !!destination && ready(result), canSell = !!destination && confirmed === venue + ':' + pair && owner.checked;
+    doc.getElementById('decision-brief').textContent = canBuy ? `REVIEW BUY · ${destination.label}` : 'WAIT · no reviewed setup';
+    safeLink(buy, destination, canBuy); safeLink(sell, destination, canSell); safeLink(link, destination, !!destination);
+    buy.textContent = state.venue ? `Review Buy · ${state.venue.name} ↗` : 'Review Buy';
+    sell.textContent = state.venue ? `Review Sell · ${state.venue.name} ↗` : 'Review Sell';
+    owner.disabled = !destination;
     const reason = doc.getElementById('handoff-reason');
-    if (reason.textContent !== state.reason) reason.textContent = state.reason;
-    doc.getElementById('handoff-costs').textContent = state.venue?.costs ?? 'Select the exchange you intend to use. No holdings or account connection here.';
-    doc.getElementById('handoff-selection').textContent = state.destination
-      ? `${state.venue.name} · ${state.destination.label} · spot page only. For a sale, choose the venue where you hold the asset. No transfer is made.`
+    const message = canBuy ? 'Reviewed setup available · confirm current price, side and fees on the exchange.' : 'WAIT · ' + result.reason;
+    if (reason.textContent !== message) reason.textContent = message;
+    doc.getElementById('handoff-costs').textContent = canBuy && venue === 'okx'
+      ? 'OKX: the research includes a reviewed pair-specific fee snapshot. Confirm the current applicable fee in your account before trading.'
+      : state.venue?.costs ?? 'Select the exchange you intend to use. No holdings or account connection here.';
+    doc.getElementById('handoff-selection').textContent = destination
+      ? `${state.venue.name} · ${destination.label} · spot page only. No transfer is made.`
       : 'Select a venue and spot pair. Listed pairs are navigation choices, not picks.';
-    link.textContent = state.destination ? `Open ${state.venue.name} ${state.destination.label} spot page ↗` : 'Open spot page ↗';
-    link.setAttribute('target', '_blank'); link.setAttribute('rel', 'noopener noreferrer');
-    link.setAttribute('referrerpolicy', 'no-referrer'); link.setAttribute('aria-disabled', String(!state.destination));
-    if (state.destination) { link.setAttribute('href', state.destination.url); link.tabIndex = 0; }
-    else { link.removeAttribute('href'); link.tabIndex = -1; }
-  };
-  const changeVenue = () => {
-    venue = VENUES.some(v => v.id === venueSelect.value) ? venueSelect.value : '';
-    venueSelect.value = venue; resetPairs(); paint();
-  };
-  const changePair = () => { pair = destinationFor(venue, pairSelect.value)?.pair ?? ''; pairSelect.value = pair; paint(); };
-  const navigate = event => {
-    // Recheck the exact venue/pair/URL tuple, including a modified DOM href.
-    if (venueSelect.value !== venue || pairSelect.value !== pair) {
-      event.preventDefault(); venue = ''; venueSelect.value = ''; resetPairs(); paint(); return;
+    doc.getElementById('handoff-sell-reason').textContent = canSell ? 'Owner-directed Sell review · independent of Buy research. Holdings are not verified here.' : 'To review a sale, select where you hold this asset and confirm below. Buy research expiry does not block a confirmed Sell handoff.';
+    const details = doc.getElementById('handoff-research'); details.replaceChildren();
+    if (canBuy) {
+      const s = result.setup, c = result.economics;
+      for (const value of [
+        `Research snapshot · ${s.venue.toUpperCase()} ${s.pair} · ${s.quoteCurrency}`,
+        `Reviewed entry ${s.entry} · stop ${s.stop} · targets ${s.targets.join(' / ')}. Levels are research; no protective orders are placed.`,
+        `Public modeling quantity ${s.costs.quantity} · fee ${s.fees.buyBps / 100}% buy / ${s.fees.sellBps / 100}% sell · adverse slippage ${s.costs.slippageBps} bps per side.`,
+        `Modeled buy cost ${c.buyCost.toFixed(4)} ${s.quoteCurrency} · first-target net ${c.targetNet.toFixed(4)} · stop net ${c.stopNet.toFixed(4)}. Estimates, not fills or guarantees.`,
+        `Source ${new Date(s.market.sourceAt).toISOString()} · received ${new Date(s.market.receivedAt).toISOString()} · reviewed ${new Date(result.review.reviewedAt).toISOString()} · expires ${new Date(result.review.expiresAt).toISOString()}.`,
+        `Review ${result.review.reviewerId} / ${s.id} · market source ${s.market.sourceUrl} · fee basis ${s.fees.basis} / ${s.fees.sourceUrl}.`
+      ]) { const row = doc.createElement('p'); row.textContent = value; details.append(row); }
     }
-    if (!approvedDestination(venue, pair, link.getAttribute('href'))) { event.preventDefault(); paint(); }
-    // Native HTTPS navigation is the entire action. Repeated clicks have no
-    // economic effect, no order/fill callback and no local account mutation.
+    link.textContent = destination ? `Open ${state.venue.name} ${destination.label} spot page ↗` : 'Open spot page ↗';
   };
+  const changeVenue = () => { venue = VENUES.some(v => v.id === venueSelect.value) ? venueSelect.value : ''; venueSelect.value = venue; resetPairs(); paint(); };
+  const changePair = () => { pair = destinationFor(venue, pairSelect.value)?.pair ?? ''; pairSelect.value = pair; clearConfirmation(); paint(); };
+  const confirmOwner = () => { confirmed = owner.checked && destinationFor(venue, pair) ? venue + ':' + pair : null; paint(); };
+  const navigate = (event, node, side) => {
+    if (venueSelect.value !== venue || pairSelect.value !== pair) { event.preventDefault(); venue = ''; venueSelect.value = ''; resetPairs(); paint(); return; }
+    const valid = approvedDestination(venue, pair, node.getAttribute('href'));
+    const eligible = side === 'buy' ? ready(assessment()) : side === 'sell' ? confirmed === venue + ':' + pair && owner.checked : true;
+    if (!valid || !eligible) event.preventDefault();
+    paint(); // Re-evaluate immediately; native HTTPS navigation is the only effect.
+  };
+  const handlers = [[link, e => navigate(e, link, 'open')], [buy, e => navigate(e, buy, 'buy')], [sell, e => navigate(e, sell, 'sell')]];
   venueSelect.replaceChildren(option('', 'Select exchange'), ...VENUES.map(v => option(v.id, v.name)));
   venueSelect.value = ''; resetPairs(); paint();
-  venueSelect.addEventListener('change', changeVenue); pairSelect.addEventListener('change', changePair);
-  link.addEventListener('click', navigate); link.addEventListener('auxclick', navigate);
+  venueSelect.addEventListener('change', changeVenue); pairSelect.addEventListener('change', changePair); owner.addEventListener('change', confirmOwner);
+  for (const [node, fn] of handlers) { node.addEventListener('click', fn); node.addEventListener('auxclick', fn); }
   return { paint, destroy() {
-    venueSelect.removeEventListener('change', changeVenue); pairSelect.removeEventListener('change', changePair);
-    link.removeEventListener('click', navigate); link.removeEventListener('auxclick', navigate);
+    venueSelect.removeEventListener('change', changeVenue); pairSelect.removeEventListener('change', changePair); owner.removeEventListener('change', confirmOwner);
+    for (const [node, fn] of handlers) { node.removeEventListener('click', fn); node.removeEventListener('auxclick', fn); }
     venue = ''; venueSelect.value = ''; resetPairs(); paint();
   } };
 }

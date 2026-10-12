@@ -83,8 +83,8 @@ test('compact summary hides expired prices, keeps actual event time and reports 
   fail = true; await h.session.refresh();
   assert.equal(summary().market, 'UNKNOWN · no verified prices');
   assert.equal(summary().engine, 'FAILED · browser only\n12:02:00Z GET failed');
-  assert.equal(summary().decision, 'WAIT · strategy off');
-  assert.equal(summary().execution, 'MANUAL · review on exchange');
+  assert.equal(summary().decision, 'WAIT · no reviewed setup');
+  assert.equal(summary().execution, 'MANUAL · exchange review');
   assert.equal(summary().account, 'UNKNOWN · no account');
   h.advance(60000); fail = false; await h.session.refresh();
   assert.equal(summary().market, 'BTC 100 USD · FRESH\nETH 100 USD · FRESH');
@@ -272,8 +272,8 @@ test('quote refresh, clock aging, failure and cancellation cannot refresh the hi
     assert.equal(doc.getElementById('cash').textContent, 'UNKNOWN');
     assert.equal(doc.getElementById('handoff-buy').disabled, true);
     assert.equal(doc.getElementById('handoff-sell').disabled, true);
-    assert.equal(doc.getElementById('handoff-buy').listeners.size, 0);
-    assert.equal(doc.getElementById('handoff-sell').listeners.size, 0);
+    assert.equal(doc.getElementById('handoff-buy').listeners.size, 2);
+    assert.equal(doc.getElementById('handoff-sell').listeners.size, 2);
   };
   const app = mountPublicPreview(doc, { fetchImpl: h.fetchImpl, now: h.now, host });
   try {
@@ -326,7 +326,7 @@ test('static output keeps four compact rows above a permanently visible engine w
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   execFileSync(process.execPath, ['scripts/build-public-preview.mjs', directory], { cwd: new URL('../', import.meta.url), stdio: 'pipe' });
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'build-manifest.json')));
-  assert.equal(Object.keys(manifest.assets).length, 8);
+  assert.equal(Object.keys(manifest.assets).length, 12);
   const html = fs.readFileSync(path.join(directory, 'index.html'), 'utf8');
   assert.equal((html.match(/<section\b/g) ?? []).length, 5);
   assert.match(html, /src="\.\/public-preview\.mjs"/); assert.doesNotMatch(html, /loopback\.mjs/);
@@ -334,6 +334,9 @@ test('static output keeps four compact rows above a permanently visible engine w
   assert.match(html, /PUBLIC OBSERVATIONS ONLY/); assert.doesNotMatch(html, /SIMULATED ONLY/);
   assert.equal(html, fs.readFileSync(new URL('../public.html', import.meta.url), 'utf8'));
   assert.match(html, /<body class="public-terminal">/);
+  const header = html.match(/<header>(.*?)<\/header>/s)[1];
+  assert.equal((header.match(/<p\b/g) ?? []).length, 1);
+  assert.match(header, /<h1>2\.0<\/h1>/); assert.match(header, /PUBLIC · READ ONLY · UTC/);
   assert.equal((html.match(/<details\b/g) ?? []).length, 4);
   assert.equal((html.match(/<summary\b/g) ?? []).length, 4);
   assert.doesNotMatch(html, /<details[^>]*\sopen(?:\s|[=>])/);
@@ -352,6 +355,9 @@ test('static output keeps four compact rows above a permanently visible engine w
   }
   assert.equal(html.indexOf('<section', engineStart + 1), -1, 'ENGINE must be the final section');
   const css = fs.readFileSync(path.join(directory, 'style.css'), 'utf8');
+  assert.match(css, /\.public-terminal header\s*\{[^}]*display: flex;[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.public-terminal summary\s*\{[^}]*min-height: 44px/);
+  assert.doesNotMatch(css.slice(css.indexOf('/* Compact mobile overview;'), css.indexOf('.public-terminal .handoff-selection')), /font-size:|font:|display:\s*none|visibility:|overflow:/);
   assert.match(css, /\.public-terminal #engine-section\s*\{\s*display:\s*block;\s*margin-top:\s*12px;\s*\}/);
   assert.doesNotMatch(css, /position:\s*(?:fixed|sticky)|(?:max-)?height:\s*\d+(?:vh|dvh)/);
   const flowRules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
@@ -378,4 +384,22 @@ test('static output keeps four compact rows above a permanently visible engine w
   const ui = fs.readFileSync(path.join(directory, 'ui.mjs'), 'utf8');
   assert.doesNotMatch(ui, /if \(typeof document/);
   assert.equal(JSON.parse(fs.readFileSync(new URL('../vercel.json', import.meta.url))).outputDirectory, 'dist');
+});
+
+test('Cancel remains usable while reviewed research is loading after public quotes fail', async t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const doc = documentStub(), host = new Element(); host.location = { origin: 'https://preview.example' };
+  const signals = [];
+  const app = mountPublicPreview(doc, { host, now: () => START, timeoutMs: 100,
+    fetchImpl: async (url, init) => {
+      if (!url.startsWith(host.location.origin)) throw Error('synthetic quote failure');
+      signals.push(init.signal);
+      return new Promise((resolve, reject) => init.signal.addEventListener('abort', () => reject(Error('synthetic canceled')), { once: true }));
+    } });
+  t.after(() => app.destroy());
+  await tick(); assert.equal(app.session.getState().phase, 'failed'); assert.equal(app.research.getState().phase, 'loading');
+  assert.equal(doc.getElementById('cancel').disabled, false);
+  doc.getElementById('cancel').listeners.get('click')(); await tick();
+  assert.equal(app.research.getState().phase, 'unavailable'); assert.ok(signals.every(s => s.aborted));
+  assert.equal(doc.getElementById('handoff-buy').disabled, true); assert.equal(doc.getElementById('cancel').disabled, true);
 });

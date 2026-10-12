@@ -11,8 +11,7 @@
   <main>
     <header>
       <h1>2.0</h1>
-      <p id="mode">PUBLIC DATA · READ ONLY</p>
-      <p>2 test markets · tap rows · UTC</p>
+      <p id="mode">PUBLIC · READ ONLY · UTC</p>
     </header>
 
     <section aria-labelledby="market-title">
@@ -35,7 +34,7 @@
     <section aria-labelledby="decision-title">
       <h2 id="decision-title">DECISION</h2>
       <details id="decision-details">
-        <summary aria-labelledby="decision-title decision-brief"><span id="decision-brief" class="terminal-brief">WAIT · strategy off</span></summary>
+        <summary aria-labelledby="decision-title decision-brief"><span id="decision-brief" class="terminal-brief">WAIT · no reviewed setup</span></summary>
         <div class="detail-body">
           <p id="decision-note">No strategy is running.</p>
           <div class="table-wrap" role="region" aria-label="Decisions" tabindex="0">
@@ -48,7 +47,7 @@
     <section aria-labelledby="execution-title">
       <h2 id="execution-title">EXECUTION</h2>
       <details id="execution-details">
-        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">MANUAL · review on exchange</span></summary>
+        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">MANUAL · exchange review</span></summary>
         <div class="detail-body">
           <div id="exchange-handoff" role="group" aria-labelledby="handoff-title">
             <p id="handoff-title"><strong>Manual exchange review</strong></p>
@@ -57,10 +56,13 @@
               <label for="handoff-pair">Spot pair<select id="handoff-pair" disabled><option value="">Select spot pair</option></select></label>
             </div>
             <p id="handoff-selection" class="note">Select a venue and spot pair. Listed pairs are navigation choices, not picks.</p>
-            <div class="handoff-actions"><button id="handoff-buy" type="button" disabled aria-describedby="handoff-reason">Buy</button><button id="handoff-sell" type="button" disabled aria-describedby="handoff-reason">Sell</button></div>
-            <p id="handoff-reason" role="status" aria-live="polite">WAIT · no fresh independently reviewed setup. Buy and Sell are unavailable.</p>
+            <div class="handoff-actions"><a id="handoff-buy" aria-disabled="true" tabindex="-1" aria-describedby="handoff-reason">Review Buy</a><a id="handoff-sell" aria-disabled="true" tabindex="-1" aria-describedby="handoff-sell-reason">Review Sell</a></div>
+            <p id="handoff-reason" role="status" aria-live="polite">WAIT · no reviewed research loaded.</p>
+            <div id="handoff-research"></div>
+            <p id="handoff-sell-reason">Sell is owner-directed navigation; no holdings are verified here.</p>
+            <label class="handoff-owner-label"><input id="handoff-owner" type="checkbox" disabled> I hold this asset on the selected exchange and want to review selling it.</label>
             <a id="handoff-link" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" aria-describedby="handoff-external">Open spot page ↗</a>
-            <p id="handoff-external">Opens a new tab. Choose Buy or Sell and review all details on the exchange; opening this page places no order.</p>
+            <p id="handoff-external">Each link opens the same spot page in a new tab. Select Buy or Sell and confirm current price, quantity, fees and any protection there; opening this page places no order.</p>
             <p id="handoff-costs" class="note">Select the exchange you intend to use. No holdings or account connection here.</p>
             <p class="note">Account access, holdings, fills and protective orders are not verified here. Confirm them on the selected exchange.</p>
           </div>

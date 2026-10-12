@@ -86,6 +86,16 @@ footer, noscript { display: block; margin-top: 12px; }
 .public-terminal #request-status { margin-top: 0; }
 .public-terminal footer { margin-top: 8px; }
 
+/* Compact mobile overview; retain readable type and 44px summary targets. */
+@media (max-width: 760px) {
+  .public-terminal main { padding: 8px 12px; }
+  .public-terminal header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin-bottom: 4px; }
+  .public-terminal header h1, .public-terminal header p { margin: 0; }
+  .public-terminal section:not(#engine-section) { margin-bottom: 0; }
+  .public-terminal section:not(#engine-section) h2 { padding-top: 2px; }
+  .public-terminal summary { padding: 1px 0; }
+}
+
 .public-terminal .handoff-selection { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
 .public-terminal .handoff-selection label { min-width: 0; }
 .public-terminal select { display: block; width: 100%; min-width: 0; min-height: 44px; border: 1px solid #777; background: #fff; color: #111; font: inherit; padding: 6px; }
@@ -95,5 +105,11 @@ footer, noscript { display: block; margin-top: 12px; }
 .public-terminal #exchange-handoff { margin-bottom: 16px; }
 .public-terminal #exchange-handoff p { overflow-wrap: anywhere; }
 .public-terminal #exchange-handoff button:disabled { color: #555; }
+.public-terminal .handoff-actions a { display: inline-block; min-height: 44px; padding: 12px 0; color: inherit; overflow-wrap: anywhere; }
+.public-terminal .handoff-actions a[aria-disabled="true"] { color: #555; text-decoration: none; cursor: default; }
+.public-terminal .handoff-actions a:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
+.public-terminal .handoff-owner-label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.public-terminal #handoff-owner { flex: 0 0 20px; width: 20px; height: 20px; }
+.public-terminal #handoff-research p { margin: 5px 0; }
 .public-terminal select:focus-visible, .public-terminal #handoff-link:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
 @media (max-width: 360px) { .public-terminal .handoff-selection { grid-template-columns: minmax(0, 1fr); } }

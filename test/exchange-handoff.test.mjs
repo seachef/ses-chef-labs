@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { VENUES, DESTINATIONS, destinationFor, approvedDestination, handoffState, mountExchangeHandoff } from '../exchange-handoff.mjs';
+import { VENUES, DESTINATIONS, destinationFor, approvedDestination, mountExchangeHandoff } from '../exchange-handoff.mjs';
 
 class Element {
   constructor() { this.children = []; this.attributes = new Map(); this.listeners = new Map(); this.value = ''; this.disabled = false; this.textWrites = 0; this._text = ''; }
@@ -60,27 +60,17 @@ test('hostile, normalized aliases and side/prefill URL parameters fail exact app
   }
 });
 
-test('missing, stale, unreviewed, mismatched or apparently fresh setup-like data cannot enable unsupported trade actions', () => {
-  const fake = { venue: 'okx', pair: 'BTC-AUD', action: 'BUY', reviewed: true, entry: 100, stop: 99, target: 102, feeBps: 0, expiresAt: Date.now() + 10000 };
-  for (const setup of [undefined, null, {}, fake, { ...fake, expiresAt: 0 }, { ...fake, reviewed: false }, { ...fake, venue: 'coinspot' },
-    { ...fake, pair: 'BTC-USD' }, { ...fake, feeBps: null }, { ...fake, quote: { stale: true } }]) {
-    const state = handoffState({ venue: 'okx', pair: 'BTC-AUD', setup });
-    assert.equal(state.action, 'WAIT'); assert.equal(state.buyEnabled, false); assert.equal(state.sellEnabled, false);
-    assert.match(state.reason, /no fresh independently reviewed setup/);
-  }
-});
-
 test('initial controls fail closed and explicit venue changes reset pair and external destination', t => {
   const h = harness(t);
   assert.equal(h.get('venue').value, ''); assert.equal(h.get('pair').disabled, true); assert.equal(h.get('link').getAttribute('href'), null);
   assert.equal(h.get('link').dispatch('click').defaultPrevented, true);
   h.choose('okx', 'BTC-AUD'); assert.equal(h.get('link').getAttribute('href'), 'https://www.okx.com/en-au/trade-spot/btc-aud');
-  assert.equal(h.get('sell').textContent, 'Sell · OKX'); assert.equal(h.get('buy').disabled, true); assert.equal(h.get('sell').disabled, true);
+  assert.equal(h.get('sell').textContent, 'Review Sell · OKX ↗'); assert.equal(h.get('buy').disabled, true); assert.equal(h.get('sell').disabled, true);
   h.choose('coinspot'); assert.equal(h.get('pair').value, ''); assert.equal(h.get('link').getAttribute('href'), null);
-  assert.equal(h.get('sell').textContent, 'Sell'); assert.equal(h.get('link').dispatch('click').defaultPrevented, true);
+  assert.equal(h.get('sell').textContent, 'Review Sell · CoinSpot ↗'); assert.equal(h.get('link').dispatch('click').defaultPrevented, true);
   h.get('pair').value = 'BTC-AUD'; h.get('pair').dispatch('change');
-  assert.equal(h.get('link').getAttribute('href'), 'https://www.coinspot.com.au/trade/BTC'); assert.equal(h.get('sell').textContent, 'Sell · CoinSpot');
-  assert.match(h.get('selection').textContent, /where you hold the asset\. No transfer/);
+  assert.equal(h.get('link').getAttribute('href'), 'https://www.coinspot.com.au/trade/BTC'); assert.equal(h.get('sell').textContent, 'Review Sell · CoinSpot ↗');
+  assert.match(h.get('selection').textContent, /No transfer/);
   h.choose('okx', 'USDT-AUD'); assert.equal(h.get('link').getAttribute('href'), null);
   h.choose('https://evil.test', 'BTC-AUD'); assert.equal(h.get('venue').value, ''); assert.equal(h.get('pair').disabled, true);
 });
@@ -104,7 +94,7 @@ test('repeated navigation has no fetch, fill, account state, side selection or t
     h.get('buy').dispatch('click'); h.get('sell').dispatch('click');
     assert.equal(h.snapshot(), before);
   }
-  assert.equal(h.get('buy').listeners.size, 0); assert.equal(h.get('sell').listeners.size, 0);
+  assert.equal(h.get('buy').listeners.size, 2); assert.equal(h.get('sell').listeners.size, 2);
   assert.equal(h.get('link').getAttribute('target'), '_blank'); assert.equal(h.get('link').getAttribute('rel'), 'noopener noreferrer');
   assert.equal(h.get('link').getAttribute('referrerpolicy'), 'no-referrer');
   const source = fs.readFileSync(new URL('../exchange-handoff.mjs', import.meta.url), 'utf8');
@@ -137,8 +127,8 @@ test('compact handoff markup has explicit labels, safe static controls and narro
   const css = fs.readFileSync(new URL('../style.css', import.meta.url), 'utf8');
   const block = html.match(/<div id="exchange-handoff"[\s\S]+?<p id="execution-note">/)[0];
   for (const id of ['handoff-venue', 'handoff-pair']) assert.ok(block.includes(`for="${id}"`) && block.includes(`id="${id}"`));
-  assert.match(block, /id="handoff-buy"[^>]*disabled[^>]*aria-describedby="handoff-reason"/);
-  assert.match(block, /id="handoff-sell"[^>]*disabled[^>]*aria-describedby="handoff-reason"/);
+  assert.match(block, /id="handoff-buy"[^>]*aria-disabled="true"[^>]*aria-describedby="handoff-reason"/);
+  assert.match(block, /id="handoff-sell"[^>]*aria-disabled="true"[^>]*aria-describedby="handoff-sell-reason"/);
   assert.doesNotMatch(block.match(/<a id="handoff-link"[^>]*>/)[0], /\bhref=/);
   assert.match(block, /opening this page places no order/); assert.match(block, /holdings, fills and protective orders are not verified/);
   for (const summary of html.matchAll(/<summary[^>]*>(.*?)<\/summary>/gs)) assert.doesNotMatch(summary[1], /<(?:a|button|select)\b/);
