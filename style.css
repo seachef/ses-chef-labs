@@ -72,6 +72,7 @@ footer, noscript { display: block; margin-top: 12px; }
 .public-terminal header { margin-bottom: 10px; }
 .public-terminal h1 { margin-bottom: 2px; }
 .public-terminal section { display: grid; grid-template-columns: 76px minmax(0, 1fr); column-gap: 8px; margin-bottom: 2px; }
+.public-terminal #engine-section { display: block; margin-top: 12px; }
 .public-terminal h2 { padding-top: 5px; }
 .public-terminal details { min-width: 0; }
 .public-terminal summary { min-height: 44px; padding: 4px 0; cursor: pointer; }

@@ -244,9 +244,9 @@ test('historical report preserves verified facts and clocks without publishing a
   assert.doesNotMatch(body, /\b(?:cash|equity|balance|account|wallet|credential|password|secret|token|pid|hostname|sessionId|sourceCommit)\b|10000|10,000|\/workspace|\/tmp|https?:|[a-f\d]{40,}|[a-f\d]{8}-[a-f\d-]{27,}/i);
   assert.doesNotMatch(body, /<(?:script|iframe|img|a|button|input|form)\b|\bon\w+\s*=|\b(?:src|href)\s*=/i);
   assert.match(html, /<title>2\.0<\/title>/); assert.match(html, /<h1>2\.0<\/h1>/);
-  const engine = html.match(/<details id="engine-details">(.*?)<\/details>/s)?.[1];
+  const engine = html.match(/<section id="engine-section" aria-labelledby="engine-title">(.*?)<\/section>/s)?.[1];
   assert.ok(engine?.includes(body));
-  assert.match(engine, /aria-labelledby="engine-title engine-brief paper-snapshot-brief"/);
+  assert.match(engine, /<div id="engine-details">/);
 });
 
 test('quote refresh, clock aging, failure and cancellation cannot refresh the historical report or add controls', async t => {
@@ -297,14 +297,14 @@ test('browser UI is read-only, ages prices without polling/logging, and logs onl
     assert.equal(doc.getElementById('cash').textContent, 'UNKNOWN'); assert.match(doc.getElementById('market-rows').textContent, /100 USD/);
     const log = doc.getElementById('activity').textContent;
     assert.match(log, /GET received.*HTTP 200/); assert.doesNotMatch(log, /\/api\/state|heartbeat/);
-    const details = doc.getElementById('engine-details'); details.open = true;
+    const engine = doc.getElementById('engine-details');
     const summary = doc.getElementById('engine-brief');
     assert.match(doc.getElementById('market-brief').textContent, /100 USD · FRESH/);
     h.advance(61000); t.mock.timers.tick(61000);
     assert.equal(h.requests.length, 10); assert.equal(doc.getElementById('activity').textContent, log);
     assert.match(doc.getElementById('market-rows').textContent, /STALE/); assert.doesNotMatch(doc.getElementById('market-rows').textContent, /100 USD/);
     assert.equal(doc.getElementById('refresh').disabled, false);
-    assert.equal(doc.getElementById('engine-details'), details); assert.equal(details.open, true);
+    assert.equal(doc.getElementById('engine-details'), engine);
     assert.equal(doc.getElementById('engine-brief'), summary);
     assert.equal(summary.textContent, 'COMPLETED · browser only\n12:01:00Z GET received 200');
     assert.equal(doc.getElementById('market-brief').textContent, 'BTC — · STALE\nETH — · STALE');
@@ -312,7 +312,7 @@ test('browser UI is read-only, ages prices without polling/logging, and logs onl
   assert.equal(host.listeners.size, 0);
 });
 
-test('static output has a closed browser import graph, exact checksums, five sections and no runtime modules', t => {
+test('static output keeps four compact rows above a permanently visible engine with natural scrolling', t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'neptune-public-build-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   execFileSync(process.execPath, ['scripts/build-public-preview.mjs', directory], { cwd: new URL('../', import.meta.url), stdio: 'pipe' });
@@ -325,15 +325,30 @@ test('static output has a closed browser import graph, exact checksums, five sec
   assert.match(html, /PUBLIC OBSERVATIONS ONLY/); assert.doesNotMatch(html, /SIMULATED ONLY/);
   assert.equal(html, fs.readFileSync(new URL('../public.html', import.meta.url), 'utf8'));
   assert.match(html, /<body class="public-terminal">/);
-  assert.equal((html.match(/<details\b/g) ?? []).length, 5);
-  assert.equal((html.match(/<summary\b/g) ?? []).length, 5);
+  assert.equal((html.match(/<details\b/g) ?? []).length, 4);
+  assert.equal((html.match(/<summary\b/g) ?? []).length, 4);
   assert.doesNotMatch(html, /<details[^>]*\sopen(?:\s|[=>])/);
   assert.doesNotMatch(html, /user-scalable=no|maximum-scale|autofocus/);
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
   assert.equal(new Set(ids).size, ids.length);
   for (const match of html.matchAll(/aria-labelledby="([^"]+)"/g)) for (const id of match[1].split(' ')) assert.ok(ids.includes(id), `Missing accessible label ${id}`);
   for (const match of html.matchAll(/<summary\b[^>]*>(.*?)<\/summary>/gs)) assert.doesNotMatch(match[1], /<(button|a|input|select)\b/);
-  const engineDetails = html.match(/<details id="engine-details">(.*?)<\/details>/s)[1];
+  const engineDetails = html.match(/<section id="engine-section" aria-labelledby="engine-title">(.*?)<\/section>/s)[1];
+  assert.match(engineDetails, /<h2 id="engine-title">ENGINE<\/h2>/);
+  assert.match(engineDetails, /<div id="engine-details">/);
+  assert.doesNotMatch(engineDetails, /<(?:details|summary|button)\b|\b(?:hidden|inert|aria-expanded)\s*[=>]/);
+  const engineStart = html.indexOf('<section id="engine-section"');
+  for (const id of ['market-details', 'decision-details', 'execution-details', 'account-details', 'refresh', 'cancel', 'request-status']) {
+    assert.ok(html.indexOf(`id="${id}"`) < engineStart, `${id} must stay above ENGINE`);
+  }
+  assert.equal(html.indexOf('<section', engineStart + 1), -1, 'ENGINE must be the final section');
+  const css = fs.readFileSync(path.join(directory, 'style.css'), 'utf8');
+  assert.match(css, /\.public-terminal #engine-section\s*\{\s*display:\s*block;\s*margin-top:\s*12px;\s*\}/);
+  assert.doesNotMatch(css, /position:\s*(?:fixed|sticky)|(?:max-)?height:\s*\d+(?:vh|dvh)/);
+  const flowRules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(([, selector]) => /(?:\bbody\b|\bmain\b|#engine-section|#engine-details|#activity)/.test(selector))
+    .map(([, , declarations]) => declarations).join('\n');
+  assert.doesNotMatch(flowRules, /(?:max-)?height:|overflow(?:-y)?:\s*(?:hidden|scroll)/);
   assert.ok(engineDetails.includes('id="activity"')); assert.ok(engineDetails.includes('id="market-source"') === false);
   for (const module of ['ui.mjs', 'public-preview.mjs']) {
     const source = fs.readFileSync(new URL('../' + module, import.meta.url), 'utf8');
