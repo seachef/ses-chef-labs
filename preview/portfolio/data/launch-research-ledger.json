@@ -14,6 +14,20 @@
       "event": "updated",
       "fingerprint": "cd07d03353e1df99412285ba9262cf52f6712d37d3e6717bf5f1509a3a6a9ada",
       "note": "Clarification of the saved lead: official documentation targets Q4 2026; exact launch date and time remain unconfirmed. Source: https://docs.variational.io/token/usdvar.md . Watch only; no public sale or confirmed listing venue identified in the official sources checked."
+    },
+    {
+      "candidate_id": "variational-var",
+      "checked_at": "2026-10-12T20:43:54.838Z",
+      "event": "updated",
+      "fingerprint": "21fc145da6b6554e4be07ece9fe01573bc7af2c8a383bf57bf7347e1442a5868",
+      "note": "Q4 2026 remains the official launch window; exact date and time remain unconfirmed. Source: https://docs.variational.io/token/usdvar.md . Review adds the intended treasury buy-and-burn mechanism, 18% ecosystem reserve, unresolved contract and supply details, and eligibility conditions. Watch only; no verified sale or listing."
+    },
+    {
+      "candidate_id": "allox-public-sale",
+      "checked_at": "2026-10-12T20:47:35.804Z",
+      "event": "added",
+      "fingerprint": "896f124d7a3a5d47a1779d58ad7a06bdbe338d415bb9a24b0e3d11a170873583",
+      "note": "Issuer announces sale opening 12 October 2026 and closing 19 October 2026 at 12:00 UTC. TGE date is unconfirmed and separate from sale close. Official source: https://t.me/s/alloxdotai/2215 . Watch only; Australian eligibility, token contract, initial float and spot liquidity are unverified."
     }
   ]
 }
