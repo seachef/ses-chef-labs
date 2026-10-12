@@ -84,7 +84,7 @@ test('compact summary hides expired prices, keeps actual event time and reports 
   assert.equal(summary().market, 'UNKNOWN · no verified prices');
   assert.equal(summary().engine, 'FAILED · browser only\n12:02:00Z GET failed');
   assert.equal(summary().decision, 'WAIT · strategy off');
-  assert.equal(summary().execution, 'DISABLED · no fills');
+  assert.equal(summary().execution, 'MANUAL · review on exchange');
   assert.equal(summary().account, 'UNKNOWN · no account');
   h.advance(60000); fail = false; await h.session.refresh();
   assert.equal(summary().market, 'BTC 100 USD · FRESH\nETH 100 USD · FRESH');
@@ -204,6 +204,7 @@ class Element {
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.text = ''; this.children = children; }
   setAttribute() {}
+  removeAttribute() {}
   addEventListener(type, fn) { this.listeners.set(type, fn); }
   removeEventListener(type) { this.listeners.delete(type); }
 }
@@ -269,6 +270,10 @@ test('quote refresh, clock aging, failure and cancellation cannot refresh the hi
     assert.equal(doc.getElementById('paper-snapshot'), body); assert.equal(body.textContent, report.body);
     assert.equal(doc.getElementById('stop').disabled, true); assert.equal(doc.getElementById('stop').listeners.size, 0);
     assert.equal(doc.getElementById('cash').textContent, 'UNKNOWN');
+    assert.equal(doc.getElementById('handoff-buy').disabled, true);
+    assert.equal(doc.getElementById('handoff-sell').disabled, true);
+    assert.equal(doc.getElementById('handoff-buy').listeners.size, 0);
+    assert.equal(doc.getElementById('handoff-sell').listeners.size, 0);
   };
   const app = mountPublicPreview(doc, { fetchImpl: h.fetchImpl, now: h.now, host });
   try {
@@ -321,7 +326,7 @@ test('static output keeps four compact rows above a permanently visible engine w
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   execFileSync(process.execPath, ['scripts/build-public-preview.mjs', directory], { cwd: new URL('../', import.meta.url), stdio: 'pipe' });
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'build-manifest.json')));
-  assert.equal(Object.keys(manifest.assets).length, 7);
+  assert.equal(Object.keys(manifest.assets).length, 8);
   const html = fs.readFileSync(path.join(directory, 'index.html'), 'utf8');
   assert.equal((html.match(/<section\b/g) ?? []).length, 5);
   assert.match(html, /src="\.\/public-preview\.mjs"/); assert.doesNotMatch(html, /loopback\.mjs/);

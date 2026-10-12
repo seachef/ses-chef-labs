@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const destination = path.resolve(process.argv[2] ?? path.join(root, 'dist'));
 if (destination === root || root.startsWith(destination + path.sep)) throw new Error('Build destination must not contain source');
-const files = ['style.css', 'ui.mjs', 'public-preview.mjs', 'src/market/coinbase.mjs', 'src/market/public-view.mjs', 'src/market/public-session.mjs'];
+const files = ['style.css', 'ui.mjs', 'public-preview.mjs', 'exchange-handoff.mjs', 'src/market/coinbase.mjs', 'src/market/public-view.mjs', 'src/market/public-session.mjs'];
 // Reject an unexpected destination instead of deleting unrelated files.
 if (fs.existsSync(destination) && fs.readdirSync(destination).length && !fs.existsSync(path.join(destination, 'build-manifest.json'))) throw new Error('Nonempty destination is not a prior preview build');
 fs.mkdirSync(destination, { recursive: true });

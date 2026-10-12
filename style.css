@@ -85,3 +85,15 @@ footer, noscript { display: block; margin-top: 12px; }
 .public-terminal button { min-height: 44px; min-width: 64px; }
 .public-terminal #request-status { margin-top: 0; }
 .public-terminal footer { margin-top: 8px; }
+
+.public-terminal .handoff-selection { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+.public-terminal .handoff-selection label { min-width: 0; }
+.public-terminal select { display: block; width: 100%; min-width: 0; min-height: 44px; border: 1px solid #777; background: #fff; color: #111; font: inherit; padding: 6px; }
+.public-terminal .handoff-actions { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.public-terminal #handoff-link { display: inline-block; min-height: 44px; padding: 12px 0; color: inherit; overflow-wrap: anywhere; }
+.public-terminal #handoff-link[aria-disabled="true"] { color: #555; text-decoration: none; cursor: default; }
+.public-terminal #exchange-handoff { margin-bottom: 16px; }
+.public-terminal #exchange-handoff p { overflow-wrap: anywhere; }
+.public-terminal #exchange-handoff button:disabled { color: #555; }
+.public-terminal select:focus-visible, .public-terminal #handoff-link:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
+@media (max-width: 360px) { .public-terminal .handoff-selection { grid-template-columns: minmax(0, 1fr); } }

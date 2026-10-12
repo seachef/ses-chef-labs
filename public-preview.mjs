@@ -1,6 +1,7 @@
 import { renderState, dateTime, quoteFreshness, timestamp } from './ui.mjs';
 import { createPublicSession } from './src/market/public-session.mjs';
 import { publicView } from './src/market/public-view.mjs';
+import { mountExchangeHandoff } from './exchange-handoff.mjs';
 
 const clockTime = value => timestamp(value) === null ? 'UNKNOWN' : new Date(timestamp(value)).toISOString().slice(11, 19) + 'Z';
 const price = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
@@ -13,7 +14,7 @@ export function compactSummary(state, view, now) {
       return `${quote.symbol.replace(/-USD$/, '')} ${freshness.current ? price.format(quote.price) + ' USD' : '—'} · ${freshness.current ? 'FRESH' : freshness.label}`;
     }).join('\n') : 'UNKNOWN · no verified prices',
     decision: 'WAIT · strategy off',
-    execution: 'DISABLED · no fills',
+    execution: 'MANUAL · review on exchange',
     account: 'UNKNOWN · no account',
     engine: `${state.phase.toUpperCase()} · browser only\n${last ? `${clockTime(last.at)} ${last.event.replace('Observation cancellation requested', 'Cancel requested')}${last.status ? ` ${last.status}` : ''}` : 'No requests yet'}`,
   };
@@ -22,15 +23,17 @@ export function compactSummary(state, view, now) {
 export function mountPublicPreview(doc, { fetchImpl = globalThis.fetch, now = Date.now, host = globalThis.window, timeoutMs = 5000 } = {}) {
   const refresh = doc.getElementById('refresh'), cancel = doc.getElementById('cancel'), stop = doc.getElementById('stop');
   stop.disabled = true;
+  const handoff = mountExchangeHandoff(doc);
   const paint = () => {
     const state = session.getState();
     const at = now(), view = publicView(state, at);
     renderState(doc, view, at);
     for (const [section, text] of Object.entries(compactSummary(state, view, at))) doc.getElementById(`${section}-brief`).textContent = text;
     doc.getElementById('mode').textContent = 'PUBLIC DATA · READ ONLY';
+    handoff.paint();
     doc.getElementById('summary').textContent = 'Real public observations on opening and explicit Refresh. No strategy, execution, account or background service.';
     doc.getElementById('market-note').textContent = 'BTC-USD / ETH-USD: initial integration markets only, not final coverage or picks. Broad-market discovery is not implemented.';
-    doc.getElementById('decision-note').textContent = 'WAIT · no strategy is running in this preview.';
+    doc.getElementById('decision-note').textContent = 'WAIT · no fresh independently reviewed setup. Public quotes cannot enable Buy or Sell.';
     doc.getElementById('engine-note').textContent = 'Browser-only observation. No polling or autonomous worker. Quotes expire after 10 seconds; full refresh at most once per minute per page.';
     doc.getElementById('errors').textContent = state.errors.join(' | ') || 'None reported by the public adapter.';
     doc.getElementById('stop-state').textContent = 'EXECUTION DISABLED · no engine to stop';
@@ -54,7 +57,7 @@ export function mountPublicPreview(doc, { fetchImpl = globalThis.fetch, now = Da
   paint();
   const timer = setInterval(paint, 1000); // Ages quotes and enables controls; never requests data or logs activity.
   void session.refresh();
-  return { session, destroy() { clearInterval(timer); session.destroy(); refresh.removeEventListener('click', refreshNow); cancel.removeEventListener('click', cancelNow); host?.removeEventListener('pagehide', cancelNow); } };
+  return { session, destroy() { clearInterval(timer); session.destroy(); handoff.destroy(); refresh.removeEventListener('click', refreshNow); cancel.removeEventListener('click', cancelNow); host?.removeEventListener('pagehide', cancelNow); } };
 }
 
 if (typeof document !== 'undefined') mountPublicPreview(document);

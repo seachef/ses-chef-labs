@@ -48,8 +48,22 @@
     <section aria-labelledby="execution-title">
       <h2 id="execution-title">EXECUTION</h2>
       <details id="execution-details">
-        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">DISABLED · no fills</span></summary>
+        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">MANUAL · review on exchange</span></summary>
         <div class="detail-body">
+          <div id="exchange-handoff" role="group" aria-labelledby="handoff-title">
+            <p id="handoff-title"><strong>Manual exchange review</strong></p>
+            <div class="handoff-selection">
+              <label for="handoff-venue">Exchange<select id="handoff-venue"><option value="">Select exchange</option></select></label>
+              <label for="handoff-pair">Spot pair<select id="handoff-pair" disabled><option value="">Select spot pair</option></select></label>
+            </div>
+            <p id="handoff-selection" class="note">Select a venue and spot pair. Listed pairs are navigation choices, not picks.</p>
+            <div class="handoff-actions"><button id="handoff-buy" type="button" disabled aria-describedby="handoff-reason">Buy</button><button id="handoff-sell" type="button" disabled aria-describedby="handoff-reason">Sell</button></div>
+            <p id="handoff-reason" role="status" aria-live="polite">WAIT · no fresh independently reviewed setup. Buy and Sell are unavailable.</p>
+            <a id="handoff-link" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" aria-describedby="handoff-external">Open spot page ↗</a>
+            <p id="handoff-external">Opens a new tab. Choose Buy or Sell and review all details on the exchange; opening this page places no order.</p>
+            <p id="handoff-costs" class="note">Select the exchange you intend to use. No holdings or account connection here.</p>
+            <p class="note">Account access, holdings, fills and protective orders are not verified here. Confirm them on the selected exchange.</p>
+          </div>
           <p id="execution-note">No orders or simulated fills.</p>
           <div class="table-wrap" role="region" aria-label="Simulated executions" tabindex="0">
             <table class="execution-table"><thead><tr><th scope="col">Symbol / side</th><th scope="col">Entry / fill</th><th scope="col">Size</th><th scope="col">Stop</th><th scope="col">Target</th><th scope="col">Fees</th><th scope="col">Slippage</th></tr></thead><tbody id="execution-rows"><tr><td colspan="7">No simulated fills</td></tr></tbody></table>
