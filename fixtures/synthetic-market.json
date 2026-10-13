@@ -1,0 +1,43 @@
+{
+  "description": "Hand-authored synthetic numbers for deterministic offline verification; these are not historical or current venue prices and cannot support performance claims.",
+  "snapshots": [
+    {
+      "schemaVersion": 1,
+      "eventId": "synthetic-btc-entry-1",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "observedAt": 100000,
+      "sourceAt": 100000,
+      "bids": [[99.9, 10], [99.8, 10]],
+      "asks": [[100, 0.4], [100.2, 10]],
+      "change24hPct": null,
+      "history": {
+        "low": 99.5,
+        "from": 0,
+        "to": 100000,
+        "samples": 11,
+        "intervalMs": 10000,
+        "complete": false,
+        "description": "Eleven hand-authored synthetic point observations, not candles or an all-time low"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "eventId": "synthetic-btc-exit-2",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "observedAt": 101000,
+      "sourceAt": 101000,
+      "bids": [[98, 10], [97.9, 10]],
+      "asks": [[98.1, 10]],
+      "change24hPct": null,
+      "history": null
+    }
+  ]
+}

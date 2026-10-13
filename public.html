@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>2.0</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="public-terminal">
+  <main>
+    <header>
+      <h1>2.0</h1>
+      <p id="mode">PUBLIC · READ ONLY · UTC</p>
+    </header>
+
+    <section aria-labelledby="market-title">
+      <h2 id="market-title">MARKET</h2>
+      <details id="market-details">
+        <summary aria-labelledby="market-title market-brief"><span id="market-brief" class="terminal-brief">UNKNOWN · no verified prices</span></summary>
+        <div class="detail-body">
+          <p id="market-note">BTC-USD / ETH-USD: integration markets only, not final coverage or picks.</p>
+          <div class="table-wrap" role="region" aria-label="Market observations" tabindex="0">
+            <table class="market-table">
+              <thead><tr><th scope="col">Symbol</th><th scope="col">Price</th><th scope="col">24h</th><th scope="col">Book depth USD</th><th scope="col">Spread</th><th scope="col">From low</th><th scope="col">History coverage</th></tr></thead>
+              <tbody id="market-rows"><tr><td colspan="7">UNKNOWN · no verified observations</td></tr></tbody>
+            </table>
+          </div>
+          <p id="market-source" class="note">Source and receipt times unknown.</p>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="decision-title">
+      <h2 id="decision-title">DECISION</h2>
+      <details id="decision-details">
+        <summary aria-labelledby="decision-title decision-brief"><span id="decision-brief" class="terminal-brief">WAIT · no reviewed setup</span></summary>
+        <div class="detail-body">
+          <p id="decision-note">No strategy is running.</p>
+          <div class="table-wrap" role="region" aria-label="Decisions" tabindex="0">
+            <table><thead><tr><th scope="col">Symbol</th><th scope="col">Decision</th><th scope="col">Why</th></tr></thead><tbody id="decision-rows"><tr><td colspan="3">WAIT · no strategy</td></tr></tbody></table>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="execution-title">
+      <h2 id="execution-title">EXECUTION</h2>
+      <details id="execution-details">
+        <summary aria-labelledby="execution-title execution-brief"><span id="execution-brief" class="terminal-brief">MANUAL · exchange review</span></summary>
+        <div class="detail-body">
+          <div id="exchange-handoff" role="group" aria-labelledby="handoff-title">
+            <p id="handoff-title"><strong>Manual exchange review</strong></p>
+            <div class="handoff-selection">
+              <label for="handoff-venue">Exchange<select id="handoff-venue"><option value="">Select exchange</option></select></label>
+              <label for="handoff-pair">Spot pair<select id="handoff-pair" disabled><option value="">Select spot pair</option></select></label>
+            </div>
+            <p id="handoff-selection" class="note">Select a venue and spot pair. Listed pairs are navigation choices, not picks.</p>
+            <div class="handoff-actions"><a id="handoff-buy" aria-disabled="true" tabindex="-1" aria-describedby="handoff-reason">Review Buy</a><a id="handoff-sell" aria-disabled="true" tabindex="-1" aria-describedby="handoff-sell-reason">Review Sell</a></div>
+            <p id="handoff-reason" role="status" aria-live="polite">WAIT · no reviewed research loaded.</p>
+            <div id="handoff-research"></div>
+            <p id="handoff-sell-reason">Sell is owner-directed navigation; no holdings are verified here.</p>
+            <label class="handoff-owner-label"><input id="handoff-owner" type="checkbox" disabled> I hold this asset on the selected exchange and want to review selling it.</label>
+            <a id="handoff-link" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" aria-describedby="handoff-external">Open spot page ↗</a>
+            <p id="handoff-external">Each link opens the same spot page in a new tab. Select Buy or Sell and confirm current price, quantity, fees and any protection there; opening this page places no order.</p>
+            <p id="handoff-costs" class="note">Select the exchange you intend to use. No holdings or account connection here.</p>
+            <p class="note">Account access, holdings, fills and protective orders are not verified here. Confirm them on the selected exchange.</p>
+          </div>
+          <p id="execution-note">No orders or simulated fills.</p>
+          <div class="table-wrap" role="region" aria-label="Simulated executions" tabindex="0">
+            <table class="execution-table"><thead><tr><th scope="col">Symbol / side</th><th scope="col">Entry / fill</th><th scope="col">Size</th><th scope="col">Stop</th><th scope="col">Target</th><th scope="col">Fees</th><th scope="col">Slippage</th></tr></thead><tbody id="execution-rows"><tr><td colspan="7">No simulated fills</td></tr></tbody></table>
+          </div>
+          <p id="stop-state">EXECUTION DISABLED · no engine to stop</p>
+          <p id="stop-policy">Cancel stops data requests only.</p>
+          <button id="stop" type="button" disabled>EMERGENCY STOP</button>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="account-title">
+      <h2 id="account-title">ACCOUNT</h2>
+      <details id="account-details">
+        <summary aria-labelledby="account-title account-brief"><span id="account-brief" class="terminal-brief">UNKNOWN · no account</span></summary>
+        <div class="detail-body">
+          <p id="account-note">No account initialized.</p>
+          <dl class="account-grid">
+            <div><dt>Cash</dt><dd id="cash">UNKNOWN</dd></div>
+            <div><dt>Positions</dt><dd id="position-count">UNKNOWN</dd></div>
+            <div><dt>Realized P/L</dt><dd id="realized">UNKNOWN</dd></div>
+            <div><dt>Unrealized P/L</dt><dd id="unrealized">UNKNOWN</dd></div>
+            <div><dt>Drawdown</dt><dd id="drawdown">UNKNOWN</dd></div>
+            <div><dt>Net P/L</dt><dd id="net-pnl">UNKNOWN</dd></div>
+            <div><dt>Net return</dt><dd id="net-return">UNKNOWN</dd></div>
+            <div><dt>Fees paid</dt><dd id="fees-paid">UNKNOWN</dd></div>
+          </dl>
+          <p id="positions" class="note">Position details unknown.</p>
+        </div>
+      </details>
+    </section>
+
+    <div class="controls"><button id="refresh" type="button" aria-label="Refresh public data">Refresh</button><button id="cancel" type="button" aria-label="Cancel public data request" disabled>Cancel</button></div>
+    <p id="request-status" role="status" aria-live="polite">Waiting for public data.</p>
+
+    <section id="engine-section" aria-labelledby="engine-title">
+      <h2 id="engine-title">ENGINE</h2>
+      <div id="engine-details">
+        <p class="note"><span id="engine-brief" class="terminal-brief">IDLE · browser only
+No requests yet</span><br><span id="paper-snapshot-brief" class="terminal-brief">LAST RUN · 12 OCT 13:34 AWST
+ENDED · STALE</span></p>
+        <div class="detail-body">
+          <div id="paper-snapshot" role="group" aria-labelledby="paper-snapshot-title">
+            <p id="paper-snapshot-title"><strong>Last included verified simulation · historical</strong></p>
+            <p class="note">SESSION ENDED · STALE. This saved report is not a live engine connection or an Emergency STOP acknowledgement. Refresh updates browser quotes only.</p>
+            <dl class="engine-grid">
+              <dt>Session · Perth (AWST)</dt><dd><time datetime="2026-10-12T05:33:40.297Z">12 Oct 2026 · 13:33:40.297</time> to <time datetime="2026-10-12T05:34:42.025Z">13:34:42.025</time></dd>
+              <dt>Coverage</dt><dd>61.718 seconds including cleanup · 60-second observation limit · 11 rounds · BTC-USD 11 / ETH-USD 10 accepted observations. No continuous coverage.</dd>
+              <dt>Result</dt><dd>21 accepted observations · 21 WAIT · 0 simulated fills · 1 feed error: stale ETH ticker rejected. No trades; profitability untested.</dd>
+              <dt>Why WAIT</dt><dd>Ask prices were above the unchanged 0–1% entry band: BTC 4.233–4.294%, ETH 6.065–6.151% above the observed hourly-window low. This is not an all-time low.</dd>
+              <dt>Public source</dt><dd>Coinbase Exchange · 70 successful HTTP 200 responses. Public quotes are observations, not fills.</dd>
+              <dt>Last receipts · Perth (AWST)</dt><dd>BTC <time datetime="2026-10-12T05:34:36.104Z">12 Oct 2026 · 13:34:36.104</time>; ETH <time datetime="2026-10-12T05:34:38.038Z">13:34:38.038</time></dd>
+              <dt>Audit</dt><dd>48 journal records replayed · independent reconciliation passed.</dd>
+            </dl>
+          </div>
+          <p id="summary">Public observations only. No strategy, execution, account or background service.</p>
+          <p id="engine-note">One snapshot on opening; later refresh is manual. Quotes expire after 10 seconds.</p>
+          <dl class="engine-grid">
+            <dt>Observation</dt><dd id="worker">Not started</dd>
+            <dt>Last attempt</dt><dd id="last-cycle">UNKNOWN</dd>
+            <dt>Freshness</dt><dd id="freshness">UNKNOWN</dd>
+            <dt>Risk</dt><dd id="risk">EXECUTION DISABLED</dd>
+            <dt>Errors</dt><dd id="errors">Public data not checked.</dd>
+          </dl>
+          <p class="note">Actual requests · latest 20 events · no automatic retry or background worker</p>
+          <pre id="activity" aria-label="Public request activity">No requests recorded.</pre>
+        </div>
+      </div>
+    </section>
+
+    <footer>PUBLIC OBSERVATIONS ONLY · Not fills</footer>
+    <noscript>JavaScript is disabled. Quotes are unavailable; no engine or account is connected.</noscript>
+  </main>
+  <script type="module" src="./public-preview.mjs"></script>
+</body>
+</html>

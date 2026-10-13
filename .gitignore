@@ -9,3 +9,7 @@ build/
 
 # Private local exchange order journal
 .okx-demo-orders.json*
+
+# NEPTUNE 2 local state and temporary files
+.neptune-local/
+*.tmp

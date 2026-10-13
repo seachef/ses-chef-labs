@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "node scripts/build-public-preview.mjs",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(.*)",

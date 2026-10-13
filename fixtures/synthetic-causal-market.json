@@ -1,0 +1,190 @@
+{
+  "description": "Hand-authored causal latency fixture: old arrival book cannot fill, later book enters, delayed gap-stop exits at a loss. Use latency250ms and lifetime2000ms.",
+  "snapshots": [
+    {
+      "schemaVersion": 1,
+      "eventId": "causal-decision",
+      "tradeId": "synthetic-trade-causal-decision",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "sourceAt": 100000,
+      "observedAt": 100000,
+      "bookId": "synthetic-book-1",
+      "bookSequence": 1,
+      "bookSourceAt": 100000,
+      "bids": [
+        [
+          100,
+          10
+        ]
+      ],
+      "asks": [
+        [
+          100.1,
+          10
+        ]
+      ],
+      "change24hPct": null,
+      "history": {
+        "low": 100,
+        "from": 40000,
+        "to": 100000,
+        "samples": 60,
+        "intervalMs": 1000,
+        "complete": false,
+        "description": "Invented one-minute synthetic observation window; no public prices"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "eventId": "late-old-book",
+      "tradeId": "synthetic-trade-late-old-book",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "sourceAt": 100270,
+      "observedAt": 100270,
+      "bookId": "synthetic-book-2",
+      "bookSequence": 2,
+      "bookSourceAt": 100100,
+      "bids": [
+        [
+          100,
+          10
+        ]
+      ],
+      "asks": [
+        [
+          100.1,
+          10
+        ]
+      ],
+      "change24hPct": null,
+      "history": {
+        "low": 100,
+        "from": 40270,
+        "to": 100270,
+        "samples": 60,
+        "intervalMs": 1000,
+        "complete": false,
+        "description": "Invented one-minute synthetic observation window; no public prices"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "eventId": "eligible-entry-book",
+      "tradeId": "synthetic-trade-eligible-entry-book",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "sourceAt": 100280,
+      "observedAt": 100280,
+      "bookId": "synthetic-book-3",
+      "bookSequence": 3,
+      "bookSourceAt": 100260,
+      "bids": [
+        [
+          100,
+          10
+        ]
+      ],
+      "asks": [
+        [
+          100.1,
+          10
+        ]
+      ],
+      "change24hPct": null,
+      "history": {
+        "low": 100,
+        "from": 40280,
+        "to": 100280,
+        "samples": 60,
+        "intervalMs": 1000,
+        "complete": false,
+        "description": "Invented one-minute synthetic observation window; no public prices"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "eventId": "stop-trigger",
+      "tradeId": "synthetic-trade-stop-trigger",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "sourceAt": 101000,
+      "observedAt": 101000,
+      "bookId": "synthetic-book-4",
+      "bookSequence": 4,
+      "bookSourceAt": 101000,
+      "bids": [
+        [
+          98,
+          10
+        ]
+      ],
+      "asks": [
+        [
+          98.1,
+          10
+        ]
+      ],
+      "change24hPct": null,
+      "history": {
+        "low": 98,
+        "from": 41000,
+        "to": 101000,
+        "samples": 60,
+        "intervalMs": 1000,
+        "complete": false,
+        "description": "Invented one-minute synthetic observation window; no public prices"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "eventId": "eligible-gap-exit",
+      "tradeId": "synthetic-trade-eligible-gap-exit",
+      "source": "synthetic-fixture",
+      "provenance": "synthetic",
+      "productId": "BTC-USD",
+      "base": "BTC",
+      "quote": "USD",
+      "sourceAt": 101280,
+      "observedAt": 101280,
+      "bookId": "synthetic-book-5",
+      "bookSequence": 5,
+      "bookSourceAt": 101260,
+      "bids": [
+        [
+          97,
+          10
+        ]
+      ],
+      "asks": [
+        [
+          97.1,
+          10
+        ]
+      ],
+      "change24hPct": null,
+      "history": {
+        "low": 97,
+        "from": 41280,
+        "to": 101280,
+        "samples": 60,
+        "intervalMs": 1000,
+        "complete": false,
+        "description": "Invented one-minute synthetic observation window; no public prices"
+      }
+    }
+  ]
+}
